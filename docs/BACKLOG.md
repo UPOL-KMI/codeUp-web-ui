@@ -21,12 +21,12 @@
 
 | ID | Title | Inventory Rows | Status | Notes |
 |---|---|---|---|---|
-| F-001 | Scaffold Next.js 16.3 repo with App Router, TS strict, pnpm | — | todo | Pin exact versions, no scaffold defaults |
-| F-002 | ESLint flat config + Prettier + TypeScript 7 | — | todo | Include `pnpm typecheck` in pre-commit |
+| F-001 | Scaffold Next.js 16.3 repo with App Router, TS strict, pnpm | — | done | 16.3.1 confirmed latest via `npm view`. `typecheck`/`lint`/`build` all green. |
+| F-002 | ESLint flat config + Prettier + TypeScript 7 | — | done | **TypeScript pinned to 6.0.3, not 7** — `typescript-eslint`/`eslint-plugin-react` don't support TS7/ESLint10 yet, see AGENTS.md "Toolchain deviations". `pnpm typecheck`/`lint` both work standalone; no pre-commit hook wired yet. |
 | F-003 | Dockerfile with `output: 'standalone'` | — | todo | Node 22 LTS, multi-stage build |
 | F-004 | Compose service entry (self-contained add) | — | todo | **Show diff before commit — §3 constraint 1** |
 | F-005 | CI pipeline (GitHub Actions) | — | todo | `typecheck`, `lint`, `build`, `test` |
-| F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | todo | `API_BASE_INTERNAL`, `API_BASE_PUBLIC` |
+| F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
 | F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | todo | Document build-time limitation in `DROPPED.md` |
 | F-008 | Turbopack filesystem cache for builds | — | todo | Verify active with `next build --debug` |
 | F-009 | Turbopack memory eviction in dev | — | todo | Verify with `next dev` long-running |
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-001 | Scaffold Next.js 16.3 repo | todo |
+| F-003 | Dockerfile with `output: 'standalone'` | todo |
 
 ---
 

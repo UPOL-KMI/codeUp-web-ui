@@ -108,10 +108,56 @@
     inputs. Worth checking early in every future session that touches env/URLs: read `ReCOdex/.env`
     and `ReCOdex/docker-compose.yaml` directly rather than assuming.
 
+- **[2026-08-17 20:45] F-001:** Scaffolded Next.js in `recodex-web-next/` (correct location this
+  time): `tsconfig.json` (strict), `next.config.ts` (`output: 'standalone'`, `basePath` from
+  `URL_PATH_PREFIX` build-time env, `cacheComponents`/`partialPrefetching` explicitly `false`),
+  minimal `app/layout.tsx` + `app/page.tsx`. `npm view next version` confirms `16.3.1` really is the
+  latest 16.3.x patch — already what was pinned, no change needed there.
+  - *Observations:* `next build` warned that `experimental.cacheComponents` moved to a top-level
+    `cacheComponents` key in this exact version (16.3.1) — fixed by moving it, and added
+    `partialPrefetching` at the top level too (same move applies to it). This is precisely the kind
+    of drift the brief warns about (§4: "do not trust your training data for Next.js APIs") — worth
+    re-checking `next.config.ts` against the bundled docs after any Next.js version bump, not just
+    assuming last session's shape still holds.
+
+- **[2026-08-17 21:00] F-002:** `pnpm lint` failed twice while wiring this up, for two unrelated,
+  currently-real ecosystem-compatibility reasons (not code bugs):
+  1. `typescript-eslint@8.67.0` (latest on npm) hard-errors on load against TypeScript 7 — its own
+     peer range is `>=4.8.4 <6.1.0`. Confirmed via `npm view typescript-eslint peerDependencies`,
+     not assumed.
+  2. `eslint-plugin-react@7.37.5` (latest) throws inside a rule (`getFilename is not a function`)
+     against ESLint 10 — its peer range tops out at `^9.7`. `eslint-config-next@16.3.1` itself allows
+     `eslint: '>=9.0.0'` with no upper bound, which is how 10.x got installed in the first place.
+  Resolution: pinned `typescript@6.0.3` and `eslint@9.39.5` (latest stable in each's supported
+  range) instead of the brief's TS7/whatever-eslint-scaffold-picks. `next build`'s own type-checking
+  works identically either way — TS7 was chosen for speed, not a capability TS6 lacks. Recorded in
+  `AGENTS.md` under "Toolchain deviations from the brief" with the tracking issue for when to revisit
+  (`typescript-eslint#10940`). `eslint.config.mjs` ended up importing
+  `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript` directly as flat-config
+  arrays — that package now ships native flat config, no `FlatCompat` legacy-shim layer needed
+  (confirmed by reading `node_modules/eslint-config-next/dist/*.js` directly rather than assuming the
+  older compat pattern still applies).
+  - *Observations:* Two real, currently-unresolved upstream compatibility gaps on the very first
+    `pnpm lint` run. Worth a periodic check (not urgent) once `typescript-eslint` and
+    `eslint-plugin-react` catch up, so the pins in `AGENTS.md` can come back off.
+
+- **[2026-08-17 21:10] F-006:** `.env.example` + `.env.local` created with `API_BASE_PUBLIC`,
+  `API_BASE_INTERNAL`, `MONITOR_WS_URL`, `PORT`, `SESSION_COOKIE_PREFIX`, `URL_PATH_PREFIX` — all set
+  to the verified values from CORRECTION-002, not placeholders. `API_BASE_INTERNAL` currently equals
+  `API_BASE_PUBLIC` (this app isn't on the compose network yet, so the internal service hostname
+  isn't reachable from the host during `pnpm dev`) — documented inline in `.env.example` to change to
+  `http://api:80/v1` once F-004 gives this app its own compose service entry.
+
+- **[2026-08-17 21:15] Also created `AGENTS.md`**, which the brief's §0 calls for on the first
+  session and hadn't been created yet — contains §3/§6/§7/§12 verbatim per the instruction, plus the
+  toolchain-deviation note from F-002. Left a marker comment at the end for the version-matched block
+  `next dev` writes on first run (not yet run in this session — `pnpm dev` should be tried early next
+  session so that block appears and gets left alone afterward, per brief §4).
+
 ### Current Status
 
-- **Phase:** Foundation (F-001, resuming after correction)
-- **Next ticket:** F-001 (Scaffold Next.js 16.3 repo) — continuing properly in `recodex-web-next/`
+- **Phase:** Foundation (F-001/F-002/F-006 done)
+- **Next ticket:** F-003 (Dockerfile with `output: 'standalone'`)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 (port — still open, no strong preference given), Q-007 (SMTP —
   operator will test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
