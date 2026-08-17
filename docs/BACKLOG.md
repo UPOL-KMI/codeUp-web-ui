@@ -25,7 +25,7 @@
 | F-002 | ESLint flat config + Prettier + TypeScript 7 | — | done | **TypeScript pinned to 6.0.3, not 7** — `typescript-eslint`/`eslint-plugin-react` don't support TS7/ESLint10 yet, see AGENTS.md "Toolchain deviations". `pnpm typecheck`/`lint` both work standalone; no pre-commit hook wired yet. |
 | F-003 | Dockerfile with `output: 'standalone'` | — | done | Lives in this repo's own root (`Dockerfile`), not `services/<name>/` — this repo isn't one of the pull-repos.sh-managed upstream ReCodEx repos, so it doesn't share their build-context pattern; see DECISIONS.md. `docker build` + `docker run` both verified working end to end, real HTTP 200 with rendered HTML. |
 | F-004 | Compose service entry (self-contained add) | — | done | Diff shown, operator approved as-is. `web-next` service added to `../ReCOdex/docker-compose.yaml` (DEC-028); `WEB_NEXT_PORT` added to `../ReCOdex/.env`/`.env.example`. Verified live: `docker compose up -d web-next`, HTTP 200, and `api` reachable internally via `getent hosts api`. |
-| F-005 | CI pipeline (GitHub Actions) | — | todo | `typecheck`, `lint`, `build`, `test` |
+| F-005 | CI pipeline (GitHub Actions) | — | done | `.github/workflows/ci.yml`: `typecheck`, `lint`, `build`, `test`, via `corepack enable` (matches Dockerfile, not `actions/setup-pnpm`). Added `vitest.config.ts` (`passWithNoTests: true` — no tests exist yet, F-023/F-024 land the harness) and `"type": "module"` to `package.json` (silenced a real Vite config-loader warning, not just cosmetic). All four steps verified locally, including `build` with `.env.local` removed to simulate CI's actual environment. |
 | F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
 | F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | todo | Document build-time limitation in `DROPPED.md` |
 | F-008 | Turbopack filesystem cache for builds | — | todo | Verify active with `next build --debug` |
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-005 | CI pipeline (GitHub Actions) | todo |
+| F-025 | `scripts/seed.ts` — test data generator | todo |
 
 ---
 

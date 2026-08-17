@@ -200,12 +200,31 @@
     host-port publish is simpler for side-by-side dev with the legacy `web-app` and doesn't touch a
     working config file. Revisit when cutover is closer (see DEC-028's rejected alternative).
 
+- **[2026-08-17 22:00] F-005:** CI pipeline. `.github/workflows/ci.yml` runs `typecheck`, `lint`,
+  `build`, `test` via `corepack enable` (matching the Dockerfile's own pnpm-acquisition method rather
+  than introducing `actions/setup-pnpm` as a second one).
+  - *Observations:* `pnpm test` (`vitest run`) would have failed CI immediately — zero test files
+    exist yet (F-023/F-024 not started), and vitest's default behaviour is to exit non-zero on an
+    empty suite. Added `vitest.config.ts` with `passWithNoTests: true` so the pipeline is meaningfully
+    green now and starts actually enforcing the moment real tests land, rather than either leaving
+    `test` out of CI (weakens F-005) or leaving it in and immediately red (noise, trains ignoring CI).
+  - *Observations:* Also added `"type": "module"` to `package.json` — `vitest run` was warning about
+    ESM syntax loaded as CommonJS in `vitest.config.ts`. Checked first that no plain `.js` file in the
+    repo relies on CommonJS (`find` turned up none; `eslint.config.mjs` was already `.mjs` regardless
+    of this), so this was a safe, real fix rather than a cosmetic suppress.
+  - *Observations:* Verified all four steps locally before trusting the workflow file, including the
+    one difference CI actually has from local dev: temporarily moved `.env.local` aside and reran
+    `pnpm build` to confirm it succeeds without it (it does — this app doesn't read env vars at build
+    time yet, only basePath via `URL_PATH_PREFIX`, which defaults to empty). Restored `.env.local`
+    afterward.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001/F-002/F-003/F-004/F-006 done)
-- **Next ticket:** F-005 (CI pipeline) or `scripts/seed.ts` — brief's own dependency-order note says
-  the seed script should land before or alongside the rest of Foundation, not after, so pick that up
-  next unless BACKLOG.md's phase table says otherwise.
+- **Phase:** Foundation (F-001/F-002/F-003/F-004/F-005/F-006 done)
+- **Next ticket:** F-025 (`scripts/seed.ts`) — brief's own dependency-order note says the seed script
+  should land before or alongside the rest of Foundation, not after. It's a standalone script hitting
+  core-api directly (own admin credentials, not through this app's not-yet-built auth BFF), so it
+  isn't actually blocked by F-014..F-022.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
