@@ -154,10 +154,36 @@
   `next dev` writes on first run (not yet run in this session — `pnpm dev` should be tried early next
   session so that block appears and gets left alone afterward, per brief §4).
 
+- **[2026-08-17 21:30] F-003:** Multi-stage `Dockerfile` (deps → builder → runner, `node:22-bookworm-slim`
+  matching the Node-based ReCodEx components' base image, non-root `recodex` user). Lives in this
+  repo's own root rather than the compose repo's `services/<name>/` pattern — see DECISIONS.md
+  DEC-026 for why (this repo isn't one of the `pull-repos.sh`-managed upstream repos, so the
+  shared-context reason for that pattern doesn't apply here).
+  - *Observations:* `docker build` succeeded on the first try, but `docker run` immediately crashed:
+    `Cannot find module '.../@swc/helpers/esm/_interop_require_default.js'`. This is a known class of
+    issue (pnpm + Next.js standalone output) but the specific fix took two attempts to find:
+    1. Tried adding `@swc/helpers` as an explicit direct dependency (the most commonly cited fix
+       online) — did not help, same crash.
+    2. Tried `outputFileTracingRoot` (the fix for the GitHub-discussion-documented "monorepo symlink"
+       variant of this problem) — also did not help, same crash.
+    3. Diagnosed properly by diffing `node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/`
+       between the full pnpm store and what actually ended up in `.next/standalone`: the tracer copied
+       `cjs/` but silently dropped `esm/`, which is what `require-hook.js` actually needs. Fixed with
+       `outputFileTracingIncludes: { "/**": ["...@swc/helpers/**"] }`. Verified for real: `docker build`
+       then `docker run` then `curl` returning HTTP 200 with the rendered `<p>ReCodEx</p>` page, not
+       just "the build didn't error."
+  - *Observations:* Worth remembering for every future dependency that shows this failure mode —
+    "@swc/helpers as a dependency" and "outputFileTracingRoot" are both popular answers online for
+    this error but were both wrong for this specific case. Diffing the traced output against the real
+    pnpm store is what actually found it. If another package crashes the standalone server the same
+    way later, check for a missing subdirectory in its traced copy before reaching for either of those
+    two "standard" fixes again.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001/F-002/F-006 done)
-- **Next ticket:** F-003 (Dockerfile with `output: 'standalone'`)
+- **Phase:** Foundation (F-001/F-002/F-003/F-006 done)
+- **Next ticket:** F-004 (Compose service entry) — **requires showing the operator a diff and
+  getting explicit go-ahead before committing, per AGENTS.md/brief constraint 1.** Do not skip this.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 (port — still open, no strong preference given), Q-007 (SMTP —
   operator will test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 // URL_PATH_PREFIX (legacy env.json key) maps to Next's basePath, which is resolved
 // at build time, not runtime -- see docs/DECISIONS.md and DROPPED.md. Passed as a
-// Docker build arg in services/<name>/Dockerfile once that exists (F-003/F-004);
-// changing it requires a rebuild, not just a redeploy.
+// Docker build ARG in this repo's own Dockerfile (F-003); changing it requires a
+// rebuild, not just a redeploy.
 const basePath = process.env.URL_PATH_PREFIX || "";
 
 const nextConfig: NextConfig = {
@@ -17,6 +17,22 @@ const nextConfig: NextConfig = {
   // installed version, not assumed).
   cacheComponents: false,
   partialPrefetching: false,
+
+  // Explicit root for standalone-output file tracing -- not strictly required here
+  // (single app, not a monorepo; pnpm-workspace.yaml only exists for the
+  // builds-approval setting), but recommended by Next's own docs and harmless.
+  outputFileTracingRoot: import.meta.dirname,
+
+  // Node File Trace's static analysis under-includes @swc/helpers: it only copies
+  // its cjs/ output into .next/standalone, but require-hook.js needs esm/ at
+  // runtime too. Confirmed by diffing node_modules/.pnpm/@swc+helpers@*/.../helpers/
+  // between the full pnpm store and .next/standalone's copy of it (esm/ was the only
+  // thing missing) after `docker run` crashed with "Cannot find module
+  // .../@swc/helpers/esm/_interop_require_default.js". outputFileTracingRoot alone
+  // does not fix this -- verified by testing it in isolation first.
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**"],
+  },
 };
 
 export default nextConfig;
