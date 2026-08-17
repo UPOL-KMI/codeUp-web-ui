@@ -1,104 +1,109 @@
 # ReCodEx New Frontend — Seed Test Accounts
 
-**Status:** Pending creation by `scripts/seed.ts`
-**Date:** 2026-05-11
+**Status:** Implemented (F-025), verified idempotent against a live instance.
+**Date:** 2026-08-17
+
+This replaces the recon-phase plan that used to live here (Group A/B/C names, `seed-student1`
+style credentials) — those never matched what `scripts/seed.ts` actually builds. See
+`docs/DECISIONS.md` and `docs/PROGRESS.md`'s F-025 entry for the API recipe and the bugs found
+along the way.
 
 ---
 
-## Accounts to Create
+## Accounts
 
-| Username | Password | Global Role | Group Memberships | Purpose |
-|---|---|---|---|---|
-| `[seed]student1` | `seed-student1` | `student` | Student of Group A | Pure student view, deadlines, submissions |
-| `[seed]student2` | `seed-student2` | `student` | Student of Group A, Student of Group B | Student in multiple groups |
-| `[seed]supervisor1` | `seed-supervisor1` | `supervisor` | Admin of Group A, Member of Group B | Teacher view, review workflows, admin of one group |
-| `[seed]supervisor2` | `seed-supervisor2` | `supervisor` | Admin of Group B, Member of Group C | Teacher in multiple groups |
-| `[seed]sup-student1` | `seed-sup-student1` | `supervisor-student` | Supervisor of Group A, Student of Group B | §2 "one person, two audiences" case |
-| `admin@admin.com` | *(existing)* | `superadmin` | — | Superadmin, user takeover, instance admin |
+All passwords are the single fixed value below — not a secret, throwaway test data on a
+disposable instance (brief §1).
 
----
+**Password for every seeded account (except the superadmin): `RecodexSeed123!`**
 
-## Groups to Create
-
-| Name | Description | Parent | Status |
+| Email | Global Role | Group Memberships | Purpose |
 |---|---|---|---|
-| `[seed]Group A` | Main test group | — | Active |
-| `[seed]Group A1` | Subgroup of A | Group A | Active |
-| `[seed]Group A2` | Another subgroup of A | Group A | Active |
-| `[seed]Group B` | Second test group | — | Active |
-| `[seed]Group C` | Third test group | — | Active |
-| `[seed]Group D` | Archived group | — | Archived |
+| `admin@admin.com` | `superadmin` | — | **Not created by this script** — the deployment's own first-boot seed. Password `admin`. Reused as-is per the brief. |
+| `alice.student@seed.recodex.local` | `student` | Student of **Intro to Programming** | Plain student, mixed submission states |
+| `sam.supervisor@seed.recodex.local` | `supervisor` | Admin of **Intro to Programming**, plain supervisor (non-admin) of **Retired Course** | Admin of one group, plain member of another |
+| `sasha.mentor@seed.recodex.local` | `supervisor-student` | Admin of **Large Lecture**, plain student of **Intro to Programming / Lab A** | The brief's §2 "one person, two audiences" case |
+| `seed.filler.01@seed.recodex.local` … `seed.filler.25@seed.recodex.local` | `student` | Students of **Large Lecture** | Pagination filler — 25 accounts |
+
+Override the admin credentials the script logs in as via `SEED_ADMIN_EMAIL` /
+`SEED_ADMIN_PASSWORD` env vars if you ever change them on the deployment.
 
 ---
 
-## Assignments to Create
+## Groups
 
-| Exercise | Group | Deadline | Points | Notes |
-|---|---|---|---|---|
-| `[seed]Exercise 1` | Group A | Future (7 days) | 100 | Open for submission |
-| `[seed]Exercise 2` | Group A | Past | 100 | Closed, has submissions |
-| `[seed]Exercise 3` | Group A | Future (14 days) | 50 | Second deadline |
-| `[seed]Exercise 1` | Group B | Future (3 days) | 100 | Different group, same exercise |
-| `[seed]Exercise 4` | Group B | Future (1 day) | 100 | Urgent deadline |
-
----
-
-## Submissions to Create
-
-| Student | Assignment | Status | Score | Notes |
-|---|---|---|---|---|
-| `[seed]student1` | `[seed]Exercise 1` (Group A) | Passed | 95 | Recent submission |
-| `[seed]student1` | `[seed]Exercise 2` (Group A) | Failed | 40 | Past submission |
-| `[seed]student1` | `[seed]Exercise 3` (Group A) | Pending | — | Waiting for evaluation |
-| `[seed]student2` | `[seed]Exercise 1` (Group A) | Passed | 80 | Recent submission |
-| `[seed]student2` | `[seed]Exercise 1` (Group B) | Not submitted | — | Empty state |
-| `[seed]sup-student1` | `[seed]Exercise 1` (Group B) | Passed | 90 | Supervisor-student as student |
+| Name | Parent | Archived | Purpose |
+|---|---|---|---|
+| `[seed] Intro to Programming` | — | No | Primary group; has a subgroup |
+| `[seed] Intro to Programming / Lab A` | Intro to Programming | No | Satisfies "one group has a subgroup" |
+| `[seed] Retired Course` | — | **Yes** | Satisfies "one archived group". Archived *after* adding sam.supervisor as a member — see the `group.isNotArchived` gotcha below |
+| `[seed] Large Lecture` | — | No | Pagination stress: 25 students, 25 assignments |
 
 ---
 
-## Script Usage
+## Exercise
+
+Exactly **one** exercise, `[seed] Echo Greeting` (python3, stdin→stdout diff against a fixed
+expected output), reused across every assignment below instead of building a new exercise per
+assignment — see `docs/DECISIONS.md` for the full API recipe and why. It has one reference
+solution (required before an exercise can be assigned to any group at all).
+
+---
+
+## Assignments
+
+| Group | Count | Notes |
+|---|---|---|
+| Intro to Programming | 2 | One with `alice.student`'s submissions (below), one left untouched — the brief's "at least one assignment with nothing submitted yet" |
+| Large Lecture | 25 | Pagination filler, staggered deadlines, no submissions |
+
+## Submissions
+
+| Student | Assignment | Note (idempotency key) | Content |
+|---|---|---|---|
+| alice.student | Intro to Programming's primary assignment | `[seed] correct` | Prints the exact expected greeting |
+| alice.student | same | `[seed] wrong` | Prints something else, deliberately incorrect |
+
+**These do not currently reach genuine pass/fail on this dev machine.** This Mac's Docker
+Desktop runs cgroup v2 only; the vendored `isolate` 1.8.1 sandbox requires cgroup v1 (see
+`../ReCOdex/README.md`, "Before going to production, read this: `worker` needs cgroup v1" — a
+pre-existing, already-documented limitation, not something introduced by this script). Every
+submission resolves to an infrastructure `evaluation_failure` (`Isolate init error`) instead of a
+real judged result. Re-verify the actual pass/fail split on a cgroup v1 host — production, or a
+locally fixed Docker config — before relying on this for evaluation-state UI work.
+
+---
+
+## Running it
 
 ```bash
-# First run (fresh database)
 pnpm seed
-
-# Re-run (idempotent — checks for `[seed]` prefix)
-pnpm seed
-
-# With custom API URL
-API_BASE=http://localhost:4000/v1 pnpm seed
 ```
 
----
-
-## Verification
-
-After running `scripts/seed.ts`, verify:
-
-1. All accounts can log in (test via API or UI).
-2. Each user's group memberships are as specified.
-3. Assignments have correct deadlines and points.
-4. Submissions span all evaluation states (pending, passed, failed, none).
-5. Group hierarchy is correct (A1, A2 nested under A).
-6. Archived group is marked as archived.
-7. `[seed]` prefix is on all created entities for easy identification.
+Reads `API_BASE_INTERNAL` (falling back to `API_BASE_PUBLIC`) from `.env.local` via
+`tsx --env-file=.env.local`. Safe to re-run any number of times — every entity is looked up by a
+fixed `[seed]` name/note before creating, so re-running does not duplicate anything. Verified: a
+clean re-run against fully-seeded state produces zero creates (all `exists, reused` / `already
+exists, skipping submit`).
 
 ---
 
-## Security Note
+## A real gotcha worth remembering
 
-These are **throwaway test credentials** on a disposable instance (§1). They are committed to the repo **intentionally** so a fresh session can find them without re-reading the script. They are **not** secrets.
-
-**DO NOT** use these credentials on the production instance.
+`POST /v1/groups/{id}/members/{userId}` (and `/students/{userId}`) checks `group.isNotArchived`
+against the **group**, but ALSO checks `becomeMember`/similar against the **target user's own
+role's ACL** — and that check also requires `group.isNotArchived`. Concretely: **you cannot add
+any member to an already-archived group**, even as superadmin. `scripts/seed.ts` archives
+`[seed] Retired Course` as the *last* step for that group, after `sam.supervisor` is already a
+member — do not reorder this if you touch the script.
 
 ---
 
-## Reset Procedure
+## Resetting
 
-To reset the test data to a known state:
+Wiping the database is an **operator-level** action outside this script's reach — `docker compose
+down -v && up -d` in `../ReCOdex/`, not something `scripts/seed.ts` does or assumes. After a wipe,
+just run `pnpm seed` again; it starts from "just the seeded superadmin" and rebuilds everything.
 
-1. Run `pnpm seed` — idempotent, will not duplicate existing `[seed]` entities.
-2. If database is in an unknown state, ask operator to run `docker compose down -v && up -d` (operator-level, §1).
-3. Re-run `pnpm seed` after reset.
-
-**Never** attempt SQL or direct database manipulation. All operations go through the public API.
+**Never** attempt SQL or direct database manipulation — every operation in `scripts/seed.ts` goes
+through the public API, by design (brief §1).

@@ -218,13 +218,65 @@
     time yet, only basePath via `URL_PATH_PREFIX`, which defaults to empty). Restored `.env.local`
     afterward.
 
+- **[2026-08-17 22:45] F-025/F-026:** `scripts/seed.ts` + `docs/SEED_ACCOUNTS.md`. Builds 4 groups
+  (one with a subgroup, one archived, one pagination-stress), 3 named users covering every
+  role/membership combination the brief calls out plus 25 pagination-filler students, one fully
+  wired gradeable exercise, and real submissions — all through the public API, all idempotent.
+  Verified for real: ran it four times in a row against the live instance (fresh create → rerun →
+  bug-fixed rerun → final clean rerun), and the last run produced zero creates (every line was
+  `exists, reused` / `already exists, skipping submit`).
+  - *Observations:* Getting one exercise from "created" to "gradeable" via the public API only is
+    genuinely a 7-step chain with no shortcut, and the OpenAPI spec alone is too generic (`items:
+    {}` on every array field) to build it from — had to cross-reference
+    `repos/web-app/src/helpers/exercise/configSimple.js`/`configAdvanced.js` for the real `config`
+    payload shape, and discover the pipeline/variable IDs by actually calling
+    `POST /exercises/{id}/config/variables` against the live instance rather than guessing. Full
+    recipe in DEC-029. Confirmed ReCodEx allows assigning the same exercise to a group multiple
+    times, so the 25-assignment pagination filler reuses one exercise instead of building 25.
+  - *Observations:* Three real bugs found and fixed via actually running the script against the
+    live instance, not just via typecheck/lint:
+    1. `getOrCreateUser`'s registration call never forwarded the admin token, so it went out
+       unauthenticated and 403'd — `LOCAL_REGISTRATION_ENABLED=false` on this deployment requires a
+       privileged caller, not just "any authenticated user" (see `RegistrationPresenter::
+       checkCreateAccount`).
+    2. Tried adding a supervisor as a member of an already-archived group — 403, because
+       `becomeMember`'s ACL rule requires `group.isNotArchived`, evaluated against the *target
+       user's own role*, not just the actor's. Fixed by moving `ensureArchived()` to run *after*
+       all membership calls for that group, not at creation time — see DEC-031's neighbor DEC-030
+       reasoning and the dedicated gotcha section in `SEED_ACCOUNTS.md`.
+    3. `localizedStudentHints` caused a PHP 500 (TypeError) when sent as `[{locale, text}]` — the
+       swagger description's `(locale => hint text)` was the tell; it wants a locale-keyed object
+       (`{en: "..."}`), not an array.
+    4. First idempotency pass for submissions checked "does *any* solution exist" rather than
+       matching by `note`, so submitting two different solutions (correct + wrong) to the same
+       assignment silently dropped the second one on a re-run mid-session. Fixed to match on the
+       `note` field, which the API does return verbatim on the solutions-list endpoint.
+    5. `GET /exercises` (and `/users`) return a paginated `{items, totalCount, ...}` envelope, not
+       a bare array — assumed array first, got a runtime `TypeError`, fixed after checking the
+       actual response shape live.
+  - *Observations:* **Genuine pass/fail evaluation cannot be verified on this dev machine.** Every
+    submission resolves to an infrastructure `evaluation_failure` ("Isolate init error") because
+    this Mac's Docker Desktop runs cgroup v2 only — confirmed via `docker logs recodex-worker-1`
+    showing `Checking for cgroup support for memory ... CAUTION`. This is the **same limitation
+    `../ReCOdex/README.md` already documents** ("worker needs cgroup v1", explicitly naming
+    "macOS/Docker Desktop" as a host where this shows up) — re-discovered, not new. The seed data
+    itself is correct (one submission is logically right, one is logically wrong); only the
+    resulting UI *evaluation state* needs re-verification on a cgroup v1 host. See DEC-031.
+  - *Observations:* Also closed out **F-007** while touching `docs/BACKLOG.md` for this — it turned
+    out to already be fully done as a side effect of F-003 (`Dockerfile`'s `ARG URL_PATH_PREFIX` +
+    `next.config.ts`'s `basePath`, and `DROPPED.md` already documents the build-time limitation).
+    Marked done rather than left as a stale `todo` for finished work.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001/F-002/F-003/F-004/F-005/F-006 done)
-- **Next ticket:** F-025 (`scripts/seed.ts`) — brief's own dependency-order note says the seed script
-  should land before or alongside the rest of Foundation, not after. It's a standalone script hitting
-  core-api directly (own admin credentials, not through this app's not-yet-built auth BFF), so it
-  isn't actually blocked by F-014..F-022.
+- **Phase:** Foundation (F-001 through F-007, F-025, F-026 done — see `docs/BACKLOG.md` for the
+  full per-ticket table)
+- **Next ticket:** F-008 (Turbopack filesystem cache for builds) — verify active with
+  `next build --debug`, per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+- **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
+  evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that
+  visually depends on evaluation state (e.g. dashboards, status badges) until re-verified on a
+  cgroup v1 host.

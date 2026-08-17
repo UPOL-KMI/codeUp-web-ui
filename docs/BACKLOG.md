@@ -27,7 +27,7 @@
 | F-004 | Compose service entry (self-contained add) | — | done | Diff shown, operator approved as-is. `web-next` service added to `../ReCOdex/docker-compose.yaml` (DEC-028); `WEB_NEXT_PORT` added to `../ReCOdex/.env`/`.env.example`. Verified live: `docker compose up -d web-next`, HTTP 200, and `api` reachable internally via `getent hosts api`. |
 | F-005 | CI pipeline (GitHub Actions) | — | done | `.github/workflows/ci.yml`: `typecheck`, `lint`, `build`, `test`, via `corepack enable` (matches Dockerfile, not `actions/setup-pnpm`). Added `vitest.config.ts` (`passWithNoTests: true` — no tests exist yet, F-023/F-024 land the harness) and `"type": "module"` to `package.json` (silenced a real Vite config-loader warning, not just cosmetic). All four steps verified locally, including `build` with `.env.local` removed to simulate CI's actual environment. |
 | F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
-| F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | todo | Document build-time limitation in `DROPPED.md` |
+| F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | done | Already landed as part of F-003: `Dockerfile`'s `ARG URL_PATH_PREFIX` + `next.config.ts`'s `basePath`. Build-time limitation documented in `DROPPED.md`. Noticed and closed out while updating this table for F-025, not separately implemented. |
 | F-008 | Turbopack filesystem cache for builds | — | todo | Verify active with `next build --debug` |
 | F-009 | Turbopack memory eviction in dev | — | todo | Verify with `next dev` long-running |
 | F-010 | Theme tokens (dark/light) | `config.js` SKIN | todo | CSS custom properties, no hardcoded colors |
@@ -45,8 +45,8 @@
 | F-022 | Typed `server-only` API client | `apiMiddleware` | todo | Error normalisation, no user caching |
 | F-023 | Playwright harness skeleton | — | todo | Login + visit routes + fail on errors |
 | F-024 | Token-leakage security test | — | todo | Assert httpOnly cookie, no token in HTML |
-| F-025 | `scripts/seed.ts` — test data generator | — | todo | API-only, idempotent, `[seed]` prefix |
-| F-026 | `docs/SEED_ACCOUNTS.md` | — | todo | Record all test credentials |
+| F-025 | `scripts/seed.ts` — test data generator | — | done | API-only, idempotent (verified: a clean re-run against fully-seeded state produces zero creates), `[seed]` prefix. Builds 4 groups, 3 named users + 25 pagination-filler students, 1 fully-configured gradeable exercise reused across 27 assignments, and 2 real submissions. See DEC-029/030/031 for the exercise-build recipe and the cgroup v1 evaluation caveat. |
+| F-026 | `docs/SEED_ACCOUNTS.md` | — | done | Rewritten to match what the script actually builds (the recon-phase plan used different group/account names). |
 
 ---
 
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-025 | `scripts/seed.ts` — test data generator | todo |
+| F-008 | Turbopack filesystem cache for builds | todo |
 
 ---
 
