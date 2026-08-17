@@ -179,11 +179,33 @@
     way later, check for a missing subdirectory in its traced copy before reaching for either of those
     two "standard" fixes again.
 
+- **[2026-08-17 21:45] F-004:** Compose service entry. Shown to the operator as a diff first per the
+  constraint-1 exception; approved as-is (see DEC-028). Applied to `ReCOdex/docker-compose.yaml` (new
+  `web-next` service, `build.context: ../recodex-web-next` per DEC-026, `depends_on: [api]`), plus
+  `WEB_NEXT_PORT` added to `ReCOdex/.env` and `ReCOdex/.env.example`.
+  - *Observations:* `docker compose up -d web-next` failed the first time — host port `3000` (the
+    proposed default) was already bound by something unrelated to this stack (`docker ps` showed no
+    compose container using it, so it's a host-level process, not a container collision). Switched
+    `WEB_NEXT_PORT` to `3001` and retried; this is a pure renumbering with no behavioural difference,
+    so it was fixed and recorded rather than routed back to the operator as a new question. Verified
+    for real, not just "container is Up": `docker ps` shows `0.0.0.0:3001->3000/tcp`, `curl
+    http://localhost:3001/` returns HTTP 200, and `docker exec recodex-web-next-1 getent hosts api`
+    resolves the `api` service's container IP — confirming `web-next` is genuinely on the `recodex`
+    network and `API_BASE_INTERNAL=http://api:80/v1` is reachable. Updated `.env.example`'s comment
+    that had said "change to `http://api:80/v1` once F-004 lands" — it has now landed; that value lives
+    in the compose file's `environment:` block, overriding whatever `.env.local` has when run via
+    Docker (`.env.local` still governs bare `pnpm dev` on the host, where the internal hostname isn't
+    reachable, so it correctly keeps the public URL there).
+  - *Observations:* Did not route `web-next` through `proxy` (no `nginx.conf.template` change) — direct
+    host-port publish is simpler for side-by-side dev with the legacy `web-app` and doesn't touch a
+    working config file. Revisit when cutover is closer (see DEC-028's rejected alternative).
+
 ### Current Status
 
-- **Phase:** Foundation (F-001/F-002/F-003/F-006 done)
-- **Next ticket:** F-004 (Compose service entry) — **requires showing the operator a diff and
-  getting explicit go-ahead before committing, per AGENTS.md/brief constraint 1.** Do not skip this.
+- **Phase:** Foundation (F-001/F-002/F-003/F-004/F-006 done)
+- **Next ticket:** F-005 (CI pipeline) or `scripts/seed.ts` — brief's own dependency-order note says
+  the seed script should land before or alongside the rest of Foundation, not after, so pick that up
+  next unless BACKLOG.md's phase table says otherwise.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-005 (port — still open, no strong preference given), Q-007 (SMTP —
-  operator will test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+- **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
+  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

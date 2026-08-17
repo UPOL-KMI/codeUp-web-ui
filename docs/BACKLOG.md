@@ -24,7 +24,7 @@
 | F-001 | Scaffold Next.js 16.3 repo with App Router, TS strict, pnpm | — | done | 16.3.1 confirmed latest via `npm view`. `typecheck`/`lint`/`build` all green. |
 | F-002 | ESLint flat config + Prettier + TypeScript 7 | — | done | **TypeScript pinned to 6.0.3, not 7** — `typescript-eslint`/`eslint-plugin-react` don't support TS7/ESLint10 yet, see AGENTS.md "Toolchain deviations". `pnpm typecheck`/`lint` both work standalone; no pre-commit hook wired yet. |
 | F-003 | Dockerfile with `output: 'standalone'` | — | done | Lives in this repo's own root (`Dockerfile`), not `services/<name>/` — this repo isn't one of the pull-repos.sh-managed upstream ReCodEx repos, so it doesn't share their build-context pattern; see DECISIONS.md. `docker build` + `docker run` both verified working end to end, real HTTP 200 with rendered HTML. |
-| F-004 | Compose service entry (self-contained add) | — | todo | **Show diff before commit — §3 constraint 1** |
+| F-004 | Compose service entry (self-contained add) | — | done | Diff shown, operator approved as-is. `web-next` service added to `../ReCOdex/docker-compose.yaml` (DEC-028); `WEB_NEXT_PORT` added to `../ReCOdex/.env`/`.env.example`. Verified live: `docker compose up -d web-next`, HTTP 200, and `api` reachable internally via `getent hosts api`. |
 | F-005 | CI pipeline (GitHub Actions) | — | todo | `typecheck`, `lint`, `build`, `test` |
 | F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
 | F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | todo | Document build-time limitation in `DROPPED.md` |
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-004 | Compose service entry (self-contained add) | todo |
+| F-005 | CI pipeline (GitHub Actions) | todo |
 
 ---
 
