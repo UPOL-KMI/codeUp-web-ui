@@ -1,0 +1,46 @@
+# ReCodEx New Frontend — Open Questions
+
+**Status:** Draft
+**Date:** 2026-05-11
+
+---
+
+## Operator Inputs Needed
+
+| # | Question | Context | Assumption Made | Where Used |
+|---|---|---|---|---|
+| Q-001 | **API base URL of the running instance** | Legacy uses `API_BASE` from `etc/env.json`. What is the actual URL for this deployment? | **Resolved — was wrong, see Resolved section.** | `.env.local`, API client |
+| Q-002 | **Path to local checkout of legacy `web-app`** | I found it at `repos/web-app`. Confirm. | Confirmed by directory listing | Recon, source reference |
+| Q-003 | **Docker compose repo structure** | I see `docker-compose.yaml` and `services/` in root. Is this the correct compose repo? | Confirmed — but this new app's own source must NOT live there too, see Resolved section (this was violated once already and has been corrected). | Compose service entry |
+| Q-004 | **External auth (CAS) configuration** | Is CAS enabled? What are `EXTERNAL_AUTH_URL`, `_SERVICE_ID`, etc.? | **Resolved — was wrong, see Resolved section.** | CAS callback Route Handler |
+| Q-005 | **Port for new app** | What port should the new Next.js app bind to? | Assumed: `3000` (Next.js default) or `8081` (to avoid clash with legacy on `8080`) — unverified, still a real open question, operator has not stated a preference | `docker-compose.yaml`, `PORT` env |
+| Q-006 | **WebSocket monitor endpoint** | Legacy uses `evaluationProgress` module. Is `monitor` service running? What is the WebSocket URL? | **Resolved — was wrong (assumed wss), see Resolved section.** | Live evaluation progress |
+| Q-007 | **SMTP configuration** | Is outbound SMTP configured? Legacy uses `mail.debugMode` / `archivingDir` for inspection. | Assumed: not configured yet, use `mail.debugMode` for dev | Registration, password reset flows |
+| Q-008 | **Instance ID for multi-instance** | Legacy `auth` module stores `instanceId`. Is this deployment multi-instance? | Assumed: single instance, `instanceId` from first login response | Auth BFF, login flow |
+
+---
+
+## Technical Questions
+
+| # | Question | Context | Assumption Made | Where Used |
+|---|---|---|---|---|
+| Q-009 | **Next.js 16.3 exact patch version** | Brief says "newest patch of 16.3.x". What is the exact version available? | Check `npm view next version` before scaffolding | `package.json`, Dockerfile |
+| Q-010 | **OpenAPI specification availability** | Does the running API expose an OpenAPI/Swagger spec? | **Resolved — not served, see Resolved section.** | API client type generation |
+| Q-011 | **File upload size limit** | Brief mentions 512 MiB ceiling. Confirm nginx and PHP config in compose repo. | Assumed: 512 MiB from brief; verify in `services/api/`, `services/proxy/` | Upload Route Handler |
+| Q-012 | **Extension token handoff mechanism** | Legacy `SIS-ext-webapp` receives a token. How is this done? | Investigate legacy source and API docs | Extension integration |
+| Q-013 | **Markdown rendering compatibility** | Legacy uses `markdown-it` + `@iktakahiro/markdown-it-katex`. Will `react-markdown` + `rehype-katex` produce identical output? | Test with real exercise texts from DB | Markdown renderer component |
+| Q-014 | **Graphviz rendering approach** | Legacy uses `viz.js` (WASM). Should we port it, use server-side Graphviz, or replace with JS layout? | Port `viz.js` initially via `next/dynamic`, evaluate alternatives later | Pipeline structure editor |
+| Q-015 | **Short session behavior** | Legacy `SHORT_SESSION` config gates sensitive operations. How does re-authentication work under httpOnly cookies? | Design: re-auth prompt → new cookie with short expiration | Sensitive operations (grade edit, user takeover) |
+| Q-016 | **Notification system** | Legacy has `notifications` module. Is it polling-based or WebSocket? | Investigate legacy source | Header notification bell |
+
+---
+
+## Resolved
+
+| # | Question | Resolution |
+|---|---|---|
+| Q-001 | API base URL | Verified against the compose repo's `.env` directly (not guessed). Public: `http://recodex.local/api/v1` (`PROTOCOL` + `APP_DOMAIN` from `.env`, proxied by nginx under `/api/`). Internal (server-side, inside the compose network): `http://api:80/v1` — the `api` service's own hostname, no proxy hop. `localhost:4000` was never correct for this deployment and must not appear anywhere in the codebase. |
+| Q-003 | Compose repo / new-app source location | The compose repo (`ReCOdex/`) is correctly identified, but F-001 initially scaffolded this app's `package.json`/`app/`/`docs/` directly into its root — a direct violation of the brief's "new, empty repository" instruction and of §1's explicit "do not vendor your frontend's source inside the compose repo". Caught before any real app code existed; moved to a proper sibling repo (`../recodex-web-next`, git-initialized) with no data loss. If a future session ever finds itself creating files inside `ReCOdex/` for anything other than the one compose-file diff in constraint 1, stop and re-read §1. |
+| Q-004 | CAS configuration | Verified against `.env`: **CAS is not configured in this deployment** — no `EXTERNAL_AUTH_*` variables are set, and `LOCAL_REGISTRATION_ENABLED=false` too (local registration is currently closed, not open). Build the CAS callback route and the registration UI regardless (feature parity, §3 constraint 3, and the legacy config supports both) — they just have nothing to point at in this environment right now. Treat both as "implemented but unreachable/disabled by current config," not as done-and-tested. |
+| Q-006 | WebSocket monitor endpoint | Verified: `monitor` service is running (`services/monitor/` in the compose repo) and is proxied at `/ws` by the nginx `proxy` service, upgrade headers already configured there. **Scheme is `ws://`, not `wss://`** — this deployment currently runs `PROTOCOL=http` / `MONITOR_PROTOCOL=ws` (no TLS yet). Read the scheme from the same env source as `API_BASE_PUBLIC` rather than hardcoding `wss://`; it will need to flip to `wss://` when this deployment eventually gets TLS, and the code should not need to change when that happens, only the env var. |
+| Q-010 | OpenAPI spec availability | Verified by requesting it directly: **not served.** `repos/api/docs/swagger.yaml` exists in the api repo's source tree, but the compose deployment's nginx only exposes the `www/` document root (`services/api/nginx-site.conf`) — `docs/` is outside it and returns 404. Either (a) ask the operator to add a static-file location for it in `services/api/nginx-site.conf` (a compose-file-adjacent change — goes through the constraint-1 diff/approval process), (b) read `repos/api/docs/swagger.yaml` directly from disk once at codegen time instead of fetching it over HTTP, or (c) hand-write types. (b) needs no compose change and is probably the pragmatic default. |

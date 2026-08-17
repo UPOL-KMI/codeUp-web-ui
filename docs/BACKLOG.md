@@ -1,0 +1,195 @@
+# ReCodEx New Frontend — Backlog
+
+**Status:** Draft
+**Date:** 2026-05-11
+
+---
+
+## Legend
+
+| Status | Meaning |
+|---|---|
+| `todo` | Ready to work |
+| `doing` | Currently in progress |
+| `done` | Completed and verified |
+| `blocked` | Cannot proceed — reason recorded |
+| `dropped` | Intentionally omitted — reason in `DROPPED.md` |
+
+---
+
+## Foundation (Phase 1)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| F-001 | Scaffold Next.js 16.3 repo with App Router, TS strict, pnpm | — | todo | Pin exact versions, no scaffold defaults |
+| F-002 | ESLint flat config + Prettier + TypeScript 7 | — | todo | Include `pnpm typecheck` in pre-commit |
+| F-003 | Dockerfile with `output: 'standalone'` | — | todo | Node 22 LTS, multi-stage build |
+| F-004 | Compose service entry (self-contained add) | — | todo | **Show diff before commit — §3 constraint 1** |
+| F-005 | CI pipeline (GitHub Actions) | — | todo | `typecheck`, `lint`, `build`, `test` |
+| F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | todo | `API_BASE_INTERNAL`, `API_BASE_PUBLIC` |
+| F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | todo | Document build-time limitation in `DROPPED.md` |
+| F-008 | Turbopack filesystem cache for builds | — | todo | Verify active with `next build --debug` |
+| F-009 | Turbopack memory eviction in dev | — | todo | Verify with `next dev` long-running |
+| F-010 | Theme tokens (dark/light) | `config.js` SKIN | todo | CSS custom properties, no hardcoded colors |
+| F-011 | i18n: next-intl with cs/en | `locales/` | todo | Migrate legacy messages |
+| F-012 | Error/not-found/forbidden conventions | `NotFound` page | todo | `catchError` from `next/error` |
+| F-013 | Route skeleton with layouts | All pages | todo | `(anon)` and `(app)` route groups |
+| F-014 | `proxy.ts` for auth UX redirect | `auth` module | todo | NOT a security boundary — §6.1 |
+| F-015 | `requireSession()` server-side guard | `auth` module | todo | Called by every data access function |
+| F-016 | Auth BFF: login Route Handler | `auth` module | todo | httpOnly cookie, `secure` conditional |
+| F-017 | Auth BFF: logout Route Handler | `auth` module | todo | Clear cookie, redirect |
+| F-018 | Auth BFF: token refresh in `proxy.ts` | `auth` module | todo | Concurrent-refresh race guard |
+| F-019 | Auth BFF: CAS callback Route Handler | `auth` module | todo | Uses `API_BASE_PUBLIC` for redirect |
+| F-020 | Auth BFF: user takeover | `auth` module | todo | Superadmin only |
+| F-021 | Auth BFF: restricted token generation | `auth` module | todo | `POST /login/issue-restricted-token` |
+| F-022 | Typed `server-only` API client | `apiMiddleware` | todo | Error normalisation, no user caching |
+| F-023 | Playwright harness skeleton | — | todo | Login + visit routes + fail on errors |
+| F-024 | Token-leakage security test | — | todo | Assert httpOnly cookie, no token in HTML |
+| F-025 | `scripts/seed.ts` — test data generator | — | todo | API-only, idempotent, `[seed]` prefix |
+| F-026 | `docs/SEED_ACCOUNTS.md` | — | todo | Record all test credentials |
+
+---
+
+## Design System (Phase 2)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| D-001 | `PageShell` component | All pages | todo | Breadcrumbs, title, subtitle, actions, tabs |
+| D-002 | Central breadcrumb manifest | All pages | todo | Async resolvers for entity names |
+| D-003 | `DataTable` component | All list views | todo | Sort, filter, paginate, URL sync, bulk select |
+| D-004 | Form kit on Server Actions | All forms | todo | React Hook Form + Zod, pending state, dirty guard |
+| D-005 | Upload component (Route Handler) | `upload` module | todo | Streaming, progress, 512 MiB ceiling |
+| D-006 | Dialog/modal system | Various | todo | Radix Dialog, accessible |
+| D-007 | Toast notification system | Various | todo | Success + failure, no silent failures |
+| D-008 | State components (loading, empty, error, forbidden) | All lists | todo | `loading.tsx` + `catchError` |
+| D-009 | Code viewer with line anchoring | `solutions/[id]` | todo | Shiki + stable per-line IDs |
+| D-010 | Markdown renderer | `exercises/[id]` | todo | react-markdown + KaTeX, test compatibility |
+| D-011 | Status badges | All status displays | todo | Deadline, evaluation, permission |
+| D-012 | Formatters (date, points, relative time) | All pages | todo | Single source, client/server consistent |
+| D-013 | `/dev/kitchen-sink` route | — | todo | All components in isolation |
+
+---
+
+## Student Experience (Phase 3)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| S-001 | Dashboard — student section | `Dashboard` page | todo | Deadlines, submissions, progress |
+| S-002 | Dashboard — teacher section | `Dashboard` page | todo | Unreviewed, upcoming, activity |
+| S-003 | Dashboard — calendar view | `userCalendars` module | todo | Full month, deadline markers |
+| S-004 | Group list | `groups` module | todo | My groups + discover |
+| S-005 | Group detail — Info tab | `GroupInfo` page | todo | Description, stats, announcements |
+| S-006 | Group detail — Assignments tab | `GroupAssignments` page | todo | Filter: all, open, closed, w/ submissions |
+| S-007 | Group detail — Students tab | `GroupStudents` page | todo | Roster, points overview |
+| S-008 | Group detail — Exams tab | `GroupExams` page | todo | Exam mode management |
+| S-009 | Group detail — Settings tab | `EditGroup` page | todo | Edit, members, invitations |
+| S-010 | Group hierarchy (nested subgroups) | `groups` module | todo | Tree navigation, breadcrumbs |
+| S-011 | Archived groups view | `Archive` page | todo | Filter, unarchive action |
+| S-012 | Assignment detail — student view | `Assignment` page | todo | Description, deadlines, my submissions |
+| S-013 | Assignment detail — teacher view | `Assignment` page | todo | Stats, edit link, all submissions |
+| S-014 | Submit solution flow | `assignment` routes | todo | File upload, validation, confirmation |
+| S-015 | Evaluation result display | `Solution` page | todo | Test-by-test, compilation log, judge output |
+| S-016 | Live evaluation progress | `evaluationProgress` module | todo | Polling or WebSocket |
+| S-017 | Solution source code viewer | `SolutionSourceCodes` page | todo | Shiki, diff, line comments |
+| S-018 | Solution review — inline comments | `solutionReviews` module | todo | Add/edit/delete comments, close review |
+| S-019 | Solution plagiarism report | `SolutionPlagiarisms` page | todo | Detection results, links |
+| S-020 | Shadow assignment detail | `ShadowAssignment` page | todo | Bonus assignment, points |
+| S-021 | User profile | `User` page | todo | Info, groups, solutions, settings |
+| S-022 | User settings (edit profile) | `EditUser` page | todo | Name, email, password change |
+| S-023 | Accept group invitation | `AcceptGroupInvitation` page | todo | Token from email |
+| S-024 | Accept invitation (generic) | `AcceptInvitation` page | todo | Token from email |
+
+---
+
+## Anonymous Flows (Phase 4)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| A-001 | Landing page (Home) | `Home` page | todo | Public, marketing |
+| A-002 | Login page | `Login` page | todo | Local + CAS |
+| A-003 | Registration page | `Registration` page | todo | `ALLOW_LOCAL_REGISTRATION` |
+| A-004 | Forgot password — request | `ResetPassword` page | todo | Email sent |
+| A-005 | Forgot password — change | `ChangePassword` page | todo | Token from email |
+| A-006 | Email verification | `EmailVerification` page | todo | Token from email |
+| A-007 | CAS login external finalization | `LoginExternFinalization` page | todo | Popup callback |
+| A-008 | Locale switch cs↔en | `langMiddleware` | todo | Persist in cookie |
+
+---
+
+## Teacher / Supervisor (Phase 5)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| T-001 | Create assignment from exercise | `EditAssignment` page | todo | Select exercise, deadlines, points |
+| T-002 | Edit assignment | `EditAssignment` page | todo | Deadlines, points, limits, visibility |
+| T-003 | Assignment solutions list | `AssignmentSolutions` page | todo | All submissions, filter, sort |
+| T-004 | Assignment stats | `stats` module | todo | Submitted count, average score |
+| T-005 | Group user solutions | `GroupUserSolutions` page | todo | Per-student drill-down |
+| T-006 | Points overview table | `groupResults` module | todo | Sortable, exportable |
+| T-007 | Points export (CSV/Excel) | `groupResults` module | todo | Download endpoint |
+| T-008 | Create/edit exercise | `EditExercise` page | todo | Basic settings, description |
+| T-009 | Exercise config editor | `EditExerciseConfig` page | todo | Pipeline config, variables — hardest screen |
+| T-010 | Exercise limits editor | `EditExerciseLimits` page | todo | Per-environment limits |
+| T-011 | Reference solutions | `ExerciseReferenceSolutions` page | todo | List, detail, evaluation |
+| T-012 | Exercise assignments | `ExerciseAssignments` page | todo | Assignments from this exercise |
+| T-013 | Pipeline list | `Pipelines` page | todo | Search, filter |
+| T-014 | Pipeline detail | `Pipeline` page | todo | Structure, boxes, variables |
+| T-015 | Pipeline editor | `EditPipeline` page | todo | Edit structure |
+| T-016 | Pipeline structure visual editor | `EditPipelineStructure` page | todo | Graphviz — decide approach |
+| T-017 | Group exam locks | `groupExamLocks` module | todo | Lock/unlock for exam mode |
+| T-018 | Group invitations management | `groupInvitations` module | todo | Send, revoke, list |
+| T-019 | Submission failures log | `SubmissionFailures` page | todo | Admin/teacher view |
+
+---
+
+## Admin (Phase 6)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| AD-001 | User list | `Users` page | todo | Search, filter, edit |
+| AD-002 | User detail | `User` page | todo | Info, groups, solutions, takeover |
+| AD-003 | User takeover | `userSwitching` module | todo | Superadmin switch to user |
+| AD-004 | Instance list | `Instances` page | todo | CRUD |
+| AD-005 | Instance edit | `EditInstance` page | todo | Settings, limits |
+| AD-006 | Server management | `ServerManagement` page | todo | Runtime environments, hardware groups |
+| AD-007 | System messages | `SystemMessages` page | todo | Broadcast to users |
+| AD-008 | Licences | `licences` module | todo | CRUD |
+
+---
+
+## Parity Sweep & Polish (Phase 7)
+
+| ID | Title | Inventory Rows | Status | Notes |
+|---|---|---|---|---|
+| P-001 | Feature parity check | All rows | todo | Walk INVENTORY.md top to bottom |
+| P-002 | Accessibility pass | All pages | todo | Keyboard, focus, ARIA, contrast |
+| P-003 | Performance pass | All pages | todo | Bundle size, waterfalls, over-fetching |
+| P-004 | cs/en review | All strings | todo | Native speaker review |
+| P-005 | README + deployment notes | — | todo | Fresh developer can start |
+| P-006 | `docs/ROUTES.md` — old→new mapping | All routes | todo | For redirect planning |
+| P-007 | `docs/DROPPED.md` — intentional omissions | Dropped items | todo | With justification |
+| P-008 | `docs/RETROSPECTIVE.md` | — | todo | §13 — cited from notes |
+
+---
+
+## Current Focus
+
+| ID | Title | Status |
+|---|---|---|
+| F-001 | Scaffold Next.js 16.3 repo | todo |
+
+---
+
+## Blocked
+
+| ID | Title | Reason |
+|---|---|---|
+| — | — | — |
+
+---
+
+## Dropped
+
+| ID | Title | Reason |
+|---|---|---|
+| — | — | See `DROPPED.md` |
