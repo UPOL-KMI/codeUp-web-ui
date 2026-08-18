@@ -623,11 +623,44 @@ dev`. Under the actual `output: standalone` container, the resulting `Location` 
     F-025's seed data, so there was no equivalent of F-019's "can't obtain a real signed token"
     gap here.
 
+- **[2026-08-18 13:35] F-021:** Auth BFF: restricted (application) token generation.
+  `app/api/auth/restricted-token/route.ts`, `POST /login/issue-restricted-token`. Before writing
+  anything, checked the legacy app for how this endpoint is actually used and found two genuinely
+  different consumers: `GenerateTokenForm.js` (a self-service "Generate Application Token" form
+  that displays the raw token for the user to copy into external scripts, doesn't touch the
+  current session) and `restrictEffectiveRole()` (a sidebar "view as role X" toggle that replaces
+  the current session with the narrower token). Scoped this ticket to only the first -- nothing in
+  this repo's docs had already committed to the effective-role-switch UX, so building it now would
+  be scope creep past what F-021 actually asks for; left as a future ticket for whenever the
+  sidebar/dashboard work needs it (it would just add its own `establishSession()` call on top of
+  this same route's response).
+  - _Deliberate exception to DEC-021:_ this route returns the raw generated token in its JSON
+    response body -- the one place in the whole auth module that hands client JS a real token.
+    DEC-021 ("client components never see the token") is about the BFF's own httpOnly session
+    cookie; this is a different, user-requested credential explicitly meant to leave the app, same
+    idea as a GitHub personal access token. Documented as DEC-043 so a future reader doesn't
+    mistake this for a leak.
+  - `scopes` is validated only as "a non-empty array of strings," not against a hardcoded copy of
+    core-api's `TokenScope` list -- core-api's own `validateScopeRoles()`/`validateEffectiveRole()`
+    already authoritatively reject forbidden scopes and unknown role names, and duplicating that
+    list here would just be one more thing to keep in sync (same reasoning DEC-042 used for
+    takeover's authorization).
+  - _Observations:_ Verified live in both `next dev` and a rebuilt Docker `standalone` container
+    against `alice.student@seed.recodex.local`: a `{scopes: ["read-all"], expiration: 3600}`
+    request returns a token whose decoded payload carries exactly `scopes: ["read-all"]` (not
+    `master`/`refresh`), and -- checked explicitly, not assumed -- the caller's own session cookie
+    is byte-for-byte unchanged before and after. Also verified core-api's own validation errors
+    forward correctly rather than getting swallowed: `change-password` scope gets its 403 ("can
+    only be issued through the password reset endpoint"), an unknown `effectiveRole` gets a 400,
+    and `master` scope with an expiration past the 1-week cap gets its own specific 403 message --
+    all three forwarded verbatim, not replaced with a generic error. No session gets 401; an empty
+    `scopes` array gets 400 from this route's own Zod check before ever reaching core-api.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-020, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-021, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-021 (Auth BFF: restricted token generation) -- `POST /login/issue-restricted-token`;
+- **Next ticket:** F-022 (Typed `server-only` API client) -- error normalisation, no user caching;
   per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
