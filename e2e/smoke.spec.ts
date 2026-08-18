@@ -7,36 +7,10 @@ import type { ConsoleMessage, Page, Request as PWRequest } from "@playwright/tes
 import { SEED_ACCOUNTS } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { PUBLIC_ROUTES, APP_ROUTES } from "./helpers/routes";
 import type { SessionCookie } from "./helpers/auth";
 
 const LOCALE = "en";
-
-// The 8 `(anon)` routes from app/[locale]/(anon)/ (F-013), reachable without a session; plus the
-// bare locale root (app/[locale]/page.tsx), also public per proxy.ts's PUBLIC_PATHNAMES (F-014).
-const PUBLIC_ROUTES = [
-  "",
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/forgot-password/change",
-  "/email-verification",
-  "/accept-invitation",
-  "/faq",
-];
-
-// The 10 `(app)` routes from app/[locale]/(app)/ (F-013), all requiring a session via proxy.ts.
-const APP_ROUTES = [
-  "/dashboard",
-  "/groups",
-  "/exercises",
-  "/pipelines",
-  "/profile",
-  "/submission-failures",
-  "/system-messages",
-  "/users",
-  "/admin",
-  "/archive",
-];
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "screenshots");
 fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });

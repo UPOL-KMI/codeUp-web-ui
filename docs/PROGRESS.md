@@ -750,12 +750,41 @@ build` + `next start`, not `next dev` -- dev mode's extra warnings aren't repres
     errors, failed requests, and unexpected 4xx/5xx, with a screenshot per route landing in the
     already-gitignored `screenshots/`.
 
+- **[2026-08-18 15:20] F-024:** Token-leakage security test, the brief's §8 "one security test,
+  non-negotiable": assert the auth cookie is httpOnly, and that the raw token appears nowhere in
+  served HTML or client bundles. `e2e/security.spec.ts`.
+  - Deliberately does **not** reuse F-023's login helper as-is: `loginAndGetCookie()` +
+    `context.addCookies({httpOnly: true, ...})` manually _sets_ `httpOnly` for rendering
+    convenience, so asserting on that cookie afterward would just check a flag this test itself
+    wrote -- a tautology. Uses `page.request.post()` directly instead, so Playwright parses the
+    real `Set-Cookie` header the server actually sent, flags included. Finds the session cookie
+    by diffing `context.cookies()` before/after login rather than assuming its name
+    (`SESSION_COOKIE_PREFIX` is deployment-configurable) or shape.
+  - Two tests: (1) the cookie's `httpOnly` flag is `true`, plus a follow-up check that
+    `document.cookie` genuinely can't see the value from inside the page's own JS -- the practical
+    consequence, not just the attribute; (2) the raw token string appears in neither the full
+    rendered HTML of any protected route nor any served JavaScript response body (captured via a
+    `page.on("response")` listener filtering on `content-type: .../javascript`).
+  - _Observations, the part worth calling out:_ Before trusting either assertion, deliberately
+    forced each to fail once and confirmed it actually did, rather than assuming a passing test on
+    the first try meant the check was real. Flipped the HTML assertion to check for the string
+    `"html"` (guaranteed present) -- it failed, with the full captured page source in the error
+    output, proving `page.content()` really is being inspected. Flipped the httpOnly assertion to
+    expect `false` -- it failed with `Received: true`, proving the real server-set cookie really
+    does carry the flag. Reverted both immediately afterward and reran the real assertions clean.
+    Given the brief's own "non-negotiable" framing, a security test that has never been observed
+    to fail is exactly the kind of thing that could be silently broken -- worth the extra few
+    minutes here specifically, more than most other tickets.
+  - Extracted `PUBLIC_ROUTES`/`APP_ROUTES` out of `smoke.spec.ts` into a shared
+    `e2e/helpers/routes.ts` now that this ticket gave them a second consumer.
+  - See DEC-046.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-023, F-025, F-026 done -- see `docs/BACKLOG.md` for the
-  full per-ticket table)
-- **Next ticket:** F-024 (Token-leakage security test) -- assert httpOnly cookie, no token in
-  HTML; per `docs/BACKLOG.md`.
+- **Phase:** Foundation complete (F-001 through F-026, all `done` -- see `docs/BACKLOG.md`'s
+  Foundation table). This is the first phase boundary crossed in this project.
+- **Next ticket:** D-001 (`PageShell` component), the first ticket of Design System (Phase 2) --
+  breadcrumbs, title, subtitle, actions, tabs; per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
