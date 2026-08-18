@@ -656,11 +656,57 @@ dev`. Under the actual `output: standalone` container, the resulting `Location` 
     all three forwarded verbatim, not replaced with a generic error. No session gets 401; an empty
     `scopes` array gets 400 from this route's own Zod check before ever reaching core-api.
 
+- **[2026-08-18 14:20] F-022:** Typed `server-only` API client. `lib/api/client.ts`, the
+  foundational piece every future data-fetching ticket builds on. Brief §4's own table says to
+  generate types from OpenAPI via `openapi-typescript` when available -- core-api has a real
+  `swagger.yaml` (`repos/api/docs/swagger.yaml`), so vendored a copy into this repo at
+  `openapi/core-api.yaml` (CI only checks out this repo, no cross-repo access, so codegen input
+  has to live here) and added a `pnpm generate:api-types` script producing
+  `lib/api/core-api.generated.ts`.
+  - Before committing to a design, actually inspected the generated output rather than assuming
+    the usual `openapi-fetch` combo (generated types + its typed-fetch runtime) was the right
+    move: core-api's `swagger.yaml` has **zero response schemas anywhere** -- confirmed directly,
+    all ~250 response definitions are literally `description: 'Placeholder response'`, no
+    `content`/`schema`, no `components.schemas` section at all in the 7409-line file. Request
+    bodies and path params _do_ generate real, useful shapes (confirmed for several endpoints --
+    `issue-restricted-token`'s generated `scopes: unknown[]` matches F-021's own hand-written Zod
+    schema exactly), but every response resolves to `never`. Since a caller has to supply the
+    real response type `T` by hand regardless (same as every auth route has already been doing),
+    `openapi-fetch`'s core value proposition doesn't apply -- skipped it, hand-wrote the client
+    instead, and typed only `path` against `keyof paths` (a genuine compile-time guarantee the
+    endpoint exists and is spelled right) while leaving `pathParams`/`query`/`body` as plain
+    `Record`/`unknown`.
+  - `openapi-typescript`'s peer range is `typescript: ^5.x`; this repo is pinned to `6.0.3`
+    (F-002's toolchain deviation). `pnpm add` and `pnpm peers check` both warn, but actually
+    running the codegen produces correct output regardless -- verified by running it, not assumed
+    safe from the warning alone.
+  - Normalizes core-api's fixed envelope (`{success, error: {message, code, parameters},
+payload}`, confirmed against `ApiErrorPresenter::sendErrorResponse()`) into an `ApiError`
+    class. `code` is deliberately the short string (`"403-002"`), not the PHP constant name --
+    confirmed by reading `FrontendErrorMappings.php`'s actual constant _values_, and matches
+    exactly what the legacy app's `apiErrorMessages.js` keys its own localised message table on.
+    That table itself isn't built by this ticket -- `code`/`parameters` are just correctly
+    surfaced and ready for whichever later ticket adds the next-intl equivalent.
+  - _Bug found and fixed live, not caught by typechecking:_ `API_BASE_INTERNAL` already includes
+    a `/v1` prefix (every existing auth route depends on this: `${apiBase}/login`), and every
+    generated `paths` key is _also_ `/v1`-prefixed from core-api's own root -- naive concatenation
+    silently produced a `/v1/v1/users/...` URL that 404s with a slightly misleading
+    `{code: "400-000", message: "Bad Request"}` (core-api's generic Nette-routing-exception
+    fallback, not the ACL/not-found error it looks like at a glance). Fixed by stripping the
+    leading `/v1` from the resolved path inside the client rather than touching what
+    `API_BASE_INTERNAL` means everywhere else. See DEC-044.
+  - _Observations:_ Verified live in both `next dev` and a rebuilt Docker `standalone` container
+    via a temporary debug route (not committed): a real `GET /v1/users/{id}` call for the caller's
+    own id, reached through `requireSession()` → `apiGet()`, returns the exact live payload
+    (matches a raw `curl` of the same endpoint, checked side by side); a syntactically valid but
+    nonexistent id correctly throws `ApiError` carrying core-api's real `httpStatus: 404`,
+    `code: "404-000"`, and message, not a generic failure.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-021, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-022, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-022 (Typed `server-only` API client) -- error normalisation, no user caching;
+- **Next ticket:** F-023 (Playwright harness skeleton) -- login + visit routes + fail on errors;
   per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
