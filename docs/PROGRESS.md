@@ -702,12 +702,60 @@ payload}`, confirmed against `ApiErrorPresenter::sendErrorResponse()`) into an `
     nonexistent id correctly throws `ApiError` carrying core-api's real `httpStatus: 404`,
     `code: "404-000"`, and message, not a generic failure.
 
+- **[2026-08-18 14:55] F-023:** Playwright smoke harness skeleton (brief §8's "main safety net").
+  `playwright.config.ts` + `e2e/{smoke.spec.ts, helpers/{accounts,auth,base-url}.ts}`.
+  - Checked `@next/playwright` (brief §4 mentions it for its `instant()` helper) before installing
+    it, rather than assuming it was a drop-in: its own published README states it requires Cache
+    Components, which this repo deliberately has off (DEF-001 -- essentially every byte here is
+    per-user and permission-dependent). Used plain `@playwright/test` instead.
+  - No login form exists yet (`/login` is still F-013's `PlaceholderPage`), so the harness logs in
+    via the real Auth BFF `POST /api/auth/login` (F-016) directly. Runs against a real `next
+build` + `next start`, not `next dev` -- dev mode's extra warnings aren't representative of
+    what ships, and DEC-039's `request.url` bug only ever reproduced in a production `standalone`
+    build. Confirmed (not assumed) that `next start` still loads `.env.local`
+    (`node_modules/next/dist/docs/.../environment-variables.md`: skipped only when
+    `NODE_ENV=test`), so it points at the same local core-api as every other verification step.
+  - _Three real bugs hit and fixed while building this:_
+    1. A first draft of the debug route used a leading-underscore directory
+       (`app/api/_debug-f022/`) and silently 404'd -- Next's private-folder convention excludes
+       `_`-prefixed segments from routing entirely. Same lesson as F-022's own verification;
+       renamed and moved on.
+    2. `test.use({storageState: path})` declared at `describe` scope turned out to silently
+       become the default for _any_ context Playwright creates within that scope -- reproduced
+       live with both `browser.newContext()` and `playwright.request.newContext()` called from
+       inside the very `beforeAll` meant to create that file, both throwing `ENOENT` reading it.
+       Not documented behaviour I could find in the bundled types; found by testing, not by
+       reading. Fixed by dropping `storageState` entirely: log in with a plain `fetch()` (no
+       Playwright context involved at all) and inject the resulting cookie into each test via
+       `context.addCookies()` in `beforeEach` instead.
+    3. Even after that fix, 3 of 48 tests failed intermittently with the _server's own_
+       `ConnectTimeoutError` to `recodex.local:80` -- the default CPU-core worker count (7, on
+       this machine) sent enough concurrent bcrypt-hashing logins to the local `docker compose`
+       stack's PHP-FPM pool to genuinely exceed core-api's own request handling capacity within
+       the fetch timeout. Confirmed via the Next.js server's own log output, and confirmed core-api
+       itself never logged a single non-200 during the same window -- the requests were queuing,
+       not failing, until the client gave up. Not a code bug; fixed with `workers: 2`, verified
+       stable across several repeated full runs afterward.
+  - Also found and fixed a Vitest/Playwright collision: Vitest's own default include glob matched
+    `e2e/smoke.spec.ts` and tried to run it as a unit test, failing immediately since
+    `test.describe()` refuses to run outside Playwright's own runner. Excluded `e2e/**` in
+    `vitest.config.ts`.
+  - **Deliberately not wired into CI** (`.github/workflows/ci.yml` unchanged): these tests need a
+    real, reachable core-api, and GitHub Actions' runner has neither one nor a way to stand one up
+    from this repo alone (core-api/mysql/etc. live in the separate `ReCOdex` compose repo). Meant
+    to be run locally (`pnpm test:e2e`) against a developer's own running stack. See DEC-045.
+  - _Observations:_ Final state, verified stable across repeated runs: 48/48 tests pass -- 8
+    anonymous public routes, plus 4 seeded personas (`docs/SEED_ACCOUNTS.md`) each visiting all
+    10 protected `(app)` routes with a real session cookie -- watching for console errors, page
+    errors, failed requests, and unexpected 4xx/5xx, with a screenshot per route landing in the
+    already-gitignored `screenshots/`.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-022, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-023, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-023 (Playwright harness skeleton) -- login + visit routes + fail on errors;
-  per `docs/BACKLOG.md`.
+- **Next ticket:** F-024 (Token-leakage security test) -- assert httpOnly cookie, no token in
+  HTML; per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
