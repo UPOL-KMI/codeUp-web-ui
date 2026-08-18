@@ -495,12 +495,42 @@ test-session/page.tsx`, deleted before this commit -- same pattern as F-012's th
     network (`http://api:80/v1`), not the dev-mode fallback URL. Every piece built across
     F-014/F-015/F-016 now demonstrably works together, not just in isolation.
 
+- **[2026-08-18 15:45] F-017:** Auth BFF: logout Route Handler. `app/api/auth/logout/route.ts` --
+  POST only (logout is a mutation; a GET-triggered logout is a CSRF footgun even if low-severity
+  here), clears the session cookie, 303s to `/login`. Confirmed first that core-api has no
+  logout/invalidate endpoint at all (only `/login`, `/login/refresh`, `/login/takeover` exist in
+  `docs/swagger.yaml`) and that the legacy app's own logout is a pure local Redux action with no
+  API call -- so this is correctly BFF-side only, nothing to tell core-api.
+  - _Observations:_ **Found and fixed a real, previously-invisible bug while verifying this in
+    Docker (not just `next dev`).** Built the redirect the same way every other redirect in this
+    codebase is built -- `new URL("/login", request.url)` -- and it worked perfectly in `next
+dev`. Under the actual `output: standalone` container, the resulting `Location` header pointed
+    at `http://0.0.0.0:3000/login`, the container's own internal bind address, not the address the
+    browser was actually using. Tracked it down with a temporary debug endpoint (not committed)
+    that echoed both `request.url` and the raw `Host` header side by side: `Host` was correct
+    (`localhost:3001`), `request.url` was not. `proxy.ts`'s `request.nextUrl` does not have this
+    problem (F-014's verification stands). Tried a relative `Location` header as a simpler
+    workaround -- also failed, `NextResponse.redirect()` throws `"Please use only absolute URLs"`
+    at runtime despite its parameter being typed to accept a plain string. Fixed properly: build
+    the absolute URL from `request.headers.get("host")` instead, same protocol-derivation as
+    F-016's `sessionCookieOptions()`. Recorded as DEC-039 with an explicit warning for later: any
+    future code building an absolute URL from `request.url` inside a Route Handler needs the same
+    re-verification against a real standalone build, not just `next dev` -- this is the third time
+    in this project a real behavioural gap has only shown up under the production build config
+    (after F-011's `@swc/helpers` tracing gap and F-012's `global-not-found` gap), which is
+    exactly the pattern the project's own habit of always testing standalone Docker builds, not
+    just `next dev`, exists to catch.
+  - _Observations:_ Verified the full round trip again after the fix, in both `next dev` and the
+    production compose container: login, confirm the cookie works, logout, confirm the `Set-Cookie`
+    correctly expires it (`Expires=Thu, 01 Jan 1970...`), confirm the redirect chain lands on the
+    real themed login page, confirm the protected route is blocked again afterward.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-016, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-017, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-017 (Auth BFF: logout Route Handler) -- clear the cookie, redirect; per
-  `docs/BACKLOG.md`.
+- **Next ticket:** F-018 (Auth BFF: token refresh in `proxy.ts`) -- the concurrent-refresh race
+  guard; per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
