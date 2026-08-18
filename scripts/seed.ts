@@ -31,7 +31,7 @@ class ApiError extends Error {}
 async function api<T>(
   method: string,
   path: string,
-  opts: { token?: string; body?: unknown } = {}
+  opts: { token?: string; body?: unknown } = {},
 ): Promise<T> {
   const headers: Record<string, string> = {};
   if (opts.token) headers.Authorization = `Bearer ${opts.token}`;
@@ -43,12 +43,19 @@ async function api<T>(
   const res = await fetch(`${API_BASE}${path}`, { method, headers, body });
   const json = await res.json();
   if (!res.ok || json.success === false) {
-    throw new ApiError(`${method} ${path} -> ${res.status}: ${json?.error?.message ?? JSON.stringify(json)}`);
+    throw new ApiError(
+      `${method} ${path} -> ${res.status}: ${json?.error?.message ?? JSON.stringify(json)}`,
+    );
   }
   return json.payload as T;
 }
 
-async function apiUpload(token: string, path: string, filename: string, content: string): Promise<{ id: string }> {
+async function apiUpload(
+  token: string,
+  path: string,
+  filename: string,
+  content: string,
+): Promise<{ id: string }> {
   const form = new FormData();
   form.append("file", new Blob([content], { type: "text/plain" }), filename);
   const res = await fetch(`${API_BASE}${path}`, {
@@ -58,7 +65,9 @@ async function apiUpload(token: string, path: string, filename: string, content:
   });
   const json = await res.json();
   if (!res.ok || json.success === false) {
-    throw new ApiError(`POST ${path} (upload) -> ${res.status}: ${json?.error?.message ?? JSON.stringify(json)}`);
+    throw new ApiError(
+      `POST ${path} (upload) -> ${res.status}: ${json?.error?.message ?? JSON.stringify(json)}`,
+    );
   }
   return json.payload as { id: string };
 }
@@ -91,7 +100,11 @@ interface SeedUserSpec {
 }
 
 /** Login if the account already exists (idempotent path), else register it fresh. */
-async function getOrCreateUser(adminToken: string, instanceId: string, spec: SeedUserSpec): Promise<AuthResult> {
+async function getOrCreateUser(
+  adminToken: string,
+  instanceId: string,
+  spec: SeedUserSpec,
+): Promise<AuthResult> {
   try {
     const existing = await login(spec.email, SEED_PASSWORD);
     log(`user exists, reused: ${spec.email}`);
@@ -103,20 +116,26 @@ async function getOrCreateUser(adminToken: string, instanceId: string, spec: See
   // LOCAL_REGISTRATION_ENABLED=false on this deployment (deliberate operator choice) means
   // this endpoint 403s for an unauthenticated caller -- it must be called as a privileged
   // (superadmin) user, see App\V1Module\Presenters\RegistrationPresenter::checkCreateAccount.
-  const created = await api<{ user: { id: string } | null; accessToken: string }>("POST", "/users", {
-    token: adminToken,
-    body: {
-      email: spec.email,
-      firstName: spec.firstName,
-      lastName: spec.lastName,
-      password: SEED_PASSWORD,
-      passwordConfirm: SEED_PASSWORD,
-      instanceId,
-      ignoreNameCollision: true,
+  const created = await api<{ user: { id: string } | null; accessToken: string }>(
+    "POST",
+    "/users",
+    {
+      token: adminToken,
+      body: {
+        email: spec.email,
+        firstName: spec.firstName,
+        lastName: spec.lastName,
+        password: SEED_PASSWORD,
+        passwordConfirm: SEED_PASSWORD,
+        instanceId,
+        ignoreNameCollision: true,
+      },
     },
-  });
+  );
   if (!created.user) {
-    throw new Error(`Registration of ${spec.email} returned no user (unexpected name collision response).`);
+    throw new Error(
+      `Registration of ${spec.email} returned no user (unexpected name collision response).`,
+    );
   }
   log(`user created: ${spec.email}`);
   return { token: created.accessToken, userId: created.user.id };
@@ -124,7 +143,9 @@ async function getOrCreateUser(adminToken: string, instanceId: string, spec: See
 
 async function ensureGlobalRole(adminToken: string, userId: string, role: SeedUserSpec["role"]) {
   if (!role || role === "student") return; // "student" is the API's own default for new accounts
-  const detail = await api<{ privateData: { role: string } }>("GET", `/users/${userId}`, { token: adminToken });
+  const detail = await api<{ privateData: { role: string } }>("GET", `/users/${userId}`, {
+    token: adminToken,
+  });
   if (detail.privateData.role === role) return;
   await api("POST", `/users/${userId}/role`, { token: adminToken, body: { role } });
   log(`role set: ${userId} -> ${role}`);
@@ -141,19 +162,23 @@ interface GroupRecord {
   privateData: { admins: string[]; supervisors: string[]; students: string[] };
 }
 
-async function findGroupByName(adminToken: string, instanceId: string, name: string): Promise<GroupRecord | null> {
+async function findGroupByName(
+  adminToken: string,
+  instanceId: string,
+  name: string,
+): Promise<GroupRecord | null> {
   const results = await api<GroupRecord[]>(
     "GET",
     `/groups?instanceId=${instanceId}&search=${encodeURIComponent(name)}&archived=true`,
-    { token: adminToken }
+    { token: adminToken },
   );
-  return results.find(g => g.localizedTexts.some(t => t.name === name)) ?? null;
+  return results.find((g) => g.localizedTexts.some((t) => t.name === name)) ?? null;
 }
 
 async function getOrCreateGroup(
   adminToken: string,
   instanceId: string,
-  opts: { name: string; parentGroupId?: string }
+  opts: { name: string; parentGroupId?: string },
 ): Promise<GroupRecord> {
   const existing = await findGroupByName(adminToken, instanceId, opts.name);
   if (existing) {
@@ -197,7 +222,7 @@ async function ensureGroupMember(
   adminToken: string,
   group: GroupRecord,
   userId: string,
-  type: "admin" | "supervisor" | "observer"
+  type: "admin" | "supervisor" | "observer",
 ) {
   const already = type === "admin" ? group.privateData.admins : group.privateData.supervisors;
   if (already.includes(userId)) return;
@@ -222,15 +247,25 @@ interface ExerciseRecord {
   id: string;
 }
 
-async function findExerciseByName(adminToken: string, name: string): Promise<ExerciseRecord | null> {
-  const results = await api<{ items: { name: string; id: string }[] }>("GET", "/exercises?limit=1000", {
-    token: adminToken,
-  });
-  const match = results.items.find(e => e.name === name);
+async function findExerciseByName(
+  adminToken: string,
+  name: string,
+): Promise<ExerciseRecord | null> {
+  const results = await api<{ items: { name: string; id: string }[] }>(
+    "GET",
+    "/exercises?limit=1000",
+    {
+      token: adminToken,
+    },
+  );
+  const match = results.items.find((e) => e.name === name);
   return match ? { id: match.id } : null;
 }
 
-async function getOrCreateBaseExercise(adminToken: string, ownerGroupId: string): Promise<ExerciseRecord> {
+async function getOrCreateBaseExercise(
+  adminToken: string,
+  ownerGroupId: string,
+): Promise<ExerciseRecord> {
   const existing = await findExerciseByName(adminToken, EXERCISE_NAME);
   if (existing) {
     log(`exercise exists, reused: ${EXERCISE_NAME}`);
@@ -243,7 +278,10 @@ async function getOrCreateBaseExercise(adminToken: string, ownerGroupId: string)
   });
   const id = exercise.id;
 
-  await api("POST", `/exercises/${id}/hardware-groups`, { token: adminToken, body: { hwGroups: [HW_GROUP_ID] } });
+  await api("POST", `/exercises/${id}/hardware-groups`, {
+    token: adminToken,
+    body: { hwGroups: [HW_GROUP_ID] },
+  });
   await api("POST", `/exercises/${id}/environment-configs`, {
     token: adminToken,
     body: { environmentConfigs: [{ runtimeEnvironmentId: "python3", variablesTable: [] }] },
@@ -279,17 +317,29 @@ async function getOrCreateBaseExercise(adminToken: string, ownerGroupId: string)
     },
   });
 
-  const expectedUpload = await apiUpload(adminToken, "/uploaded-files", "expected.txt", EXPECTED_OUTPUT);
-  await api("POST", `/exercises/${id}/files`, { token: adminToken, body: { files: [expectedUpload.id] } });
+  const expectedUpload = await apiUpload(
+    adminToken,
+    "/uploaded-files",
+    "expected.txt",
+    EXPECTED_OUTPUT,
+  );
+  await api("POST", `/exercises/${id}/files`, {
+    token: adminToken,
+    body: { files: [expectedUpload.id] },
+  });
 
   const variables = await api<{ variables: { name: string; type: string; value: unknown }[] }[]>(
     "POST",
     `/exercises/${id}/config/variables`,
-    { token: adminToken, body: { runtimeEnvironmentId: "python3", pipelinesIds: [PYTHON_STDOUT_PIPELINE_ID] } }
+    {
+      token: adminToken,
+      body: { runtimeEnvironmentId: "python3", pipelinesIds: [PYTHON_STDOUT_PIPELINE_ID] },
+    },
   );
   const firstVariableSet = variables[0];
-  if (!firstVariableSet) throw new Error("POST /exercises/{id}/config/variables returned no variable set.");
-  const varMap = new Map(firstVariableSet.variables.map(v => [v.name, v] as const));
+  if (!firstVariableSet)
+    throw new Error("POST /exercises/{id}/config/variables returned no variable set.");
+  const varMap = new Map(firstVariableSet.variables.map((v) => [v.name, v] as const));
   varMap.set("expected-output", { ...varMap.get("expected-output")!, value: "expected.txt" });
   varMap.set("judge-type", { ...varMap.get("judge-type")!, value: "recodex-judge-normal" });
   varMap.set("success-exit-codes", { ...varMap.get("success-exit-codes")!, value: ["0"] });
@@ -303,7 +353,9 @@ async function getOrCreateBaseExercise(adminToken: string, ownerGroupId: string)
           tests: [
             {
               name: testId,
-              pipelines: [{ name: PYTHON_STDOUT_PIPELINE_ID, variables: Array.from(varMap.values()) }],
+              pipelines: [
+                { name: PYTHON_STDOUT_PIPELINE_ID, variables: Array.from(varMap.values()) },
+              ],
             },
           ],
         },
@@ -313,13 +365,24 @@ async function getOrCreateBaseExercise(adminToken: string, ownerGroupId: string)
 
   await api("POST", `/exercises/${id}/limits`, {
     token: adminToken,
-    body: { limits: { [HW_GROUP_ID]: { python3: { [testId]: { memory: 65536, "wall-time": 5 } } } } },
+    body: {
+      limits: { [HW_GROUP_ID]: { python3: { [testId]: { memory: 65536, "wall-time": 5 } } } },
+    },
   });
 
-  const solutionUpload = await apiUpload(adminToken, "/uploaded-files", "solution.py", `print("${EXPECTED_OUTPUT.trim()}")\n`);
+  const solutionUpload = await apiUpload(
+    adminToken,
+    "/uploaded-files",
+    "solution.py",
+    `print("${EXPECTED_OUTPUT.trim()}")\n`,
+  );
   await api("POST", `/reference-solutions/exercise/${id}/submit`, {
     token: adminToken,
-    body: { note: `${SEED_PREFIX} reference solution`, files: [solutionUpload.id], runtimeEnvironmentId: "python3" },
+    body: {
+      note: `${SEED_PREFIX} reference solution`,
+      files: [solutionUpload.id],
+      runtimeEnvironmentId: "python3",
+    },
   });
 
   log(`exercise created: ${EXERCISE_NAME}`);
@@ -341,7 +404,7 @@ async function createAssignment(
   adminToken: string,
   exerciseId: string,
   groupId: string,
-  opts: { firstDeadlineDays: number; maxPoints: number; hint: string }
+  opts: { firstDeadlineDays: number; maxPoints: number; hint: string },
 ): Promise<AssignmentDetail> {
   const created = await api<AssignmentDetail>("POST", "/exercise-assignments", {
     token: adminToken,
@@ -377,16 +440,24 @@ async function createAssignment(
 async function findAssignmentsForExercise(
   adminToken: string,
   group: GroupRecord,
-  exerciseId: string
+  exerciseId: string,
 ): Promise<AssignmentDetail[]> {
-  const detail = await api<{ privateData: { assignments: string[] } }>("GET", `/groups/${group.id}`, {
-    token: adminToken,
-  });
+  const detail = await api<{ privateData: { assignments: string[] } }>(
+    "GET",
+    `/groups/${group.id}`,
+    {
+      token: adminToken,
+    },
+  );
   const result: AssignmentDetail[] = [];
   for (const id of detail.privateData.assignments) {
-    const a = await api<AssignmentDetail & { exerciseId: string }>("GET", `/exercise-assignments/${id}`, {
-      token: adminToken,
-    });
+    const a = await api<AssignmentDetail & { exerciseId: string }>(
+      "GET",
+      `/exercise-assignments/${id}`,
+      {
+        token: adminToken,
+      },
+    );
     if (a.exerciseId === exerciseId) result.push(a);
   }
   return result;
@@ -397,14 +468,14 @@ async function submitSolution(
   studentId: string,
   assignmentId: string,
   note: string,
-  code: string
+  code: string,
 ) {
   const existing = await api<{ note: string }[]>(
     "GET",
     `/exercise-assignments/${assignmentId}/users/${studentId}/solutions`,
-    { token: studentToken }
+    { token: studentToken },
   );
-  if (existing.some(s => s.note === note)) {
+  if (existing.some((s) => s.note === note)) {
     log(`solution already exists, skipping submit (${note})`);
     return;
   }
@@ -431,13 +502,19 @@ async function main() {
   const instanceId = firstInstance.id;
 
   // Groups -- G1 has a subgroup, G2 is archived, G3 exists purely to exercise pagination.
-  const g1 = await getOrCreateGroup(admin.token, instanceId, { name: `${SEED_PREFIX} Intro to Programming` });
+  const g1 = await getOrCreateGroup(admin.token, instanceId, {
+    name: `${SEED_PREFIX} Intro to Programming`,
+  });
   const g1a = await getOrCreateGroup(admin.token, instanceId, {
     name: `${SEED_PREFIX} Intro to Programming / Lab A`,
     parentGroupId: g1.id,
   });
-  const g2 = await getOrCreateGroup(admin.token, instanceId, { name: `${SEED_PREFIX} Retired Course` });
-  const g3 = await getOrCreateGroup(admin.token, instanceId, { name: `${SEED_PREFIX} Large Lecture` });
+  const g2 = await getOrCreateGroup(admin.token, instanceId, {
+    name: `${SEED_PREFIX} Retired Course`,
+  });
+  const g3 = await getOrCreateGroup(admin.token, instanceId, {
+    name: `${SEED_PREFIX} Large Lecture`,
+  });
 
   // Users -- one per role combination called for in the brief; admin@admin.com (superadmin)
   // is reused as-is, never duplicated.
@@ -490,14 +567,14 @@ async function main() {
     student1.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} correct`,
-    `print("${EXPECTED_OUTPUT.trim()}")\n`
+    `print("${EXPECTED_OUTPUT.trim()}")\n`,
   );
   await submitSolution(
     student1.token,
     student1.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} wrong`,
-    `print("Nope")\n`
+    `print("Nope")\n`,
   );
 
   if (!existingG1Assignments[1]) {
@@ -521,7 +598,8 @@ async function main() {
     fillerStudentIds.push(filler.userId);
   }
 
-  const existingFillerAssignments = (await findAssignmentsForExercise(admin.token, g3, exercise.id)).length;
+  const existingFillerAssignments = (await findAssignmentsForExercise(admin.token, g3, exercise.id))
+    .length;
   for (let i = existingFillerAssignments; i < FILLER_COUNT; i++) {
     await createAssignment(admin.token, exercise.id, g3.id, {
       firstDeadlineDays: 7 + i,
@@ -530,18 +608,20 @@ async function main() {
     });
   }
   if (existingFillerAssignments > 0) {
-    log(`${existingFillerAssignments}/${FILLER_COUNT} filler assignments already existed, topped up the rest`);
+    log(
+      `${existingFillerAssignments}/${FILLER_COUNT} filler assignments already existed, topped up the rest`,
+    );
   }
 
   log("done");
   log(
     "NOTE: this dev machine's isolate sandbox cannot run cgroup v1 (see ../ReCOdex/README.md) -- " +
       "submissions above will resolve to an infrastructure evaluation-failure state here, not genuine " +
-      "pass/fail. Re-verify pass/fail states on a cgroup v1 host (production, or a fixed local Docker config)."
+      "pass/fail. Re-verify pass/fail states on a cgroup v1 host (production, or a fixed local Docker config).",
   );
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });

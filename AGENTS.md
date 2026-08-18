@@ -13,7 +13,7 @@ Then work.
 ## 3. Hard constraints (never violate)
 
 1. **Do not modify the API, the legacy frontend, or any other ReCodEx repo.** All your writes go
-   into the new repo, plus one compose entry. (The running instance's *data* is fair game — brief
+   into the new repo, plus one compose entry. (The running instance's _data_ is fair game — brief
    §1.)
 
    **The compose file is a narrow, reviewed exception to "never block".** It is the one shared file
@@ -25,6 +25,7 @@ Then work.
    wait for an explicit go-ahead **on that file specifically**. This is the one deliberate exception
    to "never block" in this brief, and it is scoped to this file alone — everything else proceeds
    without waiting, per the "Never block" section below.
+
 2. **Do not invent endpoints.** Build only against what the API actually exposes. Verify via the
    API's OpenAPI/Swagger description if present; otherwise by reading the legacy `redux/modules` +
    `api` layer and observing real network traffic. If a screen needs an endpoint that doesn't
@@ -172,7 +173,7 @@ deprecated SIS integration page.
 - No narrative comments. No comments restating what the line does. No `// Phase 3` or
   `// as per brief §6`. No commented-out code.
 - No `TODO` / `FIXME` left behind. If something is unfinished, it is a ticket in `BACKLOG.md`.
-- Comments are for non-obvious *why*: a workaround for a specific API quirk, an ordering constraint
+- Comments are for non-obvious _why_: a workaround for a specific API quirk, an ordering constraint
   that isn't visible locally, a deliberate deviation. One or two lines. If you need a paragraph, it
   belongs in `DECISIONS.md` and the code gets a one-line pointer at most.
 - No changelog blocks, banner comments, or authorship headers in files.

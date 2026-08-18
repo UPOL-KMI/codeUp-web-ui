@@ -37,12 +37,12 @@ it cheap. Do not try to hold the project in your head.
 
 ## 1. What exists
 
-| Thing | Status |
-|---|---|
-| ReCodEx core-api | Running, working. **Read-only for you — never modify it.** |
-| Legacy frontend (`ReCodEx/web-app`) | Running, and checked out locally. Functional reference — this is "the spec". Read-only. |
-| The running instance's data | **Disposable.** See below. |
-| docker compose (all repos) | Exists. You add **one new service/folder** for this app. See "Integrate the same way everything else does" below. |
+| Thing                               | Status                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| ReCodEx core-api                    | Running, working. **Read-only for you — never modify it.**                                                        |
+| Legacy frontend (`ReCodEx/web-app`) | Running, and checked out locally. Functional reference — this is "the spec". Read-only.                           |
+| The running instance's data         | **Disposable.** See below.                                                                                        |
+| docker compose (all repos)          | Exists. You add **one new service/folder** for this app. See "Integrate the same way everything else does" below. |
 
 **Legacy stack, for context:** React 19.2, Redux Toolkit + `redux-form` + `immutable` +
 `redux-storage` + `redux-promise-middleware`, `react-bootstrap` 2.10 on AdminLTE 4, `react-intl` 10
@@ -77,7 +77,7 @@ later:
   `superadmin` (hierarchical — each inherits the ones below it).
 - **Per-group membership status** — independent of global role. Each group's API response carries
   its own `admins` / `supervisors` / `observers` / `students` arrays. "Group admin" is a membership
-  fact about *one specific group*, not a global role. A `supervisor`-role user can be admin of one
+  fact about _one specific group_, not a global role. A `supervisor`-role user can be admin of one
   group and merely a plain member of a different one, in the same account, at the same time — this
   is the normal case per §2, not an edge case, and your seed data must exercise it, not just
   mention it.
@@ -147,7 +147,7 @@ missing on many pages, navigation that assumes you already know where things liv
 that take too many clicks.
 
 **You are explicitly authorised to redesign the information architecture from scratch.** Do not
-reproduce the old navigation. Reproduce the old *capabilities*.
+reproduce the old navigation. Reproduce the old _capabilities_.
 
 Two audiences, both first-class:
 
@@ -167,7 +167,7 @@ case:
   data warrants. A pure student never sees a teaching section; a pure teacher never sees deadlines
   of their own. Neither needs a mode switch.
 - **Never partition the URL space by persona.** No `(student)` / `(teacher)` route groups. Routing
-  follows *context* — mostly the group — and what you can do inside a context comes from that
+  follows _context_ — mostly the group — and what you can do inside a context comes from that
   context's permissions. See §5.
 - Never ask the user "are you a student or a teacher?", and never derive UI from a global role name.
   See constraint 4 in §3.
@@ -177,7 +177,7 @@ case:
 ## 3. Hard constraints (never violate)
 
 1. **Do not modify the API, the legacy frontend, or any other ReCodEx repo.** All your writes go
-   into the new repo, plus one compose entry. (The running instance's *data* is fair game — §1.)
+   into the new repo, plus one compose entry. (The running instance's _data_ is fair game — §1.)
 
    **The compose file is a narrow, reviewed exception to "never block".** It is the one shared file
    you touch outside your own repo, and it already carries real, hard-won fixes (sandbox
@@ -188,6 +188,7 @@ case:
    wait for an explicit go-ahead **on that file specifically**. This is the one deliberate exception
    to "never block" in this brief, and it is scoped to this file alone — everything else proceeds
    without waiting, per §3's "Never block" section below.
+
 2. **Do not invent endpoints.** Build only against what the API actually exposes. Verify via the
    API's OpenAPI/Swagger description if present; otherwise by reading the legacy `redux/modules` +
    `api` layer and observing real network traffic. If a screen needs an endpoint that doesn't
@@ -257,32 +258,32 @@ write your own content around it.
 Two fallbacks: appending `.md` to any `nextjs.org/docs` URL returns Markdown, which is cheaper to
 read than HTML; and `/docs/llms.txt` is the docs index.
 
-| Concern | Choice |
-|---|---|
-| Framework | Next.js 16.3 App Router, TypeScript `strict: true` |
-| React | 19. React Compiler: leave **off** initially; enable only after measuring |
+| Concern         | Choice                                                                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework       | Next.js 16.3 App Router, TypeScript `strict: true`                                                                                                                                                              |
+| React           | 19. React Compiler: leave **off** initially; enable only after measuring                                                                                                                                        |
 | Package manager | **pnpm.** Its strict `node_modules` catches phantom dependencies, which matters for keeping the `server-only` boundary honest, and it layers well in Docker. Legacy uses yarn — irrelevant, this is a new repo. |
-| Node | 22 LTS. Pin in `.nvmrc`, `package.json#engines`, and the Dockerfile. |
-| TypeScript | **7.x**, so `next build` uses the native type checker. You will run `build` hundreds of times; this is a large cumulative saving. |
-| Styling | Tailwind CSS + shadcn/ui (components vendored into the repo) |
-| Icons | lucide-react |
-| Auth | httpOnly cookie + BFF — see §5 |
-| Server data | Server Components fetching core-api via a typed `server-only` client |
-| Client data | TanStack Query, **only** for genuinely client-driven cases, hitting Next Route Handlers — never core-api directly |
-| Mutations | Server Actions, Zod-validated on the server, then `revalidateTag` / `revalidatePath`. **Except file uploads — see §6.7.** |
-| Complex forms | React Hook Form + Zod (shared schema), submitting through a Server Action |
-| i18n | **next-intl** (App Router-native, works in Server Components). Migrate the legacy cs/en messages. |
-| Tables | TanStack Table, in client leaves |
-| Dates | date-fns + native `Intl`. **No moment.** |
-| Code editor | CodeMirror 6, client-only via `next/dynamic` |
-| Code display | Shiki, rendered server-side |
-| Graph rendering | See §7 — the pipeline visualiser needs a deliberate choice |
-| Markdown | react-markdown + remark-gfm + rehype-katex, server-side. **Compatibility risk — see §7.** |
-| API types | Generate from OpenAPI if available (`openapi-typescript`); otherwise hand-written types |
-| Unit tests | Vitest |
-| E2E | Playwright, plus `@next/playwright` for its `instant()` helper |
-| Lint/format | ESLint flat config + Prettier |
-| Container | `output: 'standalone'` |
+| Node            | 22 LTS. Pin in `.nvmrc`, `package.json#engines`, and the Dockerfile.                                                                                                                                            |
+| TypeScript      | **7.x**, so `next build` uses the native type checker. You will run `build` hundreds of times; this is a large cumulative saving.                                                                               |
+| Styling         | Tailwind CSS + shadcn/ui (components vendored into the repo)                                                                                                                                                    |
+| Icons           | lucide-react                                                                                                                                                                                                    |
+| Auth            | httpOnly cookie + BFF — see §5                                                                                                                                                                                  |
+| Server data     | Server Components fetching core-api via a typed `server-only` client                                                                                                                                            |
+| Client data     | TanStack Query, **only** for genuinely client-driven cases, hitting Next Route Handlers — never core-api directly                                                                                               |
+| Mutations       | Server Actions, Zod-validated on the server, then `revalidateTag` / `revalidatePath`. **Except file uploads — see §6.7.**                                                                                       |
+| Complex forms   | React Hook Form + Zod (shared schema), submitting through a Server Action                                                                                                                                       |
+| i18n            | **next-intl** (App Router-native, works in Server Components). Migrate the legacy cs/en messages.                                                                                                               |
+| Tables          | TanStack Table, in client leaves                                                                                                                                                                                |
+| Dates           | date-fns + native `Intl`. **No moment.**                                                                                                                                                                        |
+| Code editor     | CodeMirror 6, client-only via `next/dynamic`                                                                                                                                                                    |
+| Code display    | Shiki, rendered server-side                                                                                                                                                                                     |
+| Graph rendering | See §7 — the pipeline visualiser needs a deliberate choice                                                                                                                                                      |
+| Markdown        | react-markdown + remark-gfm + rehype-katex, server-side. **Compatibility risk — see §7.**                                                                                                                       |
+| API types       | Generate from OpenAPI if available (`openapi-typescript`); otherwise hand-written types                                                                                                                         |
+| Unit tests      | Vitest                                                                                                                                                                                                          |
+| E2E             | Playwright, plus `@next/playwright` for its `instant()` helper                                                                                                                                                  |
+| Lint/format     | ESLint flat config + Prettier                                                                                                                                                                                   |
+| Container       | `output: 'standalone'`                                                                                                                                                                                          |
 
 ### Turn on, deliberately
 
@@ -305,23 +306,23 @@ read than HTML; and `/docs/llms.txt` is the docs index.
 
 ### Runtime configuration
 
-The legacy app reads runtime config from `etc/env.json`. Reproduce the *behaviour* of these, all of
+The legacy app reads runtime config from `etc/env.json`. Reproduce the _behaviour_ of these, all of
 them, not just the obvious ones:
 
-| Legacy key | What to do |
-|---|---|
-| `API_BASE` | Server-side env var. **See the two-URL rule below.** |
-| `TITLE` | Server-side env var, used in metadata |
-| `SHORT_SESSION` | Not just a variable — a *behaviour*. Short sessions gate sensitive operations. Design how re-authentication works under httpOnly cookies (§5) rather than dropping it silently. |
-| `ALLOW_LOCAL_REGISTRATION` | Controls which registration forms exist. **This means registration flows exist — see §7.** |
-| `EXTERNAL_AUTH_URL`, `_SERVICE_ID`, `_NAME`, `_HELPDESK_URL` | CAS. `_NAME` is a localised object. `_HELPDESK_URL` appears when CAS registration fails — a real error path, not decoration. |
-| `ENVIRONMENTS_INFO_URL` | Outbound link from runtime-environment UI |
-| `PERSISTENT_TOKENS_KEY_PREFIX` | Legacy localStorage/cookie namespacing. Your equivalent is the cookie name prefix — keep it configurable so two instances can share a domain. |
-| `SKIN` | AdminLTE colour. Drop it; you have a proper theme system. Record in `DROPPED.md`. |
-| `URL_PATH_PREFIX` | See below. |
+| Legacy key                                                   | What to do                                                                                                                                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `API_BASE`                                                   | Server-side env var. **See the two-URL rule below.**                                                                                                                            |
+| `TITLE`                                                      | Server-side env var, used in metadata                                                                                                                                           |
+| `SHORT_SESSION`                                              | Not just a variable — a _behaviour_. Short sessions gate sensitive operations. Design how re-authentication works under httpOnly cookies (§5) rather than dropping it silently. |
+| `ALLOW_LOCAL_REGISTRATION`                                   | Controls which registration forms exist. **This means registration flows exist — see §7.**                                                                                      |
+| `EXTERNAL_AUTH_URL`, `_SERVICE_ID`, `_NAME`, `_HELPDESK_URL` | CAS. `_NAME` is a localised object. `_HELPDESK_URL` appears when CAS registration fails — a real error path, not decoration.                                                    |
+| `ENVIRONMENTS_INFO_URL`                                      | Outbound link from runtime-environment UI                                                                                                                                       |
+| `PERSISTENT_TOKENS_KEY_PREFIX`                               | Legacy localStorage/cookie namespacing. Your equivalent is the cookie name prefix — keep it configurable so two instances can share a domain.                                   |
+| `SKIN`                                                       | AdminLTE colour. Drop it; you have a proper theme system. Record in `DROPPED.md`.                                                                                               |
+| `URL_PATH_PREFIX`                                            | See below.                                                                                                                                                                      |
 
 **Two API URLs, not one.** Inside docker, your server-side fetches reach core-api on the internal
-service hostname; anything the *browser* touches (CAS redirect targets, any WebSocket) needs the
+service hostname; anything the _browser_ touches (CAS redirect targets, any WebSocket) needs the
 externally reachable URL. Use two variables (`API_BASE_INTERNAL`, `API_BASE_PUBLIC`) from the start.
 Conflating them is the single most common way a Next-in-compose setup works in dev and fails in the
 container.
@@ -347,7 +348,7 @@ The legacy app keeps a bearer JWT in localStorage. That cannot work with Server 
   serving plain HTTP locally. Write it as one helper, `sessionCookieOptions()`, used everywhere, so
   there is exactly one place this can be wrong.
 - **External auth (CAS)**: the redirect callback is a Route Handler that exchanges the ticket with
-  core-api and sets the same cookie. The callback URL must use the *public* base URL. Handle the
+  core-api and sets the same cookie. The callback URL must use the _public_ base URL. Handle the
   failure path — it has a dedicated helpdesk link in the legacy config.
 - **Server-side reads**: Server Components call a `server-only` API client that pulls the token from
   `cookies()` and sets the `Authorization` header.
@@ -389,7 +390,7 @@ app/
     profile/…
 ```
 
-What renders inside a group is a function of the permission hints the API returns for *that group*.
+What renders inside a group is a function of the permission hints the API returns for _that group_.
 Not of a route group. Not of a global role.
 
 ---
@@ -595,7 +596,7 @@ weakest:
   hardest screen in the product, heavily interactive, a client-component island by necessity, and
   containing the Graphviz problem from §7. Study it thoroughly before redesigning.
 - **Evaluation results**: test-by-test results, compilation logs, judge output, resource limits,
-  success exit codes. A student must understand *why* they failed at a glance. Evaluation is
+  success exit codes. A student must understand _why_ they failed at a glance. Evaluation is
   asynchronous — see §7 on how progress actually arrives.
 - **Solution review**: inline comments anchored to source lines, review open/close lifecycle. Note
   the tension: Shiki renders server-side, but per-line comment anchors and interaction are
@@ -689,7 +690,7 @@ the complete and unambiguous statement of what the app does, including the modal
 permission-gated buttons, empty states and error paths that a screenshot cannot show. Extract
 capabilities from the source into `INVENTORY.md` and treat that file as the parity contract.
 
-Screenshot the running app only when the source leaves the *behaviour* genuinely unclear, or when
+Screenshot the running app only when the source leaves the _behaviour_ genuinely unclear, or when
 you need to see how something is arranged before deciding where it goes. Screenshotting every
 screen up front is a poor trade — it is the most context-expensive thing you can do, it captures
 only the default state of each screen, and since the IA is being redesigned there is often no
@@ -732,7 +733,7 @@ clean tree and no memory of what you tried. Do not run git commands in any other
 - No narrative comments. No comments restating what the line does. No `// Phase 3` or
   `// as per brief §6`. No commented-out code.
 - No `TODO` / `FIXME` left behind. If something is unfinished, it is a ticket in `BACKLOG.md`.
-- Comments are for non-obvious *why*: a workaround for a specific API quirk, an ordering constraint
+- Comments are for non-obvious _why_: a workaround for a specific API quirk, an ordering constraint
   that isn't visible locally, a deliberate deviation. One or two lines. If you need a paragraph, it
   belongs in `DECISIONS.md` and the code gets a one-line pointer at most.
 - No changelog blocks, banner comments, or authorship headers in files.

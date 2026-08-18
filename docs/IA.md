@@ -9,8 +9,8 @@
 ## 1. Design Principles
 
 1. **Two audiences, one person.** A user can be a student in one group and a teacher in another. The UI never asks "are you a student or teacher?" — it derives capabilities from per-group permission hints returned by the API.
-2. **Context over persona.** Routing follows the *context* (group, assignment, solution), not the user's global role. No `(student)` or `(teacher)` route groups.
-3. **Dashboard is a landing pad, not a destination.** On login, the user sees *immediately* what requires their attention: upcoming deadlines (student) or unreviewed submissions (teacher). No unnecessary clicks.
+2. **Context over persona.** Routing follows the _context_ (group, assignment, solution), not the user's global role. No `(student)` or `(teacher)` route groups.
+3. **Dashboard is a landing pad, not a destination.** On login, the user sees _immediately_ what requires their attention: upcoming deadlines (student) or unreviewed submissions (teacher). No unnecessary clicks.
 4. **Breadcrumbs are mandatory.** Every page below the top level renders breadcrumbs from a central route manifest. This is a named complaint about the legacy app.
 5. **Deep-linkable everything.** Filters, tabs, pagination, and sort state live in `searchParams`. Sharing a URL reproduces the exact view.
 6. **Mobile-first responsive.** Students check deadlines on phones. The layout must work at 320px without horizontal scroll.
@@ -110,16 +110,16 @@
 
 ### 3.1 Primary Navigation (Sidebar)
 
-The sidebar is collapsible and shows *context-aware* navigation:
+The sidebar is collapsible and shows _context-aware_ navigation:
 
-| Section | Contents | Visibility |
-|---|---|---|
-| **Dashboard** | Home, Calendar | Always |
-| **My Groups** | Groups where I am a member (any role) | Always, if any |
-| **My Teaching** | Groups where I am supervisor/admin | Only if any exist |
-| **Exercises** | Exercise catalog, Pipelines | Always |
-| **People** | Users (my profile, search) | Always |
-| **Admin** | Server, Instances, System Messages, Archive | Only if `superadmin` or `empowered-supervisor` |
+| Section         | Contents                                    | Visibility                                     |
+| --------------- | ------------------------------------------- | ---------------------------------------------- |
+| **Dashboard**   | Home, Calendar                              | Always                                         |
+| **My Groups**   | Groups where I am a member (any role)       | Always, if any                                 |
+| **My Teaching** | Groups where I am supervisor/admin          | Only if any exist                              |
+| **Exercises**   | Exercise catalog, Pipelines                 | Always                                         |
+| **People**      | Users (my profile, search)                  | Always                                         |
+| **Admin**       | Server, Instances, System Messages, Archive | Only if `superadmin` or `empowered-supervisor` |
 
 **Note:** "My Groups" and "My Teaching" are not mutually exclusive. A user in both sees both sections. The API returns per-group membership arrays (`admins`, `supervisors`, `observers`, `students`), and the sidebar derives visibility from those arrays, not from the global role.
 
@@ -148,8 +148,8 @@ interface PageShellProps {
   title: string;
   subtitle?: string;
   breadcrumbs: BreadcrumbItem[];
-  actions?: React.ReactNode;      // primary + secondary actions
-  tabs?: React.ReactNode;         // optional tab navigation
+  actions?: React.ReactNode; // primary + secondary actions
+  tabs?: React.ReactNode; // optional tab navigation
   children: React.ReactNode;
 }
 ```
@@ -159,6 +159,7 @@ No page builds its own header. This ensures consistent layout, spacing, and resp
 ### 3.4 Command Palette (Cmd+K)
 
 A global command palette for jumping to:
+
 - Groups (by name)
 - Assignments (by name, within groups)
 - Exercises (by name)
@@ -175,11 +176,13 @@ Data source: `/api/search` (or equivalent) with debounced queries.
 The dashboard is the single most important screen. It answers two questions at once:
 
 **Student section (if any student memberships):**
+
 - "What do I owe?" — upcoming deadlines, sorted by urgency
 - "How am I doing?" — recent evaluations (passed/failed), points progress
 - "What can I submit?" — assignments open for submission
 
 **Teacher section (if any supervisor/admin memberships):**
+
 - "What needs my attention?" — unreviewed submissions, sorted by waiting time
 - "What's coming up?" — assignment deadlines (for planning)
 - "Recent activity" — new submissions, comments
@@ -191,6 +194,7 @@ Both sections are visible simultaneously if applicable. No mode switch. If only 
 ### 4.2 Group Detail (`/groups/[groupId]`)
 
 Tab-based navigation within the group:
+
 - **Info** — description, stats, announcements
 - **Assignments** — list with filters (all, open, closed, w/ submissions)
 - **Students** — roster, points overview, per-student drill-down
@@ -202,12 +206,14 @@ The tab state is stored in `searchParams` (`?tab=info|assignments|students|...`)
 ### 4.3 Assignment Detail (`/assignments/[id]`)
 
 **Student view:**
+
 - Description, deadlines, points
 - "Submit solution" button (if allowed)
 - My submissions list (with evaluation status)
 - "View evaluation" for each submission
 
 **Teacher view (if supervisor in this group):**
+
 - Same as student, plus:
 - "All submissions" link
 - "Edit assignment" button
@@ -216,6 +222,7 @@ The tab state is stored in `searchParams` (`?tab=info|assignments|students|...`)
 ### 4.4 Solution Detail (`/solutions/[id]`)
 
 Two-column layout:
+
 - **Left:** Evaluation result (test-by-test, compilation log, judge output)
 - **Right:** Source code with inline review comments
 
@@ -226,6 +233,7 @@ Live evaluation progress: TanStack Query polling (or WebSocket if monitor is run
 ### 4.5 Exercise Config Editor (`/exercises/[id]/edit-config`)
 
 This is the hardest screen. It combines:
+
 - Pipeline selection (from existing pipelines)
 - Variable mapping (exercise variables → pipeline inputs)
 - Per-environment configuration
@@ -239,41 +247,41 @@ This is the hardest screen. It combines:
 
 ```typescript
 const routeManifest: Record<string, RouteEntry> = {
-  '/': { label: 'Home', public: true },
-  '/login': { label: 'Log in', public: true },
-  '/register': { label: 'Register', public: true },
-  '/forgot-password': { label: 'Forgot password', public: true },
-  '/dashboard': { label: 'Dashboard' },
-  '/groups': { label: 'Groups' },
-  '/groups/[groupId]': {
+  "/": { label: "Home", public: true },
+  "/login": { label: "Log in", public: true },
+  "/register": { label: "Register", public: true },
+  "/forgot-password": { label: "Forgot password", public: true },
+  "/dashboard": { label: "Dashboard" },
+  "/groups": { label: "Groups" },
+  "/groups/[groupId]": {
     label: async (groupId) => fetchGroupName(groupId),
-    parent: '/groups'
+    parent: "/groups",
   },
-  '/groups/[groupId]/assignments': {
-    label: 'Assignments',
-    parent: '/groups/[groupId]'
+  "/groups/[groupId]/assignments": {
+    label: "Assignments",
+    parent: "/groups/[groupId]",
   },
-  '/assignments/[assignmentId]': {
+  "/assignments/[assignmentId]": {
     label: async (assignmentId) => fetchAssignmentName(assignmentId),
-    parent: async (assignmentId) => fetchAssignmentGroupPath(assignmentId)
+    parent: async (assignmentId) => fetchAssignmentGroupPath(assignmentId),
   },
-  '/solutions/[solutionId]': {
-    label: 'Solution',
-    parent: async (solutionId) => fetchSolutionAssignmentPath(solutionId)
+  "/solutions/[solutionId]": {
+    label: "Solution",
+    parent: async (solutionId) => fetchSolutionAssignmentPath(solutionId),
   },
-  '/exercises': { label: 'Exercises' },
-  '/exercises/[exerciseId]': {
+  "/exercises": { label: "Exercises" },
+  "/exercises/[exerciseId]": {
     label: async (exerciseId) => fetchExerciseName(exerciseId),
-    parent: '/exercises'
+    parent: "/exercises",
   },
-  '/pipelines': { label: 'Pipelines' },
-  '/pipelines/[pipelineId]': {
+  "/pipelines": { label: "Pipelines" },
+  "/pipelines/[pipelineId]": {
     label: async (pipelineId) => fetchPipelineName(pipelineId),
-    parent: '/pipelines'
+    parent: "/pipelines",
   },
-  '/admin': { label: 'Administration' },
-  '/admin/server': { label: 'Server Management', parent: '/admin' },
-  '/admin/instances': { label: 'Instances', parent: '/admin' },
+  "/admin": { label: "Administration" },
+  "/admin/server": { label: "Server Management", parent: "/admin" },
+  "/admin/instances": { label: "Instances", parent: "/admin" },
   // ... all routes in sitemap
 };
 ```
@@ -282,28 +290,28 @@ const routeManifest: Record<string, RouteEntry> = {
 
 ## 6. State Management Strategy
 
-| State Type | Location | Tool |
-|---|---|---|
-| **Auth** | httpOnly cookie | `proxy.ts` + Route Handlers |
-| **Server data (group, assignment, solution)** | Server Components | `server-only` API client |
-| **Filters, tabs, pagination** | URL `searchParams` | `useSearchParams` in client leaves |
-| **Form state** | Client components | React Hook Form + Zod |
-| **File upload progress** | Client components | Local state + Route Handler |
-| **Evaluation progress** | Client components | TanStack Query polling/WebSocket |
-| **Theme (dark/light)** | `localStorage` + cookie | `data-theme` attribute |
-| **Locale** | `params.lang` | `next-intl` |
+| State Type                                    | Location                | Tool                               |
+| --------------------------------------------- | ----------------------- | ---------------------------------- |
+| **Auth**                                      | httpOnly cookie         | `proxy.ts` + Route Handlers        |
+| **Server data (group, assignment, solution)** | Server Components       | `server-only` API client           |
+| **Filters, tabs, pagination**                 | URL `searchParams`      | `useSearchParams` in client leaves |
+| **Form state**                                | Client components       | React Hook Form + Zod              |
+| **File upload progress**                      | Client components       | Local state + Route Handler        |
+| **Evaluation progress**                       | Client components       | TanStack Query polling/WebSocket   |
+| **Theme (dark/light)**                        | `localStorage` + cookie | `data-theme` attribute             |
+| **Locale**                                    | `params.lang`           | `next-intl`                        |
 
 ---
 
 ## 7. Open Questions
 
-| Question | Assumption | Where Logged |
-|---|---|---|
-| Exact CAS callback URL structure | `/login/extern-finalization/:service` → `/api/auth/cas/callback` | `QUESTIONS.md` |
-| WebSocket URL for evaluation progress | `wss://<domain>/ws` (from compose proxy) | `QUESTIONS.md` |
-| Extension token handoff mechanism | Investigate legacy `SIS-ext-webapp` | `QUESTIONS.md` |
-| Markdown rendering compatibility | Test with real exercise texts | `QUESTIONS.md` |
-| SMTP config for email flows | Not configured; use `mail.debugMode` | `QUESTIONS.md` |
+| Question                              | Assumption                                                       | Where Logged   |
+| ------------------------------------- | ---------------------------------------------------------------- | -------------- |
+| Exact CAS callback URL structure      | `/login/extern-finalization/:service` → `/api/auth/cas/callback` | `QUESTIONS.md` |
+| WebSocket URL for evaluation progress | `wss://<domain>/ws` (from compose proxy)                         | `QUESTIONS.md` |
+| Extension token handoff mechanism     | Investigate legacy `SIS-ext-webapp`                              | `QUESTIONS.md` |
+| Markdown rendering compatibility      | Test with real exercise texts                                    | `QUESTIONS.md` |
+| SMTP config for email flows           | Not configured; use `mail.debugMode`                             | `QUESTIONS.md` |
 
 ---
 
