@@ -23,5 +23,59 @@
   "Error": {
     "title": "Something went wrong",
     "retry": "Try again"
+  },
+  "Placeholder": {
+    "comingSoon": "This page hasn't been built yet."
+  },
+  "Login": {
+    "title": "Sign in"
+  },
+  "Register": {
+    "title": "Create account"
+  },
+  "ForgotPassword": {
+    "title": "Reset password"
+  },
+  "ForgotPasswordChange": {
+    "title": "Change forgotten password"
+  },
+  "EmailVerification": {
+    "title": "Email verification"
+  },
+  "AcceptInvitation": {
+    "title": "Accept invitation"
+  },
+  "Faq": {
+    "title": "FAQ"
+  },
+  "Dashboard": {
+    "title": "Dashboard"
+  },
+  "Groups": {
+    "title": "Groups"
+  },
+  "Exercises": {
+    "title": "Exercises"
+  },
+  "Pipelines": {
+    "title": "Pipelines"
+  },
+  "Users": {
+    "title": "Users"
+  },
+  "SubmissionFailures": {
+    "title": "Submission failures"
+  },
+  "SystemMessages": {
+    "title": "System messages"
+  },
+  "Archive": {
+    "title": "Archive"
+  },
+  "Admin": {
+    "title": "Administration"
+  },
+  "Profile": {
+    "title": "Profile"
   }
 }

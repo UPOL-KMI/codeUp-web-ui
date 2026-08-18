@@ -23,5 +23,59 @@
   "Error": {
     "title": "Něco se pokazilo",
     "retry": "Zkusit znovu"
+  },
+  "Placeholder": {
+    "comingSoon": "Tato stránka zatím nebyla vytvořena."
+  },
+  "Login": {
+    "title": "Přihlásit se"
+  },
+  "Register": {
+    "title": "Zaregistrovat se"
+  },
+  "ForgotPassword": {
+    "title": "Resetování hesla"
+  },
+  "ForgotPasswordChange": {
+    "title": "Změna zapomenutého hesla"
+  },
+  "EmailVerification": {
+    "title": "Ověření e-mailu"
+  },
+  "AcceptInvitation": {
+    "title": "Přijmout pozvání"
+  },
+  "Faq": {
+    "title": "FAQ"
+  },
+  "Dashboard": {
+    "title": "Přehled"
+  },
+  "Groups": {
+    "title": "Skupiny"
+  },
+  "Exercises": {
+    "title": "Úlohy"
+  },
+  "Pipelines": {
+    "title": "Pipeline"
+  },
+  "Users": {
+    "title": "Uživatelé"
+  },
+  "SubmissionFailures": {
+    "title": "Neúspěšná odevzdání"
+  },
+  "SystemMessages": {
+    "title": "Systémové zprávy"
+  },
+  "Archive": {
+    "title": "Archiv"
+  },
+  "Admin": {
+    "title": "Administrátor"
+  },
+  "Profile": {
+    "title": "Profil"
   }
 }

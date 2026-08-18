@@ -392,13 +392,37 @@ dev` working wasn't treated as sufficient evidence on its own. All three agreed.
 build` + `docker run` against the production standalone container. Deleted the test routes
     before committing; nothing test-only shipped.
 
+- **[2026-08-18 12:50] F-013:** Route skeleton with layouts. `(anon)`/`(app)` route groups under
+  `app/[locale]/...` (confirmed in the build output that groups don't add a URL segment --
+  `/[locale]/dashboard`, never `/[locale]/(app)/dashboard`). Scoped to the 16 top-level static
+  routes named directly in `docs/IA.md`'s sitemap (7 anon: login, register, forgot-password [+
+  change], email-verification, accept-invitation, faq; 9 app: dashboard, groups, exercises,
+  pipelines, users, submission-failures, system-messages, archive, admin, profile) -- every
+  dynamic segment (`/groups/[groupId]`, `/exercises/[id]/edit-config`, ...) deliberately deferred
+  to the S-/T-/A-/AD- ticket that will build real data-fetching against it, see DEC-035.
+  - _Observations:_ Each stub renders a new shared `components/placeholder-page.tsx` with its own
+    translated title. Sourced the Czech titles from the legacy app's actual sidebar/page-title
+    strings (`repos/web-app/src/locales/{en,cs}.json`) rather than translating them myself --
+    caught a real mismatch this way: "Exercises" is legacy `app.sidebar.menu.exercises` = "Úlohy",
+    not the more literal "Cvičení" a from-scratch guess would likely have produced. Also confirmed
+    "Administration" → "Administrátor" (not the more obvious "Administrace") and "Pipelines" →
+    "Pipeline" (singular Czech form used as the word itself) this way.
+  - _Observations:_ Both route-group `layout.tsx` files are deliberate passthroughs
+    (`<div>{children}</div>`) with a comment naming the ticket that replaces them -- D-series for
+    the real sidebar/PageShell chrome, F-015 for the actual `(app)` access check. Not pre-built
+    speculatively.
+  - _Observations:_ Verified the same three ways as F-011/F-012: `next build`'s route list (all 16
+    routes present, correctly un-prefixed by the route groups), a live `next dev` session (status
+    code + actual translated text, not just "renders something," for a sample across both
+    locales), and a full `docker build` + `docker run` against the production standalone
+    container.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-012, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-013, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-013 (Route skeleton with layouts) -- `(anon)` and `(app)` route groups (not
-  persona-based -- see DEC-015, this is anonymous-vs-authenticated, a different axis), per
-  `docs/BACKLOG.md`.
+- **Next ticket:** F-014 (`proxy.ts` for auth UX redirect) -- NOT a security boundary (brief §6.1);
+  per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
