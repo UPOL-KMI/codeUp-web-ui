@@ -594,11 +594,41 @@ dev`. Under the actual `output: standalone` container, the resulting `Location` 
     CUNI-specific `/login/extern-finalization/:service` → `/api/auth/cas/callback` shape before any
     of this was actually investigated.
 
+- **[2026-08-18 13:05] F-020:** Auth BFF: user takeover, superadmin only.
+  `app/api/auth/takeover/[userId]/route.ts`, a `POST` mirroring core-api's own
+  `POST /v1/login/takeover/{userId}` 1:1 (`[userId]` path segment, not a body field -- same
+  reasoning as F-019's `[authenticatorName]`). Response shape matches login and the external
+  callback (`{payload: {accessToken, user}}`), so it reuses the same `establishSession()`. This
+  route enforces exactly one thing itself -- that some caller session exists (401 if not) -- and
+  forwards it as `Authorization: Bearer <token>`; whether _that_ caller may take over _this_ target
+  is entirely core-api's decision, confirmed directly in `repos/api/app/config/permissions.neon`
+  rather than assumed from BACKLOG.md's "Superadmin only" note: `takeOver` is allowed only for
+  `role: superadmin`, with an explicit `allow: false` catch-all underneath specifically to stop a
+  wildcard rule from accidentally granting it to anyone else. A non-superadmin's attempt surfaces
+  as a JSON 403, not a redirect to `/login` -- deliberately different from the no-session case,
+  since the caller _is_ legitimately logged in here, just not allowed to do this one thing. See
+  DEC-042.
+  - _Observations:_ Verified live end-to-end against the real seeded accounts
+    (`docs/SEED_ACCOUNTS.md`), in both `next dev` and a rebuilt Docker `standalone` container, by
+    decoding the resulting session cookie's JWT after each call rather than just checking HTTP
+    status: superadmin (`admin@admin.com`) taking over `alice.student@seed.recodex.local` produces
+    a `200` whose new session cookie's `sub` claim is genuinely alice's user id, not just a
+    plausible-looking success response; the same student attempting to take over the superadmin
+    gets a `403` with core-api's own "Access denied" message; no session cookie at all gets a `401`
+    before any core-api call is even made; a syntactically invalid `userId` gets a `400` from this
+    route's own `z.uuid()` check, also before reaching core-api; a well-formed but nonexistent
+    `userId` gets a `404` forwarded straight from core-api.
+  - _Observations:_ Unlike F-019, this ticket's real end-to-end success path (not just the code
+    reuse) is fully verifiable in this environment -- both accounts involved already exist from
+    F-025's seed data, so there was no equivalent of F-019's "can't obtain a real signed token"
+    gap here.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-019, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-020, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-020 (Auth BFF: user takeover) -- superadmin only; per `docs/BACKLOG.md`.
+- **Next ticket:** F-021 (Auth BFF: restricted token generation) -- `POST /login/issue-restricted-token`;
+  per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
