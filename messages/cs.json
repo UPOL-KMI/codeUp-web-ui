@@ -4,5 +4,24 @@
   },
   "HomePage": {
     "title": "ReCodEx"
+  },
+  "NotFound": {
+    "title": "Stránka nenalezena",
+    "description": "Stránka, kterou hledáte, neexistuje.",
+    "homeLink": "Zpět na hlavní stránku"
+  },
+  "Forbidden": {
+    "title": "Přístup odepřen",
+    "description": "Nemáte oprávnění k přístupu k tomuto zdroji.",
+    "homeLink": "Zpět na hlavní stránku"
+  },
+  "Unauthorized": {
+    "title": "Vyžadováno přihlášení",
+    "description": "Pro pokračování se prosím přihlaste.",
+    "homeLink": "Zpět na hlavní stránku"
+  },
+  "Error": {
+    "title": "Něco se pokazilo",
+    "retry": "Zkusit znovu"
   }
 }

@@ -4,5 +4,24 @@
   },
   "HomePage": {
     "title": "ReCodEx"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist.",
+    "homeLink": "Go home"
+  },
+  "Forbidden": {
+    "title": "Forbidden",
+    "description": "You don't have permission to access this resource.",
+    "homeLink": "Go home"
+  },
+  "Unauthorized": {
+    "title": "Sign-in required",
+    "description": "Please sign in to continue.",
+    "homeLink": "Go home"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "retry": "Try again"
   }
 }

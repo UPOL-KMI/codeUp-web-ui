@@ -39,6 +39,21 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/**": ["./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**"],
   },
+
+  experimental: {
+    // Enables forbidden()/unauthorized() + forbidden.tsx/unauthorized.tsx (still
+    // experimental as of 16.3.1, but there's no non-experimental way to get a real
+    // 403/401 status code from the App Router, and ReCodEx is permission-heavy
+    // throughout -- see docs/DECISIONS.md.
+    authInterrupts: true,
+    // Root layout (app/[locale]/layout.tsx) uses a top-level dynamic segment, which Next's
+    // own docs call out as exactly the case app/[locale]/not-found.tsx can't fully cover --
+    // confirmed live: a bogus path under a valid locale prefix fell through to Next's bare
+    // built-in 404, not the themed one. global-not-found.tsx (app/ root) catches genuinely
+    // unmatched URLs; [locale]/not-found.tsx still handles notFound() thrown from within an
+    // actually-matched segment. See docs/DECISIONS.md.
+    globalNotFound: true,
+  },
 };
 
 export default withNextIntl(nextConfig);

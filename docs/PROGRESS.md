@@ -360,12 +360,45 @@ dev` working wasn't treated as sufficient evidence on its own. All three agreed.
     third-party code, so treated the same as the `esbuild`/`unrs-resolver` approvals F-001 already
     had.
 
+- **[2026-08-18 12:05] F-012:** Error/not-found/forbidden conventions.
+  `app/[locale]/{error,not-found,forbidden,unauthorized}.tsx` +
+  `app/{global-error,global-not-found}.tsx`. Checked the bundled docs first rather than building
+  from memory (brief §6 footgun 8's "Since 16.3" framing was the tell that this needed
+  verification): `error.tsx`'s `retry` prop has been stable since 16.3.0 and already gives
+  route-segment boundaries the same re-fetch-and-re-render recovery `catchError` provides -- the
+  docs' own "Good to know" says as much. `catchError` is for component-level boundaries not tied
+  to a route segment; none exist yet, so not used. `forbidden()`/`unauthorized()` are marked
+  `experimental` in the docs and need `experimental.authInterrupts` in `next.config.ts` -- enabled
+  it anyway, since there's no non-experimental way to get a real 403/401 in the App Router and
+  ReCodEx is permission-heavy throughout.
+  - _Observations:_ **A real surprise found only by testing, not by reading:** hit a bogus URL
+    under a valid locale prefix (`/en/bogus-path`) expecting `app/[locale]/not-found.tsx` to
+    render -- instead got Next's bare, unthemed built-in 404. The bundled `not-found.js` doc
+    explains exactly why: a root layout on a top-level dynamic segment (`app/[locale]/layout.tsx`,
+    from F-011) "makes composing a consistent 404 page harder," and names `global-not-found.tsx`
+    (also experimental, `experimental.globalNotFound`) as the fix. Added it, re-ran the same
+    request, got the themed page. Worth remembering: this class of bug -- the _common_ case
+    working differently from the _documented_ case -- doesn't show up in `next build` or
+    `tsc`, only in an actual request.
+  - _Observations:_ `app/global-error.tsx` and `app/global-not-found.tsx` both bypass the
+    `[locale]` tree entirely (no next-intl context, no theme provider -- confirmed in the docs, not
+    assumed), so both use hardcoded bilingual (en/cs together) text. This is the one deliberate,
+    narrow exception to "no hardcoded user-facing strings": these two pages are exactly where the
+    normal i18n machinery itself may be what just failed, or may never have loaded.
+  - _Observations:_ Verified all four states for real: added temporary test routes calling
+    `forbidden()`, `unauthorized()`, and throwing a plain `Error`, plus a genuinely bogus URL and
+    an invalid-locale URL -- checked both the HTTP status (403/401/500/404) and the actual rendered
+    text (translated, not just present) for each, in a live `next dev` session and a full `docker
+build` + `docker run` against the production standalone container. Deleted the test routes
+    before committing; nothing test-only shipped.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-011, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-012, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-012 (Error/not-found/forbidden conventions) -- `catchError` from `next/error`,
-  per `docs/BACKLOG.md`.
+- **Next ticket:** F-013 (Route skeleton with layouts) -- `(anon)` and `(app)` route groups (not
+  persona-based -- see DEC-015, this is anonymous-vs-authenticated, a different axis), per
+  `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
