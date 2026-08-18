@@ -28,7 +28,7 @@
 | F-005 | CI pipeline (GitHub Actions) | — | done | `.github/workflows/ci.yml`: `typecheck`, `lint`, `build`, `test`, via `corepack enable` (matches Dockerfile, not `actions/setup-pnpm`). Added `vitest.config.ts` (`passWithNoTests: true` — no tests exist yet, F-023/F-024 land the harness) and `"type": "module"` to `package.json` (silenced a real Vite config-loader warning, not just cosmetic). All four steps verified locally, including `build` with `.env.local` removed to simulate CI's actual environment. |
 | F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
 | F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | done | Already landed as part of F-003: `Dockerfile`'s `ARG URL_PATH_PREFIX` + `next.config.ts`'s `basePath`. Build-time limitation documented in `DROPPED.md`. Noticed and closed out while updating this table for F-025, not separately implemented. |
-| F-008 | Turbopack filesystem cache for builds | — | todo | Verify active with `next build --debug` |
+| F-008 | Turbopack filesystem cache for builds | — | done | `turbopackFileSystemCacheForBuild` defaults to `true` (confirmed in `node_modules/next/dist/server/config-shared.d.ts`'s default-config export) — no `next.config.ts` change needed. Verified for real, not just from the default: `.next/cache/turbopack/v16.3.1-*/` is populated with real cache files (SST/LOG/CURRENT) after a build, and a warm second build compiles in 254ms vs. 1673ms cold — ~6.5x. |
 | F-009 | Turbopack memory eviction in dev | — | todo | Verify with `next dev` long-running |
 | F-010 | Theme tokens (dark/light) | `config.js` SKIN | todo | CSS custom properties, no hardcoded colors |
 | F-011 | i18n: next-intl with cs/en | `locales/` | todo | Migrate legacy messages |
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-008 | Turbopack filesystem cache for builds | todo |
+| F-009 | Turbopack memory eviction in dev | todo |
 
 ---
 

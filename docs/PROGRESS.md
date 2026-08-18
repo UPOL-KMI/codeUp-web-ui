@@ -267,12 +267,19 @@
     `next.config.ts`'s `basePath`, and `DROPPED.md` already documents the build-time limitation).
     Marked done rather than left as a stale `todo` for finished work.
 
+- **[2026-08-18 09:15] F-008:** Turbopack filesystem cache for builds. No config change --
+  `turbopackFileSystemCacheForBuild` defaults to `true` (checked the actual default-config export
+  in `node_modules/next/dist/server/config-shared.d.ts`, not just the doc comment). Verified it's
+  really active, not just nominally on: ran `rm -rf .next` then two consecutive `next build` runs
+  -- `.next/cache/turbopack/v16.3.1-*/` filled with real SST/LOG/CURRENT files after the first, and
+  the second build's "Compiled successfully" step dropped from 1673ms to 254ms (~6.5x).
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-007, F-025, F-026 done — see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-008, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-008 (Turbopack filesystem cache for builds) — verify active with
-  `next build --debug`, per `docs/BACKLOG.md`.
+- **Next ticket:** F-009 (Turbopack memory eviction in dev) -- verify with a long-running
+  `next dev` session, per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
