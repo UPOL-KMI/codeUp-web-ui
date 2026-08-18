@@ -444,12 +444,34 @@ build` + `docker run` against the production standalone container -- proxy/middl
     under `output: standalone` already had one real history of subtle breakage in this project
     (F-011's DEC-033), so `next dev` alone wasn't trusted again here either.
 
+- **[2026-08-18 14:10] F-015:** `requireSession()` server-side guard -- the actual authorisation
+  boundary (brief §5). `lib/auth/require-session.ts` reads the session cookie, decodes its JWT
+  payload (no library needed -- just `Buffer.from(part, "base64url")` + `JSON.parse`, and no
+  signature verification, since core-api is the only authority that matters), checks `exp`, and
+  redirects to `/login` if anything's wrong. Grounded the JWT shape in a **real token from an
+  actual login** (the compose stack is still running from F-025) rather than assuming one: `sub`
+  is the user UUID, `exp`/`iat`/`nbf` are the expected Unix-seconds claims, plus `effrole` (null
+  normally) and `scopes: ["master","refresh"]` -- both useful groundwork for F-021/F-018 later.
+  - _Observations:_ Deliberately **not** wired into `(app)/layout.tsx`. Brief §5 spells this out:
+    "Every function that touches core-api calls `requireSession()` itself. Not the caller. Not
+    the page. Not the layout. Itself." A layout-level gate would recreate exactly the kind of
+    single-choke-point risk the brief spent a paragraph warning about for `proxy.ts`. This means
+    F-015 currently has no real call site -- none of F-013's stub pages touch core-api yet, so
+    there's nothing to guard until F-022's typed API client and real data-fetching functions land.
+  - _Observations:_ Verified anyway, live, via a temporary test route (`app/[locale]/(app)/
+test-session/page.tsx`, deleted before this commit -- same pattern as F-012's throwaway
+    forbidden/unauthorized/error routes): no cookie (caught upstream by `proxy.ts`, confirming the
+    two layers compose correctly), a real valid JWT copied from an actual `docker` login (returned
+    the correct `{token, userId}`), a JWT-shaped-but-deliberately-expired token (redirected), and
+    a garbage non-JWT cookie value (redirected). The expired and malformed cases are the ones that
+    actually prove this function does something `proxy.ts`'s shallow presence check doesn't.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-014, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-015, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-015 (`requireSession()` server-side guard) -- the actual authorisation
-  boundary (brief §5), called by every function that touches core-api; per `docs/BACKLOG.md`.
+- **Next ticket:** F-016 (Auth BFF: login Route Handler) -- httpOnly cookie, conditional `secure`
+  flag via a shared `sessionCookieOptions()` helper (brief §5); per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
