@@ -909,13 +909,55 @@ getCoreRowModel: getCoreRowModel()})` API the brief's phrasing almost certainly 
     evaluate the then-current TanStack Table on its own merits rather than this decision reaching
     backward for an old version now.
 
+- **[2026-08-18 17:20] D-004:** Form kit on Server Actions. `lib/forms/{action-result,
+use-server-action-form, use-dirty-guard}.ts`, `components/form/{text-field, form-error}.tsx`.
+  Brief §4/§9/§10: "React Hook Form + Zod (shared schema), submitting through a Server Action";
+  BACKLOG.md D-004: "field, error surfacing, pending state, dirty guard". Checked
+  `react-hook-form@7.85.0`/`@hookform/resolvers@5.9.1` compatibility first, with D-003's TanStack
+  Table lesson still fresh -- both installed cleanly with no version surprises this time.
+  - `useServerActionForm()` wires `useForm` to a Zod schema via `zodResolver`, then calls the
+    given Server Action **directly as a function** from `handleSubmit`'s callback rather than via
+    Next's native `<form action={serverAction}>`/`useActionState` pattern -- RHF already owns
+    submission (validation, dirty tracking, its own `handleSubmit`), so the two models would
+    conflict over the same submit event. The action dispatch itself is wrapped in
+    `startTransition`, per Next's own bundled forms guide, since it's invoked outside
+    `<form action>`. Server-side failures map onto RHF's own error model: `fieldErrors` become
+    per-field `form.setError()` calls, `formError` becomes RHF's `root` pseudo-field (confirmed
+    genuinely supported by reading `react-hook-form/dist/types/errors.d.ts`, not invented for this
+    ticket).
+  - `TextField` covers text-shaped inputs only (text/email/password/number/search); other shapes
+    deliberately left for whichever ticket first needs one, same "don't build speculatively"
+    reasoning as D-002's deferred dynamic breadcrumb resolvers.
+  - `useDirtyGuard` covers `beforeunload` (full page unload/refresh/tab-close) only. Checked the
+    bundled Next.js docs for an in-app navigation-blocking primitive (the App Router equivalent of
+    React Router's `useBlocker`) before deciding to skip it, rather than assuming it doesn't exist
+    -- found none as of 16.3. Documented as a real, checked gap rather than papered over with a
+    fragile custom Link-click interceptor that would need to independently rediscover every way a
+    navigation can start.
+  - _One real bug, the same category as D-002/D-003's:_ a first version defined the Zod schema in
+    the same file as the `"use server"` action (natural, given "shared schema"). This produced a
+    genuine runtime error -- `zodResolver` throwing "Invalid input: not a Zod schema" -- because a
+    `"use server"` file's compiler pass only handles (async) function exports; the co-located
+    schema silently becomes something else by the time the client imports it. Fixed by moving the
+    schema into its own plain module, imported by both the client form and the action file, and
+    documented prominently in `use-server-action-form.ts`'s own doc comment so this doesn't get
+    rediscovered the same way next time.
+  - _Observations:_ Verified live in both `next dev` and a rebuilt Docker `standalone` container
+    (given D-002/D-003's pattern of Docker-only failures, checked there specifically rather than
+    assuming `next dev` success would carry over) via a real demo Server Action exercising all
+    four paths in one flow: client-side Zod validation (empty submit shows a field error, no
+    server round trip); a server-only field error a client schema alone couldn't produce; a
+    server-only form-level (`root`) error; a success path; and the dirty-guard's tracked state
+    genuinely flipping from clean to dirty on input.
+  - See DEC-051.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001, D-002, D-003 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-004 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-004 (Form kit on Server Actions) -- React Hook Form + Zod, pending state,
-  dirty guard; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap
-  -- still `todo`, not blocking D-004.)
+- **Next ticket:** D-005 (Upload component, Route Handler) -- streaming, progress, 512 MiB
+  ceiling; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
+  still `todo`, not blocking D-005.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
