@@ -274,12 +274,27 @@
   -- `.next/cache/turbopack/v16.3.1-*/` filled with real SST/LOG/CURRENT files after the first, and
   the second build's "Compiled successfully" step dropped from 1673ms to 254ms (~6.5x).
 
+- **[2026-08-18 09:40] F-009:** Turbopack memory eviction in dev. No config change --
+  `turbopackMemoryEviction` defaults to `'auto'`. Ran a real (short) `next dev -p 3099` session
+  (3000 was already taken by another local project's dev server -- unrelated collision, not a bug
+  here): hit `/` a few times, then sampled the `next-server` process's RSS before and after 60s
+  idle -- 468496 KB down to 359344 KB, a real ~23% drop with no requests in between, consistent
+  with `'auto'` eviction actually running.
+  - *Observations:* This is as far as this ticket can meaningfully go right now. A genuine
+    "memory stays bounded over hours of heavy use" test needs an app with real route/module
+    volume to generate memory pressure in the first place -- this repo still only has the two
+    placeholder routes from F-001. Revisit once Design System or Student Experience routes exist.
+  - *Observations:* `next dev`'s first run in this repo auto-appended the version-matched
+    `<!-- BEGIN:nextjs-agent-rules -->` block to `AGENTS.md`, exactly where F-002's session left a
+    marker comment for it. Committed alongside this ticket rather than left as a dangling
+    uncommitted diff, per Next's own guidance in that block's text.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-008, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-009, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-009 (Turbopack memory eviction in dev) -- verify with a long-running
-  `next dev` session, per `docs/BACKLOG.md`.
+- **Next ticket:** F-010 (Theme tokens, dark/light) -- CSS custom properties, no hardcoded colors,
+  per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

@@ -29,7 +29,7 @@
 | F-006 | Runtime config: `.env.local` + `.env.example` | `config.js` | done | `API_BASE_INTERNAL`/`API_BASE_PUBLIC`/`MONITOR_WS_URL` set to verified real values (docs/QUESTIONS.md Q-001/Q-006), not placeholders. CAS/SMTP vars deferred to their own auth tickets. |
 | F-007 | `next.config.ts`: `basePath` from build arg | `config.js` | done | Already landed as part of F-003: `Dockerfile`'s `ARG URL_PATH_PREFIX` + `next.config.ts`'s `basePath`. Build-time limitation documented in `DROPPED.md`. Noticed and closed out while updating this table for F-025, not separately implemented. |
 | F-008 | Turbopack filesystem cache for builds | — | done | `turbopackFileSystemCacheForBuild` defaults to `true` (confirmed in `node_modules/next/dist/server/config-shared.d.ts`'s default-config export) — no `next.config.ts` change needed. Verified for real, not just from the default: `.next/cache/turbopack/v16.3.1-*/` is populated with real cache files (SST/LOG/CURRENT) after a build, and a warm second build compiles in 254ms vs. 1673ms cold — ~6.5x. |
-| F-009 | Turbopack memory eviction in dev | — | todo | Verify with `next dev` long-running |
+| F-009 | Turbopack memory eviction in dev | — | done | `turbopackMemoryEviction` defaults to `'auto'` (`config-shared.d.ts`) -- no config change needed. Verified with a real (if short) `next dev` session: RSS dropped from ~457MB to ~351MB (23%) over 60s idle with zero requests in between, consistent with active eviction. A fuller "does memory stay bounded over hours of real use" test isn't meaningful yet -- this repo only has 2 placeholder routes, nothing substantial to evict. Revisit once real route/module volume exists (Design System phase onward). |
 | F-010 | Theme tokens (dark/light) | `config.js` SKIN | todo | CSS custom properties, no hardcoded colors |
 | F-011 | i18n: next-intl with cs/en | `locales/` | todo | Migrate legacy messages |
 | F-012 | Error/not-found/forbidden conventions | `NotFound` page | todo | `catchError` from `next/error` |
@@ -176,7 +176,7 @@
 
 | ID | Title | Status |
 |---|---|---|
-| F-009 | Turbopack memory eviction in dev | todo |
+| F-010 | Theme tokens (dark/light) | todo |
 
 ---
 
