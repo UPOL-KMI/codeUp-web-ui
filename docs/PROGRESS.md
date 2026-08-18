@@ -814,13 +814,45 @@ build` + `next start`, not `next dev` -- dev mode's extra warnings aren't repres
     sequencing relative to whichever ticket first lists a user's groups.
   - See DEC-047.
 
+- **[2026-08-18 16:10] D-002:** Central breadcrumb manifest. `lib/breadcrumbs/manifest.ts`, per
+  footgun #12: "A central route manifest mapping segments to labels, including async resolvers
+  for entity names... Every page renders breadcrumbs through it. No page builds its own."
+  - Design: a flat registry of `{namespace, pattern}` (static) or `{pattern, resolve}` (dynamic,
+    `:param`-templated) entries. `resolveBreadcrumbs(pathname, locale)` walks every _prefix_ of
+    the pathname (so `/forgot-password/change` produces two lookups, one per segment), matches
+    each prefix against the registered patterns, and resolves a label -- via next-intl's
+    `getTranslations({locale, namespace})` for static entries, via the entry's own async
+    `resolve()` for dynamic ones. Throws for any unregistered prefix rather than silently
+    omitting a crumb -- confirmed live with a temporary page using an unregistered namespace,
+    which produced a clean 500 with the exact message, not a silently broken page.
+  - Deliberately left every nested dynamic segment from `docs/IA.md` §3.2's own examples
+    (`/groups/[groupId]`, `/assignments/[id]`, `/solutions/[id]`, `/exercises/[id]`) unregistered:
+    no page for any of them exists yet, and their entity-name resolvers depend on group/
+    assignment/exercise response shapes no ticket has confirmed. The `resolve` field's type
+    signature is in place for whichever future ticket builds that route to fill in -- registering
+    a guessed resolver now would risk being wrong and needing rework.
+  - Wired into `components/placeholder-page.tsx` via a new `resolveBreadcrumbsForNamespace()`
+    entry point: since every stub page already self-identifies by next-intl namespace, reusing
+    that same string as the manifest's own lookup key let all 17 stub `page.tsx` files simplify
+    mechanically -- each now just `<PlaceholderPage namespace="Groups" />`, no longer needing to
+    be `async` or import `getTranslations` itself. `PlaceholderPage` now does one resolution and
+    reuses the breadcrumb chain's own last crumb as the `<h1>` title, so title and breadcrumb can
+    never drift apart (previously two separate, coincidentally-matching translation calls).
+  - _Observations:_ Verified live in both `next dev` and a rebuilt Docker `standalone` container:
+    the two-segment `/forgot-password/change` route renders a real two-crumb chain -- "Reset
+    password" linked to a correctly locale-prefixed `/en/forgot-password` (via `PageShell`'s
+    `@/i18n/navigation` `Link`), then "Change forgotten password" as the unlinked current page;
+    all 17 single-segment routes render their one crumb correctly; the full 50-test E2E suite
+    (F-023/F-024) passes unchanged.
+  - See DEC-048.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 done, Foundation (F-001 through F-026) complete.
-  See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-002 (Central breadcrumb manifest) -- async resolvers for entity names; per
-  `docs/BACKLOG.md`. (Two new tickets, D-014/D-015, were also added this session to close a
-  backlog gap -- see D-001's entry above.)
+- **Phase:** Design System (Phase 2) -- D-001, D-002 done; Foundation (F-001 through F-026)
+  complete. See `docs/BACKLOG.md`'s Design System table.
+- **Next ticket:** D-003 (`DataTable` component) -- sort, filter, paginate, URL sync, bulk
+  select; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
+  see D-001's entry above; still `todo`, not blocking D-003.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
