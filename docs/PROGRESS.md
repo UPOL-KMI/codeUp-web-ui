@@ -846,13 +846,50 @@ build` + `next start`, not `next dev` -- dev mode's extra warnings aren't repres
     (F-023/F-024) passes unchanged.
   - See DEC-048.
 
+- **[2026-08-18 16:50] D-003:** `DataTable` component. `components/data-table.tsx`, brief
+  §9/§10's "DataTable (sort/filter/paginate/URL sync/bulk select)". Read the legacy
+  `repos/web-app/src/components/widgets/SortableTable` first (brief: "source code is your
+  primary reference," not a screenshot or a guess) rather than designing from scratch: it
+  sorts/paginates entirely client-side over an already-fetched array, which is a reasonable model
+  to keep (no entity-listing ticket exists yet to know whether core-api supports server-side
+  pagination per list), but persists sort order in `localStorage` with no URL state at all --
+  deliberately corrected that part, since brief §9 explicitly wants "Sharing a URL reproduces the
+  exact view." Sort/filter-query/page sync to `${id}-sort`/`${id}-q`/`${id}-page` in
+  `searchParams`; row selection stays local React state on purpose -- transient bulk-action UI,
+  not a bookmarkable view, and an unbounded ID list doesn't belong in a URL.
+  - _Two real bugs, both found by actually building and testing, not assumed away:_
+    1. A first debug version passed `columns` (containing `cell`/`sortValue`/`filterValue`
+       function props) from a Server Component straight into `<DataTable>` -- a genuine
+       "Functions cannot be passed directly to Client Components" runtime error, since a function
+       can't cross the RSC serialization boundary. Documented prominently in the component's own
+       doc comment: the correct shape is a Server Component that fetches `data` and a small
+       `"use client"` wrapper that defines `columns` and renders `<DataTable>` -- every future
+       S-/T-/AD- list-view ticket will need to follow this shape.
+    2. Both `next dev` and even a local ad-hoc `next build` (run once without the debug route
+       present) looked completely clean. Rebuilding the Docker image with the debug route present
+       failed at prerender: "useSearchParams() should be wrapped in a suspense boundary." `next
+dev` has no static-generation step to enforce this, so it never caught it -- only a real
+       production build did, specifically the Docker build this project already treats as
+       authoritative (the same category of dev/prod divergence as DEC-039's `request.url` bug).
+       Fixed by having `DataTable` wrap its own `useSearchParams()`-reading implementation in an
+       internal `<Suspense fallback={null}>`, so no future caller needs to remember this.
+  - _Observations:_ Re-verified specifically against a rebuilt Docker `standalone` container after
+    the `Suspense` fix, not just `next dev`, given how bug #2 was found: sort cycles correctly
+    through ascending -> descending -> cleared across three header clicks, each reflected in the
+    URL; pagination advances and updates the URL; a debounced filter narrows the dataset and
+    composes correctly with pagination (11 matches at `pageSize: 10` -> exactly 10 rows shown,
+    resets to page 1); clearing the filter restores the full set; selecting a row toggles its
+    checkbox and leaves the URL completely unchanged; the header "select all" checkbox selects
+    every row on the current page. Full 50-test E2E suite passes unchanged.
+  - See DEC-049.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001, D-002 done; Foundation (F-001 through F-026)
-  complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-003 (`DataTable` component) -- sort, filter, paginate, URL sync, bulk
-  select; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
-  see D-001's entry above; still `todo`, not blocking D-003.)
+- **Phase:** Design System (Phase 2) -- D-001, D-002, D-003 done; Foundation (F-001 through
+  F-026) complete. See `docs/BACKLOG.md`'s Design System table.
+- **Next ticket:** D-004 (Form kit on Server Actions) -- React Hook Form + Zod, pending state,
+  dirty guard; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap
+  -- still `todo`, not blocking D-004.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
