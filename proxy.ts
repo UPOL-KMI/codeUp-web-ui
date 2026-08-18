@@ -1,13 +1,81 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
+import { SESSION_COOKIE_NAME } from "./lib/auth/session-cookie";
 import { routing } from "./i18n/routing";
 
 // Filename must be proxy.ts, not middleware.ts -- middleware.ts is a deprecated Edge-runtime
-// path that silently never runs under Next.js 16 (see AGENTS.md footgun list). The exported
-// function may be a default export or named `proxy` (verified in
-// node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md); next-intl's
-// own middleware() factory returns a default export, which is a supported form as-is.
-export default createMiddleware(routing);
+// path that silently never runs under Next.js 16 (see AGENTS.md footgun list).
+const intlMiddleware = createMiddleware(routing);
+
+// Pages under app/[locale]/(anon)/... where showing the form to an already-signed-in visitor is
+// unambiguously pointless -- redirected to /dashboard if a session cookie is present. Kept
+// separate from the rest of (anon) (forgot-password, email-verification, accept-invitation, faq),
+// which stay reachable regardless of auth state -- a signed-in user resetting a password, or
+// just reading the FAQ, is a normal thing to do.
+const AUTH_ONLY_PATHNAMES = new Set(["/login", "/register"]);
+
+// Every other page reachable without a session -- app/[locale]/(anon)/... minus the two above,
+// plus "/" (the still-unclassified placeholder root from F-001/F-011, see docs/DECISIONS.md).
+// Route groups don't appear in the URL, so this list is kept in sync with that folder by hand;
+// there's no way to introspect it at runtime.
+const PUBLIC_PATHNAMES = new Set([
+  "/",
+  "/forgot-password",
+  "/forgot-password/change",
+  "/email-verification",
+  "/accept-invitation",
+  "/faq",
+]);
+
+function stripLocale(pathname: string): string {
+  for (const locale of routing.locales) {
+    if (pathname === `/${locale}`) return "/";
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
+  }
+  return pathname;
+}
+
+/**
+ * UX redirect only -- brief §5: "proxy.ts is not a security boundary." Four of the thirteen
+ * May 2026 advisories were middleware/proxy bypasses; the actual authorisation boundary is
+ * requireSession() in the server-side data access layer (F-015), called by every function that
+ * touches core-api, not by this file. All this does is avoid flashing a page that's about to
+ * fail, or showing a login form to someone who's already signed in -- both are checked by
+ * *presence* of the session cookie only, never by validating it.
+ */
+export default function proxy(request: NextRequest) {
+  const intlResponse = intlMiddleware(request);
+
+  // next-intl wants to redirect for locale reasons (bare "/dashboard" -> "/en/dashboard", or a
+  // detected-locale mismatch) -- let that happen first. The browser's follow-up request hits us
+  // again with a resolved locale, and the auth check below applies cleanly then.
+  if (intlResponse.status >= 300 && intlResponse.status < 400) {
+    return intlResponse;
+  }
+
+  const locale = request.nextUrl.pathname.split("/")[1];
+  const pathname = stripLocale(request.nextUrl.pathname);
+  const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
+
+  if (AUTH_ONLY_PATHNAMES.has(pathname) && hasSession) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = `/${locale}/dashboard`;
+    dashboardUrl.search = "";
+    return NextResponse.redirect(dashboardUrl);
+  }
+
+  if (!AUTH_ONLY_PATHNAMES.has(pathname) && !PUBLIC_PATHNAMES.has(pathname) && !hasSession) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = `/${locale}/login`;
+    loginUrl.search = "";
+    loginUrl.searchParams.set("from", request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return intlResponse;
+}
 
 export const config = {
   // Run on everything except Next's own internals, static files, and anything with a file

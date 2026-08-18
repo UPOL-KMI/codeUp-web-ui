@@ -417,12 +417,39 @@ build` + `docker run` against the production standalone container. Deleted the t
     locales), and a full `docker build` + `docker run` against the production standalone
     container.
 
+- **[2026-08-18 13:30] F-014:** `proxy.ts` for auth UX redirect. Re-read brief §5 in full before
+  writing anything, since this is "the load-bearing decision" and the dependency order is easy to
+  misread -- F-014 lands _before_ F-016 (login handler) even exists, which only makes sense once
+  you notice `proxy.ts` here only ever checks cookie _presence_, never validates a token. Added
+  `lib/auth/session-cookie.ts` (just the cookie-name constant, derived from
+  `SESSION_COOKIE_PREFIX`) so F-016's actual `Set-Cookie` can't quietly use a different name than
+  what this file checks. Pathnames split three ways -- `AUTH_ONLY_PATHNAMES` (login, register:
+  redirect to `/dashboard` if already signed in), `PUBLIC_PATHNAMES` (forgot-password [+ change],
+  email-verification, accept-invitation, faq, `/`: reachable either way), everything else (every
+  `(app)` route: redirect to `/login?from=<path>` if signed out) -- matched by hand against
+  F-013's route-group folders, since route groups never show up in the URL. See DEC-036 for the
+  full reasoning, including why `/` itself isn't redirected either direction yet.
+  - _Observations:_ The trickiest part was composing this with next-intl's own middleware from
+    F-011 in the same file (Next only allows one `proxy.ts`). Solved by running next-intl's
+    middleware first and returning its response immediately if _it_ wants to redirect (locale
+    detection) -- only applying the auth check once the pathname genuinely has a resolved locale.
+    Verified the full chain live, not just each piece in isolation: `curl` on a bare `/dashboard`
+    (no locale, no cookie) returns a 307 to `/en/dashboard`; following that redirect lands on
+    `/en/login?from=%2Fen%2Fdashboard` -- the two redirects compose correctly end to end rather
+    than fighting each other.
+  - _Observations:_ Verified all six presence/pathname combinations (app-route and login-page,
+    each × cookie present/absent, plus a public page confirmed reachable both ways) with real
+    `curl` requests carrying an actual `Cookie` header, in both `next dev` and a full `docker
+build` + `docker run` against the production standalone container -- proxy/middleware bundling
+    under `output: standalone` already had one real history of subtle breakage in this project
+    (F-011's DEC-033), so `next dev` alone wasn't trusted again here either.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-013, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-014, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-014 (`proxy.ts` for auth UX redirect) -- NOT a security boundary (brief §6.1);
-  per `docs/BACKLOG.md`.
+- **Next ticket:** F-015 (`requireSession()` server-side guard) -- the actual authorisation
+  boundary (brief §5), called by every function that touches core-api; per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
