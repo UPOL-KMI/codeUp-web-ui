@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { z } from "zod";
 
-import { decodeJwtPayload } from "@/lib/auth/jwt";
-import { sessionCookieOptions, SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
+import { establishSession } from "@/lib/auth/session-cookie";
 
 // z.email(), not the deprecated z.string().email() chain -- verified against the installed zod
 // 4.4.3's own type defs, which flag the chained form deprecated in favor of this.
@@ -54,18 +52,12 @@ export async function POST(request: Request) {
   }
 
   const { payload } = (await apiResponse.json()) as { payload: { accessToken: string } };
-  const { accessToken } = payload;
 
-  const claims = decodeJwtPayload(accessToken);
-  if (!claims) {
-    // core-api returned something that isn't a JWT we can read the expiry of -- fail closed
-    // rather than set a cookie we can't reason about.
+  // core-api returned something that isn't a JWT we can read the expiry of -- fail closed rather
+  // than set a cookie we can't reason about.
+  if (!(await establishSession(payload.accessToken))) {
     throw new Error("Login response from core-api did not contain a decodable access token.");
   }
-  const maxAgeSeconds = Math.max(0, Math.floor(claims.exp - Date.now() / 1000));
-
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, accessToken, sessionCookieOptions(maxAgeSeconds));
 
   return NextResponse.json({ success: true });
 }

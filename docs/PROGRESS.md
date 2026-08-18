@@ -557,12 +557,48 @@ dev`. Under the actual `output: standalone` container, the resulting `Location` 
     of a new Docker-specific bug in _this_ ticket's own logic was judged low enough not to warrant
     re-running the same multi-rebuild verification cycle a third time.
 
+- **[2026-08-18 12:22] F-019:** Auth BFF: external-auth (CAS-and-similar) callback Route Handler.
+  `app/api/auth/external/[authenticatorName]/callback/route.ts`. The brief describes this loosely
+  ("exchanges the ticket with core-api"), and the legacy app's own code disagrees with itself --
+  `cas.js` is a CUNI-specific popup + client-side CAS `serviceValidate` flow keyed on a `ticket`
+  param, but the page actually wired into the login flow, `LoginExternFinalization.js`, just reads
+  a `token` param and relays it. Rather than guess which model to follow, read core-api's own PHP
+  source (`ExternalServiceAuthenticator.php`'s `decodeToken()`) directly: core-api never contacts
+  CAS or any external provider itself -- each `authenticatorName` has a pre-shared `jwtSecret`
+  configured server-side, and core-api's whole job is verifying a signature on whatever token this
+  route hands it. So the route is a generic `[authenticatorName]` dynamic segment (matching
+  core-api's own `/login/{authenticatorName}`), reads `token` from the query string, POSTs it to
+  core-api, and reuses F-016's `establishSession()` on success -- extracted into
+  `lib/auth/session-cookie.ts` for this second call site, same as `buildAbsoluteUrl()` (new
+  `lib/http/absolute-url.ts`) was extracted from F-017's logout handler. Any failure (missing
+  token, non-2xx from core-api, undecodable token) redirects to `/login?externalAuthError=1`
+  rather than throwing. See DEC-041.
+  - _Observations:_ The one open technical question going in was whether `request.url` is safe to
+    read for its query string specifically, given DEC-039 already proved its _host_ portion is
+    wrong under `output: standalone`. Verified live in a rebuilt Docker container (temporary
+    logging, not committed, precisely because this is where the original DEC-039 bug was found):
+    `request.url` showed the container's internal bind address as expected (`0.0.0.0:3000`), but
+    the path and query string were intact -- `new URL(request.url).searchParams.get("token")` read
+    a real, distinctive test token correctly. So only the origin is unreliable under `standalone`,
+    not the rest of the URL; this route reads `request.url` directly for the query string but still
+    routes every redirect through `buildAbsoluteUrl()` for the origin, per DEC-039.
+  - _Observations:_ Confirmed the regression risk from refactoring login/logout to share
+    `establishSession()`/`buildAbsoluteUrl()` was a non-issue: both routes retested live (dev and
+    Docker) and behave identically to before the refactor.
+  - _Limitation, not a bug:_ the actual success path (a validly-signed external token reaching
+    `establishSession()`) is unverifiable end-to-end in this environment -- no `EXTERNAL_AUTH_*` is
+    configured at all (`docs/QUESTIONS.md` Q-004), so there's no way to obtain a real signed token.
+    What's verified is everything short of that: the failure paths, the code reuse from an
+    already-verified success path (F-016's login), and the query-string safety under `standalone`.
+  - Corrected a stale recon-phase assumption in `docs/IA.md` (~line 310), which had guessed a
+    CUNI-specific `/login/extern-finalization/:service` → `/api/auth/cas/callback` shape before any
+    of this was actually investigated.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-018, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-019, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-019 (Auth BFF: CAS callback Route Handler) -- must use `API_BASE_PUBLIC` for
-  the redirect (brief §5); per `docs/BACKLOG.md`.
+- **Next ticket:** F-020 (Auth BFF: user takeover) -- superadmin only; per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

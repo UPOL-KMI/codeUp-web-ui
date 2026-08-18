@@ -1,4 +1,7 @@
 import "server-only";
+import { cookies } from "next/headers";
+
+import { decodeJwtPayload } from "./jwt";
 
 // proxy.ts (F-014) only needs the *name*, to check presence for its UX redirect. This file also
 // holds sessionCookieOptions() (F-016), so every place that sets or reasons about this cookie's
@@ -26,4 +29,24 @@ export function sessionCookieOptions(maxAgeSeconds?: number) {
     path: "/",
     ...(maxAgeSeconds !== undefined && { maxAge: maxAgeSeconds }),
   };
+}
+
+/**
+ * Decodes an access token from core-api and sets it as the session cookie, sized to the token's
+ * own `exp`. Shared by every Route Handler that receives a fresh token from core-api and needs to
+ * establish a session from it (login, F-016; the external-auth callback, F-019) -- extracted here
+ * once a second call site needed the exact same decode-then-set sequence, matching how
+ * `decodeJwtPayload` itself was extracted into `jwt.ts` for the same reason. Returns false (and
+ * sets nothing) if the token isn't a JWT this app can read the expiry of -- callers should treat
+ * that as a hard failure, not silently proceed with a cookie whose lifetime can't be reasoned
+ * about.
+ */
+export async function establishSession(accessToken: string): Promise<boolean> {
+  const claims = decodeJwtPayload(accessToken);
+  if (!claims) return false;
+
+  const maxAgeSeconds = Math.max(0, Math.floor(claims.exp - Date.now() / 1000));
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE_NAME, accessToken, sessionCookieOptions(maxAgeSeconds));
+  return true;
 }

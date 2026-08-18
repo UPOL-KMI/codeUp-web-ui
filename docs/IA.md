@@ -305,13 +305,13 @@ const routeManifest: Record<string, RouteEntry> = {
 
 ## 7. Open Questions
 
-| Question                              | Assumption                                                       | Where Logged   |
-| ------------------------------------- | ---------------------------------------------------------------- | -------------- |
-| Exact CAS callback URL structure      | `/login/extern-finalization/:service` → `/api/auth/cas/callback` | `QUESTIONS.md` |
-| WebSocket URL for evaluation progress | `wss://<domain>/ws` (from compose proxy)                         | `QUESTIONS.md` |
-| Extension token handoff mechanism     | Investigate legacy `SIS-ext-webapp`                              | `QUESTIONS.md` |
-| Markdown rendering compatibility      | Test with real exercise texts                                    | `QUESTIONS.md` |
-| SMTP config for email flows           | Not configured; use `mail.debugMode`                             | `QUESTIONS.md` |
+| Question                              | Assumption                                                                                                                                                                                                                                 | Where Logged           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| ~~Exact CAS callback URL structure~~  | Resolved (F-019, DEC-041): `/api/auth/external/[authenticatorName]/callback`, a generic dynamic-segment route matching core-api's own `/login/{authenticatorName}`, not the CUNI-specific `/api/auth/cas/callback` originally guessed here | `DECISIONS.md` DEC-041 |
+| WebSocket URL for evaluation progress | `wss://<domain>/ws` (from compose proxy)                                                                                                                                                                                                   | `QUESTIONS.md`         |
+| Extension token handoff mechanism     | Investigate legacy `SIS-ext-webapp`                                                                                                                                                                                                        | `QUESTIONS.md`         |
+| Markdown rendering compatibility      | Test with real exercise texts                                                                                                                                                                                                              | `QUESTIONS.md`         |
+| SMTP config for email flows           | Not configured; use `mail.debugMode`                                                                                                                                                                                                       | `QUESTIONS.md`         |
 
 ---
 
