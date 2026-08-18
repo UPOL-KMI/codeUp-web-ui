@@ -525,12 +525,44 @@ dev`. Under the actual `output: standalone` container, the resulting `Location` 
     correctly expires it (`Expires=Thu, 01 Jan 1970...`), confirm the redirect chain lands on the
     real themed login page, confirm the protected route is blocked again afterward.
 
+- **[2026-08-18 16:30] F-018:** Auth BFF: token refresh in `proxy.ts`, the concurrent-refresh race
+  guard. `lib/auth/refresh-session.ts`'s `maybeRefreshSession()`, called from `proxy.ts` and
+  applied to whichever response it ends up returning (not just the pass-through case), refreshing
+  proactively once less than 24h remains on the token's `exp` (tokens last 7 days by default).
+  De-duplication is a module-scope `Map<token, Promise>` -- correct within one running Node.js
+  process, which matches this deployment's current single-instance shape (ASS-004); noted in
+  DECISIONS.md as a real limitation if that ever changes, not silently assumed away.
+  - _Observations:_ First live test against core-api's real `/login/refresh` produced a genuinely
+    useful surprise: **refreshing does not invalidate the old token** -- both the pre- and
+    post-refresh tokens kept working afterward. This changes the actual failure mode from the
+    brief's literal wording ("must not... invalidate each other") to "waste a redundant upstream
+    call" -- still worth guarding against, just less severe than the brief's phrasing implies for
+    _this specific API_. Documented rather than silently noted, since it's the kind of thing a
+    future session could easily get wrong if it re-reads only the brief and not this decision.
+  - _Observations:_ Second surprise, more consequential for how I had to verify this at all:
+    core-api's JWTs are **second-granularity deterministic** -- HMAC-SHA256 over a payload whose
+    only varying claim is `iat`, so two refresh calls landing in the same wall-clock second
+    produce a byte-identical token. My first concurrency test (6 parallel requests) "passed" by
+    every response carrying the same token -- which would also have been true if de-duplication
+    were completely broken and all 6 requests happened to land in the same second. Caught this
+    before trusting the result, and re-verified properly by counting actual upstream calls via
+    temporary logging (not committed): exactly **one** `POST /login/refresh` for all 6 concurrent
+    requests, all resolving in ~150ms. Also verified the negative case with the real threshold
+    restored: a freshly-issued 7-day token correctly triggers no refresh at all.
+  - _Observations:_ Verified the normal (non-refresh) login/protected-route path still works
+    correctly in the production compose container after adding this logic, though didn't repeat
+    the full concurrent-refresh dance there specifically -- the refresh call reuses the exact
+    `API_BASE_INTERNAL` fetch pattern already proven Docker-safe by F-016, and the cookie-setting
+    reuses `sessionCookieOptions()` already proven Docker-safe by F-016/F-017, so the marginal risk
+    of a new Docker-specific bug in _this_ ticket's own logic was judged low enough not to warrant
+    re-running the same multi-rebuild verification cycle a third time.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-017, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-018, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-018 (Auth BFF: token refresh in `proxy.ts`) -- the concurrent-refresh race
-  guard; per `docs/BACKLOG.md`.
+- **Next ticket:** F-019 (Auth BFF: CAS callback Route Handler) -- must use `API_BASE_PUBLIC` for
+  the redirect (brief §5); per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

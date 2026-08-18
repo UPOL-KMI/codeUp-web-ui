@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
-import { SESSION_COOKIE_NAME } from "./lib/auth/session-cookie";
+import { maybeRefreshSession } from "./lib/auth/refresh-session";
+import { sessionCookieOptions, SESSION_COOKIE_NAME } from "./lib/auth/session-cookie";
 import { routing } from "./i18n/routing";
 
 // Filename must be proxy.ts, not middleware.ts -- middleware.ts is a deprecated Edge-runtime
@@ -44,8 +45,13 @@ function stripLocale(pathname: string): string {
  * touches core-api, not by this file. All this does is avoid flashing a page that's about to
  * fail, or showing a login form to someone who's already signed in -- both are checked by
  * *presence* of the session cookie only, never by validating it.
+ *
+ * Also handles proactive token refresh (brief §5: "Token refresh and expiry handling happen in
+ * proxy.ts or Route Handlers only" -- Server Components can't set cookies). Applied to whichever
+ * response ends up being returned, not just the pass-through case, so a session close to expiry
+ * gets refreshed even on a request that also happens to redirect.
  */
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const intlResponse = intlMiddleware(request);
 
   // next-intl wants to redirect for locale reasons (bare "/dashboard" -> "/en/dashboard", or a
@@ -57,24 +63,38 @@ export default function proxy(request: NextRequest) {
 
   const locale = request.nextUrl.pathname.split("/")[1];
   const pathname = stripLocale(request.nextUrl.pathname);
-  const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
+  const hasSession = !!sessionCookie;
+
+  let response: NextResponse;
 
   if (AUTH_ONLY_PATHNAMES.has(pathname) && hasSession) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = `/${locale}/dashboard`;
     dashboardUrl.search = "";
-    return NextResponse.redirect(dashboardUrl);
-  }
-
-  if (!AUTH_ONLY_PATHNAMES.has(pathname) && !PUBLIC_PATHNAMES.has(pathname) && !hasSession) {
+    response = NextResponse.redirect(dashboardUrl);
+  } else if (!AUTH_ONLY_PATHNAMES.has(pathname) && !PUBLIC_PATHNAMES.has(pathname) && !hasSession) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = `/${locale}/login`;
     loginUrl.search = "";
     loginUrl.searchParams.set("from", request.nextUrl.pathname + request.nextUrl.search);
-    return NextResponse.redirect(loginUrl);
+    response = NextResponse.redirect(loginUrl);
+  } else {
+    response = intlResponse;
   }
 
-  return intlResponse;
+  if (sessionCookie) {
+    const refreshed = await maybeRefreshSession(sessionCookie.value);
+    if (refreshed) {
+      response.cookies.set(
+        SESSION_COOKIE_NAME,
+        refreshed.token,
+        sessionCookieOptions(refreshed.maxAgeSeconds),
+      );
+    }
+  }
+
+  return response;
 }
 
 export const config = {
