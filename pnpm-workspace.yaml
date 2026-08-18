@@ -1,3 +1,14 @@
 allowBuilds:
+  # Both are native binaries pulled in transitively by next-intl (its optional SWC-based
+  # message-extraction plugin). Well-known, widely-used, actively-maintained packages -- not
+  # random third-party code -- so allowed to run their install scripts like esbuild/unrs-resolver
+  # already were.
+  "@parcel/watcher": true
+  "@swc/core": true
   esbuild: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - icu-minify@4.13.7
+  - next-intl-swc-plugin-extractor@4.13.7
+  - next-intl@4.13.7
+  - use-intl@4.13.7

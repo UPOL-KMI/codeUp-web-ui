@@ -331,13 +331,41 @@ install` regenerate the lockfile itself so it correctly picks up F-010's new dep
     ~470-line diff instead. Confirmed `pnpm install --frozen-lockfile` (what CI actually runs) still
     succeeds afterward.
 
+- **[2026-08-18 11:10] F-011:** i18n: next-intl with cs/en. `next-intl@4.13.7` installed;
+  version/API verified against the actually-installed package's compiled output rather than
+  memory (see DEC-033 for specifics -- `defineRouting`'s default `localePrefix`, the plugin's
+  default `i18n/request.ts` search path, and, critically, that `next/root-params` (next-intl's own
+  documented replacement for the `requestLocale` param it otherwise deprecates) **isn't actually
+  usable in the installed Next 16.3.1** -- its files are listed in `next`'s own `package.json`
+  `"files"` array but don't exist in `node_modules`). Restructured `app/layout.tsx`/`app/page.tsx`
+  into `app/[locale]/layout.tsx`/`page.tsx` -- the `[locale]` layout now **is** the root layout (no
+  separate top-level `app/layout.tsx`), `app/globals.css` stays put and is imported with a relative
+  path. Added `i18n/routing.ts`, `i18n/navigation.ts`, `i18n/request.ts`, and `proxy.ts` (not
+  `middleware.ts` -- AGENTS.md footgun 1) wrapping `next-intl/middleware`. `messages/{en,cs}.json`
+  started minimal, just the placeholder page's one string -- full legacy message migration is
+  explicitly deferred to per-screen S-/T-/D-series tickets, not attempted as a bulk port (the
+  legacy files are ~2200 keys/220KB each, using a flat `app.foo.bar` key scheme next-intl doesn't
+  use -- only the actual translated _wording_ carries over, not the key structure).
+  - _Observations:_ Verified end-to-end for real, three ways: (1) `next build` -- both `/en` and
+    `/cs` statically prerendered via `generateStaticParams`, `Proxy (Middleware)` present in the
+    route list; (2) a live `next dev` session -- `curl /` with no `Accept-Language` gets a 307 to
+    `/en`, with `Accept-Language: cs` gets a 307 to `/cs`, both locale pages render with the
+    correct `<html lang>`; (3) a full `docker build` + `docker run` repeating the same checks
+    against the actual production standalone container, not just `next dev` -- proxy/middleware
+    bundling under `output: standalone` has a real history of subtle breakage in Next.js, so `next
+dev` working wasn't treated as sufficient evidence on its own. All three agreed.
+  - _Observations:_ Along the way, approved two previously-blocked native build scripts
+    (`@parcel/watcher`, `@swc/core`, both transitive via next-intl's optional SWC extractor plugin)
+    in `pnpm-workspace.yaml`'s `allowBuilds` -- well-known, widely-used packages, not obscure
+    third-party code, so treated the same as the `esbuild`/`unrs-resolver` approvals F-001 already
+    had.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-010, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-011, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-011 (i18n: next-intl with cs/en) -- this restructures routing under
-  `app/[locale]/...`, so `app/layout.tsx`/`app/page.tsx` (currently flat, F-001 placeholders) will
-  move. Migrate legacy messages per `docs/BACKLOG.md`.
+- **Next ticket:** F-012 (Error/not-found/forbidden conventions) -- `catchError` from `next/error`,
+  per `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

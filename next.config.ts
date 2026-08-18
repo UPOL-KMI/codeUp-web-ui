@@ -1,4 +1,10 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// No explicit path passed -- next-intl's own default search order is
+// ./i18n/request.{ts,tsx,js,jsx} then ./src/i18n/request.*, confirmed by reading its compiled
+// plugin/getNextConfig.js rather than assumed; ./i18n/request.ts (this repo has no src/) matches.
+const withNextIntl = createNextIntlPlugin();
 
 // URL_PATH_PREFIX (legacy env.json key) maps to Next's basePath, which is resolved
 // at build time, not runtime -- see docs/DECISIONS.md and DROPPED.md. Passed as a
@@ -35,4 +41,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
