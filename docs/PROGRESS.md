@@ -883,6 +883,32 @@ dev` has no static-generation step to enforce this, so it never caught it -- onl
     every row on the current page. Full 50-test E2E suite passes unchanged.
   - See DEC-049.
 
+- **[2026-08-18 17:05] D-003 follow-up:** Re-reading brief §4 while starting D-004 turned up a
+  real gap in D-003: the stack table names "Tables: TanStack Table, in client leaves" as the
+  chosen library, and that was never actually investigated before shipping D-003's hand-rolled
+  implementation. Installed `@tanstack/react-table@9.1.2` (current latest) and read its own
+  bundled skill docs before deciding anything, rather than assuming from memory (the exact
+  discipline this project's own AGENTS.md Next.js-version warnings already establish).
+  - _Finding:_ v9 is a substantial rewrite from the `useReactTable({data, columns,
+getCoreRowModel: getCoreRowModel()})` API the brief's phrasing almost certainly assumed. V9
+    requires explicit, headless feature registration (`useTable({features, columns, data})`,
+    with sorting/filtering/pagination/even reactivity as opt-in plugins passed to
+    `tableFeatures({...})` before their state exists at all) -- confirmed directly from the
+    bundled docs, which themselves flag "copying the v8 constructor" as a high-severity common
+    mistake. Critically, none of it reduces this component's actual hard part: TanStack Table has
+    no built-in URL-sync in any version, so the `searchParams` wiring D-003 already built would be
+    exactly as much custom code on top of TanStack Table's controlled-state API as on top of the
+    hand-rolled version -- the whole benefit of adopting it would be capabilities (virtualization,
+    column pinning/grouping/faceting) no current ReCodEx list view needs, for the cost of learning
+    an entirely new headless paradigm.
+  - _Decision:_ Keep D-003's hand-rolled implementation. Uninstalled `@tanstack/react-table`
+    afterward (not left as an unused dependency). Documented as DEC-050 -- the same category of
+    decision as F-002's TypeScript 6.0.3 pin: a brief-specified choice investigated properly and
+    found impractical for a verified reason, not skipped by assumption. If a future ticket's real
+    needs genuinely call for a headless table engine's specific capabilities, that ticket should
+    evaluate the then-current TanStack Table on its own merits rather than this decision reaching
+    backward for an old version now.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001, D-002, D-003 done; Foundation (F-001 through
