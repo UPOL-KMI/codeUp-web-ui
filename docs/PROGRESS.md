@@ -779,12 +779,48 @@ build` + `next start`, not `next dev` -- dev mode's extra warnings aren't repres
     `e2e/helpers/routes.ts` now that this ticket gave them a second consumer.
   - See DEC-046.
 
+- **[2026-08-18 15:45] D-001:** `PageShell` component, the first Design System (Phase 2) ticket --
+  Foundation (F-001 through F-026) is now fully complete. `components/page-shell.tsx`, matching
+  `docs/IA.md` §3.3's `PageShellProps` interface exactly (`title`, `subtitle?`,
+  `breadcrumbs: BreadcrumbItem[]`, `actions?`, `tabs?`, `children`). A plain Server Component --
+  `actions`/`tabs` are pre-built `ReactNode`s the caller supplies, so nothing here needs
+  `"use client"` of its own. `breadcrumbs` is required but this component does not resolve it;
+  that's explicitly D-002's job (the central manifest with async entity-name resolvers), kept
+  deliberately separate so this component stays a pure presentational layer. Reused the existing
+  shadcn-style CSS tokens from `app/globals.css` and `@/i18n/navigation`'s `Link` (not
+  `next/link`, for automatic locale-prefixing) -- no new dependencies.
+  - Wired into `components/placeholder-page.tsx` (F-013's shared stub-page shell, currently used
+    by all 18 real routes) with a single, unlinked breadcrumb crumb, as the fastest way to verify
+    `PageShell` renders correctly across the whole live app today rather than waiting for the
+    individual S-/T-/A-/AD- tickets that eventually replace each stub.
+  - _Observations:_ Verified live in both `next dev` and a rebuilt Docker `standalone` container:
+    the full 50-test E2E suite (F-023/F-024) passes unchanged with `PageShell` now in every
+    route's render path -- no new console errors, hydration mismatches, or unexpected status
+    codes. Also built a temporary debug route (not committed) exercising the prop surface
+    `PlaceholderPage` alone doesn't touch: `subtitle`, `actions` (two buttons), `tabs` (two
+    links), and a two-crumb breadcrumb with one _linked_ (non-current) crumb -- confirmed all
+    render, and specifically confirmed the linked crumb produces a correctly locale-prefixed
+    `href="/en/groups"`, not a bare `/groups`.
+  - **Backlog gap found and corrected while reading `docs/IA.md` §3 for this ticket**: the
+    Navigation Model section describes four things (§3.1 sidebar, §3.2 breadcrumb manifest, §3.3
+    PageShell, §3.4 command palette), but the Design System phase only ever ticketed two of them
+    (D-001 PageShell, D-002 breadcrumb manifest) -- the sidebar and command palette were never
+    given ticket numbers at all. `(app)/layout.tsx`'s own existing comment already anticipated
+    this ("D-series... owns the real sidebar + PageShell chrome") without naming which ticket.
+    Added D-014 (sidebar/app-shell navigation) and D-015 (command palette) to close the gap,
+    rather than silently folding sidebar work into this ticket's own scope or leaving it
+    untracked. D-014 specifically notes that the sidebar's "My Groups"/"My Teaching" sections
+    need real per-group-membership API data that no earlier ticket fetches yet, so it likely needs
+    sequencing relative to whichever ticket first lists a user's groups.
+  - See DEC-047.
+
 ### Current Status
 
-- **Phase:** Foundation complete (F-001 through F-026, all `done` -- see `docs/BACKLOG.md`'s
-  Foundation table). This is the first phase boundary crossed in this project.
-- **Next ticket:** D-001 (`PageShell` component), the first ticket of Design System (Phase 2) --
-  breadcrumbs, title, subtitle, actions, tabs; per `docs/BACKLOG.md`.
+- **Phase:** Design System (Phase 2) -- D-001 done, Foundation (F-001 through F-026) complete.
+  See `docs/BACKLOG.md`'s Design System table.
+- **Next ticket:** D-002 (Central breadcrumb manifest) -- async resolvers for entity names; per
+  `docs/BACKLOG.md`. (Two new tickets, D-014/D-015, were also added this session to close a
+  backlog gap -- see D-001's entry above.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
