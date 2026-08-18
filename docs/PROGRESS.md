@@ -466,12 +466,41 @@ test-session/page.tsx`, deleted before this commit -- same pattern as F-012's th
     a garbage non-JWT cookie value (redirected). The expired and malformed cases are the ones that
     actually prove this function does something `proxy.ts`'s shallow presence check doesn't.
 
+- **[2026-08-18 15:00] F-016:** Auth BFF: login Route Handler. Before writing anything, re-read
+  brief §5 closely and found a real, standing error: `docs/DECISIONS.md`'s DEC-023 said login and
+  logout were Server Actions, directly contradicting the brief's own words ("Login: Route Handler
+  receives credentials...") and `docs/BACKLOG.md`'s own F-016/F-017 titles -- a recon-phase
+  mistake that had gone uncorrected. Fixed DEC-023 in place before implementing, same as the
+  ASS-001/003/005/006 corrections earlier in this project.
+  - `app/api/auth/login/route.ts`: `{email, password}` in, mapped to core-api's own `username`
+    field internally (confirmed live core-api has no separate "username" concept -- it's just
+    the field name). Validated with `z.email()`, not the deprecated `z.string().email()` chain --
+    caught by actually checking zod 4.4.3's installed type defs rather than writing from
+    v3-era memory, which would have gotten this wrong.
+  - New `sessionCookieOptions(maxAgeSeconds?)` in `lib/auth/session-cookie.ts`: derives `secure`
+    from `API_BASE_PUBLIC`'s URL scheme, not `NODE_ENV` -- this deployment genuinely runs "in
+    production" over plain HTTP right now (no TLS cert yet), so `NODE_ENV`-based logic would set
+    `secure: true` and silently break every login, exactly the failure mode brief §5 calls out by
+    name. Cookie `maxAge` is derived from the real JWT's `exp` claim, not a guessed constant --
+    extracted the payload-decoding logic F-015 already had into a shared `lib/auth/jwt.ts` once
+    this second real use appeared, rather than duplicating it.
+  - _Observations:_ Verified thoroughly and repeatedly, not just "the build passes": correct
+    credentials (200, and inspected the raw `Set-Cookie` header byte-for-byte -- exactly the right
+    `Max-Age`, no `Secure` flag, matches this plain-HTTP deployment), wrong password (401, core-
+    api's own message passed through), malformed/missing input (400, Zod). Then the full round
+    trip with a real cookie jar: log in, save the cookie, use it against `proxy.ts` (F-014, no
+    redirect), use it against `requireSession()` (F-015, correct `{token, userId}`), confirm
+    `/login` itself now redirects away since we're "logged in" -- first in `next dev`, then again
+    against the actual production compose container talking to `api` over the internal Docker
+    network (`http://api:80/v1`), not the dev-mode fallback URL. Every piece built across
+    F-014/F-015/F-016 now demonstrably works together, not just in isolation.
+
 ### Current Status
 
-- **Phase:** Foundation (F-001 through F-015, F-025, F-026 done -- see `docs/BACKLOG.md` for the
+- **Phase:** Foundation (F-001 through F-016, F-025, F-026 done -- see `docs/BACKLOG.md` for the
   full per-ticket table)
-- **Next ticket:** F-016 (Auth BFF: login Route Handler) -- httpOnly cookie, conditional `secure`
-  flag via a shared `sessionCookieOptions()` helper (brief §5); per `docs/BACKLOG.md`.
+- **Next ticket:** F-017 (Auth BFF: logout Route Handler) -- clear the cookie, redirect; per
+  `docs/BACKLOG.md`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { decodeJwtPayload } from "./jwt";
 import { SESSION_COOKIE_NAME } from "./session-cookie";
 
 export interface Session {
@@ -10,26 +11,10 @@ export interface Session {
 }
 
 function decodeSessionCookie(value: string): Session | null {
-  const parts = value.split(".");
-  const payloadPart = parts[1];
-  if (parts.length !== 3 || !payloadPart) return null;
-
-  try {
-    const payload: unknown = JSON.parse(Buffer.from(payloadPart, "base64url").toString("utf8"));
-    if (
-      typeof payload !== "object" ||
-      payload === null ||
-      typeof (payload as { sub?: unknown }).sub !== "string" ||
-      typeof (payload as { exp?: unknown }).exp !== "number"
-    ) {
-      return null;
-    }
-    const { sub, exp } = payload as { sub: string; exp: number };
-    if (exp * 1000 <= Date.now()) return null; // expired -- F-018 handles refresh, not this
-    return { token: value, userId: sub };
-  } catch {
-    return null;
-  }
+  const payload = decodeJwtPayload(value);
+  if (!payload) return null;
+  if (payload.exp * 1000 <= Date.now()) return null; // expired -- F-018 handles refresh, not this
+  return { token: value, userId: payload.sub };
 }
 
 /**
