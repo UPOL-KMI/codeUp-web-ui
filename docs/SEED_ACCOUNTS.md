@@ -66,7 +66,7 @@ solution (required before an exercise can be assigned to any group at all).
 
 **These do not currently reach genuine pass/fail on this dev machine.** This Mac's Docker
 Desktop runs cgroup v2 only; the vendored `isolate` 1.8.1 sandbox requires cgroup v1 (see
-`../ReCOdex/README.md`, "Before going to production, read this: `worker` needs cgroup v1" — a
+the compose repo's `README.md`, "Before going to production, read this: `worker` needs cgroup v1" — a
 pre-existing, already-documented limitation, not something introduced by this script). Every
 submission resolves to an infrastructure `evaluation_failure` (`Isolate init error`) instead of a
 real judged result. Re-verify the actual pass/fail split on a cgroup v1 host — production, or a
@@ -102,7 +102,7 @@ member — do not reorder this if you touch the script.
 ## Resetting
 
 Wiping the database is an **operator-level** action outside this script's reach — `docker compose
-down -v && up -d` in `../ReCOdex/`, not something `scripts/seed.ts` does or assumes. After a wipe,
+down -v && up -d` in the compose repo, not something `scripts/seed.ts` does or assumes. After a wipe,
 just run `pnpm seed` again; it starts from "just the seeded superadmin" and rebuilds everything.
 
 **Never** attempt SQL or direct database manipulation — every operation in `scripts/seed.ts` goes

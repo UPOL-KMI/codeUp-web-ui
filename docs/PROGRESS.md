@@ -951,6 +951,34 @@ use-server-action-form, use-dirty-guard}.ts`, `components/form/{text-field, form
     genuinely flipping from clean to dirty on input.
   - See DEC-051.
 
+- **[2026-08-20 10:00] Repo relocation (compose-repo side):** Not a ticket -- the operator wanted to
+  move development to another machine and asked, from the compose repo, for a single-command
+  bootstrap (clone the compose repo, run `pull-repos.sh`, `docker compose up`, get everything
+  including this frontend). At their explicit direction, this repo's checkout location moved from
+  a `../recodex-web-next` sibling directory to `<compose repo>/repos/web-next/`, fetched by the
+  compose repo's own `pull-repos.sh` the same way it fetches the upstream ReCodEx repos (gitignored
+  there, independent of this repo's own remote name). This repo's own git history/remote
+  (`git@github.com:jurja00/codeUp-web-ui.git`) is completely unaffected -- verified nothing here
+  changed on this repo's side; the change is entirely in how the compose repo checks this repo out.
+  - Checked this doesn't reopen `docs/QUESTIONS.md` Q-003's original violation (F-001 once
+    scaffolding this app's actual source into the compose repo's own git-tracked tree) -- it
+    doesn't, since `repos/` is gitignored by the compose repo, so nothing about this repo's source
+    ever enters the compose repo's own git history. Added a note to Q-003 and a full explanation as
+    DEC-052 so a future session doesn't mistake this for a regression and try to "fix" it back to a
+    sibling directory.
+  - Fixed the now-stale `../ReCOdex/...`-style relative path references this repo's own docs/
+    comments had accumulated (`docs/DECISIONS.md`, `docs/SEED_ACCOUNTS.md`,
+    `lib/auth/session-cookie.ts`, `scripts/seed.ts`) to say "the compose repo's ..." instead --
+    robust to this or any future relocation, matching the pattern `AGENTS.md` already used
+    elsewhere. Left this file's and `docs/BACKLOG.md`'s own historical entries (describing what was
+    true when they were written) untouched, since rewriting an append-only log's past entries would
+    misrepresent history rather than fix a stale pointer.
+  - Added an explicit note to the top of `AGENTS.md` (the file read first every session) stating
+    the compose repo is now two directories up (`../../`) from here, not a `../ReCOdex` sibling.
+  - _Observations:_ Verified live from the compose repo side: a real `pull-repos.sh` run correctly
+    cloned this repo into `repos/web-next` via SSH, and `docker compose build web-next && docker
+compose up -d web-next` succeeded end to end from that new location.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001 through D-004 done; Foundation (F-001 through

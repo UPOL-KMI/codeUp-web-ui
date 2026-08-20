@@ -8,6 +8,16 @@ Session start sequence (brief §0): read this file, then the last ~100 lines of 
 then `docs/BACKLOG.md` for the top unblocked ticket, then the `docs/INVENTORY.md` rows it touches.
 Then work.
 
+**Where this repo is checked out relative to the compose repo (DEC-052, 2026-08-20):** this repo
+still lives in its own separate git repository (`git@github.com:jurja00/codeUp-web-ui.git`), but as
+of DEC-052 its _checkout location_ is `<compose repo>/repos/web-next/` -- fetched by the compose
+repo's own `pull-repos.sh`, the same way it fetches the upstream ReCodEx repos, not a sibling
+directory anymore. When any instruction here or in `docs/` says "the compose repo" or "check the
+compose repo's `services/api/` config" etc., that now means **two directories up (`../../`) from
+here**, not `../ReCOdex`. Docs written before DEC-052 that still say `../ReCOdex/...` are historical
+log entries (`docs/PROGRESS.md`, `docs/BACKLOG.md`) describing what was true when written -- don't
+"fix" those, and don't be confused by them; this note is the current, load-bearing fact.
+
 ---
 
 ## 3. Hard constraints (never violate)

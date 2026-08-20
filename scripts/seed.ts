@@ -241,7 +241,7 @@ const EXPECTED_OUTPUT = "Hello, ReCodEx!\n";
 // python3 stdin/stdout diff pipeline -- id verified live against this deployment's own
 // runtimes:import seed (services/api/Dockerfile), not guessed. See docs/DECISIONS.md.
 const PYTHON_STDOUT_PIPELINE_ID = "7f5de91c-55ab-468a-ab01-4a07bedd53a7";
-const HW_GROUP_ID = "01-default"; // matches WORKER_HWGROUP in ../ReCOdex/.env
+const HW_GROUP_ID = "01-default"; // matches WORKER_HWGROUP in the compose repo's .env
 
 interface ExerciseRecord {
   id: string;
@@ -615,7 +615,7 @@ async function main() {
 
   log("done");
   log(
-    "NOTE: this dev machine's isolate sandbox cannot run cgroup v1 (see ../ReCOdex/README.md) -- " +
+    "NOTE: this dev machine's isolate sandbox cannot run cgroup v1 (see the compose repo's README.md) -- " +
       "submissions above will resolve to an infrastructure evaluation-failure state here, not genuine " +
       "pass/fail. Re-verify pass/fail states on a cgroup v1 host (production, or a fixed local Docker config).",
   );
