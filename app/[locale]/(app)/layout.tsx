@@ -1,7 +1,10 @@
-// Shared shell for pages requiring a session (dashboard, groups, exercises, admin, ...).
-// Deliberately a passthrough for now -- D-series (Design System) owns the real sidebar +
-// PageShell chrome (docs/IA.md §3), and F-015 (requireSession()) owns the actual access check;
-// this file is the place those tickets edit, not something to pre-build speculatively.
+import { AppShell } from "@/components/app-shell/app-shell";
+
+// Shared shell for pages requiring a session (dashboard, groups, exercises, admin, ...). Was a
+// deliberate passthrough until D-014 -- this is the file the sidebar ticket was always meant to
+// fill in. The access check still lives in requireSession() at the data layer (F-015), not here:
+// AppShell calls it transitively by fetching the current user, but a layout is not an
+// authorisation boundary and nothing should start treating it as one.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>;
+  return <AppShell>{children}</AppShell>;
 }

@@ -1320,14 +1320,46 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     wall-clock from the server, relative times resolving in the browser, points and percentages
     matching the unit tests.
 
+- **[2026-08-21 18:05] D-014:** Sidebar / app-shell navigation -- the gap found during D-001, when
+  `PageShell` shipped and it became clear nothing owned the frame it sits inside.
+  `components/app-shell/{app-shell,sidebar-nav}.tsx`, `lib/api/{current-user,groups}.ts`,
+  `lib/i18n-text/localized.ts`, `Nav` strings in both locales, `e2e/app-shell.spec.ts`, and
+  `(app)/layout.tsx` finally stops being a passthrough `<div>`.
+  - _Section visibility follows the IA's rule, not the convenient one._ `docs/IA.md` §3.1 is
+    explicit that "My Groups" and "My Teaching" derive from per-group membership arrays rather than
+    the global role, and are not mutually exclusive -- someone supervising one course while taking
+    another sees both. `GET /v1/users/{id}/groups` returns exactly that split
+    (`student`/`supervisor`), and filters archived groups out itself, confirmed in
+    `UsersPresenter::actionGroups`. "My Teaching" is hidden entirely when empty (IA: "only if any
+    exist"); "My Groups" stays visible but empty, because it tells a new student where their
+    courses will appear.
+  - _Three API facts checked against a live response rather than inferred_: there is no
+    `/users/me` (passing `me` as the id fails core-api's own uuid validation), the role lives at
+    `privateData.role` and not at the top level, and groups carry **no** top-level `name` -- names
+    come from a `localizedTexts` array keyed by locale. That last one got its own helper
+    (`localizedName`) since every screen showing a group, assignment or exercise will need it; it
+    falls back to the first available translation rather than rendering an empty, unclickable row.
+  - Data is fetched in the Server Component and only finished labels cross into the client island,
+    which handles collapse, the phone drawer and active state. Active state uses
+    `aria-current="page"`, not colour alone, and is derived from `usePathname()` so it is right on
+    first paint and after a browser back. Note it must be the **locale-aware** `usePathname` from
+    `@/i18n/navigation`; `next/navigation`'s returns `/en/groups` and would match nothing.
+  - The admin section is a role check and deliberately nothing more -- core-api authorises every
+    admin route itself, and brief §3.4's "a hidden button is not authorisation" cuts both ways.
+  - _Observations:_ verified against the container as a signed-in superadmin -- all sections
+    render, the current page carries `aria-current`, clicking through moves it, and at 390px the
+    sidebar collapses behind a disclosure button with correct `aria-expanded`. An unauthenticated
+    `/en/dashboard` still redirects to `/en/login?from=...`, so wiring the shell into the layout
+    did not weaken the gate.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-013 and D-016 done (D-014/D-015 remain);
-  Foundation (F-001
+- **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command
+  palette) remains. Foundation (F-001
   through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-014 (Sidebar / app-shell navigation) -- the gap found during D-001; per
-  `docs/BACKLOG.md`. D-015 (command palette) follows it, and then Phase 2 is complete.
+- **Next ticket:** D-015 (Command palette, Cmd/Ctrl-K) -- `docs/IA.md` §3.4. It is the last
+  Design System ticket; Phase 3 (Student flows, S-series) follows.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

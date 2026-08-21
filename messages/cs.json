@@ -189,5 +189,26 @@
       "second-chance": "Druhý termín",
       "closed": "Uzavřeno"
     }
+  },
+  "Nav": {
+    "primary": "Hlavní navigace",
+    "openMenu": "Menu",
+    "closeMenu": "Zavřít menu",
+    "emptySection": "Zatím nic",
+    "dashboard": "Přehled",
+    "home": "Domů",
+    "myGroups": "Moje skupiny",
+    "myTeaching": "Moje výuka",
+    "exercises": "Úlohy",
+    "exerciseCatalog": "Katalog úloh",
+    "pipelines": "Pipeline",
+    "people": "Lidé",
+    "profile": "Můj profil",
+    "users": "Uživatelé",
+    "admin": "Administrace",
+    "server": "Server",
+    "systemMessages": "Systémové zprávy",
+    "archive": "Archiv",
+    "submissionFailures": "Chyby odevzdání"
   }
 }

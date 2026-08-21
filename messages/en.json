@@ -189,5 +189,26 @@
       "second-chance": "Second deadline",
       "closed": "Closed"
     }
+  },
+  "Nav": {
+    "primary": "Primary navigation",
+    "openMenu": "Menu",
+    "closeMenu": "Close menu",
+    "emptySection": "Nothing here yet",
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "myGroups": "My groups",
+    "myTeaching": "My teaching",
+    "exercises": "Exercises",
+    "exerciseCatalog": "Exercise catalog",
+    "pipelines": "Pipelines",
+    "people": "People",
+    "profile": "My profile",
+    "users": "Users",
+    "admin": "Administration",
+    "server": "Server",
+    "systemMessages": "System messages",
+    "archive": "Archive",
+    "submissionFailures": "Submission failures"
   }
 }
