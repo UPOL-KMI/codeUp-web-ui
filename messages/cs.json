@@ -22,7 +22,8 @@
   },
   "Error": {
     "title": "Něco se pokazilo",
-    "retry": "Zkusit znovu"
+    "retry": "Zkusit znovu",
+    "description": "Tento obsah se nepodařilo načíst. Problém může být dočasný."
   },
   "Placeholder": {
     "comingSoon": "Tato stránka zatím nebyla vytvořena."
@@ -77,5 +78,148 @@
   },
   "Profile": {
     "title": "Profil"
+  },
+  "Upload": {
+    "dropzone": "Vyberte soubory nebo je sem přetáhněte",
+    "maxSize": "Maximální velikost souboru: {size}",
+    "uploading": "Nahrávání… {percent} %",
+    "progressLabel": "Průběh nahrávání souboru {name}",
+    "cancel": "Zrušit",
+    "done": "Nahráno",
+    "remove": "Odebrat",
+    "failed": "Nahrávání se nezdařilo."
+  },
+  "Dialog": {
+    "close": "Zavřít",
+    "confirm": "Potvrdit",
+    "cancel": "Zrušit"
+  },
+  "Toast": {
+    "close": "Zavřít",
+    "regionLabel": "Oznámení"
+  },
+  "DesignSystem": {
+    "title": "Design systém",
+    "subtitle": "Všechny komponenty design systému samostatně.",
+    "tokens": "Tokeny motivu",
+    "dataTable": "Tabulka dat",
+    "columnName": "Úloha",
+    "columnPoints": "Body",
+    "columnDeadline": "Termín",
+    "form": "Formulářová sada",
+    "fieldEmail": "E-mail",
+    "fieldEmailHint": "Z této stránky se nic neodesílá.",
+    "showErrors": "Zobrazit chybové stavy",
+    "demoFieldError": "Tato adresa není platná.",
+    "demoFormError": "Při ukládání se něco pokazilo.",
+    "dialogs": "Dialogy",
+    "openDialog": "Otevřít dialog",
+    "dialogTitle": "Ukázkový dialog",
+    "dialogDescription": "Klávesa Escape ho zavře a fokus se vrátí na spouštěcí prvek.",
+    "dialogClose": "Zavřít",
+    "openConfirm": "Otevřít potvrzení",
+    "confirmTitle": "Smazat tuto ukázku?",
+    "confirmDescription": "Nic se doopravdy nemaže — jde jen o ukázku potvrzovacího dialogu.",
+    "confirmedTimes": "Potvrzeno {count, plural, one {# krát} few {# krát} other {# krát}}.",
+    "upload": "Nahrávání souborů",
+    "uploadNote": "Nahrávání jde na skutečné API, takže tato část funguje jen po přihlášení.",
+    "toasts": "Oznámení",
+    "showSuccessToast": "Zobrazit oznámení o úspěchu",
+    "showErrorToast": "Zobrazit oznámení o chybě",
+    "toastSuccessTitle": "Skupina uložena",
+    "toastSuccessBody": "Vaše změny jsou uloženy.",
+    "toastErrorTitle": "Skupinu se nepodařilo uložit",
+    "toastErrorBody": "Server požadavek odmítl. Nic se nezměnilo.",
+    "states": "Stavy",
+    "stateEmptyTitle": "Zatím žádné úlohy",
+    "stateEmptyBody": "Úlohy, které v této skupině vytvoříte, se objeví zde.",
+    "stateEmptyAction": "Vytvořit úlohu",
+    "stateBreakIt": "Rozbít panel níže",
+    "stateLoading": "Načítání",
+    "stateEmpty": "Prázdný stav",
+    "stateError": "Chyba (s opakováním)",
+    "stateBoom": "Tento panel měl selhat.",
+    "stateFixIt": "Opravit, pak použijte tlačítko pro opakování",
+    "code": "Prohlížeč kódu",
+    "codeNote": "Zvýrazněno na serveru. Kliknutím na číslo řádku na něj získáte odkaz.",
+    "markdown": "Markdown",
+    "markdownNote": "Zpracováno na serveru včetně KaTeX a zvýraznění kódu, s pravidly oddělovačů z původního rendereru.",
+    "badges": "Stavové odznaky",
+    "badgesNote": "Stavy vyhodnocení vycházejí přímo z polí API; stavy termínů se vykreslují až v prohlížeči, protože závisejí na aktuálním čase.",
+    "formatters": "Formátování",
+    "formattersNote": "Absolutní data se vykreslují na serveru v časové zóně nasazení; relativní časy až v prohlížeči, protože závisejí na aktuálním okamžiku."
+  },
+  "Code": {
+    "lineLabel": "Řádek {line}",
+    "notHighlighted": "bez zvýraznění"
+  },
+  "Status": {
+    "evaluation": {
+      "failed": {
+        "label": "Vyhodnocení selhalo",
+        "description": "Řešení se nedostalo k vyhodnocení, nebo vyhodnocení samo selhalo."
+      },
+      "pending": {
+        "label": "Vyhodnocuje se",
+        "description": "Odevzdáno, čeká se na výsledek."
+      },
+      "compilation-failed": {
+        "label": "Chyba překladu",
+        "description": "Řešení se nepodařilo přeložit, žádný test nebyl spuštěn."
+      },
+      "correct": {
+        "label": "Správně",
+        "description": "Všechny testy prošly."
+      },
+      "partial": {
+        "label": "Částečně správně",
+        "description": "Některé testy prošly."
+      },
+      "incorrect": {
+        "label": "Špatně",
+        "description": "Neprošel žádný test."
+      },
+      "not-scored": {
+        "label": "Vyhodnoceno",
+        "description": "Za tuto úlohu se neudělují body."
+      }
+    },
+    "deadline": {
+      "open": "Otevřeno",
+      "second-chance": "Druhý termín",
+      "closed": "Uzavřeno"
+    }
+  },
+  "Nav": {
+    "primary": "Hlavní navigace",
+    "openMenu": "Menu",
+    "closeMenu": "Zavřít menu",
+    "emptySection": "Zatím nic",
+    "dashboard": "Přehled",
+    "home": "Domů",
+    "myGroups": "Moje skupiny",
+    "myTeaching": "Moje výuka",
+    "exercises": "Úlohy",
+    "exerciseCatalog": "Katalog úloh",
+    "pipelines": "Pipeline",
+    "people": "Lidé",
+    "profile": "Můj profil",
+    "users": "Uživatelé",
+    "admin": "Administrace",
+    "server": "Server",
+    "systemMessages": "Systémové zprávy",
+    "archive": "Archiv",
+    "submissionFailures": "Chyby odevzdání"
+  },
+  "Palette": {
+    "label": "Hledání",
+    "placeholder": "Hledat skupiny, úlohy a lidi…",
+    "hint": "Zadejte alespoň dva znaky.",
+    "loading": "Hledám…",
+    "empty": "Nic nenalezeno.",
+    "groups": "Skupiny",
+    "exercises": "Úlohy",
+    "users": "Lidé",
+    "open": "Hledat (Ctrl+K)"
   }
 }

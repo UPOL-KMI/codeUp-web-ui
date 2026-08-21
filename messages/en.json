@@ -22,7 +22,8 @@
   },
   "Error": {
     "title": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "description": "This content could not be loaded. The problem may be temporary."
   },
   "Placeholder": {
     "comingSoon": "This page hasn't been built yet."
@@ -77,5 +78,148 @@
   },
   "Profile": {
     "title": "Profile"
+  },
+  "Upload": {
+    "dropzone": "Choose files or drag them here",
+    "maxSize": "Maximum file size: {size}",
+    "uploading": "Uploading… {percent}%",
+    "progressLabel": "Upload progress for {name}",
+    "cancel": "Cancel",
+    "done": "Uploaded",
+    "remove": "Remove",
+    "failed": "The upload failed."
+  },
+  "Dialog": {
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "Toast": {
+    "close": "Dismiss",
+    "regionLabel": "Notifications"
+  },
+  "DesignSystem": {
+    "title": "Design system",
+    "subtitle": "Every design-system component in isolation.",
+    "tokens": "Theme tokens",
+    "dataTable": "Data table",
+    "columnName": "Exercise",
+    "columnPoints": "Points",
+    "columnDeadline": "Deadline",
+    "form": "Form kit",
+    "fieldEmail": "Email",
+    "fieldEmailHint": "Nothing is submitted from this page.",
+    "showErrors": "Show error states",
+    "demoFieldError": "This address is not valid.",
+    "demoFormError": "Something went wrong while saving.",
+    "dialogs": "Dialogs",
+    "openDialog": "Open dialog",
+    "dialogTitle": "Example dialog",
+    "dialogDescription": "Escape closes it and focus returns to the trigger.",
+    "dialogClose": "Close",
+    "openConfirm": "Open confirmation",
+    "confirmTitle": "Delete this example?",
+    "confirmDescription": "Nothing is actually deleted — this only demonstrates the confirmation.",
+    "confirmedTimes": "Confirmed {count, plural, one {# time} other {# times}}.",
+    "upload": "Upload",
+    "uploadNote": "Uploads go to the real API, so this section only works when you are signed in.",
+    "toasts": "Toasts",
+    "showSuccessToast": "Show success toast",
+    "showErrorToast": "Show error toast",
+    "toastSuccessTitle": "Group saved",
+    "toastSuccessBody": "Your changes are live.",
+    "toastErrorTitle": "Could not save the group",
+    "toastErrorBody": "The server rejected the request. Nothing was changed.",
+    "states": "States",
+    "stateEmptyTitle": "No assignments yet",
+    "stateEmptyBody": "Assignments you create in this group will appear here.",
+    "stateEmptyAction": "Create assignment",
+    "stateBreakIt": "Break the panel below",
+    "stateLoading": "Loading",
+    "stateEmpty": "Empty",
+    "stateError": "Error (with retry)",
+    "stateBoom": "This panel was asked to fail.",
+    "stateFixIt": "Repair it, then use the retry button",
+    "code": "Code viewer",
+    "codeNote": "Highlighted on the server. Click a line number to link to it.",
+    "markdown": "Markdown",
+    "markdownNote": "Parsed, KaTeX-rendered and syntax-highlighted on the server, with the legacy renderer's delimiter rules.",
+    "badges": "Status badges",
+    "badgesNote": "Evaluation states are derived from the API's own fields; deadline states render client-side only, since they depend on the current time.",
+    "formatters": "Formatters",
+    "formattersNote": "Absolute dates render on the server in the deployment's time zone; relative times render in the browser, since they depend on the current moment."
+  },
+  "Code": {
+    "lineLabel": "Line {line}",
+    "notHighlighted": "not highlighted"
+  },
+  "Status": {
+    "evaluation": {
+      "failed": {
+        "label": "Evaluation failed",
+        "description": "The solution never reached the evaluation pipeline, or the pipeline itself failed."
+      },
+      "pending": {
+        "label": "Evaluating",
+        "description": "Submitted and waiting for a result."
+      },
+      "compilation-failed": {
+        "label": "Compilation failed",
+        "description": "The solution did not compile, so no test was executed."
+      },
+      "correct": {
+        "label": "Correct",
+        "description": "All tests passed."
+      },
+      "partial": {
+        "label": "Partly correct",
+        "description": "Some tests passed."
+      },
+      "incorrect": {
+        "label": "Incorrect",
+        "description": "No test passed."
+      },
+      "not-scored": {
+        "label": "Evaluated",
+        "description": "This assignment awards no points."
+      }
+    },
+    "deadline": {
+      "open": "Open",
+      "second-chance": "Second deadline",
+      "closed": "Closed"
+    }
+  },
+  "Nav": {
+    "primary": "Primary navigation",
+    "openMenu": "Menu",
+    "closeMenu": "Close menu",
+    "emptySection": "Nothing here yet",
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "myGroups": "My groups",
+    "myTeaching": "My teaching",
+    "exercises": "Exercises",
+    "exerciseCatalog": "Exercise catalog",
+    "pipelines": "Pipelines",
+    "people": "People",
+    "profile": "My profile",
+    "users": "Users",
+    "admin": "Administration",
+    "server": "Server",
+    "systemMessages": "System messages",
+    "archive": "Archive",
+    "submissionFailures": "Submission failures"
+  },
+  "Palette": {
+    "label": "Search",
+    "placeholder": "Search groups, exercises and people…",
+    "hint": "Type at least two characters.",
+    "loading": "Searching…",
+    "empty": "Nothing found.",
+    "groups": "Groups",
+    "exercises": "Exercises",
+    "users": "People",
+    "open": "Search (Ctrl+K)"
   }
 }

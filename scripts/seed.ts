@@ -238,9 +238,14 @@ async function ensureGroupMember(
 
 const EXERCISE_NAME = `${SEED_PREFIX} Echo Greeting`;
 const EXPECTED_OUTPUT = "Hello, ReCodEx!\n";
-// python3 stdin/stdout diff pipeline -- id verified live against this deployment's own
-// runtimes:import seed (services/api/Dockerfile), not guessed. See docs/DECISIONS.md.
-const PYTHON_STDOUT_PIPELINE_ID = "7f5de91c-55ab-468a-ab01-4a07bedd53a7";
+// The python3 stdout pipeline is looked up by name at run time -- see findPipelineId() below.
+// It used to be a hardcoded UUID, "verified live" against the instance this script was written
+// against. That verification was real and the value was still wrong everywhere else: core-api
+// assigns pipeline ids **when the runtime package is imported**, so every fresh database gets
+// different ones, and the constant broke the moment the stack was stood up on another machine --
+// precisely the one-command bootstrap DEC-052 was asked for.
+const PYTHON_STDOUT_PIPELINE_NAME = "Python execution & evaluation [stdout]";
+const TEST_NAME = "Test 1";
 const HW_GROUP_ID = "01-default"; // matches WORKER_HWGROUP in the compose repo's .env
 
 interface ExerciseRecord {
@@ -262,21 +267,65 @@ async function findExerciseByName(
   return match ? { id: match.id } : null;
 }
 
+interface PipelineRecord {
+  id: string;
+  name: string;
+  runtimeEnvironmentIds?: string[];
+}
+
+/**
+ * Resolves a pipeline id by name and runtime environment. `/v1/pipelines` returns a paginated
+ * envelope (`{items, ...}`), unlike some sibling list endpoints that return a bare array -- both
+ * shapes are accepted here rather than assumed, since that inconsistency has already caught this
+ * project once (see the command palette's search route).
+ */
+async function findPipelineId(
+  adminToken: string,
+  name: string,
+  runtimeEnvironmentId: string,
+): Promise<string> {
+  const payload = await api<PipelineRecord[] | { items?: PipelineRecord[] }>("GET", "/pipelines", {
+    token: adminToken,
+  });
+  const pipelines = Array.isArray(payload) ? payload : (payload.items ?? []);
+  const match = pipelines.find(
+    (pipeline) =>
+      pipeline.name === name &&
+      (pipeline.runtimeEnvironmentIds ?? []).includes(runtimeEnvironmentId),
+  );
+
+  if (!match) {
+    throw new Error(
+      `Pipeline "${name}" for runtime "${runtimeEnvironmentId}" not found. The runtime package is ` +
+        `probably not imported on this instance -- see the compose repo's README, "Language toolchains".`,
+    );
+  }
+  return match.id;
+}
+
 async function getOrCreateBaseExercise(
   adminToken: string,
   ownerGroupId: string,
 ): Promise<ExerciseRecord> {
+  // Reusing an existing exercise by name is *not* the same as it being usable. A run that dies
+  // partway (as one did, on the hardcoded pipeline id above) leaves an exercise that exists,
+  // matches by name, and is rejected by core-api as "broken" the moment anything tries to assign
+  // it. So the configuration steps below run every time, for a reused exercise as much as a fresh
+  // one -- they are all idempotent writes that replace rather than append. Only the creation
+  // itself is conditional.
   const existing = await findExerciseByName(adminToken, EXERCISE_NAME);
   if (existing) {
-    log(`exercise exists, reused: ${EXERCISE_NAME}`);
-    return existing;
+    log(`exercise exists, reconfiguring: ${EXERCISE_NAME}`);
   }
 
-  const exercise = await api<{ id: string }>("POST", "/exercises", {
-    token: adminToken,
-    body: { groupId: ownerGroupId },
-  });
-  const id = exercise.id;
+  const id =
+    existing?.id ??
+    (
+      await api<{ id: string }>("POST", "/exercises", {
+        token: adminToken,
+        body: { groupId: ownerGroupId },
+      })
+    ).id;
 
   await api("POST", `/exercises/${id}/hardware-groups`, {
     token: adminToken,
@@ -287,18 +336,34 @@ async function getOrCreateBaseExercise(
     body: { environmentConfigs: [{ runtimeEnvironmentId: "python3", variablesTable: [] }] },
   });
 
+  // `POST /tests` *adds* rather than replaces: re-running it with the same name fails with
+  // "given test name 'Test 1' is already taken". Sending the existing test's id turns the same
+  // call into an update, which is what makes re-running this script safe on an instance that
+  // already has the exercise.
+  const existingTests = await api<{ id: number; name: string }[]>("GET", `/exercises/${id}/tests`, {
+    token: adminToken,
+  });
+  const existingTest = existingTests.find((candidate) => candidate.name === TEST_NAME);
+
   const test = await api<{ id: number }[]>("POST", `/exercises/${id}/tests`, {
     token: adminToken,
-    body: { tests: [{ name: "Test 1" }] },
+    body: {
+      tests: [existingTest ? { id: existingTest.id, name: TEST_NAME } : { name: TEST_NAME }],
+    },
   });
   const firstTest = test[0];
   if (!firstTest) throw new Error("POST /exercises/{id}/tests returned no test.");
   const testId = firstTest.id;
 
+  // core-api guards exercise edits with optimistic concurrency: the payload must carry the
+  // exercise's *current* version, and a hardcoded 1 only works on an exercise nobody has touched.
+  // Every re-run of this script bumps it, so read it back rather than assuming.
+  const current = await api<{ version: number }>("GET", `/exercises/${id}`, { token: adminToken });
+
   await api("POST", `/exercises/${id}`, {
     token: adminToken,
     body: {
-      version: 1,
+      version: current.version,
       difficulty: "easy",
       localizedTexts: [
         {
@@ -328,12 +393,16 @@ async function getOrCreateBaseExercise(
     body: { files: [expectedUpload.id] },
   });
 
+  // Resolved once and reused: the config below refers to the same pipeline by id, and looking it
+  // up twice would be two round trips for one answer.
+  const pipelineId = await findPipelineId(adminToken, PYTHON_STDOUT_PIPELINE_NAME, "python3");
+
   const variables = await api<{ variables: { name: string; type: string; value: unknown }[] }[]>(
     "POST",
     `/exercises/${id}/config/variables`,
     {
       token: adminToken,
-      body: { runtimeEnvironmentId: "python3", pipelinesIds: [PYTHON_STDOUT_PIPELINE_ID] },
+      body: { runtimeEnvironmentId: "python3", pipelinesIds: [pipelineId] },
     },
   );
   const firstVariableSet = variables[0];
@@ -353,9 +422,7 @@ async function getOrCreateBaseExercise(
           tests: [
             {
               name: testId,
-              pipelines: [
-                { name: PYTHON_STDOUT_PIPELINE_ID, variables: Array.from(varMap.values()) },
-              ],
+              pipelines: [{ name: pipelineId, variables: Array.from(varMap.values()) }],
             },
           ],
         },

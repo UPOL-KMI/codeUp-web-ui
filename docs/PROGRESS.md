@@ -979,15 +979,471 @@ use-server-action-form, use-dirty-guard}.ts`, `components/form/{text-field, form
     cloned this repo into `repos/web-next` via SSH, and `docker compose build web-next && docker
 compose up -d web-next` succeeded end to end from that new location.
 
+- **[2026-08-21 09:15] D-005:** Upload component + Route Handlers. `lib/upload/{limits,
+chunked-upload,use-file-upload}.ts`, `components/upload/file-upload.tsx`,
+  `app/api/upload/partial/route.ts`, `app/api/upload/partial/[id]/route.ts`,
+  `app/api/upload/[id]/digest/route.ts`, `Upload` strings in both locales, plus a
+  `readSessionToken()` helper in `lib/auth/session-cookie.ts`.
+  - _Brief §6.7's open question, answered:_ "If the legacy app chunks large uploads, find out and
+    reproduce that." **It does.** `repos/web-app/src/redux/modules/upload.js` +
+    `containers/UploadContainer/UploadContainer.js` drive core-api's per-partes protocol:
+    `POST /uploaded-files/partial {name,size}` → `PUT /uploaded-files/partial/{id}?offset=N` with
+    the raw chunk as the body → `POST /uploaded-files/partial/{id}` to finalize →
+    `GET /uploaded-files/{id}/digest` compared against a locally recomputed SHA-1 →
+    `DELETE /uploaded-files/partial/{id}` to cancel. Chunk size is adaptive (64 KiB start, doubled
+    after a chunk under 2 s, halved after one over 4 s, clamped to 4 KiB–4 MiB). Cross-checked
+    against `UploadedFilesPresenter` rather than trusting the legacy client alone -- that's where
+    the offset rule (core-api rejects any offset ≠ its own `uploadedSize`) and the raw-body
+    handling (`saveRequestBodyAsFile()` reads `php://input`, no multipart wrapper) come from.
+  - _The one real design decision:_ the chunk loop runs in the **browser**, with each chunk
+    proxied through a Route Handler, rather than shipping the whole file to a Route Handler that
+    chunks server-side. Both readings satisfy §6.7's wording; only the first gives real progress
+    (a server-side loop can only report browser→Next transfer), cancel that stops work in flight,
+    and a checksum check that means anything -- comparing core-api's digest against bytes _we_
+    sent it verifies nothing, since both sides come from the same copy. Documented as DEC-053.
+  - _512 MiB ceiling:_ verified, not assumed -- the compose repo's `services/proxy/
+nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512M`) and
+    `services/api/php-recodex.ini` (`upload_max_filesize`/`post_max_size`). Notably core-api's own
+    `actionStartPartial()` permits **1 GiB**, so the deployment, not the API, is the binding
+    constraint. ASS-007 accordingly retired from DECISIONS.md's assumptions table as verified.
+  - _One deliberate divergence from the legacy app:_ local digest verification degrades to a skip
+    when `crypto.subtle` is missing instead of failing the upload. `crypto.subtle` only exists in a
+    secure context, so on plain HTTP reached by hostname (`http://recodex.local:3001` -- this very
+    deployment) it is `undefined` and the legacy app throws a bare `TypeError` there. The file is
+    already complete and durable by that point; failing it over a check the browser cannot perform
+    is the worse of the two behaviours.
+  - _Two things the lint config caught that are worth remembering:_ `react-hooks/refs` rejects the
+    "latest callback in a ref, assigned during render" pattern outright, and
+    `react-hooks/set-state-in-effect` rejects the usual "notify the parent from an effect, guarded
+    by remembered state" workaround. Both went away by moving the parent notification into
+    `useFileUpload` itself and firing it from the completion/remove/reset handlers -- real event
+    contexts, no effect involved. The rules were right; the first two designs were the habit.
+  - _Observations (verified live against the running stack):_ end to end on a bare-host
+    `next build && next start`, a 300 KiB file uploaded in 5 chunks and core-api's returned SHA-1
+    matched the local file's byte for byte. Negative paths all behave: unauthenticated → 401 JSON
+    (not a redirect, which is why `readSessionToken()` exists), 513 MiB → `400-004`, `bad/name.zip`
+    → `400-003`, non-UUID id → 400, wrong offset → core-api's own "offset must correspond" 400,
+    `DELETE` → `OK` followed by 404 on a later complete. Then re-verified **inside the Docker
+    `standalone` image** (`docker compose build web-next && up -d`, port 3001) -- same protocol,
+    same matching digest -- given D-002/D-003's history of Docker-only failures. The component
+    itself was driven in a real browser via a temporary demo page + Playwright: a multi-chunk
+    upload reaching the "Uploaded" state, and a 200 MiB upload cancelled mid-flight with the row
+    disappearing. Demo page and its spec removed afterward, same as D-004's demo Server Action.
+  - See DEC-053.
+
+- **[2026-08-21 10:05] D-006:** Dialog/modal system. `components/dialog/{dialog,confirm-dialog}.tsx`,
+  `Dialog` strings in both locales, dialog motion tokens + a `prefers-reduced-motion` rule in
+  `app/globals.css`.
+  - _Package:_ the unified `radix-ui` (1.6.7) rather than `@radix-ui/react-dialog`. Checked the
+    React 19 peer range before installing (DEC-050's lesson, applied without being prompted this
+    time). The rest of the Design System phase needs several more primitives from the same family
+    (D-007 toasts, D-015 command palette, dropdowns/tooltips); one version that moves together
+    beats a dozen drifting ranges, and the traced output is per-primitive either way.
+  - _`ConfirmDialog` is built on `AlertDialog`, not `Dialog`_ -- brief §9's "destructive actions
+    confirm" needs `role="alertdialog"`, initial focus on Cancel, and **no** outside-click
+    dismissal. All three confirmed by reading the installed
+    `@radix-ui/react-alert-dialog/dist/index.js` (it overrides `onPointerDownOutside` and
+    `onInteractOutside` with `preventDefault()`, and focuses its own `cancelRef` on open), not
+    from the docs site and not from memory.
+  - _Two details that would have been wrong if written from memory_, both checked against the
+    installed `@radix-ui/react-dialog@1.1.23`: (1) `aria-describedby` is already set to
+    `descriptionPresent ? descriptionId : undefined`, so the `aria-describedby={undefined}`
+    workaround every older Radix guide prescribes is obsolete -- writing it in would have been
+    harmless but misleading; (2) this version ships **no `console` calls whatsoever**, so the
+    famous "DialogTitle is required" warning no longer fires. A forgotten title would now be a
+    silent accessibility failure, which is why `title` is a required prop here rather than a
+    convention -- the compile error replaces the warning Radix used to give.
+  - _One real bug, and it was only visible in a screenshot:_ the enter/exit keyframes first
+    animated `transform: translate(-50%, -50%) scale(0.97)`. Tailwind v4 centres the dialog with
+    `-translate-x-1/2 -translate-y-1/2`, which compile to the standalone **`translate`** property,
+    not to `transform` -- so both applied, and the dialog flew in from half a dialog-width
+    off-centre. Nothing in the typecheck, the lint or the passing e2e assertions caught it; the
+    screenshot did. Fixed by animating the standalone `scale` property, which composes with
+    `translate`. Worth remembering as a general Tailwind v4 fact, not a dialog-specific one.
+  - _Observations (verified in a real browser against the running stack):_ dialog opens with the
+    right accessible name and description, `Tab` cycles without escaping the dialog, `Escape`
+    closes it and focus returns to the trigger. The confirm dialog focuses Cancel on open, ignores
+    a click on the backdrop, and only resolves on a deliberate choice. Demo page and its spec
+    removed afterward -- D-013 (`/dev/kitchen-sink`) is the ticket that owns a permanent home for
+    exercising these in isolation.
+  - See DEC-054.
+
+- **[2026-08-21 10:40] D-013:** `/dev/kitchen-sink`. `app/[locale]/dev/kitchen-sink/page.tsx` +
+  `components/dev/kitchen-sink.tsx`, `KitchenSink` strings in both locales, one new entry in
+  `proxy.ts`'s `PUBLIC_PATHNAMES`.
+  - Taken out of backlog order (D-007 was next) at the operator's explicit request: they wanted a
+    page they could keep open in a browser to watch the design system take shape. D-013 already
+    existed as an unblocked ticket for exactly this, so this is a reordering, not a new scope.
+  - Page is a Server Component; everything interactive lives in a single `"use client"` island
+    (brief §6.4). Deliberately outside both route groups and public in `proxy.ts` -- it renders no
+    user data and calls no user-scoped endpoint, so a session requirement would only get in the
+    way. The upload section is the one exception (it genuinely talks to core-api) and says so in
+    its own note rather than failing mysteriously for a signed-out viewer.
+  - Replaces the throwaway demo pages D-003 through D-006 each had to build and delete; the next
+    component ticket should extend this page instead.
+  - _Observations:_ verified live in the Docker container on port 3001 (not just the bare-host
+    build), in dark mode: table sorting/paging/selection, the form kit's field and form-level
+    error states, both dialogs opening and closing, and the upload dropzone rendering its 512 MiB
+    ceiling.
+
+- **[2026-08-21 11:20] D-007:** Toast notification system. `components/toast/toast-provider.tsx`,
+  mounted once in `app/[locale]/layout.tsx`; `Toast` strings in both locales; toast motion tokens
+  in `app/globals.css`.
+  - On Radix `Toast` (1.2.23), continuing DEC-054's package choice. Radix is doing real work here
+    beyond styling: `role="status"` with `aria-live` picked by toast type (`assertive` for
+    foreground, `polite` for background -- read out of the installed source), auto-dismiss timers
+    that pause on hover and on window blur, swipe-to-dismiss, and the F8 focus hotkey that makes
+    toasts keyboard-reachable at all.
+  - Errors are `foreground`/8 s, successes `background`/4 s: a success confirms something the user
+    already expected, an error is news they have to act on.
+  - `useToast()` **throws** outside the provider rather than returning a no-op -- a toast that
+    silently does nothing is precisely the silent failure brief §9 forbids, and it would only ever
+    be noticed in production, on the error path, by a user.
+  - _Observations:_ verified in the Docker container on port 3001 -- error toast renders
+    bottom-right with destructive styling, title, description and a working dismiss control.
+
+- **[2026-08-21 11:25] D-013 follow-up (route rename):** `/dev/kitchen-sink` →
+  `/dev/design-system`, with the component renamed to match and `proxy.ts`'s public-path entry
+  updated. The operator read the route, said they had no idea what "kitchen sink" meant, and asked
+  whether there was a better name. There was: the term is genuinely standard in design-system
+  tooling (Storybook, MUI and Bootstrap all ship "kitchen sink" pages, which is where the recon
+  ticket got it), but a name only a frontend specialist can parse is a bad name for a page whose
+  entire purpose is being looked at. `/dev/` still marks it as tooling rather than product.
+  DEC-020's original wording is left as written -- it records what was decided then.
+
+- **[2026-08-21 12:10] D-008:** State components. `components/state/{status-state,skeleton,
+empty-state,error-state,error-boundary}.tsx`; `app/[locale]/{error,not-found,forbidden,
+unauthorized}.tsx` rewritten onto them; `loading.tsx` added per route group; `Error.description`
+  in both locales; a `prefers-reduced-motion` rule for skeletons.
+  - One `StatusState` layout sits behind every one of these states. Brief §9 wants them _designed_
+    rather than improvised per screen, and one component is the only way they stay identical as
+    screens get built. It is deliberately presentational and server-safe -- three of the four route
+    pages are Server Components.
+  - `loading.tsx` at the **route-group** level rather than copied into every page folder: a
+    `loading.tsx` covers all segments nested beneath it, so `(app)` and `(anon)` each get one file
+    and every page in them a designed loading state. A screen needing a differently-shaped skeleton
+    can still add one closer to its leaf.
+  - `ErrorBoundary` wraps `catchError` from `next/error` for panel-level failures (AGENTS.md
+    footgun 8). Checked it actually exists in the installed next@16.3.1 before building on the
+    brief's word, and read the bundled `catchError.md`: `retry()` re-fetches inside a Transition
+    (preserving client state outside the boundary) while `reset()` only clears state without
+    re-fetching, and `redirect()`/`notFound()` pass through instead of being swallowed the way a
+    hand-written React boundary would swallow them.
+  - Its props type is `object`, not `Record<string, never>`: `catchError` returns
+    `ComponentType<P & {children?: ReactNode}>`, and a `never`-valued index signature makes that
+    intersection reject its own children. Small, but it is the kind of thing that reads as a
+    library bug if you meet it cold.
+  - _Two things the lint config was right about, again:_ the first version of the showcase's demo
+    panel cleared a parent flag during render, and the second reached for module-level mutable
+    state (`react-hooks/globals`). Both were attempts to fake a recovering error boundary. The
+    honest version -- a "break it" button and a separate "repair it" button, with `retry()` in
+    between -- is simpler _and_ shows the real behaviour: retry on a still-broken panel fails
+    again, exactly as it should.
+  - _One copy bug found by looking rather than reading:_ the shared error state said "this **page**
+    could not be loaded", which is visibly wrong when it renders inside a single failed panel on
+    an otherwise working page. Now "this content".
+  - _Observations:_ verified in the Docker container on port 3001 -- skeletons, the empty state
+    with its action, and the panel-level boundary catching a real thrown error while the rest of
+    the page (including toast and dialog state) kept working, then genuinely recovering on retry
+    once the cause was removed.
+
+- **[2026-08-21 13:15] D-009:** Code viewer with line anchoring. `components/code/code-viewer.tsx`,
+  `lib/code/{highlight,languages}.ts`, Shiki styles in `app/globals.css`, `Code` strings in both
+  locales, plus a section on `/dev/design-system`.
+  - Shiki 4.4.3, **server-side only** (brief §4's stack table). The highlighter is created once per
+    server process and held as a promise so concurrent first requests share one initialisation
+    rather than racing to start several; grammars are restricted to the languages the extension map
+    can actually produce, not Shiki's full bundle.
+  - The extension→language table is ported from the legacy app's own `syntaxHighlighting.js`, not
+    invented: students upload these extensions today, and a mapping that disagrees would silently
+    change how their own solutions look. Prism-flavoured ids translated where the two differ
+    (`markup` → `html`/`xml`, `c_cpp` → `c`/`cpp`); `bison` dropped, Shiki has no grammar for it.
+    All 26 resulting ids were verified by actually loading them, not by trusting the list.
+  - Dual theme via `defaultColor: false`, which emits `--shiki-light`/`--shiki-dark` on every token
+    and leaves the choice to CSS keyed on next-themes' `.dark` class. `light-dark()` was the
+    alternative and is the wrong one here: it keys off the CSS `color-scheme` property, not the
+    class this app toggles, so an explicitly chosen theme would not follow it.
+  - Line anchors are real `<a>` elements inside each line (a CSS counter cannot be linked, focused
+    or opened in a new tab), `user-select: none` so copying the code does not carry the numbers
+    along, and `:target` does the highlighting -- so a deep link works in the server-rendered HTML
+    before any JavaScript runs.
+  - _One bug the page found and the code did not:_ the `:target` rule lost the cascade. The usual
+    Shiki dual-theme snippet paints a background on **every** span, `.line` included, at a higher
+    specificity than `.line:target` -- so the linked line looked identical to the rest and nothing
+    but looking at it would have said so. Fixed by painting a background only on the block itself
+    and giving the target rule selectors that genuinely win. Third bug in this phase that only a
+    screenshot or a computed style caught, after the dialog centring and the "this page"/"this
+    content" copy.
+  - Files over 512 KiB render unhighlighted (and say so) rather than tying up a server process
+    tokenising a generated file nobody reads line by line -- uploads are allowed up to 512 MiB.
+  - _Deliberately not built:_ per-line review comments and collapsed unchanged regions, both of
+    which the legacy `SourceCodeViewer` has. They belong to the solution-review ticket; the
+    `id`/`data-line` attributes it will need exist now because line anchoring is _this_ ticket.
+  - _Observations:_ verified in the Docker container -- `id="L1"`... present in the raw server HTML
+    (so highlighting really is server-side), and `#L5` highlights line 5 while line 6 stays
+    untouched, checked via computed style rather than by eye.
+
+- **[2026-08-21 14:05] Improvements pass** (operator asked for improvements found along the way,
+  not only ticket work). Three real gaps, all fixed:
+  - **F-027, dependency automation was simply missing.** Brief §4: "Add Renovate or Dependabot on
+    day one, with `next` and `react-server-dom-*` grouped together." Nothing existed, and the
+    subject appears nowhere in `BACKLOG.md`, `DECISIONS.md` or `DROPPED.md` -- so it was an
+    oversight during Foundation rather than a recorded deferral. Added `.github/dependabot.yml`
+    with the grouping the brief asks for, plus react/radix/dev-tooling groups and the CI actions.
+    Dependabot rather than Renovate because Renovate needs a GitHub App installed on the account,
+    which is the operator's decision to make and not something this repo can provision for itself.
+  - **D-016, no regression net for the design system.** D-003 through D-009 each built a
+    throwaway demo page, verified by hand, and deleted it -- six components with nothing behind
+    them that would notice a regression. D-013's showcase is permanent and public, so one spec
+    (`e2e/design-system.spec.ts`) now covers all of it: dialog Escape + focus restoration, the
+    confirm dialog's no-outside-dismiss guarantee, toasts, the error boundary containing a real
+    thrown error and recovering on retry, and server-side highlighting with working line anchors.
+    It needs no login, so it costs none of the bcrypt round trips `playwright.config.ts` had to
+    reduce its worker count for.
+    - _Found while writing it:_ Radix renders an off-screen announcer (`<span role="status"
+aria-live="assertive">`) duplicating each toast's text. A `role="status"`-scoped lookup lands
+      on that copy, which contains no dismiss button, and a loose text match resolves to two
+      elements. Noted in the spec so the next person doesn't spend a test timeout on it.
+  - **`INVENTORY.md`'s status column had gone stale.** Five mechanism rows (auth token storage,
+    token refresh, external auth, takeover, restricted tokens) still said `todo` although F-016
+    through F-021 shipped them. A status column that lies is worse than no status column --
+    `AGENTS.md` tells every session to read the INVENTORY rows its ticket touches. Corrected, with
+    the implementing ticket named in each row; also corrected two rows that said "Server Action"
+    where the thing actually built is a Route Handler.
+
+- **[2026-08-21 15:30] D-010:** Markdown renderer. `components/markdown/markdown.tsx`,
+  `lib/markdown/legacy-compat.ts`, `lib/markdown/legacy-compat.test.ts` (the repo's first unit
+  tests), markdown styles in `app/globals.css`, a section on `/dev/design-system`, and matching
+  assertions in `e2e/design-system.spec.ts`.
+  - _Brief §7's instruction was followed literally_ -- "render a sample of real exercise texts both
+    ways early and log the differences; do not discover them during parity sweep." 16 constructs
+    were rendered through the legacy renderer (`markdown-it` at its defaults +
+    `@iktakahiro/markdown-it-katex`, matching the legacy widget's own configuration) and through the
+    candidate pipeline, side by side, in a scratch harness outside the repo so no comparison-only
+    dependency landed in it. **10 of 16 differed.**
+  - _Two would have damaged authored content:_
+    - **Raw HTML disappeared entirely.** Legacy runs `html: false`, which escapes and _shows_ raw
+      HTML. react-markdown without `rehype-raw` _drops_ it: `<div class="note">Read
+<b>carefully</b>.</div>` rendered as nothing, and `<kbd>Enter</kbd>` rendered as the bare word
+      "Enter". Fixed by converting those nodes to text. Deliberately not fixed with `rehype-raw`,
+      which would start _executing_ markup the legacy app has always shown as inert -- a new
+      injection surface in supervisor-authored content, seen by every student opening the
+      assignment.
+    - **`It costs $5 and $10` became mathematics.** `remark-math` recognises `$...$` far more
+      eagerly than markdown-it-katex. The legacy rules were measured, not guessed: no whitespace
+      immediately inside the delimiters, and `$$` is display math only when it stands alone
+      (mid-sentence `$$x$$` is literal text). Both reproduced by inspecting each node's original
+      source span.
+  - _The rest are additive and accepted, not fixed:_ GFM autolinks bare URLs, renders task lists as
+    checkboxes, and supports footnotes -- none of which legacy did; `<del>` instead of `<s>`;
+    numeric entity re-encoding (identical rendering). All recorded in DEC-055 rather than left to
+    be rediscovered.
+  - _The unit tests earned their keep immediately_ -- this repo's first, and they caught three real
+    bugs in the plugins before anything was rendered: `remark-math` trims the node value, so
+    checking `node.value` for whitespace can never distinguish `$ x $` from `$x$` (the raw source
+    span has to be read); a hand-built block-level `math` node arrives without the
+    `data.hName`/`hProperties` remark-math attaches at parse time and renders as nothing (flipping
+    the existing node's class to `math-display` is the actual fix); and the two visitors match the
+    same nodes, so the second silently reverted the first's work until it learned to skip
+    already-labelled display math.
+  - _One failure that only the running application could show:_ react-markdown executes its plugin
+    pipeline **synchronously**, so the ordinary async `@shikijs/rehype` plugin dies at request time
+    with `runSync finished async. Use run instead`. `typecheck`, `lint` and `build` were all green
+    -- the route renders per request, so the build never exercised it. Fixed by awaiting D-009's
+    shared highlighter in the component and handing the instance to `@shikijs/rehype/core`'s
+    synchronous entry point. Fourth bug this phase that only running the thing caught.
+  - _Observations:_ verified in the Docker container -- prices stay prose, `<b>this</b>` shows as
+    written with no live `<b>` element in the DOM, a lone `$$...$$` paragraph renders as display
+    math while `$\varphi$` stays inline, tables render, and fences are Shiki-highlighted.
+  - See DEC-055.
+
+- **[2026-08-21 16:20] D-011:** Status badges. `components/status/{badge,evaluation-badge,
+deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.ts`, `--success`
+  and `--warning` theme tokens, `Status` strings in both locales, a section on
+  `/dev/design-system`.
+  - _The evaluation logic is a port, not a design._ Read out of the legacy `SolutionStatusIcon`'s
+    decision tree and kept in that order, because the order is the meaning: a missing submission or
+    a `failure` is an infrastructure failure, a missing `evaluation` means it is still running,
+    `initFailed` means compilation failed before any test ran, and only then does the score mean
+    anything. Also ported the non-obvious case where a zero-point assignment greys out unless the
+    solution was explicitly accepted -- without it, every zero-point assignment reads as a failure.
+  - Kept as a pure function with unit tests rather than branching inside a component: three of the
+    six outcomes are infrastructure failure modes that cannot be produced on demand, and this
+    machine cannot produce real pass/fail results at all (DEC-031), so tests are the only place
+    this logic is exercised until a cgroup v1 host exists.
+  - **The theme had no `--success` or `--warning` tokens** -- the base set it started from only has
+    `destructive`. Status colouring is exactly where a hardcoded green would otherwise appear
+    first, so both were added in light and dark, with chroma and lightness matched to `destructive`
+    so the three read as one family (brief §9: "never hardcode a colour").
+  - _Deadline state is client-only, deliberately._ Whether a deadline has passed depends on the
+    current time, so a server render and a client render legitimately disagree -- the exact
+    hydration trap AGENTS.md §6.6 singles out ("ReCodEx is full of deadlines"). Implemented with
+    `useSyncExternalStore`, whose server snapshot is `null`: React reconciles the two without a
+    warning, and the badge appears a frame late rather than appearing wrong. Not on a ticking
+    interval either: a badge that silently flips while the page sits open would be a lie the moment
+    the user acts on it, and core-api authorises the submit path regardless of what it says.
+  - _The lint config was right a third and fourth time:_ `useState` + an effect (the obvious way to
+    do "client-only value") is `setState` inside an effect, and `Date.now()` in the showcase's
+    render is an impure call in a component. Both rejected; both had better answers
+    (`useSyncExternalStore`, and fixed timestamps that also stop one demo state quietly expiring).
+  - _Not built:_ permission badges, the third item in this ticket's line. They need real ACL fields
+    from `canSubmit`/`canViewDetail`-style permission hints, and no screen consuming them exists
+    yet -- the same "don't build speculatively" reasoning as D-004's deferred input shapes.
+  - _Observations:_ verified in the Docker container -- all seven evaluation states and all three
+    deadline states render with the right tones, no hydration warning in the console.
+
+- **[2026-08-21 17:10] D-012:** Formatters. `lib/format/points.ts` + `lib/format/points.test.ts`,
+  `components/format/{date-time,relative-time}.tsx`, an explicit `timeZone` in `i18n/request.ts`,
+  a section on `/dev/design-system`.
+  - **The time zone was the real find, and it was a latent bug rather than a missing feature.**
+    `i18n/request.ts` set no `timeZone`, so next-intl falls back to the runtime's own zone: a date
+    formatted in a Server Component would use the _container's_ zone (UTC) while the same date
+    formatted in the browser uses the user's. That is a hydration mismatch in general and, on a
+    deadline, a wrong answer rather than a cosmetic one -- and it would have gone unnoticed until
+    the first assignment screen shipped, since nothing rendered a date until now.
+  - Pinned to the deployment's zone (`APP_TIME_ZONE`, default `Europe/Prague`) rather than trying
+    to detect the user's. That is also the more _correct_ behaviour here, not merely the more
+    convenient: a deadline announced as 23:59 means that wall-clock time to everyone discussing it
+    -- student, supervisor, and the assignment text itself -- and showing a student abroad "22:59"
+    would be technically accurate and practically confusing. Verified live: a `21:59Z` deadline
+    renders as `Sep 1, 2026, 11:59 PM` in `en` and `1. 9. 2026 23:59` in `cs`.
+  - Relative time is client-only, same `useSyncExternalStore` shape as D-011's deadline badge and
+    for the same reason -- it is a function of _now_, so any server render or cached HTML is stale
+    the moment it is reused. It always carries the absolute value as `dateTime` and a tooltip: "in
+    3 days" is friendlier, but a student deciding whether to start tonight needs the timestamp.
+  - `formatPercent` **floors** rather than rounds. Rounding to nearest lets a solution that passed
+    99.6% of its tests display as "100%", which in a grading tool reads as "everything passed" and
+    is the single number a student is most likely to challenge. Out-of-range scores are clamped
+    rather than trusted -- `score` comes from the evaluation pipeline, and a malformed one should
+    not render as "-300%".
+  - _Observations:_ verified in the Docker container in both locales -- absolute dates in Prague
+    wall-clock from the server, relative times resolving in the browser, points and percentages
+    matching the unit tests.
+
+- **[2026-08-21 18:05] D-014:** Sidebar / app-shell navigation -- the gap found during D-001, when
+  `PageShell` shipped and it became clear nothing owned the frame it sits inside.
+  `components/app-shell/{app-shell,sidebar-nav}.tsx`, `lib/api/{current-user,groups}.ts`,
+  `lib/i18n-text/localized.ts`, `Nav` strings in both locales, `e2e/app-shell.spec.ts`, and
+  `(app)/layout.tsx` finally stops being a passthrough `<div>`.
+  - _Section visibility follows the IA's rule, not the convenient one._ `docs/IA.md` §3.1 is
+    explicit that "My Groups" and "My Teaching" derive from per-group membership arrays rather than
+    the global role, and are not mutually exclusive -- someone supervising one course while taking
+    another sees both. `GET /v1/users/{id}/groups` returns exactly that split
+    (`student`/`supervisor`), and filters archived groups out itself, confirmed in
+    `UsersPresenter::actionGroups`. "My Teaching" is hidden entirely when empty (IA: "only if any
+    exist"); "My Groups" stays visible but empty, because it tells a new student where their
+    courses will appear.
+  - _Three API facts checked against a live response rather than inferred_: there is no
+    `/users/me` (passing `me` as the id fails core-api's own uuid validation), the role lives at
+    `privateData.role` and not at the top level, and groups carry **no** top-level `name` -- names
+    come from a `localizedTexts` array keyed by locale. That last one got its own helper
+    (`localizedName`) since every screen showing a group, assignment or exercise will need it; it
+    falls back to the first available translation rather than rendering an empty, unclickable row.
+  - Data is fetched in the Server Component and only finished labels cross into the client island,
+    which handles collapse, the phone drawer and active state. Active state uses
+    `aria-current="page"`, not colour alone, and is derived from `usePathname()` so it is right on
+    first paint and after a browser back. Note it must be the **locale-aware** `usePathname` from
+    `@/i18n/navigation`; `next/navigation`'s returns `/en/groups` and would match nothing.
+  - The admin section is a role check and deliberately nothing more -- core-api authorises every
+    admin route itself, and brief §3.4's "a hidden button is not authorisation" cuts both ways.
+  - _Observations:_ verified against the container as a signed-in superadmin -- all sections
+    render, the current page carries `aria-current`, clicking through moves it, and at 390px the
+    sidebar collapses behind a disclosure button with correct `aria-expanded`. An unauthenticated
+    `/en/dashboard` still redirects to `/en/login?from=...`, so wiring the shell into the layout
+    did not weaken the gate.
+
+- **[2026-08-21 19:00] D-015:** Command palette. `components/command-palette/command-palette.tsx`,
+  `app/api/search/route.ts`, `Palette` strings in both locales, `e2e/command-palette.spec.ts`.
+  **Phase 2 (Design System) is complete.**
+  - _The IA asked for an endpoint that does not exist._ §3.4 names "`/api/search` (or equivalent)",
+    and brief §3.2 forbids inventing endpoints. Checked: core-api has no `/search`, and no
+    `/v1/assignments` collection either. A `search` query parameter does exist on `/v1/users`,
+    `/v1/exercises` and `/v1/groups` -- verified live, not from the spec file. So the palette
+    searches those three, and **assignment search is not built at all**, recorded as Q-011 rather
+    than faked or silently dropped.
+  - _The three endpoints do not agree on a response shape:_ `/users` and `/exercises` return a
+    paginated envelope (`{items, totalCount, offset, limit, ...}`) while `/groups` returns a bare
+    array. Normalised once in the Route Handler, so that inconsistency never reaches the UI -- and
+    so the browser makes one request instead of three and learns none of it.
+  - _Permission comes from core-api, not from a role check here._ The IA restricts user search to
+    teachers/admins. Rather than reimplementing that rule, the route attempts it for everyone and
+    treats a 403 as "no user results" -- a student gets a working palette without a people section,
+    and this app cannot drift from what core-api actually permits (brief §3.4).
+  - `cmdk` for the palette itself, same reasoning DEC-054 used for Radix: this is a combobox, and
+    combobox semantics (`aria-activedescendant` moving through options while focus stays in the
+    input, listbox/option roles, arrow and Home/End handling) look finished long before they are
+    correct for a screen-reader user. `cmdk` renders through Radix's Dialog, so it stays in the
+    same primitive family. `shouldFilter={false}` because the server already decided what matches,
+    including on fields the label does not show (a user's email) -- client-side re-filtering would
+    silently drop those hits.
+  - In-flight requests are aborted when the query moves on: without it a slow response for "ab" can
+    land after the response for "abcd" and repopulate the list with stale results.
+  - _Fourth time the lint config was right this phase:_ the short-query branch cleared state
+    synchronously inside the effect. Deriving the empty result instead is both simpler and one
+    fewer render -- the effect now only ever starts work, never corrects state.
+  - _Observations:_ verified against the container with real core-api data -- Ctrl+K opens with
+    focus in the input, Escape closes, a one-character query asks for more, and searching
+    "Frankenstein" finds the seeded instance group and navigates to `/en/groups/<id>`. That
+    destination is still a placeholder page; the palette's job is to get there.
+
+- **[2026-08-21 20:15] Review pass** (operator asked, after Phase 2 closed, whether anything done so
+  far should be improved). Seven findings, all fixed. Two were missed brief requirements, four were
+  real bugs, one was duplication I had introduced myself an hour earlier.
+  - **No `LICENSE` file.** Brief §7: "Legacy is MIT. Ship a matching `LICENSE` and attribute the
+    original project." Nothing existed, and the word appears in no doc -- the same category of
+    oversight as F-027's missing Dependabot config. Added, MIT, attributing ReCodEx and naming the
+    specific behaviours derived from reading the original implementation (upload protocol, markdown
+    delimiter rules, extension→language map, evaluation state machine).
+  - **The seed script could not run on a fresh database -- four separate bugs**, which matters
+    because DEC-052's whole point was a one-command bootstrap on another machine, and this is the
+    script that makes the instance usable.
+    1. It hardcoded a python3 pipeline UUID, commented as "verified live against this deployment".
+       That verification was genuine and the value was still wrong everywhere else: **core-api
+       assigns pipeline ids when the runtime package is imported**, so every fresh database gets
+       different ones. Now looked up by name and runtime environment.
+    2. It treated "an exercise with this name exists" as "that exercise is usable". A run that dies
+       partway leaves an exercise that matches by name and that core-api rejects as _broken_ on the
+       next assignment attempt. Configuration steps now run for a reused exercise too.
+    3. `POST /exercises/{id}/tests` **adds** rather than replaces, so re-running failed with "test
+       name 'Test 1' is already taken". Now sends the existing test's id, turning it into an update.
+    4. Exercise edits are guarded by optimistic concurrency and the payload hardcoded `version: 1`,
+       which only works on an exercise nobody has touched. Now read back first.
+       `docs/SEED_ACCOUNTS.md` claimed the script was "verified idempotent" -- it was, on the path
+       where nothing had gone wrong before. It genuinely is now: two consecutive runs create nothing.
+  - **The sidebar linked to routes that do not exist**, which is not a neutral omission: Next
+    prefetches every visible `<Link>`, so `/groups/{id}` 404s were being logged on the _linking_
+    page. Invisible on this instance until the seed data existed, because the superadmin belongs to
+    no groups -- the smoke suite's console-error check caught it the moment students had groups.
+    Added route skeletons for `/groups/:groupId`, `/exercises/:exerciseId` and `/users/:userId`,
+    and registered the three dynamic breadcrumb resolvers `lib/breadcrumbs/manifest.ts` had been
+    explicitly holding a place for ("add a `DynamicManifestEntry` here in whichever ticket builds
+    that route for real"). Their response shapes are now confirmed, so this is no longer a guess.
+  - **`getCurrentUser()` and `getMyGroups()` now memoize per request** via React's `cache()`.
+    Deliberately _not_ in tension with "never cache user-scoped data": that rule is about a cache
+    outliving the request and leaking across users, which `cache()` cannot do. Without it the shell
+    and every page that also needs the current user would each issue their own call on every
+    navigation, and the S-series screens will all want it.
+  - **Duplication I had just introduced**: the command palette's search route carried its own copy
+    of the `localizedTexts` lookup, an hour after `localizedName()` was extracted for exactly that.
+    Now uses the shared helper. Also switched `app/api/auth/restricted-token/route.ts` to
+    `readSessionToken()`, so all four routes that need a token without a redirect go through one
+    function rather than three of them sharing it and one reading the cookie by hand.
+  - _Observations:_ the full e2e suite now passes end to end -- **64 tests**, including
+    `security.spec.ts`'s non-negotiable token-leakage checks and the whole authenticated smoke
+    matrix, all of which had been failing for want of seed data. Before this pass they could not
+    run at all on a fresh instance.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-004 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command
+  palette) remains. Foundation (F-001
+  through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-005 (Upload component, Route Handler) -- streaming, progress, 512 MiB
-  ceiling; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
-  still `todo`, not blocking D-005.)
+- **Next ticket:** S-001 onwards (Student flows) -- the first tickets that build real screens
+  rather than the primitives they sit on. See `docs/BACKLOG.md`'s Student table.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
+- **Operator inputs pending:** Q-011 (no assignment search endpoint — proceeding without it, see
+  QUESTIONS.md). Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that

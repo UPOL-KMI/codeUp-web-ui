@@ -22,6 +22,15 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
+  /* Status semantics (D-011). The base set this theme started from has only `destructive`, but
+     evaluation and deadline states need "succeeded" and "nearly/at risk" as first-class tokens --
+     brief §9's "dark mode via tokens from day one; never hardcode a colour" applies to status
+     colouring most of all, since that is where a hardcoded green would otherwise appear first.
+     Chroma and lightness are matched to `destructive` so the three read as one family. */
+  --success: oklch(0.577 0.155 149);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.646 0.16 70);
+  --warning-foreground: oklch(0.205 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -44,6 +53,10 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.72 0.15 149);
+  --success-foreground: oklch(0.205 0 0);
+  --warning: oklch(0.79 0.15 75);
+  --warning-foreground: oklch(0.205 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -75,6 +88,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -87,4 +104,200 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Dialog/modal enter-exit motion (D-006). Radix drives these by flipping `data-state` between
+   `open` and `closed` on the overlay and content, and keeps the element mounted for the exit
+   animation's duration on its own -- no `AnimatePresence` equivalent needed.
+
+   Declared as `@theme` animation tokens so Tailwind v4 generates the `animate-*` utilities from
+   them (v4's CSS-first config, DEC-032); the keyframes themselves must sit inside the `@theme`
+   block for Tailwind to associate them with the token. */
+@theme {
+  --animate-overlay-in: overlay-in 150ms ease-out;
+  --animate-overlay-out: overlay-out 100ms ease-in;
+  --animate-dialog-in: dialog-in 150ms ease-out;
+  --animate-dialog-out: dialog-out 100ms ease-in;
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes overlay-out {
+    to {
+      opacity: 0;
+    }
+  }
+  /* `scale`, not `transform: scale()`. Tailwind v4 centres this element with `-translate-x-1/2
+     -translate-y-1/2`, which compile to the standalone `translate` property -- animating
+     `transform` alongside it applies BOTH translations and the dialog visibly flies in from half
+     a dialog-width off-centre. Found by looking at a real screenshot mid-animation, not by
+     reading the CSS. The standalone `scale` property composes with `translate` instead of
+     replacing it. */
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+
+  /* Toasts slide in from the right edge they're anchored to (D-007). `translate`, not
+     `transform`, for the same reason the dialog keyframes use `scale` -- see the note above. */
+  --animate-toast-in: toast-in 180ms ease-out;
+  --animate-toast-out: toast-out 120ms ease-in;
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      translate: 1rem 0;
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      translate: 1rem 0;
+    }
+  }
+}
+
+/* Brief §9: "Respect `prefers-reduced-motion`." Scoped to animation only -- the dialog still
+   opens and closes, it just arrives without the scale/fade. Not `transition: none !important`
+   across the board, which would also kill focus-ring and hover transitions that carry no motion
+   sickness risk. */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-content"],
+  [data-slot="toast"] {
+    animation: none !important;
+  }
+
+  /* Skeletons pulse indefinitely, which is more of what this preference is about than a one-shot
+     dialog transition -- the placeholder still shows, it just holds still. */
+  [data-slot="skeleton"] {
+    animation: none !important;
+  }
+}
+
+/* Shiki output (D-009). `defaultColor: false` makes Shiki emit both themes as custom properties
+   on every token instead of a fixed colour, so the theme is chosen here -- keyed on next-themes'
+   `.dark` class, the same signal the rest of the app uses.
+
+   Only the block itself gets a background; tokens get colour only. Painting a background on every
+   span (the shape most Shiki dual-theme snippets use) means every line paints over anything
+   underneath it, which is what broke the `:target` highlight below the first time -- the line's
+   own background won on specificity and the linked line looked no different. */
+.shiki {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+  padding: 0.75rem 0;
+  margin: 0;
+}
+
+.shiki span {
+  color: var(--shiki-light);
+}
+
+.dark .shiki {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+
+[data-slot="code-block"] .line {
+  display: block;
+  padding-right: 1rem;
+}
+
+/* The line number is a real anchor so it can be linked, focused and opened in a new tab -- but it
+   must not end up in the clipboard when someone copies the code, hence user-select: none. */
+[data-slot="code-block"] .code-line-number {
+  display: inline-block;
+  width: 3.5rem;
+  padding-right: 1rem;
+  text-align: right;
+  user-select: none;
+  color: var(--muted-foreground);
+}
+
+[data-slot="code-block"] .code-line-number:hover {
+  color: var(--foreground);
+}
+
+/* `:target` styles the line the URL points at -- no JavaScript involved, so a deep link
+   highlights its line in the server-rendered HTML, before hydration. Selectors are deliberately
+   more specific than the theme rules above; a `:target` rule that loses the cascade is silently
+   dead, and nothing but looking at the page would have said so. */
+[data-slot="code-block"] .shiki .line:target,
+.dark [data-slot="code-block"] .shiki .line:target {
+  background-color: color-mix(in oklch, var(--accent) 70%, transparent);
+}
+
+/* Markdown body (D-010). Tailwind's preflight resets headings, lists and emphasis to unstyled, so
+   authored content needs these back explicitly -- without them an exercise text renders as one
+   undifferentiated wall. Scoped to the markdown container so it cannot leak into app chrome. */
+[data-slot="markdown"] h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+[data-slot="markdown"] h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+[data-slot="markdown"] h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+[data-slot="markdown"] ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+[data-slot="markdown"] ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+[data-slot="markdown"] li {
+  margin-block: 0.15rem;
+}
+[data-slot="markdown"] a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+[data-slot="markdown"] blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+}
+[data-slot="markdown"] code:not(.shiki code) {
+  background-color: var(--muted);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9em;
+}
+[data-slot="markdown"] .shiki {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+[data-slot="markdown"] table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+[data-slot="markdown"] th,
+[data-slot="markdown"] td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.6rem;
+}
+[data-slot="markdown"] hr {
+  border-top: 1px solid var(--border);
 }
