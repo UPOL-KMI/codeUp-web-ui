@@ -55,7 +55,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function DesignSystemShowcase() {
+export function DesignSystemShowcase({ codeSample }: { codeSample: React.ReactNode }) {
   const t = useTranslations("DesignSystem");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmCount, setConfirmCount] = useState(0);
@@ -173,6 +173,11 @@ export function DesignSystemShowcase() {
             onConfirm={() => setConfirmCount((count) => count + 1)}
           />
         </div>
+      </Section>
+
+      <Section title={t("code")}>
+        <p className="text-sm text-muted-foreground">{t("codeNote")}</p>
+        {codeSample}
       </Section>
 
       <Section title={t("states")}>

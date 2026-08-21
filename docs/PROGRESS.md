@@ -1147,13 +1147,49 @@ unauthorized}.tsx` rewritten onto them; `loading.tsx` added per route group; `Er
     the page (including toast and dialog state) kept working, then genuinely recovering on retry
     once the cause was removed.
 
+- **[2026-08-21 13:15] D-009:** Code viewer with line anchoring. `components/code/code-viewer.tsx`,
+  `lib/code/{highlight,languages}.ts`, Shiki styles in `app/globals.css`, `Code` strings in both
+  locales, plus a section on `/dev/design-system`.
+  - Shiki 4.4.3, **server-side only** (brief §4's stack table). The highlighter is created once per
+    server process and held as a promise so concurrent first requests share one initialisation
+    rather than racing to start several; grammars are restricted to the languages the extension map
+    can actually produce, not Shiki's full bundle.
+  - The extension→language table is ported from the legacy app's own `syntaxHighlighting.js`, not
+    invented: students upload these extensions today, and a mapping that disagrees would silently
+    change how their own solutions look. Prism-flavoured ids translated where the two differ
+    (`markup` → `html`/`xml`, `c_cpp` → `c`/`cpp`); `bison` dropped, Shiki has no grammar for it.
+    All 26 resulting ids were verified by actually loading them, not by trusting the list.
+  - Dual theme via `defaultColor: false`, which emits `--shiki-light`/`--shiki-dark` on every token
+    and leaves the choice to CSS keyed on next-themes' `.dark` class. `light-dark()` was the
+    alternative and is the wrong one here: it keys off the CSS `color-scheme` property, not the
+    class this app toggles, so an explicitly chosen theme would not follow it.
+  - Line anchors are real `<a>` elements inside each line (a CSS counter cannot be linked, focused
+    or opened in a new tab), `user-select: none` so copying the code does not carry the numbers
+    along, and `:target` does the highlighting -- so a deep link works in the server-rendered HTML
+    before any JavaScript runs.
+  - _One bug the page found and the code did not:_ the `:target` rule lost the cascade. The usual
+    Shiki dual-theme snippet paints a background on **every** span, `.line` included, at a higher
+    specificity than `.line:target` -- so the linked line looked identical to the rest and nothing
+    but looking at it would have said so. Fixed by painting a background only on the block itself
+    and giving the target rule selectors that genuinely win. Third bug in this phase that only a
+    screenshot or a computed style caught, after the dialog centring and the "this page"/"this
+    content" copy.
+  - Files over 512 KiB render unhighlighted (and say so) rather than tying up a server process
+    tokenising a generated file nobody reads line by line -- uploads are allowed up to 512 MiB.
+  - _Deliberately not built:_ per-line review comments and collapsed unchanged regions, both of
+    which the legacy `SourceCodeViewer` has. They belong to the solution-review ticket; the
+    `id`/`data-line` attributes it will need exist now because line anchoring is _this_ ticket.
+  - _Observations:_ verified in the Docker container -- `id="L1"`... present in the raw server HTML
+    (so highlighting really is server-side), and `#L5` highlights line 5 while line 6 stays
+    untouched, checked via computed style rather than by eye.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-008 and D-013 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-009 and D-013 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-009 (Code viewer with line anchoring) -- Shiki + stable per-line IDs; per
-  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
-  not blocking D-009.)
+- **Next ticket:** D-010 (Markdown renderer) -- react-markdown + KaTeX, with the compatibility
+  risk brief §7 flags; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a
+  backlog gap -- still `todo`, not blocking D-010.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

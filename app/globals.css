@@ -167,3 +167,60 @@
     animation: none !important;
   }
 }
+
+/* Shiki output (D-009). `defaultColor: false` makes Shiki emit both themes as custom properties
+   on every token instead of a fixed colour, so the theme is chosen here -- keyed on next-themes'
+   `.dark` class, the same signal the rest of the app uses.
+
+   Only the block itself gets a background; tokens get colour only. Painting a background on every
+   span (the shape most Shiki dual-theme snippets use) means every line paints over anything
+   underneath it, which is what broke the `:target` highlight below the first time -- the line's
+   own background won on specificity and the linked line looked no different. */
+[data-slot="code-block"] .shiki {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+  padding: 0.75rem 0;
+  margin: 0;
+}
+
+[data-slot="code-block"] .shiki span {
+  color: var(--shiki-light);
+}
+
+.dark [data-slot="code-block"] .shiki {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+.dark [data-slot="code-block"] .shiki span {
+  color: var(--shiki-dark);
+}
+
+[data-slot="code-block"] .line {
+  display: block;
+  padding-right: 1rem;
+}
+
+/* The line number is a real anchor so it can be linked, focused and opened in a new tab -- but it
+   must not end up in the clipboard when someone copies the code, hence user-select: none. */
+[data-slot="code-block"] .code-line-number {
+  display: inline-block;
+  width: 3.5rem;
+  padding-right: 1rem;
+  text-align: right;
+  user-select: none;
+  color: var(--muted-foreground);
+}
+
+[data-slot="code-block"] .code-line-number:hover {
+  color: var(--foreground);
+}
+
+/* `:target` styles the line the URL points at -- no JavaScript involved, so a deep link
+   highlights its line in the server-rendered HTML, before hydration. Selectors are deliberately
+   more specific than the theme rules above; a `:target` rule that loses the cascade is silently
+   dead, and nothing but looking at the page would have said so. */
+[data-slot="code-block"] .shiki .line:target,
+.dark [data-slot="code-block"] .shiki .line:target {
+  background-color: color-mix(in oklch, var(--accent) 70%, transparent);
+}

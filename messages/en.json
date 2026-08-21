@@ -139,6 +139,12 @@
     "stateEmpty": "Empty",
     "stateError": "Error (with retry)",
     "stateBoom": "This panel was asked to fail.",
-    "stateFixIt": "Repair it, then use the retry button"
+    "stateFixIt": "Repair it, then use the retry button",
+    "code": "Code viewer",
+    "codeNote": "Highlighted on the server. Click a line number to link to it."
+  },
+  "Code": {
+    "lineLabel": "Line {line}",
+    "notHighlighted": "not highlighted"
   }
 }
