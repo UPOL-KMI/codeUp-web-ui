@@ -87,5 +87,10 @@
     "done": "Nahráno",
     "remove": "Odebrat",
     "failed": "Nahrávání se nezdařilo."
+  },
+  "Dialog": {
+    "close": "Zavřít",
+    "confirm": "Potvrdit",
+    "cancel": "Zrušit"
   }
 }

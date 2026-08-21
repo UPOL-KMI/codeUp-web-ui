@@ -1031,13 +1031,50 @@ nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512
     disappearing. Demo page and its spec removed afterward, same as D-004's demo Server Action.
   - See DEC-053.
 
+- **[2026-08-21 10:05] D-006:** Dialog/modal system. `components/dialog/{dialog,confirm-dialog}.tsx`,
+  `Dialog` strings in both locales, dialog motion tokens + a `prefers-reduced-motion` rule in
+  `app/globals.css`.
+  - _Package:_ the unified `radix-ui` (1.6.7) rather than `@radix-ui/react-dialog`. Checked the
+    React 19 peer range before installing (DEC-050's lesson, applied without being prompted this
+    time). The rest of the Design System phase needs several more primitives from the same family
+    (D-007 toasts, D-015 command palette, dropdowns/tooltips); one version that moves together
+    beats a dozen drifting ranges, and the traced output is per-primitive either way.
+  - _`ConfirmDialog` is built on `AlertDialog`, not `Dialog`_ -- brief §9's "destructive actions
+    confirm" needs `role="alertdialog"`, initial focus on Cancel, and **no** outside-click
+    dismissal. All three confirmed by reading the installed
+    `@radix-ui/react-alert-dialog/dist/index.js` (it overrides `onPointerDownOutside` and
+    `onInteractOutside` with `preventDefault()`, and focuses its own `cancelRef` on open), not
+    from the docs site and not from memory.
+  - _Two details that would have been wrong if written from memory_, both checked against the
+    installed `@radix-ui/react-dialog@1.1.23`: (1) `aria-describedby` is already set to
+    `descriptionPresent ? descriptionId : undefined`, so the `aria-describedby={undefined}`
+    workaround every older Radix guide prescribes is obsolete -- writing it in would have been
+    harmless but misleading; (2) this version ships **no `console` calls whatsoever**, so the
+    famous "DialogTitle is required" warning no longer fires. A forgotten title would now be a
+    silent accessibility failure, which is why `title` is a required prop here rather than a
+    convention -- the compile error replaces the warning Radix used to give.
+  - _One real bug, and it was only visible in a screenshot:_ the enter/exit keyframes first
+    animated `transform: translate(-50%, -50%) scale(0.97)`. Tailwind v4 centres the dialog with
+    `-translate-x-1/2 -translate-y-1/2`, which compile to the standalone **`translate`** property,
+    not to `transform` -- so both applied, and the dialog flew in from half a dialog-width
+    off-centre. Nothing in the typecheck, the lint or the passing e2e assertions caught it; the
+    screenshot did. Fixed by animating the standalone `scale` property, which composes with
+    `translate`. Worth remembering as a general Tailwind v4 fact, not a dialog-specific one.
+  - _Observations (verified in a real browser against the running stack):_ dialog opens with the
+    right accessible name and description, `Tab` cycles without escaping the dialog, `Escape`
+    closes it and focus returns to the trigger. The confirm dialog focuses Cancel on open, ignores
+    a click on the backdrop, and only resolves on a deliberate choice. Demo page and its spec
+    removed afterward -- D-013 (`/dev/kitchen-sink`) is the ticket that owns a permanent home for
+    exercising these in isolation.
+  - See DEC-054.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-005 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-006 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-006 (Dialog/modal system) -- Radix Dialog, accessible; per
+- **Next ticket:** D-007 (Toast notification system) -- success + failure, no silent failures; per
   `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
-  not blocking D-006.)
+  not blocking D-007.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

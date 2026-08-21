@@ -88,3 +88,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Dialog/modal enter-exit motion (D-006). Radix drives these by flipping `data-state` between
+   `open` and `closed` on the overlay and content, and keeps the element mounted for the exit
+   animation's duration on its own -- no `AnimatePresence` equivalent needed.
+
+   Declared as `@theme` animation tokens so Tailwind v4 generates the `animate-*` utilities from
+   them (v4's CSS-first config, DEC-032); the keyframes themselves must sit inside the `@theme`
+   block for Tailwind to associate them with the token. */
+@theme {
+  --animate-overlay-in: overlay-in 150ms ease-out;
+  --animate-overlay-out: overlay-out 100ms ease-in;
+  --animate-dialog-in: dialog-in 150ms ease-out;
+  --animate-dialog-out: dialog-out 100ms ease-in;
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes overlay-out {
+    to {
+      opacity: 0;
+    }
+  }
+  /* `scale`, not `transform: scale()`. Tailwind v4 centres this element with `-translate-x-1/2
+     -translate-y-1/2`, which compile to the standalone `translate` property -- animating
+     `transform` alongside it applies BOTH translations and the dialog visibly flies in from half
+     a dialog-width off-centre. Found by looking at a real screenshot mid-animation, not by
+     reading the CSS. The standalone `scale` property composes with `translate` instead of
+     replacing it. */
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+}
+
+/* Brief §9: "Respect `prefers-reduced-motion`." Scoped to animation only -- the dialog still
+   opens and closes, it just arrives without the scale/fade. Not `transition: none !important`
+   across the board, which would also kill focus-ring and hover transitions that carry no motion
+   sickness risk. */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-content"] {
+    animation: none !important;
+  }
+}

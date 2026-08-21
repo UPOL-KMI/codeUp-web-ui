@@ -87,5 +87,10 @@
     "done": "Uploaded",
     "remove": "Remove",
     "failed": "The upload failed."
+  },
+  "Dialog": {
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }
