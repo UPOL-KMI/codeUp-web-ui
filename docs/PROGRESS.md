@@ -1068,9 +1068,27 @@ nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512
     exercising these in isolation.
   - See DEC-054.
 
+- **[2026-08-21 10:40] D-013:** `/dev/kitchen-sink`. `app/[locale]/dev/kitchen-sink/page.tsx` +
+  `components/dev/kitchen-sink.tsx`, `KitchenSink` strings in both locales, one new entry in
+  `proxy.ts`'s `PUBLIC_PATHNAMES`.
+  - Taken out of backlog order (D-007 was next) at the operator's explicit request: they wanted a
+    page they could keep open in a browser to watch the design system take shape. D-013 already
+    existed as an unblocked ticket for exactly this, so this is a reordering, not a new scope.
+  - Page is a Server Component; everything interactive lives in a single `"use client"` island
+    (brief §6.4). Deliberately outside both route groups and public in `proxy.ts` -- it renders no
+    user data and calls no user-scoped endpoint, so a session requirement would only get in the
+    way. The upload section is the one exception (it genuinely talks to core-api) and says so in
+    its own note rather than failing mysteriously for a signed-out viewer.
+  - Replaces the throwaway demo pages D-003 through D-006 each had to build and delete; the next
+    component ticket should extend this page instead.
+  - _Observations:_ verified live in the Docker container on port 3001 (not just the bare-host
+    build), in dark mode: table sorting/paging/selection, the form kit's field and form-level
+    error states, both dialogs opening and closing, and the upload dropzone rendering its 512 MiB
+    ceiling.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-006 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-006 and D-013 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
 - **Next ticket:** D-007 (Toast notification system) -- success + failure, no silent failures; per
   `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,

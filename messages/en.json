@@ -92,5 +92,31 @@
     "close": "Close",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "KitchenSink": {
+    "title": "Kitchen sink",
+    "subtitle": "Every design-system component in isolation.",
+    "tokens": "Theme tokens",
+    "dataTable": "Data table",
+    "columnName": "Exercise",
+    "columnPoints": "Points",
+    "columnDeadline": "Deadline",
+    "form": "Form kit",
+    "fieldEmail": "Email",
+    "fieldEmailHint": "Nothing is submitted from this page.",
+    "showErrors": "Show error states",
+    "demoFieldError": "This address is not valid.",
+    "demoFormError": "Something went wrong while saving.",
+    "dialogs": "Dialogs",
+    "openDialog": "Open dialog",
+    "dialogTitle": "Example dialog",
+    "dialogDescription": "Escape closes it and focus returns to the trigger.",
+    "dialogClose": "Close",
+    "openConfirm": "Open confirmation",
+    "confirmTitle": "Delete this example?",
+    "confirmDescription": "Nothing is actually deleted — this only demonstrates the confirmation.",
+    "confirmedTimes": "Confirmed {count, plural, one {# time} other {# times}}.",
+    "upload": "Upload",
+    "uploadNote": "Uploads go to the real API, so this section only works when you are signed in."
   }
 }
