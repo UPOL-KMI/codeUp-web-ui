@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deps:check": "pnpm outdated || true; pnpm audit --audit-level moderate || true",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

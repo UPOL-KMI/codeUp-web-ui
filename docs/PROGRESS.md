@@ -1433,6 +1433,27 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     matrix, all of which had been failing for want of seed data. Before this pass they could not
     run at all on a fresh instance.
 
+- **[2026-08-21 21:00] F-027 reverted; dependency review is now a process step, not a bot.**
+  `.github/dependabot.yml` removed, `pnpm deps:check` added.
+  - _What happened:_ the config added during the review pass reached GitHub and Dependabot ran
+    **immediately against the default branch** rather than waiting for its schedule, opening three
+    PRs (`actions/checkout` v4→v7, `actions/setup-node` v4→v7, one grouped npm update) against
+    `main` while the operator's own work sat in a PR from `dev`. The grouping in that config is the
+    only reason it was three PRs and not about ten.
+  - _My error was not the config, it was not flagging it._ Adding that file is not a free
+    documentation-style change: it takes an action the moment it lands. I treated a missed brief
+    requirement as costless and enabled a robot on someone else's repository without saying so.
+  - The operator asked for this to be part of the working process instead. `pnpm deps:check` runs
+    `pnpm outdated` and `pnpm audit` together, on request. Brief §4's actual concern -- a Next.js
+    security release going unnoticed -- is met by that plus GitHub's passive Dependabot _alerts_,
+    which are a separate feature needing no config file and opening no PRs. Recorded as DEC-056
+    with the trade-off stated: weaker latency, stronger control.
+  - _The first run immediately found two things worth knowing:_ `next` is 16.3.1 here against
+    16.3.2 released (the line brief §4 says to stay current on), and **typescript 7.0.2 and eslint
+    10.9.0 have both shipped** -- which is exactly the condition F-002's TypeScript 6.0.3 pin was
+    waiting on. Filed as F-028 rather than bumped mid-PR; the plugins need verifying first, since
+    their lack of support was the reason for the pin.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command
