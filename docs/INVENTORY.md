@@ -127,11 +127,11 @@
 
 | Mechanism               | Legacy Implementation                                   | New Implementation                           | Status |
 | ----------------------- | ------------------------------------------------------- | -------------------------------------------- | ------ |
-| **Auth token storage**  | `localStorage` JWT                                      | httpOnly cookie + BFF                        | todo   |
-| **Token refresh**       | `redux` middleware auto-refresh                         | `proxy.ts` + Route Handler                   | todo   |
-| **External auth (CAS)** | Popup window + redirect callback                        | Route Handler callback                       | todo   |
-| **User takeover**       | `POST /login/takeover/:userId`                          | Server Action                                | todo   |
-| **Restricted tokens**   | `POST /login/issue-restricted-token`                    | Server Action                                | todo   |
+| **Auth token storage**  | `localStorage` JWT                                      | httpOnly cookie + BFF (F-016)                | done   |
+| **Token refresh**       | `redux` middleware auto-refresh                         | `proxy.ts` + Route Handler (F-018)           | done   |
+| **External auth (CAS)** | Popup window + redirect callback                        | Route Handler callback (F-019)               | done   |
+| **User takeover**       | `POST /login/takeover/:userId`                          | Route Handler (F-020)                        | done   |
+| **Restricted tokens**   | `POST /login/issue-restricted-token`                    | Route Handler (F-021)                        | done   |
 | **File upload**         | Per-partes chunked upload via `apiMiddleware`           | Route Handler streaming (§6.7), D-005        | done   |
 | **Evaluation progress** | `evaluationProgress` module (WebSocket/polling)         | TanStack Query + WebSocket/polling           | todo   |
 | **Permission hints**    | `canSubmit`, `canViewDetail`, etc. on entities          | Server Component data fetching               | todo   |

@@ -1183,6 +1183,34 @@ unauthorized}.tsx` rewritten onto them; `loading.tsx` added per route group; `Er
     (so highlighting really is server-side), and `#L5` highlights line 5 while line 6 stays
     untouched, checked via computed style rather than by eye.
 
+- **[2026-08-21 14:05] Improvements pass** (operator asked for improvements found along the way,
+  not only ticket work). Three real gaps, all fixed:
+  - **F-027, dependency automation was simply missing.** Brief §4: "Add Renovate or Dependabot on
+    day one, with `next` and `react-server-dom-*` grouped together." Nothing existed, and the
+    subject appears nowhere in `BACKLOG.md`, `DECISIONS.md` or `DROPPED.md` -- so it was an
+    oversight during Foundation rather than a recorded deferral. Added `.github/dependabot.yml`
+    with the grouping the brief asks for, plus react/radix/dev-tooling groups and the CI actions.
+    Dependabot rather than Renovate because Renovate needs a GitHub App installed on the account,
+    which is the operator's decision to make and not something this repo can provision for itself.
+  - **D-016, no regression net for the design system.** D-003 through D-009 each built a
+    throwaway demo page, verified by hand, and deleted it -- six components with nothing behind
+    them that would notice a regression. D-013's showcase is permanent and public, so one spec
+    (`e2e/design-system.spec.ts`) now covers all of it: dialog Escape + focus restoration, the
+    confirm dialog's no-outside-dismiss guarantee, toasts, the error boundary containing a real
+    thrown error and recovering on retry, and server-side highlighting with working line anchors.
+    It needs no login, so it costs none of the bcrypt round trips `playwright.config.ts` had to
+    reduce its worker count for.
+    - _Found while writing it:_ Radix renders an off-screen announcer (`<span role="status"
+aria-live="assertive">`) duplicating each toast's text. A `role="status"`-scoped lookup lands
+      on that copy, which contains no dismiss button, and a loose text match resolves to two
+      elements. Noted in the spec so the next person doesn't spend a test timeout on it.
+  - **`INVENTORY.md`'s status column had gone stale.** Five mechanism rows (auth token storage,
+    token refresh, external auth, takeover, restricted tokens) still said `todo` although F-016
+    through F-021 shipped them. A status column that lies is worse than no status column --
+    `AGENTS.md` tells every session to read the INVENTORY rows its ticket touches. Corrected, with
+    the implementing ticket named in each row; also corrected two rows that said "Server Action"
+    where the thing actually built is a Route Handler.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001 through D-009 and D-013 done; Foundation (F-001 through
