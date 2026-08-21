@@ -22,6 +22,15 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
+  /* Status semantics (D-011). The base set this theme started from has only `destructive`, but
+     evaluation and deadline states need "succeeded" and "nearly/at risk" as first-class tokens --
+     brief §9's "dark mode via tokens from day one; never hardcode a colour" applies to status
+     colouring most of all, since that is where a hardcoded green would otherwise appear first.
+     Chroma and lightness are matched to `destructive` so the three read as one family. */
+  --success: oklch(0.577 0.155 149);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.646 0.16 70);
+  --warning-foreground: oklch(0.205 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -44,6 +53,10 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.72 0.15 149);
+  --success-foreground: oklch(0.205 0 0);
+  --warning: oklch(0.79 0.15 75);
+  --warning-foreground: oklch(0.205 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -75,6 +88,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CodeViewer } from "@/components/code/code-viewer";
 import { Markdown } from "@/components/markdown/markdown";
+import { EvaluationBadge } from "@/components/status/evaluation-badge";
 import { DesignSystemShowcase } from "@/components/dev/design-system";
 import { PageShell } from "@/components/page-shell";
 
@@ -75,6 +76,30 @@ export default async function DesignSystemPage() {
       <DesignSystemShowcase
         codeSample={<CodeViewer filename="fibonacci.py" code={SAMPLE_CODE} />}
         markdownSample={<Markdown source={SAMPLE_MARKDOWN} />}
+        evaluationBadges={
+          <>
+            <EvaluationBadge
+              solution={{ lastSubmission: { evaluation: { score: 1 } }, maxPoints: 10 }}
+            />
+            <EvaluationBadge
+              solution={{ lastSubmission: { evaluation: { score: 0.5 } }, maxPoints: 10 }}
+            />
+            <EvaluationBadge
+              solution={{ lastSubmission: { evaluation: { score: 0 } }, maxPoints: 10 }}
+            />
+            <EvaluationBadge
+              solution={{
+                lastSubmission: { evaluation: { initFailed: true, score: 0 } },
+                maxPoints: 10,
+              }}
+            />
+            <EvaluationBadge solution={{ lastSubmission: {}, maxPoints: 10 }} />
+            <EvaluationBadge solution={{ lastSubmission: null, maxPoints: 10 }} />
+            <EvaluationBadge
+              solution={{ lastSubmission: { evaluation: { score: 1 } }, maxPoints: 0 }}
+            />
+          </>
+        }
       />
     </PageShell>
   );

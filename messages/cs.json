@@ -143,10 +143,49 @@
     "code": "Prohlížeč kódu",
     "codeNote": "Zvýrazněno na serveru. Kliknutím na číslo řádku na něj získáte odkaz.",
     "markdown": "Markdown",
-    "markdownNote": "Zpracováno na serveru včetně KaTeX a zvýraznění kódu, s pravidly oddělovačů z původního rendereru."
+    "markdownNote": "Zpracováno na serveru včetně KaTeX a zvýraznění kódu, s pravidly oddělovačů z původního rendereru.",
+    "badges": "Stavové odznaky",
+    "badgesNote": "Stavy vyhodnocení vycházejí přímo z polí API; stavy termínů se vykreslují až v prohlížeči, protože závisejí na aktuálním čase."
   },
   "Code": {
     "lineLabel": "Řádek {line}",
     "notHighlighted": "bez zvýraznění"
+  },
+  "Status": {
+    "evaluation": {
+      "failed": {
+        "label": "Vyhodnocení selhalo",
+        "description": "Řešení se nedostalo k vyhodnocení, nebo vyhodnocení samo selhalo."
+      },
+      "pending": {
+        "label": "Vyhodnocuje se",
+        "description": "Odevzdáno, čeká se na výsledek."
+      },
+      "compilation-failed": {
+        "label": "Chyba překladu",
+        "description": "Řešení se nepodařilo přeložit, žádný test nebyl spuštěn."
+      },
+      "correct": {
+        "label": "Správně",
+        "description": "Všechny testy prošly."
+      },
+      "partial": {
+        "label": "Částečně správně",
+        "description": "Některé testy prošly."
+      },
+      "incorrect": {
+        "label": "Špatně",
+        "description": "Neprošel žádný test."
+      },
+      "not-scored": {
+        "label": "Vyhodnoceno",
+        "description": "Za tuto úlohu se neudělují body."
+      }
+    },
+    "deadline": {
+      "open": "Otevřeno",
+      "second-chance": "Druhý termín",
+      "closed": "Uzavřeno"
+    }
   }
 }

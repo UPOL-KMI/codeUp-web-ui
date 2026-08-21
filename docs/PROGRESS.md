@@ -1257,14 +1257,49 @@ aria-live="assertive">`) duplicating each toast's text. A `role="status"`-scoped
     math while `$\varphi$` stays inline, tables render, and fences are Shiki-highlighted.
   - See DEC-055.
 
+- **[2026-08-21 16:20] D-011:** Status badges. `components/status/{badge,evaluation-badge,
+deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.ts`, `--success`
+  and `--warning` theme tokens, `Status` strings in both locales, a section on
+  `/dev/design-system`.
+  - _The evaluation logic is a port, not a design._ Read out of the legacy `SolutionStatusIcon`'s
+    decision tree and kept in that order, because the order is the meaning: a missing submission or
+    a `failure` is an infrastructure failure, a missing `evaluation` means it is still running,
+    `initFailed` means compilation failed before any test ran, and only then does the score mean
+    anything. Also ported the non-obvious case where a zero-point assignment greys out unless the
+    solution was explicitly accepted -- without it, every zero-point assignment reads as a failure.
+  - Kept as a pure function with unit tests rather than branching inside a component: three of the
+    six outcomes are infrastructure failure modes that cannot be produced on demand, and this
+    machine cannot produce real pass/fail results at all (DEC-031), so tests are the only place
+    this logic is exercised until a cgroup v1 host exists.
+  - **The theme had no `--success` or `--warning` tokens** -- the base set it started from only has
+    `destructive`. Status colouring is exactly where a hardcoded green would otherwise appear
+    first, so both were added in light and dark, with chroma and lightness matched to `destructive`
+    so the three read as one family (brief §9: "never hardcode a colour").
+  - _Deadline state is client-only, deliberately._ Whether a deadline has passed depends on the
+    current time, so a server render and a client render legitimately disagree -- the exact
+    hydration trap AGENTS.md §6.6 singles out ("ReCodEx is full of deadlines"). Implemented with
+    `useSyncExternalStore`, whose server snapshot is `null`: React reconciles the two without a
+    warning, and the badge appears a frame late rather than appearing wrong. Not on a ticking
+    interval either: a badge that silently flips while the page sits open would be a lie the moment
+    the user acts on it, and core-api authorises the submit path regardless of what it says.
+  - _The lint config was right a third and fourth time:_ `useState` + an effect (the obvious way to
+    do "client-only value") is `setState` inside an effect, and `Date.now()` in the showcase's
+    render is an impure call in a component. Both rejected; both had better answers
+    (`useSyncExternalStore`, and fixed timestamps that also stop one demo state quietly expiring).
+  - _Not built:_ permission badges, the third item in this ticket's line. They need real ACL fields
+    from `canSubmit`/`canViewDetail`-style permission hints, and no screen consuming them exists
+    yet -- the same "don't build speculatively" reasoning as D-004's deferred input shapes.
+  - _Observations:_ verified in the Docker container -- all seven evaluation states and all three
+    deadline states render with the right tones, no hydration warning in the console.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-010, D-013 and D-016 done; Foundation (F-001
+- **Phase:** Design System (Phase 2) -- D-001 through D-011, D-013 and D-016 done; Foundation (F-001
   through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-011 (Status badges) -- deadline, evaluation and permission states; per
-  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
-  not blocking D-011.)
+- **Next ticket:** D-012 (Formatters: date, points, relative time) -- single source, client/server
+  consistent; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
+  still `todo`, not blocking D-012.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

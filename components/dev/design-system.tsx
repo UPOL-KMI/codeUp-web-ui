@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
 import { TextField } from "@/components/form/text-field";
+import { DeadlineBadge } from "@/components/status/deadline-badge";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
 
@@ -30,6 +31,13 @@ import { FileUpload } from "@/components/upload/file-upload";
  * upload component, which genuinely does (that's the point of having it here) and therefore only
  * works for a signed-in viewer -- called out in the section's own note rather than hidden.
  */
+
+// Fixed timestamps, not `Date.now()` offsets: calling `Date.now()` during render is impure and
+// the React compiler's lint rejects it outright (correctly -- it makes the render non-
+// deterministic). Fixed values also keep this page's three deadline states stable rather than
+// having one of them quietly expire.
+const PAST = Date.parse("2020-01-01T00:00:00Z") / 1000;
+const FUTURE = Date.parse("2100-01-01T00:00:00Z") / 1000;
 
 interface DemoRow {
   id: string;
@@ -58,9 +66,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function DesignSystemShowcase({
   codeSample,
   markdownSample,
+  evaluationBadges,
 }: {
   codeSample: React.ReactNode;
   markdownSample: React.ReactNode;
+  evaluationBadges: React.ReactNode;
 }) {
   const t = useTranslations("DesignSystem");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -184,6 +194,16 @@ export function DesignSystemShowcase({
       <Section title={t("code")}>
         <p className="text-sm text-muted-foreground">{t("codeNote")}</p>
         {codeSample}
+      </Section>
+
+      <Section title={t("badges")}>
+        <p className="text-sm text-muted-foreground">{t("badgesNote")}</p>
+        <div className="flex flex-wrap gap-2">{evaluationBadges}</div>
+        <div className="flex flex-wrap gap-2">
+          <DeadlineBadge firstDeadline={FUTURE} />
+          <DeadlineBadge firstDeadline={PAST} secondDeadline={FUTURE} allowSecondDeadline />
+          <DeadlineBadge firstDeadline={PAST} />
+        </div>
       </Section>
 
       <Section title={t("markdown")}>
