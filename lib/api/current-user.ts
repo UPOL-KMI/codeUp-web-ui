@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { requireSession } from "@/lib/auth/require-session";
 
 import { apiGet } from "./client";
@@ -25,7 +27,15 @@ interface UserPayload {
   privateData?: { role?: string };
 }
 
-export async function getCurrentUser(): Promise<CurrentUser> {
+/**
+ * Wrapped in React's `cache()`, which memoizes **per request** -- not across requests, not across
+ * users. This is deliberately *not* in tension with DEC-021/DEF-001's "never cache user-scoped
+ * data": that rule is about a cache outliving the request and leaking one user's data to another,
+ * which `cache()` cannot do (it is scoped to a single render pass). Without it, the app shell and
+ * any page that also needs the current user would each issue their own `/v1/users/{id}` call on
+ * every navigation -- pure duplicate round trips, and the S-series screens will all want this.
+ */
+export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser> {
   const session = await requireSession();
   const user = await apiGet<UserPayload>("/v1/users/{id}", { pathParams: { id: session.userId } });
 
@@ -35,7 +45,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
     avatarUrl: user.avatarUrl,
     role: user.privateData?.role ?? "student",
   };
-}
+});
 
 /**
  * Who sees the Admin section (`docs/IA.md` §3.1). Deliberately a role check *and* deliberately not

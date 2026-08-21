@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { readSessionToken } from "@/lib/auth/session-cookie";
+import { localizedName } from "@/lib/i18n-text/localized";
 
 /**
  * Search backing the command palette (D-015, `docs/IA.md` §3.4).
@@ -21,11 +22,6 @@ import { readSessionToken } from "@/lib/auth/session-cookie";
  * gets a working palette without a user section, rather than an error -- and, unlike a role check
  * in this app, it cannot drift from what core-api actually permits.
  */
-interface LocalizedText {
-  locale: string;
-  name?: string;
-}
-
 interface SearchHit {
   id: string;
   label: string;
@@ -58,12 +54,6 @@ function itemsOf(payload: unknown): Record<string, unknown>[] {
   return [];
 }
 
-function localized(item: Record<string, unknown>, locale: string): string {
-  const texts = item.localizedTexts as LocalizedText[] | undefined;
-  if (!texts?.length) return "";
-  return (texts.find((text) => text.locale === locale) ?? texts[0]!).name ?? "";
-}
-
 export async function GET(request: Request) {
   const token = await readSessionToken();
   if (!token) {
@@ -93,7 +83,7 @@ export async function GET(request: Request) {
       .slice(0, LIMIT)
       .map((group) => ({
         id: String(group.id),
-        label: localized(group, locale),
+        label: localizedName(group.localizedTexts as never, locale),
         href: `/groups/${String(group.id)}`,
         kind: "group" as const,
       })),
@@ -101,7 +91,7 @@ export async function GET(request: Request) {
       .slice(0, LIMIT)
       .map((exercise) => ({
         id: String(exercise.id),
-        label: localized(exercise, locale),
+        label: localizedName(exercise.localizedTexts as never, locale),
         href: `/exercises/${String(exercise.id)}`,
         kind: "exercise" as const,
       })),

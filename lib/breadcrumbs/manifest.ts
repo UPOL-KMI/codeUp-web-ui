@@ -1,6 +1,9 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
 
+import { apiGet } from "@/lib/api/client";
+import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
+
 import type { BreadcrumbItem } from "@/components/page-shell";
 
 interface StaticManifestEntry {
@@ -28,14 +31,12 @@ type ManifestEntry = StaticManifestEntry | DynamicManifestEntry;
  * renders breadcrumbs through it. No page builds its own."). Covers every currently-real route
  * (`app/[locale]/(anon)/...`, `app/[locale]/(app)/...`, F-013).
  *
- * Nested dynamic segments from `docs/IA.md` §3.2's own examples (`/groups/[groupId]`,
- * `/assignments/[id]`, `/solutions/[id]`, `/exercises/[id]`, etc.) are deliberately **not**
- * registered yet: no page for any of them exists to test a resolver against, and their entity-name
- * resolvers depend on group/assignment/exercise response shapes no ticket has confirmed yet
- * (F-022's typed client is ready to call core-api, but nothing has fetched one of these entities
- * for real). Add a `DynamicManifestEntry` here -- `{pattern: "/groups/:groupId", resolve: async
- * (params, locale) => ...}` -- in whichever ticket builds that route for real. This manifest's
- * whole purpose is being the *one* place that happens, not front-running it with a guess.
+ * The three dynamic entries below were added by D-014/D-015, as this file's original note asked
+ * ("add a `DynamicManifestEntry` here in whichever ticket builds that route for real"): the
+ * sidebar links to groups and the command palette links to groups, exercises and users, and their
+ * response shapes are now confirmed against a live instance rather than guessed. Their pages are
+ * still route skeletons; the breadcrumb is real. The remaining IA §3.2 examples
+ * (`/assignments/:id`, `/solutions/:id`) stay unregistered until a ticket builds them.
  */
 const MANIFEST: ManifestEntry[] = [
   { namespace: "Dashboard", pattern: "/dashboard" },
@@ -55,6 +56,37 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "Faq", pattern: "/faq" },
+
+  // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
+  // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their
+  // labels live in a `localizedTexts` array, verified live (see lib/i18n-text/localized.ts).
+  {
+    pattern: "/groups/:groupId",
+    resolve: async (params, locale) => {
+      const group = await apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
+        pathParams: { id: params.groupId! },
+      });
+      return localizedName(group.localizedTexts, locale);
+    },
+  },
+  {
+    pattern: "/exercises/:exerciseId",
+    resolve: async (params, locale) => {
+      const exercise = await apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/exercises/{id}", {
+        pathParams: { id: params.exerciseId! },
+      });
+      return localizedName(exercise.localizedTexts, locale);
+    },
+  },
+  {
+    pattern: "/users/:userId",
+    resolve: async (params) => {
+      const user = await apiGet<{ fullName?: string }>("/v1/users/{id}", {
+        pathParams: { id: params.userId! },
+      });
+      return user.fullName ?? "";
+    },
+  },
 ];
 
 function getPrefixes(pathname: string): string[] {

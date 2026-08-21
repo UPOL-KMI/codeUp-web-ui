@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { requireSession } from "@/lib/auth/require-session";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
@@ -24,7 +26,8 @@ interface GroupPayload {
   localizedTexts?: LocalizedText[];
 }
 
-export async function getMyGroups(
+/** Memoized per request, for the same reason as `getCurrentUser()` -- see its note. */
+export const getMyGroups = cache(async function getMyGroups(
   locale: string,
 ): Promise<{ member: SidebarGroup[]; teaching: SidebarGroup[] }> {
   const session = await requireSession();
@@ -42,4 +45,4 @@ export async function getMyGroups(
     member: (payload.student ?? []).map(toSidebarGroup),
     teaching: (payload.supervisor ?? []).map(toSidebarGroup),
   };
-}
+});

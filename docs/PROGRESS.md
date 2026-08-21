@@ -1386,6 +1386,53 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     "Frankenstein" finds the seeded instance group and navigates to `/en/groups/<id>`. That
     destination is still a placeholder page; the palette's job is to get there.
 
+- **[2026-08-21 20:15] Review pass** (operator asked, after Phase 2 closed, whether anything done so
+  far should be improved). Seven findings, all fixed. Two were missed brief requirements, four were
+  real bugs, one was duplication I had introduced myself an hour earlier.
+  - **No `LICENSE` file.** Brief §7: "Legacy is MIT. Ship a matching `LICENSE` and attribute the
+    original project." Nothing existed, and the word appears in no doc -- the same category of
+    oversight as F-027's missing Dependabot config. Added, MIT, attributing ReCodEx and naming the
+    specific behaviours derived from reading the original implementation (upload protocol, markdown
+    delimiter rules, extension→language map, evaluation state machine).
+  - **The seed script could not run on a fresh database -- four separate bugs**, which matters
+    because DEC-052's whole point was a one-command bootstrap on another machine, and this is the
+    script that makes the instance usable.
+    1. It hardcoded a python3 pipeline UUID, commented as "verified live against this deployment".
+       That verification was genuine and the value was still wrong everywhere else: **core-api
+       assigns pipeline ids when the runtime package is imported**, so every fresh database gets
+       different ones. Now looked up by name and runtime environment.
+    2. It treated "an exercise with this name exists" as "that exercise is usable". A run that dies
+       partway leaves an exercise that matches by name and that core-api rejects as _broken_ on the
+       next assignment attempt. Configuration steps now run for a reused exercise too.
+    3. `POST /exercises/{id}/tests` **adds** rather than replaces, so re-running failed with "test
+       name 'Test 1' is already taken". Now sends the existing test's id, turning it into an update.
+    4. Exercise edits are guarded by optimistic concurrency and the payload hardcoded `version: 1`,
+       which only works on an exercise nobody has touched. Now read back first.
+       `docs/SEED_ACCOUNTS.md` claimed the script was "verified idempotent" -- it was, on the path
+       where nothing had gone wrong before. It genuinely is now: two consecutive runs create nothing.
+  - **The sidebar linked to routes that do not exist**, which is not a neutral omission: Next
+    prefetches every visible `<Link>`, so `/groups/{id}` 404s were being logged on the _linking_
+    page. Invisible on this instance until the seed data existed, because the superadmin belongs to
+    no groups -- the smoke suite's console-error check caught it the moment students had groups.
+    Added route skeletons for `/groups/:groupId`, `/exercises/:exerciseId` and `/users/:userId`,
+    and registered the three dynamic breadcrumb resolvers `lib/breadcrumbs/manifest.ts` had been
+    explicitly holding a place for ("add a `DynamicManifestEntry` here in whichever ticket builds
+    that route for real"). Their response shapes are now confirmed, so this is no longer a guess.
+  - **`getCurrentUser()` and `getMyGroups()` now memoize per request** via React's `cache()`.
+    Deliberately _not_ in tension with "never cache user-scoped data": that rule is about a cache
+    outliving the request and leaking across users, which `cache()` cannot do. Without it the shell
+    and every page that also needs the current user would each issue their own call on every
+    navigation, and the S-series screens will all want it.
+  - **Duplication I had just introduced**: the command palette's search route carried its own copy
+    of the `localizedTexts` lookup, an hour after `localizedName()` was extracted for exactly that.
+    Now uses the shared helper. Also switched `app/api/auth/restricted-token/route.ts` to
+    `readSessionToken()`, so all four routes that need a token without a redirect go through one
+    function rather than three of them sharing it and one reading the cookie by hand.
+  - _Observations:_ the full e2e suite now passes end to end -- **64 tests**, including
+    `security.spec.ts`'s non-negotiable token-leakage checks and the whole authenticated smoke
+    matrix, all of which had been failing for want of seed data. Before this pass they could not
+    run at all on a fresh instance.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command

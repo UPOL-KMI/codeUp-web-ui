@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
+import { readSessionToken } from "@/lib/auth/session-cookie";
 
 const bodySchema = z.object({
   scopes: z.array(z.string()).min(1),
@@ -46,8 +45,7 @@ interface CoreApiErrorResponse {
  * forbidden scope is still correctly rejected downstream and surfaced as a JSON error.
  */
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const sessionToken = await readSessionToken();
   if (!sessionToken) {
     return NextResponse.json({ success: false, message: "Not authenticated." }, { status: 401 });
   }

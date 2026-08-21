@@ -1,6 +1,9 @@
 # ReCodEx New Frontend — Seed Test Accounts
 
-**Status:** Implemented (F-025), verified idempotent against a live instance.
+**Status:** Implemented (F-025), verified idempotent against a live instance -- genuinely so since
+the 2026-08-21 review pass, which found four bugs that only appeared on a _fresh_ database or
+after a failed partial run (hardcoded pipeline id, half-created exercise reuse, non-idempotent
+test creation, hardcoded exercise version). See `docs/PROGRESS.md`.
 **Date:** 2026-08-17
 
 This replaces the recon-phase plan that used to live here (Group A/B/C names, `seed-student1`
