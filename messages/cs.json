@@ -141,7 +141,9 @@
     "stateBoom": "Tento panel měl selhat.",
     "stateFixIt": "Opravit, pak použijte tlačítko pro opakování",
     "code": "Prohlížeč kódu",
-    "codeNote": "Zvýrazněno na serveru. Kliknutím na číslo řádku na něj získáte odkaz."
+    "codeNote": "Zvýrazněno na serveru. Kliknutím na číslo řádku na něj získáte odkaz.",
+    "markdown": "Markdown",
+    "markdownNote": "Zpracováno na serveru včetně KaTeX a zvýraznění kódu, s pravidly oddělovačů z původního rendereru."
   },
   "Code": {
     "lineLabel": "Řádek {line}",

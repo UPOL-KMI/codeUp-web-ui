@@ -21,8 +21,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@shikijs/rehype": "^4.4.3",
     "@swc/helpers": "0.5.23",
     "@tailwindcss/postcss": "4.3.3",
+    "katex": "^0.18.4",
     "next": "16.3.1",
     "next-intl": "4.13.7",
     "next-themes": "0.4.6",
@@ -30,13 +32,19 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.85.0",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "server-only": "0.0.1",
     "shiki": "^4.4.3",
     "tailwindcss": "4.3.3",
+    "unified": "^11.0.5",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
@@ -44,8 +52,12 @@
     "eslint-config-next": "^16.3.1",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.6",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
     "tsx": "^4.23.12",
     "typescript": "6.0.3",
+    "unist-util-visit": "^5.1.0",
     "vitest": "^4.1.10"
   }
 }

@@ -95,3 +95,20 @@ test("code is highlighted server-side and its lines are linkable", async ({ page
   ]);
   expect(targetedBg).not.toBe(otherBg);
 });
+
+test("markdown keeps the legacy renderer's delimiter behaviour", async ({ page }) => {
+  const markdown = page.locator('[data-slot="markdown"]');
+
+  // The case that would corrupt real exercise texts: two prices must stay prose. Asserted here as
+  // well as in the unit tests because this is the full pipeline, including the plugin ordering
+  // that the unit tests cannot see.
+  await expect(markdown).toContainText("worth $10 and $5 in bonus points");
+
+  // Raw HTML is shown as written, never executed -- markdown-it's html:false behaviour.
+  await expect(markdown).toContainText("<b>this</b>");
+  await expect(markdown.locator("b")).toHaveCount(0);
+
+  // A lone $$...$$ paragraph is display math, and fences are highlighted by Shiki server-side.
+  await expect(markdown.locator(".katex-display")).toHaveCount(1);
+  await expect(markdown.locator(".shiki")).toHaveCount(1);
+});

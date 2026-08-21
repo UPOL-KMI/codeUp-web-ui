@@ -20,7 +20,15 @@ import { PLAINTEXT, SUPPORTED_LANGUAGES } from "./languages";
  */
 let highlighterPromise: Promise<Highlighter> | null = null;
 
-function getHighlighter(): Promise<Highlighter> {
+/**
+ * Exported because the markdown renderer (D-010) needs the *instance*, not just the rendered
+ * output: react-markdown runs its plugin pipeline synchronously, so it cannot use the async
+ * `@shikijs/rehype` plugin -- it must be handed an already-created highlighter through
+ * `rehypeShikiFromHighlighter`. Sharing this one keeps markdown fences and the code viewer on the
+ * same grammars, the same themes and the same single initialisation.
+ */
+
+export function getHighlighter(): Promise<Highlighter> {
   highlighterPromise ??= createHighlighter({
     themes: ["github-light", "github-dark"],
     langs: [...SUPPORTED_LANGUAGES, PLAINTEXT],

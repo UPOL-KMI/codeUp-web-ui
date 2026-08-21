@@ -141,7 +141,9 @@
     "stateBoom": "This panel was asked to fail.",
     "stateFixIt": "Repair it, then use the retry button",
     "code": "Code viewer",
-    "codeNote": "Highlighted on the server. Click a line number to link to it."
+    "codeNote": "Highlighted on the server. Click a line number to link to it.",
+    "markdown": "Markdown",
+    "markdownNote": "Parsed, KaTeX-rendered and syntax-highlighted on the server, with the legacy renderer's delimiter rules."
   },
   "Code": {
     "lineLabel": "Line {line}",

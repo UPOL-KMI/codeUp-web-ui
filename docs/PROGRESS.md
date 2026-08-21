@@ -1211,13 +1211,60 @@ aria-live="assertive">`) duplicating each toast's text. A `role="status"`-scoped
     the implementing ticket named in each row; also corrected two rows that said "Server Action"
     where the thing actually built is a Route Handler.
 
+- **[2026-08-21 15:30] D-010:** Markdown renderer. `components/markdown/markdown.tsx`,
+  `lib/markdown/legacy-compat.ts`, `lib/markdown/legacy-compat.test.ts` (the repo's first unit
+  tests), markdown styles in `app/globals.css`, a section on `/dev/design-system`, and matching
+  assertions in `e2e/design-system.spec.ts`.
+  - _Brief §7's instruction was followed literally_ -- "render a sample of real exercise texts both
+    ways early and log the differences; do not discover them during parity sweep." 16 constructs
+    were rendered through the legacy renderer (`markdown-it` at its defaults +
+    `@iktakahiro/markdown-it-katex`, matching the legacy widget's own configuration) and through the
+    candidate pipeline, side by side, in a scratch harness outside the repo so no comparison-only
+    dependency landed in it. **10 of 16 differed.**
+  - _Two would have damaged authored content:_
+    - **Raw HTML disappeared entirely.** Legacy runs `html: false`, which escapes and _shows_ raw
+      HTML. react-markdown without `rehype-raw` _drops_ it: `<div class="note">Read
+<b>carefully</b>.</div>` rendered as nothing, and `<kbd>Enter</kbd>` rendered as the bare word
+      "Enter". Fixed by converting those nodes to text. Deliberately not fixed with `rehype-raw`,
+      which would start _executing_ markup the legacy app has always shown as inert -- a new
+      injection surface in supervisor-authored content, seen by every student opening the
+      assignment.
+    - **`It costs $5 and $10` became mathematics.** `remark-math` recognises `$...$` far more
+      eagerly than markdown-it-katex. The legacy rules were measured, not guessed: no whitespace
+      immediately inside the delimiters, and `$$` is display math only when it stands alone
+      (mid-sentence `$$x$$` is literal text). Both reproduced by inspecting each node's original
+      source span.
+  - _The rest are additive and accepted, not fixed:_ GFM autolinks bare URLs, renders task lists as
+    checkboxes, and supports footnotes -- none of which legacy did; `<del>` instead of `<s>`;
+    numeric entity re-encoding (identical rendering). All recorded in DEC-055 rather than left to
+    be rediscovered.
+  - _The unit tests earned their keep immediately_ -- this repo's first, and they caught three real
+    bugs in the plugins before anything was rendered: `remark-math` trims the node value, so
+    checking `node.value` for whitespace can never distinguish `$ x $` from `$x$` (the raw source
+    span has to be read); a hand-built block-level `math` node arrives without the
+    `data.hName`/`hProperties` remark-math attaches at parse time and renders as nothing (flipping
+    the existing node's class to `math-display` is the actual fix); and the two visitors match the
+    same nodes, so the second silently reverted the first's work until it learned to skip
+    already-labelled display math.
+  - _One failure that only the running application could show:_ react-markdown executes its plugin
+    pipeline **synchronously**, so the ordinary async `@shikijs/rehype` plugin dies at request time
+    with `runSync finished async. Use run instead`. `typecheck`, `lint` and `build` were all green
+    -- the route renders per request, so the build never exercised it. Fixed by awaiting D-009's
+    shared highlighter in the component and handing the instance to `@shikijs/rehype/core`'s
+    synchronous entry point. Fourth bug this phase that only running the thing caught.
+  - _Observations:_ verified in the Docker container -- prices stay prose, `<b>this</b>` shows as
+    written with no live `<b>` element in the DOM, a lone `$$...$$` paragraph renders as display
+    math while `$\varphi$` stays inline, tables render, and fences are Shiki-highlighted.
+  - See DEC-055.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-009 and D-013 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-010, D-013 and D-016 done; Foundation (F-001
+  through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-010 (Markdown renderer) -- react-markdown + KaTeX, with the compatibility
-  risk brief §7 flags; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a
-  backlog gap -- still `todo`, not blocking D-010.)
+- **Next ticket:** D-011 (Status badges) -- deadline, evaluation and permission states; per
+  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
+  not blocking D-011.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { CodeViewer } from "@/components/code/code-viewer";
+import { Markdown } from "@/components/markdown/markdown";
 import { DesignSystemShowcase } from "@/components/dev/design-system";
 import { PageShell } from "@/components/page-shell";
 
@@ -15,6 +16,31 @@ def fib(n: int) -> int:
 if __name__ == "__main__":
     print([fib(n) for n in range(10)])
 `;
+
+const SAMPLE_MARKDOWN = [
+  "## Assignment",
+  "",
+  "Implement `fib(n)` so that it runs in **O(n)** time. See <https://recodex.mff.cuni.cz> for the",
+  "submission rules.",
+  "",
+  "The closed form is",
+  "",
+  "$$F_n = \\frac{\\varphi^n - \\psi^n}{\\varphi - \\psi}$$",
+  "",
+  "where $\\varphi$ is the golden ratio. A correct solution is worth $10 and $5 in bonus points --",
+  "prices like those must stay prose, not turn into mathematics.",
+  "",
+  "| n | F(n) |",
+  "| - | ---- |",
+  "| 1 | 1    |",
+  "| 7 | 13   |",
+  "",
+  "```python",
+  "print(fib(7))",
+  "```",
+  "",
+  "> Raw HTML such as <b>this</b> is shown as written, never executed.",
+].join("\n");
 
 /**
  * \`/dev/design-system\` (D-013): every Design System component rendered in isolation, on one page,
@@ -48,6 +74,7 @@ export default async function DesignSystemPage() {
           composition is half the point of showing it on this page. */}
       <DesignSystemShowcase
         codeSample={<CodeViewer filename="fibonacci.py" code={SAMPLE_CODE} />}
+        markdownSample={<Markdown source={SAMPLE_MARKDOWN} />}
       />
     </PageShell>
   );

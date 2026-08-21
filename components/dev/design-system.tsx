@@ -55,7 +55,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function DesignSystemShowcase({ codeSample }: { codeSample: React.ReactNode }) {
+export function DesignSystemShowcase({
+  codeSample,
+  markdownSample,
+}: {
+  codeSample: React.ReactNode;
+  markdownSample: React.ReactNode;
+}) {
   const t = useTranslations("DesignSystem");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmCount, setConfirmCount] = useState(0);
@@ -178,6 +184,11 @@ export function DesignSystemShowcase({ codeSample }: { codeSample: React.ReactNo
       <Section title={t("code")}>
         <p className="text-sm text-muted-foreground">{t("codeNote")}</p>
         {codeSample}
+      </Section>
+
+      <Section title={t("markdown")}>
+        <p className="text-sm text-muted-foreground">{t("markdownNote")}</p>
+        {markdownSample}
       </Section>
 
       <Section title={t("states")}>
