@@ -1086,13 +1086,38 @@ nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512
     error states, both dialogs opening and closing, and the upload dropzone rendering its 512 MiB
     ceiling.
 
+- **[2026-08-21 11:20] D-007:** Toast notification system. `components/toast/toast-provider.tsx`,
+  mounted once in `app/[locale]/layout.tsx`; `Toast` strings in both locales; toast motion tokens
+  in `app/globals.css`.
+  - On Radix `Toast` (1.2.23), continuing DEC-054's package choice. Radix is doing real work here
+    beyond styling: `role="status"` with `aria-live` picked by toast type (`assertive` for
+    foreground, `polite` for background -- read out of the installed source), auto-dismiss timers
+    that pause on hover and on window blur, swipe-to-dismiss, and the F8 focus hotkey that makes
+    toasts keyboard-reachable at all.
+  - Errors are `foreground`/8 s, successes `background`/4 s: a success confirms something the user
+    already expected, an error is news they have to act on.
+  - `useToast()` **throws** outside the provider rather than returning a no-op -- a toast that
+    silently does nothing is precisely the silent failure brief §9 forbids, and it would only ever
+    be noticed in production, on the error path, by a user.
+  - _Observations:_ verified in the Docker container on port 3001 -- error toast renders
+    bottom-right with destructive styling, title, description and a working dismiss control.
+
+- **[2026-08-21 11:25] D-013 follow-up (route rename):** `/dev/kitchen-sink` →
+  `/dev/design-system`, with the component renamed to match and `proxy.ts`'s public-path entry
+  updated. The operator read the route, said they had no idea what "kitchen sink" meant, and asked
+  whether there was a better name. There was: the term is genuinely standard in design-system
+  tooling (Storybook, MUI and Bootstrap all ship "kitchen sink" pages, which is where the recon
+  ticket got it), but a name only a frontend specialist can parse is a bad name for a page whose
+  entire purpose is being looked at. `/dev/` still marks it as tooling rather than product.
+  DEC-020's original wording is left as written -- it records what was decided then.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-006 and D-013 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-007 and D-013 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-007 (Toast notification system) -- success + failure, no silent failures; per
-  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
-  not blocking D-007.)
+- **Next ticket:** D-008 (State components: loading, empty, error, forbidden) -- `loading.tsx` +
+  `catchError`; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap
+  -- still `todo`, not blocking D-008.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

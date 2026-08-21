@@ -93,8 +93,12 @@
     "confirm": "Potvrdit",
     "cancel": "Zrušit"
   },
-  "KitchenSink": {
-    "title": "Přehled komponent",
+  "Toast": {
+    "close": "Zavřít",
+    "regionLabel": "Oznámení"
+  },
+  "DesignSystem": {
+    "title": "Design systém",
     "subtitle": "Všechny komponenty design systému samostatně.",
     "tokens": "Tokeny motivu",
     "dataTable": "Tabulka dat",
@@ -117,6 +121,13 @@
     "confirmDescription": "Nic se doopravdy nemaže — jde jen o ukázku potvrzovacího dialogu.",
     "confirmedTimes": "Potvrzeno {count, plural, one {# krát} few {# krát} other {# krát}}.",
     "upload": "Nahrávání souborů",
-    "uploadNote": "Nahrávání jde na skutečné API, takže tato část funguje jen po přihlášení."
+    "uploadNote": "Nahrávání jde na skutečné API, takže tato část funguje jen po přihlášení.",
+    "toasts": "Oznámení",
+    "showSuccessToast": "Zobrazit oznámení o úspěchu",
+    "showErrorToast": "Zobrazit oznámení o chybě",
+    "toastSuccessTitle": "Skupina uložena",
+    "toastSuccessBody": "Vaše změny jsou uloženy.",
+    "toastErrorTitle": "Skupinu se nepodařilo uložit",
+    "toastErrorBody": "Server požadavek odmítl. Nic se nezměnilo."
   }
 }

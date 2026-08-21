@@ -32,7 +32,7 @@ const PUBLIC_PATHNAMES = new Set([
   // session requirement would only make it harder to look at (its upload section does hit
   // core-api, and says so). Deliberately kept out of the (anon) route group -- it isn't part of
   // the product's IA, it's developer tooling that happens to be served by the same app.
-  "/dev/kitchen-sink",
+  "/dev/design-system",
 ]);
 
 function stripLocale(pathname: string): string {

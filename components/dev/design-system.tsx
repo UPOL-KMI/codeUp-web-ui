@@ -15,10 +15,11 @@ import {
 } from "@/components/dialog/dialog";
 import { FormError } from "@/components/form/form-error";
 import { TextField } from "@/components/form/text-field";
+import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
 
 /**
- * The interactive half of `/dev/kitchen-sink` (D-013). Split out of the page itself so the page
+ * The interactive half of `/dev/design-system` (D-013). Split out of the page itself so the page
  * stays a Server Component and only this island is `"use client"` -- brief §6.4's rule, which a
  * demo page has no more licence to break than a real one.
  *
@@ -51,11 +52,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function KitchenSink() {
-  const t = useTranslations("KitchenSink");
+export function DesignSystemShowcase() {
+  const t = useTranslations("DesignSystem");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmCount, setConfirmCount] = useState(0);
   const form = useForm<{ email: string }>({ defaultValues: { email: "" } });
+  const toast = useToast();
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,6 +168,25 @@ export function KitchenSink() {
             description={t("confirmDescription")}
             onConfirm={() => setConfirmCount((count) => count + 1)}
           />
+        </div>
+      </Section>
+
+      <Section title={t("toasts")}>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => toast.success(t("toastSuccessTitle"), t("toastSuccessBody"))}
+            className="rounded-md border border-input px-3 py-1.5 text-sm"
+          >
+            {t("showSuccessToast")}
+          </button>
+          <button
+            type="button"
+            onClick={() => toast.error(t("toastErrorTitle"), t("toastErrorBody"))}
+            className="rounded-md border border-input px-3 py-1.5 text-sm"
+          >
+            {t("showErrorToast")}
+          </button>
         </div>
       </Section>
 

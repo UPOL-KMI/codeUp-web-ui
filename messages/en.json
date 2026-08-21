@@ -93,8 +93,12 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
-  "KitchenSink": {
-    "title": "Kitchen sink",
+  "Toast": {
+    "close": "Dismiss",
+    "regionLabel": "Notifications"
+  },
+  "DesignSystem": {
+    "title": "Design system",
     "subtitle": "Every design-system component in isolation.",
     "tokens": "Theme tokens",
     "dataTable": "Data table",
@@ -117,6 +121,13 @@
     "confirmDescription": "Nothing is actually deleted — this only demonstrates the confirmation.",
     "confirmedTimes": "Confirmed {count, plural, one {# time} other {# times}}.",
     "upload": "Upload",
-    "uploadNote": "Uploads go to the real API, so this section only works when you are signed in."
+    "uploadNote": "Uploads go to the real API, so this section only works when you are signed in.",
+    "toasts": "Toasts",
+    "showSuccessToast": "Show success toast",
+    "showErrorToast": "Show error toast",
+    "toastSuccessTitle": "Group saved",
+    "toastSuccessBody": "Your changes are live.",
+    "toastErrorTitle": "Could not save the group",
+    "toastErrorBody": "The server rejected the request. Nothing was changed."
   }
 }

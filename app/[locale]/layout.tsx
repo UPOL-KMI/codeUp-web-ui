@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { ToastProvider } from "@/components/toast/toast-provider";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -52,7 +53,9 @@ export default async function LocaleLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            {/* Mounted once, here, so `useToast()` works from any client component without each
+                screen providing its own notification surface (brief §9: "one toast system"). */}
+            <ToastProvider>{children}</ToastProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
