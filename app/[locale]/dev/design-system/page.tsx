@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CodeViewer } from "@/components/code/code-viewer";
 import { Markdown } from "@/components/markdown/markdown";
+import { DateTime } from "@/components/format/date-time";
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
 import { DesignSystemShowcase } from "@/components/dev/design-system";
 import { PageShell } from "@/components/page-shell";
@@ -17,6 +18,8 @@ def fib(n: int) -> int:
 if __name__ == "__main__":
     print([fib(n) for n in range(10)])
 `;
+
+const SAMPLE_TIMESTAMP = Date.parse("2026-09-01T21:59:00Z") / 1000;
 
 const SAMPLE_MARKDOWN = [
   "## Assignment",
@@ -76,6 +79,13 @@ export default async function DesignSystemPage() {
       <DesignSystemShowcase
         codeSample={<CodeViewer filename="fibonacci.py" code={SAMPLE_CODE} />}
         markdownSample={<Markdown source={SAMPLE_MARKDOWN} />}
+        dateSamples={
+          <>
+            <DateTime unixSeconds={SAMPLE_TIMESTAMP} />
+            <DateTime unixSeconds={SAMPLE_TIMESTAMP} dateOnly />
+            <DateTime unixSeconds={SAMPLE_TIMESTAMP} withSeconds />
+          </>
+        }
         evaluationBadges={
           <>
             <EvaluationBadge

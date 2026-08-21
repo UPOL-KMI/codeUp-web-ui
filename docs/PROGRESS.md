@@ -1292,14 +1292,42 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
   - _Observations:_ verified in the Docker container -- all seven evaluation states and all three
     deadline states render with the right tones, no hydration warning in the console.
 
+- **[2026-08-21 17:10] D-012:** Formatters. `lib/format/points.ts` + `lib/format/points.test.ts`,
+  `components/format/{date-time,relative-time}.tsx`, an explicit `timeZone` in `i18n/request.ts`,
+  a section on `/dev/design-system`.
+  - **The time zone was the real find, and it was a latent bug rather than a missing feature.**
+    `i18n/request.ts` set no `timeZone`, so next-intl falls back to the runtime's own zone: a date
+    formatted in a Server Component would use the _container's_ zone (UTC) while the same date
+    formatted in the browser uses the user's. That is a hydration mismatch in general and, on a
+    deadline, a wrong answer rather than a cosmetic one -- and it would have gone unnoticed until
+    the first assignment screen shipped, since nothing rendered a date until now.
+  - Pinned to the deployment's zone (`APP_TIME_ZONE`, default `Europe/Prague`) rather than trying
+    to detect the user's. That is also the more _correct_ behaviour here, not merely the more
+    convenient: a deadline announced as 23:59 means that wall-clock time to everyone discussing it
+    -- student, supervisor, and the assignment text itself -- and showing a student abroad "22:59"
+    would be technically accurate and practically confusing. Verified live: a `21:59Z` deadline
+    renders as `Sep 1, 2026, 11:59 PM` in `en` and `1. 9. 2026 23:59` in `cs`.
+  - Relative time is client-only, same `useSyncExternalStore` shape as D-011's deadline badge and
+    for the same reason -- it is a function of _now_, so any server render or cached HTML is stale
+    the moment it is reused. It always carries the absolute value as `dateTime` and a tooltip: "in
+    3 days" is friendlier, but a student deciding whether to start tonight needs the timestamp.
+  - `formatPercent` **floors** rather than rounds. Rounding to nearest lets a solution that passed
+    99.6% of its tests display as "100%", which in a grading tool reads as "everything passed" and
+    is the single number a student is most likely to challenge. Out-of-range scores are clamped
+    rather than trusted -- `score` comes from the evaluation pipeline, and a malformed one should
+    not render as "-300%".
+  - _Observations:_ verified in the Docker container in both locales -- absolute dates in Prague
+    wall-clock from the server, relative times resolving in the browser, points and percentages
+    matching the unit tests.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-011, D-013 and D-016 done; Foundation (F-001
+- **Phase:** Design System (Phase 2) -- D-001 through D-013 and D-016 done (D-014/D-015 remain);
+  Foundation (F-001
   through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-012 (Formatters: date, points, relative time) -- single source, client/server
-  consistent; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
-  still `todo`, not blocking D-012.)
+- **Next ticket:** D-014 (Sidebar / app-shell navigation) -- the gap found during D-001; per
+  `docs/BACKLOG.md`. D-015 (command palette) follows it, and then Phase 2 is complete.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

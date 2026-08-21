@@ -14,5 +14,17 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages: (await import(`../messages/${locale}.json`)).default,
+    // D-012. Without an explicit time zone, a date formatted in a Server Component uses the
+    // *container's* zone (UTC here) while the same date formatted in the browser uses the user's
+    // -- so the server HTML and the client render disagree, which is a hydration mismatch and, on
+    // a deadline, a wrong answer rather than a cosmetic one.
+    //
+    // Pinning it to the deployment's zone rather than trying to detect the user's is also the more
+    // correct behaviour for this product, not just the more convenient one: a deadline announced
+    // as 23:59 is 23:59 in the course's own time zone, and everyone discussing it -- student,
+    // supervisor, the assignment text itself -- means that same wall-clock time. Showing a student
+    // abroad "22:59" would be technically accurate and practically confusing. Overridable per
+    // deployment via APP_TIME_ZONE.
+    timeZone: process.env.APP_TIME_ZONE || "Europe/Prague",
   };
 });

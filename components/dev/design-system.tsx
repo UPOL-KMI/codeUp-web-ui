@@ -5,6 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { DataTable } from "@/components/data-table";
+import { formatPercent, formatPoints } from "@/lib/format/points";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
 import { TextField } from "@/components/form/text-field";
+import { RelativeTime } from "@/components/format/relative-time";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
@@ -38,6 +40,9 @@ import { FileUpload } from "@/components/upload/file-upload";
 // having one of them quietly expire.
 const PAST = Date.parse("2020-01-01T00:00:00Z") / 1000;
 const FUTURE = Date.parse("2100-01-01T00:00:00Z") / 1000;
+// A nearer future date, so the relative-time sample reads like something a real deadline would
+// ("in 5 years" is technically correct and demonstrates nothing).
+const FUTURE_DEADLINE = Date.parse("2026-09-01T21:59:00Z") / 1000;
 
 interface DemoRow {
   id: string;
@@ -67,10 +72,12 @@ export function DesignSystemShowcase({
   codeSample,
   markdownSample,
   evaluationBadges,
+  dateSamples,
 }: {
   codeSample: React.ReactNode;
   markdownSample: React.ReactNode;
   evaluationBadges: React.ReactNode;
+  dateSamples: React.ReactNode;
 }) {
   const t = useTranslations("DesignSystem");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -194,6 +201,21 @@ export function DesignSystemShowcase({
       <Section title={t("code")}>
         <p className="text-sm text-muted-foreground">{t("codeNote")}</p>
         {codeSample}
+      </Section>
+
+      <Section title={t("formatters")}>
+        <p className="text-sm text-muted-foreground">{t("formattersNote")}</p>
+        <div className="flex flex-wrap items-center gap-4 text-sm">{dateSamples}</div>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <RelativeTime unixSeconds={FUTURE_DEADLINE} />
+          <RelativeTime unixSeconds={PAST} />
+        </div>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <span>{formatPoints(7, 10)}</span>
+          <span>{formatPoints(7)}</span>
+          <span>{formatPercent(0.996)}</span>
+          <span>{formatPercent(1)}</span>
+        </div>
       </Section>
 
       <Section title={t("badges")}>
