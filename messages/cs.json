@@ -77,5 +77,15 @@
   },
   "Profile": {
     "title": "Profil"
+  },
+  "Upload": {
+    "dropzone": "Vyberte soubory nebo je sem přetáhněte",
+    "maxSize": "Maximální velikost souboru: {size}",
+    "uploading": "Nahrávání… {percent} %",
+    "progressLabel": "Průběh nahrávání souboru {name}",
+    "cancel": "Zrušit",
+    "done": "Nahráno",
+    "remove": "Odebrat",
+    "failed": "Nahrávání se nezdařilo."
   }
 }

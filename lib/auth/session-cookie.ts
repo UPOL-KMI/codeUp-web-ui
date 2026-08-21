@@ -50,3 +50,16 @@ export async function establishSession(accessToken: string): Promise<boolean> {
   cookieStore.set(SESSION_COOKIE_NAME, accessToken, sessionCookieOptions(maxAgeSeconds));
   return true;
 }
+
+/**
+ * Reads the session token without `requireSession()`'s redirect. Route Handlers invoked by
+ * client-side `fetch()` (the auth module's restricted-token route, the upload proxy routes) must
+ * answer with a JSON 401 the caller can branch on -- a `redirect("/login")` there would be
+ * followed by `fetch` and hand the caller a 200 page of HTML instead of a recognisable failure.
+ * Server Components and Server Actions keep using `requireSession()`; this is deliberately not a
+ * general-purpose "is the user logged in" helper.
+ */
+export async function readSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+}

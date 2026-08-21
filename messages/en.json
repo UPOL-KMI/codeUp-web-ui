@@ -77,5 +77,15 @@
   },
   "Profile": {
     "title": "Profile"
+  },
+  "Upload": {
+    "dropzone": "Choose files or drag them here",
+    "maxSize": "Maximum file size: {size}",
+    "uploading": "Uploading… {percent}%",
+    "progressLabel": "Upload progress for {name}",
+    "cancel": "Cancel",
+    "done": "Uploaded",
+    "remove": "Remove",
+    "failed": "The upload failed."
   }
 }

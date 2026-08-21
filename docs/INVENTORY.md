@@ -115,7 +115,7 @@
 | `submissionEvaluations`        | Evaluation results                            | `solutions/[id]`                     | todo   |
 | `submissionFailures`           | Submission failure log                        | `submission-failures`                | todo   |
 | `systemMessages`               | System messages                               | `system-messages`                    | todo   |
-| `upload`                       | File upload state                             | `upload` component                   | todo   |
+| `upload`                       | File upload state                             | `lib/upload/use-file-upload.ts`      | done   |
 | `userCalendars`                | User deadlines calendar                       | `dashboard`                          | todo   |
 | `userSwitching`                | User switching (superadmin)                   | `admin/users`                        | todo   |
 | `users`                        | User management                               | `users`, `admin/users`               | todo   |
@@ -132,7 +132,7 @@
 | **External auth (CAS)** | Popup window + redirect callback                        | Route Handler callback                       | todo   |
 | **User takeover**       | `POST /login/takeover/:userId`                          | Server Action                                | todo   |
 | **Restricted tokens**   | `POST /login/issue-restricted-token`                    | Server Action                                | todo   |
-| **File upload**         | `FormData` via `apiMiddleware` (uploadFiles)            | Route Handler streaming (§6.7)               | todo   |
+| **File upload**         | Per-partes chunked upload via `apiMiddleware`           | Route Handler streaming (§6.7), D-005        | done   |
 | **Evaluation progress** | `evaluationProgress` module (WebSocket/polling)         | TanStack Query + WebSocket/polling           | todo   |
 | **Permission hints**    | `canSubmit`, `canViewDetail`, etc. on entities          | Server Component data fetching               | todo   |
 | **i18n**                | `react-intl` with cs/en messages                        | `next-intl`                                  | todo   |

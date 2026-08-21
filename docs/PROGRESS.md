@@ -979,13 +979,65 @@ use-server-action-form, use-dirty-guard}.ts`, `components/form/{text-field, form
     cloned this repo into `repos/web-next` via SSH, and `docker compose build web-next && docker
 compose up -d web-next` succeeded end to end from that new location.
 
+- **[2026-08-21 09:15] D-005:** Upload component + Route Handlers. `lib/upload/{limits,
+chunked-upload,use-file-upload}.ts`, `components/upload/file-upload.tsx`,
+  `app/api/upload/partial/route.ts`, `app/api/upload/partial/[id]/route.ts`,
+  `app/api/upload/[id]/digest/route.ts`, `Upload` strings in both locales, plus a
+  `readSessionToken()` helper in `lib/auth/session-cookie.ts`.
+  - _Brief §6.7's open question, answered:_ "If the legacy app chunks large uploads, find out and
+    reproduce that." **It does.** `repos/web-app/src/redux/modules/upload.js` +
+    `containers/UploadContainer/UploadContainer.js` drive core-api's per-partes protocol:
+    `POST /uploaded-files/partial {name,size}` → `PUT /uploaded-files/partial/{id}?offset=N` with
+    the raw chunk as the body → `POST /uploaded-files/partial/{id}` to finalize →
+    `GET /uploaded-files/{id}/digest` compared against a locally recomputed SHA-1 →
+    `DELETE /uploaded-files/partial/{id}` to cancel. Chunk size is adaptive (64 KiB start, doubled
+    after a chunk under 2 s, halved after one over 4 s, clamped to 4 KiB–4 MiB). Cross-checked
+    against `UploadedFilesPresenter` rather than trusting the legacy client alone -- that's where
+    the offset rule (core-api rejects any offset ≠ its own `uploadedSize`) and the raw-body
+    handling (`saveRequestBodyAsFile()` reads `php://input`, no multipart wrapper) come from.
+  - _The one real design decision:_ the chunk loop runs in the **browser**, with each chunk
+    proxied through a Route Handler, rather than shipping the whole file to a Route Handler that
+    chunks server-side. Both readings satisfy §6.7's wording; only the first gives real progress
+    (a server-side loop can only report browser→Next transfer), cancel that stops work in flight,
+    and a checksum check that means anything -- comparing core-api's digest against bytes _we_
+    sent it verifies nothing, since both sides come from the same copy. Documented as DEC-053.
+  - _512 MiB ceiling:_ verified, not assumed -- the compose repo's `services/proxy/
+nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512M`) and
+    `services/api/php-recodex.ini` (`upload_max_filesize`/`post_max_size`). Notably core-api's own
+    `actionStartPartial()` permits **1 GiB**, so the deployment, not the API, is the binding
+    constraint. ASS-007 accordingly retired from DECISIONS.md's assumptions table as verified.
+  - _One deliberate divergence from the legacy app:_ local digest verification degrades to a skip
+    when `crypto.subtle` is missing instead of failing the upload. `crypto.subtle` only exists in a
+    secure context, so on plain HTTP reached by hostname (`http://recodex.local:3001` -- this very
+    deployment) it is `undefined` and the legacy app throws a bare `TypeError` there. The file is
+    already complete and durable by that point; failing it over a check the browser cannot perform
+    is the worse of the two behaviours.
+  - _Two things the lint config caught that are worth remembering:_ `react-hooks/refs` rejects the
+    "latest callback in a ref, assigned during render" pattern outright, and
+    `react-hooks/set-state-in-effect` rejects the usual "notify the parent from an effect, guarded
+    by remembered state" workaround. Both went away by moving the parent notification into
+    `useFileUpload` itself and firing it from the completion/remove/reset handlers -- real event
+    contexts, no effect involved. The rules were right; the first two designs were the habit.
+  - _Observations (verified live against the running stack):_ end to end on a bare-host
+    `next build && next start`, a 300 KiB file uploaded in 5 chunks and core-api's returned SHA-1
+    matched the local file's byte for byte. Negative paths all behave: unauthenticated → 401 JSON
+    (not a redirect, which is why `readSessionToken()` exists), 513 MiB → `400-004`, `bad/name.zip`
+    → `400-003`, non-UUID id → 400, wrong offset → core-api's own "offset must correspond" 400,
+    `DELETE` → `OK` followed by 404 on a later complete. Then re-verified **inside the Docker
+    `standalone` image** (`docker compose build web-next && up -d`, port 3001) -- same protocol,
+    same matching digest -- given D-002/D-003's history of Docker-only failures. The component
+    itself was driven in a real browser via a temporary demo page + Playwright: a multi-chunk
+    upload reaching the "Uploaded" state, and a 200 MiB upload cancelled mid-flight with the row
+    disappearing. Demo page and its spec removed afterward, same as D-004's demo Server Action.
+  - See DEC-053.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-004 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-005 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-005 (Upload component, Route Handler) -- streaming, progress, 512 MiB
-  ceiling; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap --
-  still `todo`, not blocking D-005.)
+- **Next ticket:** D-006 (Dialog/modal system) -- Radix Dialog, accessible; per
+  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
+  not blocking D-006.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
