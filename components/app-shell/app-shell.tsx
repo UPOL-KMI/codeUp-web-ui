@@ -3,6 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
 import { getMyGroups } from "@/lib/api/groups";
 
+import { CommandPalette } from "@/components/command-palette/command-palette";
+
 import { SidebarNav, type NavSection } from "./sidebar-nav";
 
 /**
@@ -88,6 +90,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
+      {/* Mounted once here rather than per page: Cmd/Ctrl-K has to work from anywhere behind the
+          session, and a palette that only exists on some screens is worse than none. */}
+      <CommandPalette />
       <SidebarNav sections={sections} />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

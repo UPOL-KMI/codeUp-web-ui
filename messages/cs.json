@@ -210,5 +210,16 @@
     "systemMessages": "Systémové zprávy",
     "archive": "Archiv",
     "submissionFailures": "Chyby odevzdání"
+  },
+  "Palette": {
+    "label": "Hledání",
+    "placeholder": "Hledat skupiny, úlohy a lidi…",
+    "hint": "Zadejte alespoň dva znaky.",
+    "loading": "Hledám…",
+    "empty": "Nic nenalezeno.",
+    "groups": "Skupiny",
+    "exercises": "Úlohy",
+    "users": "Lidé",
+    "open": "Hledat (Ctrl+K)"
   }
 }

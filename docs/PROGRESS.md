@@ -1352,16 +1352,51 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     `/en/dashboard` still redirects to `/en/login?from=...`, so wiring the shell into the layout
     did not weaken the gate.
 
+- **[2026-08-21 19:00] D-015:** Command palette. `components/command-palette/command-palette.tsx`,
+  `app/api/search/route.ts`, `Palette` strings in both locales, `e2e/command-palette.spec.ts`.
+  **Phase 2 (Design System) is complete.**
+  - _The IA asked for an endpoint that does not exist._ §3.4 names "`/api/search` (or equivalent)",
+    and brief §3.2 forbids inventing endpoints. Checked: core-api has no `/search`, and no
+    `/v1/assignments` collection either. A `search` query parameter does exist on `/v1/users`,
+    `/v1/exercises` and `/v1/groups` -- verified live, not from the spec file. So the palette
+    searches those three, and **assignment search is not built at all**, recorded as Q-011 rather
+    than faked or silently dropped.
+  - _The three endpoints do not agree on a response shape:_ `/users` and `/exercises` return a
+    paginated envelope (`{items, totalCount, offset, limit, ...}`) while `/groups` returns a bare
+    array. Normalised once in the Route Handler, so that inconsistency never reaches the UI -- and
+    so the browser makes one request instead of three and learns none of it.
+  - _Permission comes from core-api, not from a role check here._ The IA restricts user search to
+    teachers/admins. Rather than reimplementing that rule, the route attempts it for everyone and
+    treats a 403 as "no user results" -- a student gets a working palette without a people section,
+    and this app cannot drift from what core-api actually permits (brief §3.4).
+  - `cmdk` for the palette itself, same reasoning DEC-054 used for Radix: this is a combobox, and
+    combobox semantics (`aria-activedescendant` moving through options while focus stays in the
+    input, listbox/option roles, arrow and Home/End handling) look finished long before they are
+    correct for a screen-reader user. `cmdk` renders through Radix's Dialog, so it stays in the
+    same primitive family. `shouldFilter={false}` because the server already decided what matches,
+    including on fields the label does not show (a user's email) -- client-side re-filtering would
+    silently drop those hits.
+  - In-flight requests are aborted when the query moves on: without it a slow response for "ab" can
+    land after the response for "abcd" and repopulate the list with stale results.
+  - _Fourth time the lint config was right this phase:_ the short-query branch cleared state
+    synchronously inside the effect. Deriving the empty result instead is both simpler and one
+    fewer render -- the effect now only ever starts work, never corrects state.
+  - _Observations:_ verified against the container with real core-api data -- Ctrl+K opens with
+    focus in the input, Escape closes, a one-character query asks for more, and searching
+    "Frankenstein" finds the seeded instance group and navigates to `/en/groups/<id>`. That
+    destination is still a placeholder page; the palette's job is to get there.
+
 ### Current Status
 
 - **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command
   palette) remains. Foundation (F-001
   through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-015 (Command palette, Cmd/Ctrl-K) -- `docs/IA.md` §3.4. It is the last
-  Design System ticket; Phase 3 (Student flows, S-series) follows.
+- **Next ticket:** S-001 onwards (Student flows) -- the first tickets that build real screens
+  rather than the primitives they sit on. See `docs/BACKLOG.md`'s Student table.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
+- **Operator inputs pending:** Q-011 (no assignment search endpoint — proceeding without it, see
+  QUESTIONS.md). Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that

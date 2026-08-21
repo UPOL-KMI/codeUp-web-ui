@@ -210,5 +210,16 @@
     "systemMessages": "System messages",
     "archive": "Archive",
     "submissionFailures": "Submission failures"
+  },
+  "Palette": {
+    "label": "Search",
+    "placeholder": "Search groups, exercises and people…",
+    "hint": "Type at least two characters.",
+    "loading": "Searching…",
+    "empty": "Nothing found.",
+    "groups": "Groups",
+    "exercises": "Exercises",
+    "users": "People",
+    "open": "Search (Ctrl+K)"
   }
 }
