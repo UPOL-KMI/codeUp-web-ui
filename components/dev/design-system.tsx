@@ -14,6 +14,9 @@ import {
   DialogTrigger,
 } from "@/components/dialog/dialog";
 import { FormError } from "@/components/form/form-error";
+import { EmptyState } from "@/components/state/empty-state";
+import { ErrorBoundary } from "@/components/state/error-boundary";
+import { TableSkeleton } from "@/components/state/skeleton";
 import { TextField } from "@/components/form/text-field";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
@@ -58,6 +61,7 @@ export function DesignSystemShowcase() {
   const [confirmCount, setConfirmCount] = useState(0);
   const form = useForm<{ email: string }>({ defaultValues: { email: "" } });
   const toast = useToast();
+  const [panelBroken, setPanelBroken] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -171,6 +175,55 @@ export function DesignSystemShowcase() {
         </div>
       </Section>
 
+      <Section title={t("states")}>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">{t("stateLoading")}</p>
+            <TableSkeleton rows={3} columns={3} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">{t("stateEmpty")}</p>
+            <EmptyState
+              title={t("stateEmptyTitle")}
+              description={t("stateEmptyBody")}
+              action={
+                <button
+                  type="button"
+                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                >
+                  {t("stateEmptyAction")}
+                </button>
+              }
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">{t("stateError")}</p>
+            <button
+              type="button"
+              onClick={() => setPanelBroken(true)}
+              className="self-start rounded-md border border-input px-3 py-1.5 text-sm"
+            >
+              {t("stateBreakIt")}
+            </button>
+            {/* The boundary is what's on show: only this panel fails, the rest of the page (and
+                the toast/dialog state above it) keeps working. `retry()` re-renders the children,
+                so the reset below is what makes the panel recoverable in this demo. */}
+            <button
+              type="button"
+              onClick={() => setPanelBroken(false)}
+              className="self-start rounded-md border border-input px-3 py-1.5 text-sm"
+            >
+              {t("stateFixIt")}
+            </button>
+            <ErrorBoundary>
+              <FailingPanel broken={panelBroken} />
+            </ErrorBoundary>
+          </div>
+        </div>
+      </Section>
+
       <Section title={t("toasts")}>
         <div className="flex flex-wrap gap-2">
           <button
@@ -194,6 +247,22 @@ export function DesignSystemShowcase() {
         <p className="text-sm text-muted-foreground">{t("uploadNote")}</p>
         <FileUpload />
       </Section>
+    </div>
+  );
+}
+
+/**
+ * Demo-only. Throws while `broken` is true, and keeps throwing on `retry()` -- which is exactly
+ * what a genuinely broken panel does, and worth showing honestly rather than faking a recovery.
+ * Press "repair", then "try again", to watch the boundary actually recover: `retry()` re-renders
+ * these children, so it succeeds as soon as the underlying cause is gone.
+ */
+function FailingPanel({ broken }: { broken: boolean }) {
+  const t = useTranslations("DesignSystem");
+  if (broken) throw new Error(t("stateBoom"));
+  return (
+    <div className="rounded-lg border border-border p-4 text-sm text-muted-foreground">
+      {t("stateBoom")}
     </div>
   );
 }

@@ -22,7 +22,8 @@
   },
   "Error": {
     "title": "Něco se pokazilo",
-    "retry": "Zkusit znovu"
+    "retry": "Zkusit znovu",
+    "description": "Tento obsah se nepodařilo načíst. Problém může být dočasný."
   },
   "Placeholder": {
     "comingSoon": "Tato stránka zatím nebyla vytvořena."
@@ -128,6 +129,16 @@
     "toastSuccessTitle": "Skupina uložena",
     "toastSuccessBody": "Vaše změny jsou uloženy.",
     "toastErrorTitle": "Skupinu se nepodařilo uložit",
-    "toastErrorBody": "Server požadavek odmítl. Nic se nezměnilo."
+    "toastErrorBody": "Server požadavek odmítl. Nic se nezměnilo.",
+    "states": "Stavy",
+    "stateEmptyTitle": "Zatím žádné úlohy",
+    "stateEmptyBody": "Úlohy, které v této skupině vytvoříte, se objeví zde.",
+    "stateEmptyAction": "Vytvořit úlohu",
+    "stateBreakIt": "Rozbít panel níže",
+    "stateLoading": "Načítání",
+    "stateEmpty": "Prázdný stav",
+    "stateError": "Chyba (s opakováním)",
+    "stateBoom": "Tento panel měl selhat.",
+    "stateFixIt": "Opravit, pak použijte tlačítko pro opakování"
   }
 }

@@ -160,4 +160,10 @@
   [data-slot="toast"] {
     animation: none !important;
   }
+
+  /* Skeletons pulse indefinitely, which is more of what this preference is about than a one-shot
+     dialog transition -- the placeholder still shows, it just holds still. */
+  [data-slot="skeleton"] {
+    animation: none !important;
+  }
 }

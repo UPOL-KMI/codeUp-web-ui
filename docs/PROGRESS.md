@@ -1111,13 +1111,49 @@ nginx.conf.template` + `services/api/nginx-site.conf` (`client_max_body_size 512
   entire purpose is being looked at. `/dev/` still marks it as tooling rather than product.
   DEC-020's original wording is left as written -- it records what was decided then.
 
+- **[2026-08-21 12:10] D-008:** State components. `components/state/{status-state,skeleton,
+empty-state,error-state,error-boundary}.tsx`; `app/[locale]/{error,not-found,forbidden,
+unauthorized}.tsx` rewritten onto them; `loading.tsx` added per route group; `Error.description`
+  in both locales; a `prefers-reduced-motion` rule for skeletons.
+  - One `StatusState` layout sits behind every one of these states. Brief §9 wants them _designed_
+    rather than improvised per screen, and one component is the only way they stay identical as
+    screens get built. It is deliberately presentational and server-safe -- three of the four route
+    pages are Server Components.
+  - `loading.tsx` at the **route-group** level rather than copied into every page folder: a
+    `loading.tsx` covers all segments nested beneath it, so `(app)` and `(anon)` each get one file
+    and every page in them a designed loading state. A screen needing a differently-shaped skeleton
+    can still add one closer to its leaf.
+  - `ErrorBoundary` wraps `catchError` from `next/error` for panel-level failures (AGENTS.md
+    footgun 8). Checked it actually exists in the installed next@16.3.1 before building on the
+    brief's word, and read the bundled `catchError.md`: `retry()` re-fetches inside a Transition
+    (preserving client state outside the boundary) while `reset()` only clears state without
+    re-fetching, and `redirect()`/`notFound()` pass through instead of being swallowed the way a
+    hand-written React boundary would swallow them.
+  - Its props type is `object`, not `Record<string, never>`: `catchError` returns
+    `ComponentType<P & {children?: ReactNode}>`, and a `never`-valued index signature makes that
+    intersection reject its own children. Small, but it is the kind of thing that reads as a
+    library bug if you meet it cold.
+  - _Two things the lint config was right about, again:_ the first version of the showcase's demo
+    panel cleared a parent flag during render, and the second reached for module-level mutable
+    state (`react-hooks/globals`). Both were attempts to fake a recovering error boundary. The
+    honest version -- a "break it" button and a separate "repair it" button, with `retry()` in
+    between -- is simpler _and_ shows the real behaviour: retry on a still-broken panel fails
+    again, exactly as it should.
+  - _One copy bug found by looking rather than reading:_ the shared error state said "this **page**
+    could not be loaded", which is visibly wrong when it renders inside a single failed panel on
+    an otherwise working page. Now "this content".
+  - _Observations:_ verified in the Docker container on port 3001 -- skeletons, the empty state
+    with its action, and the panel-level boundary catching a real thrown error while the rest of
+    the page (including toast and dialog state) kept working, then genuinely recovering on retry
+    once the cause was removed.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-007 and D-013 done; Foundation (F-001 through
+- **Phase:** Design System (Phase 2) -- D-001 through D-008 and D-013 done; Foundation (F-001 through
   F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** D-008 (State components: loading, empty, error, forbidden) -- `loading.tsx` +
-  `catchError`; per `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap
-  -- still `todo`, not blocking D-008.)
+- **Next ticket:** D-009 (Code viewer with line anchoring) -- Shiki + stable per-line IDs; per
+  `docs/BACKLOG.md`. (D-014/D-015 were added during D-001 to close a backlog gap -- still `todo`,
+  not blocking D-009.)
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-005 resolved (see QUESTIONS.md). Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)

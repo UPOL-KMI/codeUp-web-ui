@@ -22,7 +22,8 @@
   },
   "Error": {
     "title": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "description": "This content could not be loaded. The problem may be temporary."
   },
   "Placeholder": {
     "comingSoon": "This page hasn't been built yet."
@@ -128,6 +129,16 @@
     "toastSuccessTitle": "Group saved",
     "toastSuccessBody": "Your changes are live.",
     "toastErrorTitle": "Could not save the group",
-    "toastErrorBody": "The server rejected the request. Nothing was changed."
+    "toastErrorBody": "The server rejected the request. Nothing was changed.",
+    "states": "States",
+    "stateEmptyTitle": "No assignments yet",
+    "stateEmptyBody": "Assignments you create in this group will appear here.",
+    "stateEmptyAction": "Create assignment",
+    "stateBreakIt": "Break the panel below",
+    "stateLoading": "Loading",
+    "stateEmpty": "Empty",
+    "stateError": "Error (with retry)",
+    "stateBoom": "This panel was asked to fail.",
+    "stateFixIt": "Repair it, then use the retry button"
   }
 }
