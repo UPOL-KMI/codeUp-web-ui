@@ -35,12 +35,13 @@ Override the admin credentials the script logs in as via `SEED_ADMIN_EMAIL` /
 
 ## Groups
 
-| Name                                  | Parent               | Archived | Purpose                                                                                                                         |
-| ------------------------------------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `[seed] Intro to Programming`         | —                    | No       | Primary group; has a subgroup                                                                                                   |
-| `[seed] Intro to Programming / Lab A` | Intro to Programming | No       | Satisfies "one group has a subgroup"                                                                                            |
-| `[seed] Retired Course`               | —                    | **Yes**  | Satisfies "one archived group". Archived _after_ adding sam.supervisor as a member — see the `group.isNotArchived` gotcha below |
-| `[seed] Large Lecture`                | —                    | No       | Pagination stress: 25 students, 25 assignments                                                                                  |
+| Name                                  | Parent               | Archived | Purpose                                                                                                                                |
+| ------------------------------------- | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `[seed] Intro to Programming`         | —                    | No       | Primary group; has a subgroup                                                                                                          |
+| `[seed] Intro to Programming / Lab A` | Intro to Programming | No       | Satisfies "one group has a subgroup"                                                                                                   |
+| `[seed] Retired Course`               | —                    | **Yes**  | Satisfies "one archived group". Archived _after_ adding sam.supervisor as a member — see the `group.isNotArchived` gotcha below        |
+| `[seed] Large Lecture`                | —                    | No       | Pagination stress: 25 students, 25 assignments                                                                                         |
+| `[seed] Faculty of Seeded Studies`    | —                    | No       | **Organizational** — holds groups, can hold no assignments. core-api refuses the flag once a group has students or assignments (F-029) |
 
 ---
 
@@ -55,10 +56,10 @@ solution (required before an exercise can be assigned to any group at all).
 
 ## Assignments
 
-| Group                | Count | Notes                                                                                                                                 |
-| -------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Intro to Programming | 2     | One with `alice.student`'s submissions (below), one left untouched — the brief's "at least one assignment with nothing submitted yet" |
-| Large Lecture        | 25    | Pagination filler, staggered deadlines, no submissions                                                                                |
+| Group                | Count | Notes                                                                                                                                                                                                                                 |
+| -------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intro to Programming | 3     | One with `alice.student`'s submissions (below), one left untouched — the brief's "at least one assignment with nothing submitted yet" — and one with a **second deadline** (10 points before, 5 after), the only one anywhere (F-029) |
+| Large Lecture        | 25    | Pagination filler, staggered deadlines, no submissions                                                                                                                                                                                |
 
 ## Submissions
 
@@ -104,6 +105,13 @@ Reads `API_BASE_INTERNAL` (falling back to `API_BASE_PUBLIC`) from `.env.local` 
 fixed `[seed]` name/note before creating, so re-running does not duplicate anything. Verified: a
 clean re-run against fully-seeded state produces zero creates (all `exists, reused` / `already
 exists, skipping submit`).
+
+**One exception was found and fixed in F-029:** the exercise's _reference solution_ was submitted
+unconditionally, because every other write in `getOrCreateBaseExercise` replaces and that one
+appends. Eight had accumulated on this instance before anyone looked. It is now guarded by its
+`[seed] reference solution` note, like every other append in the script. The pre-existing extras
+are harmless and were left alone — deleting instance data is an operator's call, not this
+script's.
 
 ---
 

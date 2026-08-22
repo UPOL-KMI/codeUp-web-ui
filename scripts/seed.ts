@@ -205,6 +205,27 @@ async function getOrCreateGroup(
  * archiving before adding members would make this script unable to seed a populated,
  * retired-looking course -- see docs/DECISIONS.md.
  */
+/**
+ * Organizational groups hold other groups and carry no assignments of their own -- a real ReCodEx
+ * concept that no seeded group exercised, so the badge for it and the "this group holds no
+ * assignments" state had never been seen with data (F-029). core-api refuses the flag once a group
+ * has students or assignments, so this only ever runs on a group created for the purpose.
+ */
+async function ensureOrganizational(adminToken: string, group: GroupRecord) {
+  const detail = await api<{ organizational: boolean }>("GET", `/groups/${group.id}`, {
+    token: adminToken,
+  });
+  if (detail.organizational) {
+    log(`group already organizational, skipping (${group.id})`);
+    return;
+  }
+  await api("POST", `/groups/${group.id}/organizational`, {
+    token: adminToken,
+    body: { value: true },
+  });
+  log(`group marked organizational: ${group.id}`);
+}
+
 async function ensureArchived(adminToken: string, group: GroupRecord) {
   if (group.archived) return;
   await api("POST", `/groups/${group.id}/archived`, { token: adminToken, body: { value: true } });
@@ -437,22 +458,37 @@ async function getOrCreateBaseExercise(
     },
   });
 
-  const solutionUpload = await apiUpload(
-    adminToken,
-    "/uploaded-files",
-    "solution.py",
-    `print("${EXPECTED_OUTPUT.trim()}")\n`,
+  // Every other write above replaces; this one *appends*, so it needs its own guard. Without it
+  // each run added another reference solution to the same exercise -- harmless individually, and
+  // a steadily growing list on any machine where the seed is re-run often. Found by re-running it
+  // four times while building F-029's fixtures.
+  const referenceNote = `${SEED_PREFIX} reference solution`;
+  const references = await api<{ description: string }[]>(
+    "GET",
+    `/reference-solutions/exercise/${id}`,
+    { token: adminToken },
   );
-  await api("POST", `/reference-solutions/exercise/${id}/submit`, {
-    token: adminToken,
-    body: {
-      note: `${SEED_PREFIX} reference solution`,
-      files: [solutionUpload.id],
-      runtimeEnvironmentId: "python3",
-    },
-  });
+  if (references.some((reference) => reference.description === referenceNote)) {
+    log(`reference solution already exists, skipping submit`);
+  } else {
+    const solutionUpload = await apiUpload(
+      adminToken,
+      "/uploaded-files",
+      "solution.py",
+      `print("${EXPECTED_OUTPUT.trim()}")\n`,
+    );
+    await api("POST", `/reference-solutions/exercise/${id}/submit`, {
+      token: adminToken,
+      body: {
+        note: referenceNote,
+        files: [solutionUpload.id],
+        runtimeEnvironmentId: "python3",
+      },
+    });
+    log(`reference solution submitted`);
+  }
 
-  log(`exercise created: ${EXERCISE_NAME}`);
+  log(existing ? `exercise reconfigured: ${EXERCISE_NAME}` : `exercise created: ${EXERCISE_NAME}`);
   return { id };
 }
 
@@ -471,7 +507,17 @@ async function createAssignment(
   adminToken: string,
   exerciseId: string,
   groupId: string,
-  opts: { firstDeadlineDays: number; maxPoints: number; hint: string },
+  opts: {
+    firstDeadlineDays: number;
+    maxPoints: number;
+    hint: string;
+    /** Days after the first deadline. Set on exactly one seeded assignment (F-029): the "second
+     *  chance" deadline state has three UI surfaces (`DeadlineBadge`, the calendar's second-
+     *  deadline tone, the assignment screen's second-deadline row) and no data behind any of them
+     *  otherwise. */
+    secondDeadlineDays?: number;
+    secondDeadlineMaxPoints?: number;
+  },
 ): Promise<AssignmentDetail> {
   const created = await api<AssignmentDetail>("POST", "/exercise-assignments", {
     token: adminToken,
@@ -479,6 +525,7 @@ async function createAssignment(
   });
 
   const firstDeadline = Math.floor(Date.now() / 1000) + opts.firstDeadlineDays * 86400;
+  const allowSecondDeadline = opts.secondDeadlineDays !== undefined;
   await api("POST", `/exercise-assignments/${created.id}`, {
     token: adminToken,
     body: {
@@ -490,7 +537,13 @@ async function createAssignment(
       submissionsCountLimit: 20,
       solutionFilesLimit: created.solutionFilesLimit,
       solutionSizeLimit: created.solutionSizeLimit,
-      allowSecondDeadline: false,
+      allowSecondDeadline,
+      ...(allowSecondDeadline
+        ? {
+            secondDeadline: firstDeadline + opts.secondDeadlineDays! * 86400,
+            maxPointsBeforeSecondDeadline: opts.secondDeadlineMaxPoints ?? opts.maxPoints,
+          }
+        : {}),
       canViewLimitRatios: true,
       canViewMeasuredValues: true,
       canViewJudgeStdout: true,
@@ -682,6 +735,21 @@ async function main() {
   await ensureGroupMember(admin.token, g3, supervisorStudent1.userId, "admin");
   await ensureStudentMember(admin.token, g1a, supervisorStudent1.userId);
 
+  // A user who belongs to nowhere (F-029): the state every genuinely new account starts in, and
+  // the only way to reach the dashboard's "no group memberships" empty state.
+  const newcomer = await getOrCreateUser(admin.token, instanceId, {
+    email: "seed.newcomer@seed.recodex.local",
+    firstName: "Nora",
+    lastName: "Newcomer",
+  });
+  log(`newcomer (no memberships): ${newcomer.userId}`);
+
+  // An organizational group (F-029): holds other groups, carries no assignments of its own.
+  const g4 = await getOrCreateGroup(admin.token, instanceId, {
+    name: `${SEED_PREFIX} Faculty of Seeded Studies`,
+  });
+  await ensureOrganizational(admin.token, g4);
+
   // The one exercise every assignment below reuses -- built and verified once; see
   // docs/DECISIONS.md for the full API recipe this encodes and why it's a single exercise
   // rather than one per assignment.
@@ -734,6 +802,17 @@ async function main() {
       firstDeadlineDays: 21,
       maxPoints: 10,
       hint: "Nothing submitted yet -- exercises the empty-submissions UI state.",
+    });
+  }
+
+  // The only assignment anywhere with a second deadline (F-029).
+  if (!existingG1Assignments[2]) {
+    await createAssignment(admin.token, exercise.id, g1.id, {
+      firstDeadlineDays: 3,
+      maxPoints: 10,
+      secondDeadlineDays: 14,
+      secondDeadlineMaxPoints: 5,
+      hint: "Has a second deadline -- worth fewer points after the first one passes.",
     });
   }
 
