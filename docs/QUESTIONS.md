@@ -126,3 +126,21 @@ would have been, silently, if S-003 had been marked done as "the `userCalendars`
 Worth noting the two are the same dataset by construction: the calendar view shows deadlines from
 every group the reader studies in or teaches, which is exactly what the iCal feed exports. If they
 ever disagree, one of them is wrong.
+
+## Q-015: The group list fetches everything and filters in the browser (S-004)
+
+`GET /v1/groups` returns every group the caller can see -- for a student, their own plus the
+ancestors above them; for an administrator, the whole instance. S-004 fetches that once and lets
+`DataTable` sort, filter and paginate over it client-side, which is instant and costs one request.
+
+Core-api does offer a `search` parameter on the same endpoint, so the alternative exists. It was
+not used because reproducing an instant client-side match with it means a round trip per keystroke,
+for a list that had to be fetched in full to render at all. The legacy app makes the same call
+(`fetchAllGroups`) on every page load.
+
+**Where this stops being right:** an instance with thousands of groups, where an administrator's
+response is large enough that fetching it at all is the cost. At that point the server-side
+`search` parameter (plus server-side paging, which core-api does _not_ offer on this endpoint --
+checked) becomes the better trade, and `DataTable` would need a "the caller narrows the query"
+mode it does not have today. Recorded rather than pre-solved: this deployment has four groups, and
+the shape of the fix depends on numbers nobody has yet.

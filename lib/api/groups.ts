@@ -60,7 +60,21 @@ export interface GroupStudentStats {
 interface GroupPayload {
   id: string;
   localizedTexts?: LocalizedText[];
-  privateData?: { admins?: string[]; supervisors?: string[] };
+  organizational?: boolean;
+  public?: boolean;
+  archived?: boolean;
+  directlyArchived?: boolean;
+  exam?: boolean;
+  parentGroupId?: string | null;
+  parentGroupsIds?: string[];
+  childGroups?: string[];
+  privateData?: {
+    admins?: string[];
+    supervisors?: string[];
+    students?: string[];
+    assignments?: string[];
+  };
+  permissionHints?: Record<string, boolean>;
 }
 
 interface UserGroupsPayload {
@@ -100,8 +114,12 @@ const fetchUserGroups = cache(async function fetchUserGroups(): Promise<UserGrou
  * who *administers* a group appears in neither list. Group admins are only discoverable from the
  * group's own `privateData.admins`, which is how the legacy app derives the same thing.
  */
-const fetchVisibleGroups = cache(async function fetchVisibleGroups(): Promise<GroupPayload[]> {
-  return apiGet<GroupPayload[]>("/v1/groups");
+const fetchVisibleGroups = cache(async function fetchVisibleGroups(
+  scope: "active" | "archived" = "active",
+): Promise<GroupPayload[]> {
+  return apiGet<GroupPayload[]>("/v1/groups", {
+    query: scope === "archived" ? { onlyArchived: true } : undefined,
+  });
 });
 
 export async function getMyGroups(
@@ -138,4 +156,68 @@ export async function getMyGroups(
 export async function getMyGroupStats(): Promise<Map<string, GroupStudentStats>> {
   const payload = await fetchUserGroups();
   return new Map((payload.stats ?? []).map((stats) => [stats.groupId, stats]));
+}
+
+/**
+ * One row of the group list (S-004), and of the archive (S-011) -- the same shape, because they
+ * are the same entity fetched with one query parameter changed.
+ *
+ * `path` is the group's ancestry as names, which is what makes a flat list navigable without a
+ * tree widget: `docs/IA.md` §2 puts subgroups under their parent, and ReCodEx really does nest
+ * (the seeded "Intro to Programming / Lab A" is a child of a child of the instance root). The
+ * names are resolved from the same response rather than fetched -- core-api returns the groups a
+ * user can see *including* the ancestors it had to walk through, so the map is already complete
+ * for every group it lists. An ancestor the reader genuinely cannot see is simply absent from the
+ * path rather than shown as an id.
+ */
+export interface GroupListEntry {
+  id: string;
+  name: string;
+  /** Ancestor names, outermost first. Empty for a top-level group. */
+  path: string[];
+  organizational: boolean;
+  public: boolean;
+  archived: boolean;
+  exam: boolean;
+  /** How the reader relates to this group, from their own membership lists rather than a role. */
+  membership: "student" | "teacher" | null;
+  /** `null` where core-api did not disclose the underlying array to this reader. */
+  studentCount: number | null;
+  assignmentCount: number | null;
+}
+
+export async function getGroupList(
+  locale: string,
+  scope: "active" | "archived" = "active",
+): Promise<GroupListEntry[]> {
+  const [groups, mine] = await Promise.all([fetchVisibleGroups(scope), getMyGroups(locale)]);
+
+  const names = new Map(
+    groups.map((group) => [group.id, localizedName(group.localizedTexts, locale)]),
+  );
+  const memberIds = new Set(mine.member.map((group) => group.id));
+  const teachingIds = new Set(mine.teaching.map((group) => group.id));
+
+  return groups
+    .map((group) => ({
+      id: group.id,
+      name: names.get(group.id) ?? "",
+      path: (group.parentGroupsIds ?? [])
+        .map((ancestorId) => names.get(ancestorId))
+        .filter((name): name is string => Boolean(name)),
+      organizational: group.organizational ?? false,
+      public: group.public ?? false,
+      archived: group.archived ?? false,
+      exam: group.exam ?? false,
+      membership: teachingIds.has(group.id)
+        ? ("teacher" as const)
+        : memberIds.has(group.id)
+          ? ("student" as const)
+          : null,
+      studentCount: group.privateData?.students?.length ?? null,
+      assignmentCount: group.privateData?.assignments?.length ?? null,
+    }))
+    .sort((a, b) =>
+      [...a.path, a.name].join("/").localeCompare([...b.path, b.name].join("/"), locale),
+    );
 }

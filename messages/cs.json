@@ -109,7 +109,29 @@
     }
   },
   "Groups": {
-    "title": "Skupiny"
+    "title": "Skupiny",
+    "filter": "Filtrovat skupiny",
+    "archiveLink": "Archivované skupiny",
+    "columns": {
+      "name": "Skupina",
+      "membership": "Moje role",
+      "kind": "Druh",
+      "students": "Studentů",
+      "assignments": "Úloh"
+    },
+    "membership": {
+      "student": "Student",
+      "teacher": "Vyučující"
+    },
+    "kind": {
+      "organizational": "Organizační",
+      "public": "Veřejná",
+      "exam": "Zkouška"
+    },
+    "empty": {
+      "title": "Žádné skupiny",
+      "description": "Nejste členem žádné skupiny a na této instanci nejsou žádné veřejné."
+    }
   },
   "Assignments": {
     "title": "Zadání"
@@ -134,7 +156,13 @@
     "title": "Systémové zprávy"
   },
   "Archive": {
-    "title": "Archiv"
+    "title": "Archivované skupiny",
+    "subtitle": "Ukončené kurzy. Jejich obsah zůstává čitelný.",
+    "activeLink": "Aktivní skupiny",
+    "empty": {
+      "title": "Archiv je prázdný",
+      "description": "Žádná skupina, kterou vidíte, nebyla archivována."
+    }
   },
   "Admin": {
     "title": "Administrátor"
@@ -288,5 +316,14 @@
     "exercises": "Úlohy",
     "users": "Lidé",
     "open": "Hledat (Ctrl+K)"
+  },
+  "Table": {
+    "noRecords": "Žádné záznamy.",
+    "previous": "Předchozí",
+    "next": "Další",
+    "page": "Stránka {page} z {total}",
+    "showing": "Zobrazeno {from}–{to} z {total}",
+    "selectPage": "Vybrat všechny řádky na této stránce",
+    "selectRow": "Vybrat řádek"
   }
 }

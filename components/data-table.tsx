@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -68,6 +69,12 @@ const FILTER_DEBOUNCE_MS = 250;
  * client boundary alongside this component. Don't try to define `columns` in the page/Server
  * Component and hand them down; it will fail at runtime, not compile time.
  *
+ * Its own chrome (pagination, the select-all label, the default empty text) reads from the `Table`
+ * namespace via `useTranslations` -- a client-component hook, which works because
+ * `NextIntlClientProvider` wraps the whole app in `app/[locale]/layout.tsx`. D-003 shipped these
+ * strings hardcoded in English, which nothing caught while the only caller was the design-system
+ * showcase; S-004 is the first screen where a Czech reader would have seen them.
+ *
  * Wraps its own `useSearchParams()`-reading implementation in `<Suspense>` internally -- found
  * live, the hard way: Next.js requires any `useSearchParams()` caller to sit inside a Suspense
  * boundary or the page fails to prerender with "useSearchParams() should be wrapped in a suspense
@@ -96,6 +103,7 @@ function DataTableInner<T>({
   selectable = false,
   onSelectionChange,
 }: DataTableProps<T>) {
+  const t = useTranslations("Table");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -247,7 +255,7 @@ function DataTableInner<T>({
                     type="checkbox"
                     checked={allPageRowsSelected}
                     onChange={togglePage}
-                    aria-label="Select all rows on this page"
+                    aria-label={t("selectPage")}
                   />
                 </th>
               )}
@@ -281,7 +289,7 @@ function DataTableInner<T>({
                   colSpan={columns.length + (selectable ? 1 : 0)}
                   className="px-3 py-6 text-center text-muted-foreground"
                 >
-                  {emptyState ?? "No records."}
+                  {emptyState ?? t("noRecords")}
                 </td>
               </tr>
             ) : (
@@ -298,7 +306,7 @@ function DataTableInner<T>({
                           type="checkbox"
                           checked={selectedIds.has(rowId)}
                           onChange={() => toggleRow(rowId)}
-                          aria-label="Select row"
+                          aria-label={t("selectRow")}
                         />
                       </td>
                     )}
@@ -318,8 +326,11 @@ function DataTableInner<T>({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            Showing {(clampedPage - 1) * pageSize + 1}–
-            {Math.min(clampedPage * pageSize, sorted.length)} of {sorted.length}
+            {t("showing", {
+              from: (clampedPage - 1) * pageSize + 1,
+              to: Math.min(clampedPage * pageSize, sorted.length),
+              total: sorted.length,
+            })}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -328,18 +339,16 @@ function DataTableInner<T>({
               disabled={clampedPage <= 1}
               className="rounded-md border border-input px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Previous
+              {t("previous")}
             </button>
-            <span>
-              Page {clampedPage} of {totalPages}
-            </span>
+            <span>{t("page", { page: clampedPage, total: totalPages })}</span>
             <button
               type="button"
               onClick={() => handlePageChange(clampedPage + 1)}
               disabled={clampedPage >= totalPages}
               className="rounded-md border border-input px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Next
+              {t("next")}
             </button>
           </div>
         </div>

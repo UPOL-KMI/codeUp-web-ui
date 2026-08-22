@@ -109,7 +109,29 @@
     }
   },
   "Groups": {
-    "title": "Groups"
+    "title": "Groups",
+    "filter": "Filter groups",
+    "archiveLink": "Archived groups",
+    "columns": {
+      "name": "Group",
+      "membership": "My role",
+      "kind": "Kind",
+      "students": "Students",
+      "assignments": "Assignments"
+    },
+    "membership": {
+      "student": "Student",
+      "teacher": "Teacher"
+    },
+    "kind": {
+      "organizational": "Organizational",
+      "public": "Public",
+      "exam": "Exam"
+    },
+    "empty": {
+      "title": "No groups",
+      "description": "You are not a member of any group, and none are public on this instance."
+    }
   },
   "Assignments": {
     "title": "Assignments"
@@ -134,7 +156,13 @@
     "title": "System messages"
   },
   "Archive": {
-    "title": "Archive"
+    "title": "Archived groups",
+    "subtitle": "Courses that have ended. Their contents stay readable.",
+    "activeLink": "Active groups",
+    "empty": {
+      "title": "Nothing archived",
+      "description": "No group you can see has been archived."
+    }
   },
   "Admin": {
     "title": "Administration"
@@ -288,5 +316,14 @@
     "exercises": "Exercises",
     "users": "People",
     "open": "Search (Ctrl+K)"
+  },
+  "Table": {
+    "noRecords": "No records.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {total}",
+    "showing": "Showing {from}–{to} of {total}",
+    "selectPage": "Select all rows on this page",
+    "selectRow": "Select row"
   }
 }

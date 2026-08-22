@@ -1,5 +1,50 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { getLocale, getTranslations } from "next-intl/server";
 
-export default function GroupsPage() {
-  return <PlaceholderPage namespace="Groups" />;
+import { getGroupList } from "@/lib/api/groups";
+import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
+
+import { Link } from "@/i18n/navigation";
+import { GroupTable } from "@/components/groups/group-table";
+import { PageShell } from "@/components/page-shell";
+import { EmptyState } from "@/components/state/empty-state";
+
+/**
+ * Every group the reader can see (S-004). Not two lists: core-api already decides what is visible
+ * -- for a student that is their own groups plus the ancestors above them, for an administrator it
+ * is the instance -- so "my groups" and "discover" (`docs/BACKLOG.md`'s note for this ticket) are
+ * one table with a membership column, filterable, rather than two tables that would show the same
+ * row twice.
+ *
+ * Archived groups are excluded, because core-api excludes them by default and because a course
+ * that ended is not something to scroll past on the way to this term's. They have their own screen
+ * (S-011), linked from here so the omission is visible rather than silent.
+ */
+export default async function GroupsPage() {
+  const locale = await getLocale();
+  const [breadcrumbs, t, groups] = await Promise.all([
+    resolveBreadcrumbsForNamespace("Groups", locale),
+    getTranslations("Groups"),
+    getGroupList(locale),
+  ]);
+
+  return (
+    <PageShell
+      title={breadcrumbs[breadcrumbs.length - 1]!.label}
+      breadcrumbs={breadcrumbs}
+      actions={
+        <Link
+          href="/archive"
+          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {t("archiveLink")}
+        </Link>
+      }
+    >
+      {groups.length === 0 ? (
+        <EmptyState title={t("empty.title")} description={t("empty.description")} />
+      ) : (
+        <GroupTable groups={groups} tableId="groups" />
+      )}
+    </PageShell>
+  );
 }
