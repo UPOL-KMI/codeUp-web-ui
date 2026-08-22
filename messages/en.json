@@ -216,6 +216,61 @@
     "title": "Solutions",
     "crumb": "Solution #{attempt}"
   },
+  "Solution": {
+    "title": "Attempt {attempt}",
+    "backToAssignment": "Back to the assignment",
+    "summary": "Summary",
+    "points": "Points",
+    "result": "Result",
+    "submitted": "Submitted",
+    "environment": "Language",
+    "group": "Group",
+    "submissions": "Evaluation runs",
+    "note": "Note",
+    "flags": {
+      "best": "Best solution",
+      "accepted": "Accepted",
+      "reviewRequested": "Review requested",
+      "reviewOpen": "Review in progress",
+      "reviewed": "Reviewed"
+    },
+    "evaluation": {
+      "heading": "Evaluation",
+      "pending": "This solution has been submitted and is waiting to be evaluated.",
+      "summary": "{passed} of {total} tests passed",
+      "evaluatedAt": "Evaluated {when}",
+      "judgeLog": "Judge output",
+      "seconds": "{value} s",
+      "kibibytes": "{value} KiB",
+      "ofLimit": "{percent} of the limit",
+      "columns": {
+        "test": "Test",
+        "result": "Result",
+        "score": "Score",
+        "time": "Time",
+        "memory": "Memory",
+        "limits": "Limits"
+      },
+      "status": {
+        "OK": "Passed",
+        "FAILED": "Failed",
+        "SKIPPED": "Skipped"
+      },
+      "exceeded": {
+        "time": "Time limit exceeded",
+        "cpu": "CPU limit exceeded",
+        "memory": "Memory limit exceeded"
+      },
+      "failure": {
+        "title": "This solution could not be evaluated",
+        "explanation": "The evaluation system failed before it could judge your work. This is not something you did wrong, and it does not use up an attempt."
+      },
+      "initFailed": {
+        "title": "The solution did not build",
+        "explanation": "Compilation or setup failed, so no test was run."
+      }
+    }
+  },
   "Exercises": {
     "title": "Exercises"
   },

@@ -216,6 +216,61 @@
     "title": "Řešení",
     "crumb": "Řešení č. {attempt}"
   },
+  "Solution": {
+    "title": "Pokus {attempt}",
+    "backToAssignment": "Zpět na zadání",
+    "summary": "Přehled",
+    "points": "Body",
+    "result": "Výsledek",
+    "submitted": "Odevzdáno",
+    "environment": "Jazyk",
+    "group": "Skupina",
+    "submissions": "Vyhodnocení",
+    "note": "Poznámka",
+    "flags": {
+      "best": "Nejlepší řešení",
+      "accepted": "Uznáno",
+      "reviewRequested": "Žádost o revizi",
+      "reviewOpen": "Revize probíhá",
+      "reviewed": "Zrevidováno"
+    },
+    "evaluation": {
+      "heading": "Vyhodnocení",
+      "pending": "Řešení bylo odevzdáno a čeká na vyhodnocení.",
+      "summary": "Prošlo {passed} z {total} testů",
+      "evaluatedAt": "Vyhodnoceno {when}",
+      "judgeLog": "Výstup hodnotitele",
+      "seconds": "{value} s",
+      "kibibytes": "{value} KiB",
+      "ofLimit": "{percent} limitu",
+      "columns": {
+        "test": "Test",
+        "result": "Výsledek",
+        "score": "Skóre",
+        "time": "Čas",
+        "memory": "Paměť",
+        "limits": "Limity"
+      },
+      "status": {
+        "OK": "Prošel",
+        "FAILED": "Neprošel",
+        "SKIPPED": "Přeskočen"
+      },
+      "exceeded": {
+        "time": "Překročen časový limit",
+        "cpu": "Překročen limit CPU",
+        "memory": "Překročen limit paměti"
+      },
+      "failure": {
+        "title": "Toto řešení se nepodařilo vyhodnotit",
+        "explanation": "Vyhodnocovací systém selhal dříve, než mohl vaši práci posoudit. Není to vaše chyba a nespotřebuje to pokus."
+      },
+      "initFailed": {
+        "title": "Řešení se nepodařilo sestavit",
+        "explanation": "Selhal překlad nebo příprava, takže neproběhl žádný test."
+      }
+    }
+  },
   "Exercises": {
     "title": "Úlohy"
   },

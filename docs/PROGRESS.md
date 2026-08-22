@@ -1724,18 +1724,83 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     the same screen and an honest "Nothing submitted yet" rather than a personal claim). **96 e2e
     tests pass.**
 
+- **[2026-08-22 22:50] F-029:** Seed fixtures for the three UI states nothing could reach --
+  `seed.newcomer` (no memberships), `[seed] Faculty of Seeded Studies` (organizational), and a
+  third Intro to Programming assignment with a **second deadline** (10 points before, 5 after).
+  Each had been found by building the screen that renders it and having nothing to render.
+  - _And a real idempotency leak, found by re-running the seed four times:_ the exercise's
+    reference solution was submitted unconditionally. Every other write in
+    `getOrCreateBaseExercise` replaces; that one appends, and **eight** reference solutions had
+    accumulated before anyone looked. Guarded now by its own `[seed]` note. The existing extras
+    were left alone -- deleting instance data is an operator's call.
+
+- **[2026-08-22 23:30] S-014:** Submitting a solution -- the brief's own "highest-value screen in
+  the app", and this repo's first real Server Action.
+  `app/[locale]/(app)/assignments/[assignmentId]/submit/page.tsx`,
+  `components/assignments/submit-form.tsx`, `lib/actions/submit-solution.{ts,schema.ts}`.
+  - _Three steps, in the order core-api imposes them._ Files upload first through D-005's chunked
+    Route Handler and **never** through the action (a Server Action's body limit is ~1 MB and
+    solutions are archives -- AGENTS.md footgun 7); `pre-submit` runs once the files exist, because
+    the environments it offers are derived from the _file names_; then submit posts note, file ids
+    and environment. Nothing re-implements `canSubmit`: the deadline, attempt limit, group licence,
+    exam locks and a system-wide lock are all core-api's, re-checked on the real submit regardless.
+  - _A page, not the legacy modal (DEC-061)._ An upload that takes real time should not be one
+    stray click on a backdrop away from being lost, and D-004's dirty guard cannot intercept in-app
+    navigation anyway (its own doc records why).
+  - _Two seed bugs surfaced, both invisible until something used the real path._ The exercise's
+    environment config declared no `source-files` variable, so
+    `ExerciseConfigHelper::getEnvironmentsForFiles()` matched nothing and `pre-submit` answered
+    `environments: []` for a perfectly good `solution.py` -- the seed's own submissions never
+    noticed, because they pass `runtimeEnvironmentId` directly and skip pre-submit entirely. And an
+    assignment is a _snapshot_ of its exercise, so fixing the exercise left all 28 existing
+    assignments on the old copy; the script now re-syncs any that report stale, which is every run,
+    since the exercise is deliberately rewritten each time.
+  - _Two smaller things, each found by needing it:_ `FileUpload` advertised the 512 MiB deployment
+    ceiling even where the assignment's own limit is 64 KiB, so it now takes the consumer's number
+    (display only -- enforcement stays where it was); and RHF's `setValue` writes straight to the
+    DOM, so preselecting the single detected language in the same tick as rendering its `<option>`
+    silently discarded the value. It runs after that render now, which is what the effect is for --
+    found live, with python3 sitting visibly below a select reading "Choose a language".
+  - _Observations:_ the e2e suite uploads a real file through the real chunked path and lands on
+    the created solution. Note that each run creates a genuine solution on the instance; on this
+    box they fail evaluation and so do not consume an attempt, which would not hold on a working
+    host.
+
+- **[2026-08-23 00:10] S-015:** The solution screen -- where submitting lands and where every
+  "Attempt N" link goes. `app/[locale]/(app)/solutions/[solutionId]/page.tsx`,
+  `components/solutions/evaluation-results.tsx`, `lib/api/solution.ts`.
+  - _One request carries the evaluation._ core-api's solution view embeds the last submission in
+    full, test results included, so the test-by-test table needs no second call.
+  - _Four outcomes, treated as different things rather than degrees of one._ An infrastructure
+    failure says plainly that the reader is not at fault and shows core-api's own description; "not
+    evaluated yet" is its own state (S-016 makes it update itself); a failed _initiation_ puts the
+    compiler output front and centre rather than behind a disclosure, because it is the whole
+    answer; only the fourth is a test table.
+  - _Every column is conditional on the data arriving, not on a role check._
+    `TestResult::getDataForView()` nulls measured values, limit ratios and each judge log
+    independently per assignment flag, so a null means "not for you" and the column is not rendered
+    at all.
+  - **_What this ticket could not verify, stated plainly:_** no solution on this machine has a real
+    evaluation, so the test table, the compilation-output panel and the limit-exceeded badges have
+    never been seen with data. The failure path is the one that _can_ be tested here -- and is,
+    against the real "Isolate init error" every seeded submission produces. This is DEC-031's cost
+    landing on the screen it was always going to land on; re-verify on a cgroup v1 host before
+    trusting the rest.
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001, S-002, S-003), groups
-  (S-004, S-005, S-006, S-007, S-010, S-011) and the assignment screen (S-012). Foundation and
-  Design System complete.
-- **Next ticket:** S-013 (assignment detail, teacher view) or S-014 (submit flow). S-014 is the
-  brief's own "highest-value screen" and D-005 already built the upload path it needs; S-013's
-  additions each link to a screen that does not exist yet.
+- **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
+  S-010, S-011), the assignment screen (S-012), submitting (S-014) and the solution screen (S-015).
+  Foundation and Design System complete; F-029 closed the seed's fixture gaps.
+- **Next ticket:** S-017 (solution source viewer) -- it hangs off S-015's page as IA §4.4's right
+  column and D-009's viewer already exists. S-016 (live evaluation progress) is the other half of
+  the same screen, and S-013 (assignment detail, teacher view) is still open.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011, Q-012, Q-013, Q-014, Q-015 — all proceeding without operator
-  input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
+- **Operator inputs pending:** Q-011 through Q-015 — all proceeding without operator input,
+  reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
-- **Known environment limitations (not code bugs):** this dev machine cannot produce real pass/fail
-  evaluation results (cgroup v2 only, DEC-031). Three UI states have no seed data behind them — a
-  membership-less user, a second deadline, an organizational group — collected as **F-029**.
+- **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
+  evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
+  solution screen's test table, compilation output and limit badges have **never been rendered with
+  real data**, and the dashboard reports every seeded submission as "Not submitted" (Q-012).
+  Everything else is verified live. Re-verify these on a cgroup v1 host.
