@@ -93,6 +93,19 @@
         "opened": "Open since",
         "submitted": "Submitted"
       }
+    },
+    "studies": {
+      "heading": "My studies"
+    },
+    "calendar": {
+      "heading": "Calendar",
+      "caption": "Deadlines in {month}",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "emptyMonth": "No deadlines this month."
+    },
+    "nav": {
+      "label": "Dashboard sections"
     }
   },
   "Groups": {

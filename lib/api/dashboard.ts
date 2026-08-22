@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
 import { requireSession } from "@/lib/auth/require-session";
@@ -79,12 +81,21 @@ function effectiveDeadlineOf(assignment: AssignmentPayload): number {
     : assignment.firstDeadline;
 }
 
-/** One group's assignments, as both dashboard halves need them. */
-async function fetchGroupAssignments(groupId: string): Promise<AssignmentPayload[]> {
+/**
+ * One group's assignments -- every dashboard section needs them, and by S-003 there are three:
+ * the student half fans out over the groups the viewer studies in, the teacher half over the ones
+ * they teach, and the calendar over both. Memoized per request (React's `cache()`, the same
+ * per-render-only memoization `getCurrentUser()` explains at length) so a group that appears in
+ * two of those is fetched once, not twice. Not a cross-request cache: this is per-user, per-ACL
+ * data, and DEC-021's rule against caching it still stands.
+ */
+const fetchGroupAssignments = cache(async function fetchGroupAssignments(
+  groupId: string,
+): Promise<AssignmentPayload[]> {
   return apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", {
     pathParams: { id: groupId },
   });
-}
+});
 
 /**
  * Filtering by "now" on the server is safe where rendering it would not be (AGENTS.md §6.6): this
@@ -315,4 +326,100 @@ export async function getTeacherDashboard(locale: string): Promise<TeacherDashbo
     reviewRequests: toQueue(requested, (solution) => solution.createdAt),
     upcoming,
   };
+}
+
+/**
+ * Every deadline in one month, for the dashboard's calendar (S-003).
+ *
+ * Covers both halves of the reader's life at once -- the groups they study in and the ones they
+ * teach -- because a calendar that showed only one of them would be lying about their month. This
+ * is also exactly the set core-api's own iCal export feeds ("deadline events for all assignments
+ * in all groups related to you", the legacy calendar-token screen's own words), so the in-app
+ * calendar and a subscribed one cannot disagree.
+ *
+ * Costs nothing on a page that already rendered the other two sections: `fetchGroupAssignments`
+ * is memoized per request, so the groups they were built from are not fetched a second time here.
+ *
+ * Unlike the two "upcoming" panels this deliberately does **not** filter by now -- a calendar
+ * showing only the future would blank out the first three weeks of the month you are looking at.
+ */
+export interface CalendarDeadline {
+  assignmentId: string;
+  assignmentName: string;
+  groupId: string;
+  groupName: string;
+  at: number;
+  /** Which of the assignment's two deadlines this entry is -- both are real dates to plan around. */
+  kind: "first" | "second";
+}
+
+/** Buckets an instant into a calendar day **in the app's time zone**, never the server's. */
+function dayOf(unixSeconds: number, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(unixSeconds * 1000));
+}
+
+export async function getDeadlineCalendar(
+  locale: string,
+  timeZone: string,
+  range: { first: string; last: string },
+): Promise<Map<string, CalendarDeadline[]>> {
+  const { member, teaching } = await getMyGroups(locale);
+  const groups = [...new Map([...member, ...teaching].map((group) => [group.id, group])).values()];
+  if (groups.length === 0) return new Map();
+
+  const assignmentsPerGroup = await Promise.all(
+    groups.map((group) => fetchGroupAssignments(group.id)),
+  );
+
+  const byDay = new Map<string, CalendarDeadline[]>();
+  const add = (day: string, deadline: CalendarDeadline) => {
+    if (day < range.first || day > range.last) return;
+    const existing = byDay.get(day);
+    if (existing) {
+      existing.push(deadline);
+    } else {
+      byDay.set(day, [deadline]);
+    }
+  };
+
+  groups.forEach((group, index) => {
+    for (const assignment of assignmentsPerGroup[index]!) {
+      const base = {
+        assignmentId: assignment.id,
+        assignmentName: localizedName(assignment.localizedTexts, locale),
+        groupId: group.id,
+        groupName: group.name,
+      };
+      add(dayOf(assignment.firstDeadline, timeZone), {
+        ...base,
+        at: assignment.firstDeadline,
+        kind: "first",
+      });
+      if (assignment.allowSecondDeadline && assignment.secondDeadline > 0) {
+        add(dayOf(assignment.secondDeadline, timeZone), {
+          ...base,
+          at: assignment.secondDeadline,
+          kind: "second",
+        });
+      }
+    }
+  });
+
+  for (const deadlines of byDay.values()) {
+    deadlines.sort(
+      (a, b) => a.at - b.at || a.assignmentName.localeCompare(b.assignmentName, locale),
+    );
+  }
+
+  return byDay;
+}
+
+/** Today, as a `YYYY-MM-DD` day in the app's time zone -- the calendar's idea of "now". */
+export function todayIn(timeZone: string): string {
+  return dayOf(Date.now() / 1000, timeZone);
 }

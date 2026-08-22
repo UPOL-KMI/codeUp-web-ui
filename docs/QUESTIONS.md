@@ -105,3 +105,24 @@ section with real urgency behind it. If an activity feed is wanted later, it nee
 core-api endpoint (out of scope by brief §3.1) or a deliberate, bounded approximation -- e.g. the
 most recent solutions of one selected group -- which belongs to that group's own screen (S-006),
 not to the dashboard.
+
+## Q-014: `userCalendars` is an iCal token manager, not a calendar view (S-003)
+
+`docs/BACKLOG.md` mapped S-003 ("Dashboard — calendar view") to the legacy `userCalendars` module.
+Those are two different capabilities, and the mapping hid one of them:
+
+- **The legacy `userCalendars` module** manages **iCal subscription tokens**
+  (`components/Users/CalendarTokens`, rendered on the **EditUser** page, backed by
+  `/v1/users/{id}/calendar-tokens` and `DELETE /v1/users/ical/{id}`). It creates a read-only feed
+  URL that "will export deadline events for all assignments in all groups related to you" — its
+  own words — for the reader's own calendar app. The legacy app has **no in-app calendar view at
+  all**.
+- **S-003's calendar** is a new-design addition (`docs/IA.md` §2, `?tab=calendar`), not a port.
+
+Both are now accounted for: S-003 built the month view, and the token manager is recorded against
+**S-022** (user settings), which is where legacy renders it. Feature parity is not at risk — but it
+would have been, silently, if S-003 had been marked done as "the `userCalendars` row".
+
+Worth noting the two are the same dataset by construction: the calendar view shows deadlines from
+every group the reader studies in or teaches, which is exactly what the iCal feed exports. If they
+ever disagree, one of them is wrong.

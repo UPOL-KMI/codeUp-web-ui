@@ -93,6 +93,19 @@
         "opened": "Otevřeno",
         "submitted": "Odevzdáno"
       }
+    },
+    "studies": {
+      "heading": "Moje studium"
+    },
+    "calendar": {
+      "heading": "Kalendář",
+      "caption": "Termíny v měsíci {month}",
+      "previousMonth": "Předchozí měsíc",
+      "nextMonth": "Následující měsíc",
+      "emptyMonth": "V tomto měsíci nejsou žádné termíny."
+    },
+    "nav": {
+      "label": "Sekce přehledu"
     }
   },
   "Groups": {

@@ -17,7 +17,7 @@
 | `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                    | todo   |
 | `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                  | todo   |
 | `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`       | todo   |
-| `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                          | doing  |
+| `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                          | done   |
 | `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                   | todo   |
 | `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`    | todo   |
 | `app/assignment/:assignmentId/edit`                                        | EditAssignment             | true  | ASSIGNMENT_EDIT_URI_FACTORY                 | `/assignments/[id]/edit`              | todo   |
@@ -116,7 +116,7 @@
 | `submissionFailures`           | Submission failure log                        | `submission-failures`                | todo   |
 | `systemMessages`               | System messages                               | `system-messages`                    | todo   |
 | `upload`                       | File upload state                             | `lib/upload/use-file-upload.ts`      | done   |
-| `userCalendars`                | User deadlines calendar                       | `dashboard`                          | todo   |
+| `userCalendars`                | User deadlines calendar                       | `profile` (S-022, not the dashboard) | todo   |
 | `userSwitching`                | User switching (superadmin)                   | `admin/users`                        | todo   |
 | `users`                        | User management                               | `users`, `admin/users`               | todo   |
 | `usersGroups`                  | User-group membership                         | `groups/[id]/students`               | todo   |

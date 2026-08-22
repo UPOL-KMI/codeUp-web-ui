@@ -1567,19 +1567,83 @@ review-queue}.tsx`, `getTeacherDashboard()` in `lib/api/dashboard.ts`, `/solutio
     streaming skeleton rather than the content, because the teacher half is behind its own
     `Suspense` boundary -- that is the boundary working, not a regression.
 
+- **[2026-08-22 19:20] S-003:** Dashboard, calendar view -- and with it the `?tab=` deep-link the
+  two previous tickets deferred. `components/dashboard/{calendar-section,deadline-calendar,
+section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCalendar()`,
+  `Dashboard.calendar`/`studies`/`nav` strings in both locales, five more tests in
+  `e2e/dashboard.spec.ts`. **The dashboard is complete.**
+  - _The ticket's inventory row was pointing at a different feature._ S-003 was mapped to the
+    legacy `userCalendars` module, which is not a calendar view: it manages **iCal subscription
+    tokens**, it lives on the EditUser page, and the legacy app has no in-app calendar at all. Two
+    capabilities, one row -- and marking S-003 done as "the `userCalendars` row" would have quietly
+    buried the token manager, which is a real parity item. The month view is a new-design addition
+    (`docs/IA.md` §2); the token manager is now recorded against S-022, where legacy renders it.
+    Q-014. They are the same dataset by construction, incidentally: the iCal feed exports "deadline
+    events for all assignments in all groups related to you", which is exactly what this calendar
+    draws.
+  - _Deep-linking to a section by scrolling does not work here, and I measured that rather than
+    assuming it._ With each section behind its own `Suspense` boundary, both a `#fragment` and a
+    scroll-on-mount effect land on the target and are then pushed back down as the sections above
+    stream in -- a Playwright probe reported the calendar heading at the same `y=1026` with and
+    without the fragment, i.e. neither had scrolled. So `?tab=` now renders the named section
+    **first in the document**: a cold deep-link lands on what it asked for with no JavaScript,
+    nothing to undo when the rest arrives, and nothing hidden, which is what §4.1's "no mode
+    switch" asks for. The in-page nav is separately a set of plain `#fragment` links -- the one
+    navigation a browser does instantly and correctly on an already-rendered page. The
+    scroll-on-mount island written for the other approach was deleted rather than kept "just in
+    case". DEC-060.
+  - _Calendar arithmetic on `YYYY-MM-DD` strings, not `Date` objects._ Which day a deadline falls
+    on depends on the time zone, and this app pins one rather than using the server's or the
+    browser's. A `Date` carries an instant, not a calendar day, so every operation on one has to
+    remember to convert -- and the first that forgets moves a midnight deadline to the wrong day,
+    in the one place where being one day off is the entire point. Instants are converted to days
+    once, in `getTimeZone()`'s zone (the same zone the formatter renders in, so the two cannot
+    drift), and everything after that is string and integer work. `Date.UTC` appears only as a
+    calendar calculator, never formatted, because UTC is the one zone where "add a day" is always
+    24 hours.
+  - _`Intl.Locale.prototype.getWeekInfo()` does not exist in this Node_ (22.22.3, checked rather
+    than assumed), so the week starts on Monday in both locales -- correct for `cs` and for the
+    `en` of a Czech university, and honest about being a decision rather than a hardcoded table
+    pretending to be locale-awareness.
+  - _"Today" is rendered on the server here, which contradicts nothing._ `DeadlineBadge` insists on
+    client-side evaluation because it answers "has this deadline passed", against the reader's own
+    moment, and they act on the answer. This highlight answers "which cell is today in the course's
+    time zone", and **nothing recomputes it in the browser** -- so there is no second answer to
+    disagree with the first, and no hydration mismatch to have. It goes stale on a page left open
+    across midnight; a ring around the wrong square is cosmetic.
+  - _Month navigation needs no client JavaScript at all._ The displayed month is `?month=YYYY-MM`,
+    so previous/next are ordinary links to the same server-rendered page, and a particular month is
+    shareable (brief §9). An unparseable value falls back to the current month rather than 404ing:
+    there is no such thing as a month that does not exist, and a malformed month in a shared URL
+    should still show a calendar.
+  - _Two presentations, one dataset:_ the month grid from `sm` up, a plain list of the days that
+    have deadlines below that. A seven-column grid on a phone is either unreadably small or
+    horizontally scrolled, and neither is a calendar anyone reads. `display: none` keeps only one
+    in the accessibility tree.
+  - _A side effect worth having:_ `fetchGroupAssignments` is now memoized per request, so the three
+    sections -- which between them ask about the groups the reader studies in, teaches, and both --
+    fetch each group's assignments once rather than up to twice.
+  - _Observations:_ verified in the container, both locales, dark mode, desktop and phone. The
+    student sees August with today ringed and the 4 September deadline in the trailing week (the
+    grid fetches the whole displayed range, not the month); the superadmin's September shows a
+    deadline on nearly every day across four taught groups. **78 e2e tests pass** (73 before).
+    Second-deadline entries render in a distinct tone but are **not visually verified**: no seeded
+    assignment sets `allowSecondDeadline`, so that branch has never had real data behind it.
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3) -- S-001 and S-002 done. Foundation (F-001 through F-027)
-  and Design System (D-001 through D-016) complete. See `docs/BACKLOG.md`.
-- **Next ticket:** S-003 (dashboard, calendar view) -- the last of the three dashboard sections,
-  and the ticket that owns turning IA §4.1's `?tab=` deep-link into real behaviour (DEC-057).
+- **Phase:** Student Experience (Phase 3) -- S-001, S-002 and S-003 done, so the dashboard is
+  complete. Foundation (F-001 through F-027) and Design System (D-001 through D-016) complete.
+- **Next ticket:** S-004 (group list) -- the first screen after the dashboard, and the first real
+  use of `DataTable` outside the design-system showcase.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 (no assignment search endpoint), Q-012 (a null assignment
   status conflates "not submitted" with "every submission failed"), Q-013 (no endpoint for a
-  teacher activity feed) — all three proceeding without operator input, reasoning recorded.
-  Q-005 resolved. Q-007 (SMTP — operator will test end-to-end later, proceed on `mail.debugMode`
-  assumption per ASS-008)
-- **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
-  evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that
-  visually depends on evaluation state. S-001 is the first ticket where it shows in the UI: every
-  seeded submission reads as "Not submitted" (Q-012). Re-verify on a cgroup v1 host.
+  teacher activity feed), Q-014 (S-003's inventory row was the iCal token manager, now reassigned
+  to S-022) — all proceeding without operator input, reasoning recorded. Q-005 resolved. Q-007
+  (SMTP — operator will test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+- **Known environment limitations (not code bugs):** this dev machine cannot produce real pass/fail
+  evaluation results (cgroup v2 only, DEC-031), so every seeded submission reads as "Not submitted"
+  (Q-012). No seeded assignment has a second deadline, so the calendar's second-deadline tone and
+  `DeadlineBadge`'s "second chance" state have never been seen with real data. Both want
+  re-verifying on a cgroup v1 host with richer seed data.

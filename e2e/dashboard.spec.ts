@@ -132,7 +132,7 @@ test.describe("as a teacher", () => {
     await expect(main.getByRole("heading", { name: "Coming up in your groups" })).toBeVisible();
 
     // A teacher has no solution of their own here, so the two columns about one are absent.
-    const table = main.getByRole("table").last();
+    const table = page.getByRole("region", { name: "Coming up in your groups" }).getByRole("table");
     await expect(table.getByRole("columnheader", { name: "Deadline" })).toBeVisible();
     await expect(table.getByRole("columnheader", { name: "Status" })).toHaveCount(0);
   });
@@ -147,4 +147,84 @@ test("shows both halves to someone who studies in one group and teaches another"
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { name: "Upcoming deadlines" })).toBeVisible();
   await expect(main.getByRole("heading", { name: "My teaching" })).toBeVisible();
+});
+
+test.describe("the calendar", () => {
+  test.beforeEach(async ({ page }) => {
+    await signIn(page, STUDENT);
+  });
+
+  test("draws the month as whole Monday-to-Sunday weeks", async ({ page }) => {
+    const calendar = page.getByRole("region", { name: "Calendar" });
+    await expect(calendar).toBeVisible();
+
+    const headers = calendar.getByRole("columnheader");
+    await expect(headers).toHaveCount(7);
+    await expect(headers.first()).toHaveText("Mon");
+    await expect(headers.last()).toHaveText("Sun");
+
+    // Whole weeks, so every row has all seven days.
+    const cells = await calendar
+      .locator("tbody tr")
+      .evaluateAll((rows) => rows.map((row) => row.querySelectorAll("td").length));
+    expect(cells.length).toBeGreaterThan(3);
+    expect(new Set(cells)).toEqual(new Set([7]));
+  });
+
+  test("marks the deadlines and links each to its assignment", async ({ page }) => {
+    // The seeded student's two assignments fall in September 2026; ask for that month directly,
+    // which also exercises the ?month= deep-link.
+    await page.goto("/en/dashboard?tab=calendar&month=2026-09");
+
+    const calendar = page.getByRole("region", { name: "Calendar" });
+    await expect(calendar.getByRole("heading", { name: /September 2026/ })).toBeVisible();
+
+    const entries = calendar.getByRole("link", { name: /Echo Greeting/ });
+    await expect(entries.first()).toBeVisible();
+    await entries.first().click();
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+  });
+
+  test("steps to the next month and back without client-side state", async ({ page }) => {
+    await page.goto("/en/dashboard?tab=calendar&month=2026-09");
+    const calendar = page.getByRole("region", { name: "Calendar" });
+
+    await calendar.getByRole("link", { name: "Next month" }).click();
+    await expect(page).toHaveURL(/month=2026-10/);
+    await expect(calendar.getByRole("heading", { name: /October 2026/ })).toBeVisible();
+
+    await calendar.getByRole("link", { name: "Previous month" }).click();
+    await expect(page).toHaveURL(/month=2026-09/);
+    await expect(calendar.getByRole("heading", { name: /September 2026/ })).toBeVisible();
+  });
+
+  test("falls back to the current month for an unparseable one", async ({ page }) => {
+    await page.goto("/en/dashboard?tab=calendar&month=not-a-month");
+
+    const now = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    await expect(
+      page.getByRole("region", { name: "Calendar" }).getByRole("heading", { name: now }),
+    ).toBeVisible();
+  });
+
+  test("renders the section a ?tab= deep-link names first, without hiding the others", async ({
+    page,
+  }) => {
+    await signIn(page, SUPERVISOR_STUDENT); // studies in one group, teaches another: three sections
+
+    const headingNames = () =>
+      page
+        .getByRole("main")
+        .getByRole("heading", { level: 2 })
+        .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim()));
+
+    expect(await headingNames()).toEqual(["My studies", "My teaching", "Calendar"]);
+
+    await page.goto("/en/dashboard?tab=calendar");
+    // Reordered, not filtered -- IA §4.1's "no mode switch".
+    expect(await headingNames()).toEqual(["Calendar", "My studies", "My teaching"]);
+
+    await page.goto("/en/dashboard?tab=teacher");
+    expect(await headingNames()).toEqual(["My teaching", "My studies", "Calendar"]);
+  });
 });
