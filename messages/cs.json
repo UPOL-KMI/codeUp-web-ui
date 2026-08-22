@@ -133,6 +133,45 @@
       "description": "Nejste členem žádné skupiny a na této instanci nejsou žádné veřejné."
     }
   },
+  "Group": {
+    "tabs": {
+      "info": "Informace",
+      "assignments": "Zadání",
+      "students": "Studenti"
+    },
+    "badges": {
+      "archived": "Archivováno",
+      "exam": "Zkouška",
+      "public": "Veřejná"
+    },
+    "info": {
+      "description": "Popis",
+      "noDescription": "Tato skupina nemá popis.",
+      "myStanding": "Moje výsledky",
+      "points": "bodů",
+      "limitMet": "Hranice splněna",
+      "limitNotMet": "Pod hranicí",
+      "metadata": "Podrobnosti",
+      "parent": "Nadřazená skupina",
+      "assignments": "Zadání",
+      "organizationalNote": "Žádná — tato skupina pouze sdružuje jiné skupiny",
+      "students": "Studenti",
+      "pointsLimit": "Body potřebné k absolvování",
+      "threshold": "Podíl bodů potřebný k absolvování",
+      "publicStats": "Studenti vidí výsledky ostatních",
+      "detaining": "Odchod ze skupiny",
+      "detainingNote": "Studenti nemohou skupinu opustit sami",
+      "yes": "Ano",
+      "no": "Ne",
+      "people": "Lidé",
+      "roles": {
+        "admin": "Správci",
+        "supervisor": "Vyučující",
+        "observer": "Pozorovatelé"
+      },
+      "subgroups": "Podskupiny"
+    }
+  },
   "Assignments": {
     "title": "Zadání"
   },

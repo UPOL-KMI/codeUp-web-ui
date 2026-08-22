@@ -74,3 +74,52 @@ test.describe("the archive", () => {
     await expect(page).toHaveURL(/\/en\/groups$/);
   });
 });
+
+test.describe("the group detail", () => {
+  test("shows what the group is, who runs it and what it contains", async ({ page }) => {
+    await signIn(page, STUDENT);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+
+    const main = page.getByRole("main");
+    await expect(main.getByRole("heading", { name: "[seed] Intro to Programming" })).toBeVisible();
+    await expect(main.getByRole("heading", { name: "Details" })).toBeVisible();
+    // Sam and the superadmin administer this group; both come from one batched user lookup.
+    await expect(main.getByRole("link", { name: "Sam Supervisor" })).toBeVisible();
+    // A student sees where they stand.
+    await expect(main.getByRole("heading", { name: "My standing" })).toBeVisible();
+  });
+
+  test("links up to the parent group and down to the subgroup", async ({ page }) => {
+    await signIn(page, SUPERADMIN);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    const main = page.getByRole("main");
+
+    await expect(main.getByRole("heading", { name: "Subgroups" })).toBeVisible();
+    await main.getByRole("link", { name: /Lab A/ }).click();
+    await expect(main.getByRole("heading", { name: /Lab A/ })).toBeVisible();
+
+    // ...and back up, through the parent row.
+    await main.getByRole("link", { name: "[seed] Intro to Programming", exact: true }).click();
+    await expect(main.getByRole("heading", { name: "[seed] Intro to Programming" })).toBeVisible();
+  });
+
+  test("falls back to the info tab for an unknown tab rather than failing", async ({ page }) => {
+    await signIn(page, STUDENT);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
+
+    await page.goto(`${new URL(page.url()).pathname}?tab=nonsense`);
+    await expect(
+      page.getByRole("main").getByRole("heading", { name: "Description" }),
+    ).toBeVisible();
+  });
+});

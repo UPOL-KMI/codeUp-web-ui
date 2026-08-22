@@ -133,6 +133,45 @@
       "description": "You are not a member of any group, and none are public on this instance."
     }
   },
+  "Group": {
+    "tabs": {
+      "info": "Info",
+      "assignments": "Assignments",
+      "students": "Students"
+    },
+    "badges": {
+      "archived": "Archived",
+      "exam": "Exam",
+      "public": "Public"
+    },
+    "info": {
+      "description": "Description",
+      "noDescription": "This group has no description.",
+      "myStanding": "My standing",
+      "points": "points",
+      "limitMet": "Threshold met",
+      "limitNotMet": "Below threshold",
+      "metadata": "Details",
+      "parent": "Parent group",
+      "assignments": "Assignments",
+      "organizationalNote": "None — this group only holds other groups",
+      "students": "Students",
+      "pointsLimit": "Points needed to pass",
+      "threshold": "Share of points needed to pass",
+      "publicStats": "Students see each other's progress",
+      "detaining": "Leaving",
+      "detainingNote": "Students cannot leave this group on their own",
+      "yes": "Yes",
+      "no": "No",
+      "people": "People",
+      "roles": {
+        "admin": "Administrators",
+        "supervisor": "Supervisors",
+        "observer": "Observers"
+      },
+      "subgroups": "Subgroups"
+    }
+  },
   "Assignments": {
     "title": "Assignments"
   },

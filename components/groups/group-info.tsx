@@ -1,0 +1,153 @@
+import { getFormatter, getTranslations } from "next-intl/server";
+
+import type { GroupDetail } from "@/lib/api/group-detail";
+import { formatPoints } from "@/lib/format/points";
+
+import { Link } from "@/i18n/navigation";
+import { Markdown } from "@/components/markdown/markdown";
+import { Badge } from "@/components/status/badge";
+
+/**
+ * The group's Info tab (S-005): what this group is, who runs it, what it contains, and -- for
+ * someone who studies here -- where they stand in it.
+ *
+ * The description is authored markdown from the database and goes through D-010's renderer, the
+ * same one exercise texts use, so a group description and an assignment text cannot render the
+ * same source two different ways.
+ *
+ * The subgroup list is the visible half of S-010: ReCodEx groups genuinely nest, and both
+ * directions are reachable from here -- ancestors through the breadcrumb the page builds, children
+ * through this list. No tree widget: the hierarchy is shallow in practice and a breadcrumb plus a
+ * child list is navigable with a keyboard and a screen reader, which a custom tree is not for free.
+ */
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-b border-border py-2 last:border-0 sm:flex-row sm:gap-4">
+      <dt className="text-sm text-muted-foreground sm:w-56 sm:shrink-0">{label}</dt>
+      <dd className="text-sm">{children}</dd>
+    </div>
+  );
+}
+
+export async function GroupInfo({ group }: { group: GroupDetail }) {
+  const [t, format] = await Promise.all([getTranslations("Group.info"), getFormatter()]);
+
+  const roleOrder: GroupDetail["members"][number]["role"][] = ["admin", "supervisor", "observer"];
+  const membersByRole = roleOrder
+    .map((role) => ({ role, people: group.members.filter((member) => member.role === role) }))
+    .filter((entry) => entry.people.length > 0);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <section aria-labelledby="group-description">
+        <h2 id="group-description" className="mb-3 text-base font-semibold tracking-tight">
+          {t("description")}
+        </h2>
+        {group.description ? (
+          <Markdown source={group.description} />
+        ) : (
+          <p className="text-sm text-muted-foreground">{t("noDescription")}</p>
+        )}
+      </section>
+
+      {group.myStats && (
+        <section aria-labelledby="group-my-standing">
+          <h2 id="group-my-standing" className="mb-3 text-base font-semibold tracking-tight">
+            {t("myStanding")}
+          </h2>
+          <p className="text-2xl font-semibold tabular-nums">
+            {formatPoints(group.myStats.points.gained, group.myStats.points.total)}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">{t("points")}</span>
+            {group.myStats.hasLimit && (
+              <span className="ml-3 align-middle">
+                <Badge tone={group.myStats.passesLimit ? "success" : "warning"}>
+                  {group.myStats.passesLimit ? t("limitMet") : t("limitNotMet")}
+                </Badge>
+              </span>
+            )}
+          </p>
+        </section>
+      )}
+
+      <section aria-labelledby="group-metadata">
+        <h2 id="group-metadata" className="mb-3 text-base font-semibold tracking-tight">
+          {t("metadata")}
+        </h2>
+        <dl>
+          {group.path.length > 0 && (
+            <InfoRow label={t("parent")}>
+              <Link
+                href={`/groups/${group.path[group.path.length - 1]!.id}`}
+                className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {group.path[group.path.length - 1]!.name}
+              </Link>
+            </InfoRow>
+          )}
+          <InfoRow label={t("assignments")}>
+            {group.organizational ? t("organizationalNote") : group.assignmentCount}
+          </InfoRow>
+          {group.studentCount !== null && (
+            <InfoRow label={t("students")}>{group.studentCount}</InfoRow>
+          )}
+          {group.pointsLimit !== null && group.pointsLimit > 0 && (
+            <InfoRow label={t("pointsLimit")}>{group.pointsLimit}</InfoRow>
+          )}
+          {group.threshold !== null && group.threshold > 0 && (
+            <InfoRow label={t("threshold")}>
+              {format.number(group.threshold, { style: "percent", maximumFractionDigits: 1 })}
+            </InfoRow>
+          )}
+          <InfoRow label={t("publicStats")}>{group.publicStats ? t("yes") : t("no")}</InfoRow>
+          {group.detaining && <InfoRow label={t("detaining")}>{t("detainingNote")}</InfoRow>}
+        </dl>
+      </section>
+
+      {membersByRole.length > 0 && (
+        <section aria-labelledby="group-people">
+          <h2 id="group-people" className="mb-3 text-base font-semibold tracking-tight">
+            {t("people")}
+          </h2>
+          <dl>
+            {membersByRole.map(({ role, people }) => (
+              <InfoRow key={role} label={t(`roles.${role}`)}>
+                <ul className="flex flex-wrap gap-x-3 gap-y-1">
+                  {people.map((person) => (
+                    <li key={person.id}>
+                      <Link
+                        href={`/users/${person.id}`}
+                        className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {person.fullName || person.id}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </InfoRow>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {group.subgroups.length > 0 && (
+        <section aria-labelledby="group-subgroups">
+          <h2 id="group-subgroups" className="mb-3 text-base font-semibold tracking-tight">
+            {t("subgroups")}
+          </h2>
+          <ul className="flex flex-col gap-1">
+            {group.subgroups.map((subgroup) => (
+              <li key={subgroup.id}>
+                <Link
+                  href={`/groups/${subgroup.id}`}
+                  className="text-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {subgroup.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
