@@ -1695,21 +1695,47 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     true because the group has `publicStats` set, which is core-api's decision to make, not this
     app's. **92 e2e tests pass** (78 before).
 
+- **[2026-08-22 22:10] S-012:** Assignment detail, student view.
+  `app/[locale]/(app)/assignments/[assignmentId]/page.tsx`,
+  `components/assignments/assignment-detail.tsx`, `lib/api/assignment.ts`,
+  `e2e/assignments.spec.ts`. The destination every deadline row has linked to since S-001 is now a
+  real screen.
+  - _The reader-facing text is `text`, not `description`_ -- worth stating because getting it
+    wrong would have produced an empty page for exactly the people the screen is for, and only for
+    them. In core-api's `LocalizedExercise`, `text` is the assignment as written for whoever solves
+    it and `description` is the author's internal note; the view factory strips `description` for
+    anyone without `viewDescription`, which `permissions.neon` grants from `supervisor-student`
+    upward and never to a plain `student`. Confirmed on a live response as the seeded student.
+  - _Whether submitting is possible is core-api's answer, in words, with no button behind it._
+    `/can-submit` folds in the deadline, the attempt limit, the group's licence, exam locks and a
+    system-wide submission lock -- reimplementing any of that here would drift. The action is
+    S-014's, and a button that led nowhere would be worse than the sentence.
+  - _The attempt counter reports **evaluated** solutions, not submitted ones_, because that is what
+    core-api counts against the limit (`findValidSolutions`). A submission that died in the
+    pipeline does not consume an attempt, and saying otherwise would cost a student one -- visible
+    right now on the seeded data, which reads "You can submit — 20 attempts left. 0 evaluated, 2
+    failed to evaluate."
+  - _This screen tells the truth the dashboard cannot._ Both of the seeded student's solutions show
+    **Evaluation failed** here, where the dashboard says "Not submitted" for the same two -- not an
+    inconsistency but Q-012 exactly: this page has the solutions and their `lastSubmission`, the
+    dashboard has only a stats row core-api builds from _valid_ solutions. Same helper family
+    (`evaluationStatus` here, `assignmentProgress` there), different fidelity of input.
+  - _Observations:_ verified against the container as the student and as the superadmin (who sees
+    the same screen and an honest "Nothing submitted yet" rather than a personal claim). **96 e2e
+    tests pass.**
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3). Done: the whole dashboard (S-001, S-002, S-003), the
-  group list and archive (S-004, S-011), and the group screen with its Info, Assignments and
-  Students tabs (S-005, S-006, S-007, S-010). Foundation and Design System complete.
-- **Next ticket:** S-012 (assignment detail, student view) -- the destination every deadline row on
-  the dashboard and in the group already links to, and still a route skeleton.
+- **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001, S-002, S-003), groups
+  (S-004, S-005, S-006, S-007, S-010, S-011) and the assignment screen (S-012). Foundation and
+  Design System complete.
+- **Next ticket:** S-013 (assignment detail, teacher view) or S-014 (submit flow). S-014 is the
+  brief's own "highest-value screen" and D-005 already built the upload path it needs; S-013's
+  additions each link to a screen that does not exist yet.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 (no assignment search endpoint), Q-012 (a null assignment
-  status conflates "not submitted" with "every submission failed"), Q-013 (no endpoint for a
-  teacher activity feed), Q-014 (S-003's inventory row was the iCal token manager, reassigned to
-  S-022), Q-015 (the group list fetches everything and filters in the browser) — all proceeding
-  without operator input, reasoning recorded. Q-005 resolved. Q-007 (SMTP — operator will test
+- **Operator inputs pending:** Q-011, Q-012, Q-013, Q-014, Q-015 — all proceeding without operator
+  input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
 - **Known environment limitations (not code bugs):** this dev machine cannot produce real pass/fail
-  evaluation results (cgroup v2 only, DEC-031), so every seeded submission reads as "Not submitted"
-  (Q-012). Three UI states have no seed data behind them at all — a membership-less user, a second
-  deadline, an organizational group — collected as **F-029**.
+  evaluation results (cgroup v2 only, DEC-031). Three UI states have no seed data behind them — a
+  membership-less user, a second deadline, an organizational group — collected as **F-029**.

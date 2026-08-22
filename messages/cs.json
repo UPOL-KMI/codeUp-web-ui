@@ -212,9 +212,6 @@
       }
     }
   },
-  "Assignments": {
-    "title": "Zadání"
-  },
   "Solutions": {
     "title": "Řešení",
     "crumb": "Řešení č. {attempt}"
@@ -404,5 +401,56 @@
     "showing": "Zobrazeno {from}–{to} z {total}",
     "selectPage": "Vybrat všechny řádky na této stránce",
     "selectRow": "Vybrat řádek"
+  },
+  "Assignment": {
+    "title": "Zadání",
+    "backToGroup": "Zadání skupiny",
+    "badges": {
+      "bonus": "Bonus",
+      "exam": "Zkouška",
+      "hidden": "Skryté"
+    },
+    "submitting": {
+      "heading": "Odevzdávání",
+      "open": "Můžete odevzdat — {attempts, plural, one {zbývá # pokus} few {zbývají # pokusy} many {zbývá # pokusů} other {zbývá # pokusů}}.",
+      "closed": "Odevzdávání nyní není možné.",
+      "noAttempts": "Vyčerpali jste všech {limit} pokusů.",
+      "locked": "Odevzdávání je na této instanci dočasně vypnuté.",
+      "counts": "Vyhodnoceno {evaluated}, selhalo {failed}."
+    },
+    "text": "Zadání",
+    "noText": "Toto zadání nemá text v žádném jazyce.",
+    "externalLink": "Otevřít zadání jinde",
+    "hint": "Nápověda",
+    "terms": "Podmínky",
+    "firstDeadline": "Termín odevzdání",
+    "secondDeadline": "Druhý termín",
+    "upToPoints": "až {points} bodů",
+    "threshold": "Minimum pro body",
+    "thresholdNote": "Aby se udělily body, musí projít alespoň {percent} testů.",
+    "attempts": "Limit pokusů",
+    "attemptsValue": "{limit, plural, one {# vyhodnocené řešení} few {# vyhodnocená řešení} many {# vyhodnocených řešení} other {# vyhodnocených řešení}}",
+    "environments": "Jazyky",
+    "filesLimit": "Souborů na řešení",
+    "sizeLimit": "Maximální velikost řešení",
+    "mySolutions": "Moje řešení",
+    "attemptNumber": "Pokus {index}",
+    "columns": {
+      "attempt": "Pokus",
+      "submitted": "Odevzdáno",
+      "points": "Body",
+      "status": "Výsledek",
+      "flags": "Příznaky"
+    },
+    "flags": {
+      "best": "Nejlepší",
+      "accepted": "Uznáno",
+      "reviewRequested": "Žádost o revizi",
+      "reviewed": "Zrevidováno"
+    },
+    "noSolutions": {
+      "title": "Zatím nic neodevzdáno",
+      "description": "Jakmile odevzdáte řešení, objeví se zde."
+    }
   }
 }

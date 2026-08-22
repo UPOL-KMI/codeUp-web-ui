@@ -64,7 +64,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "Faq", pattern: "/faq" },
-  { namespace: "Assignments", pattern: "/assignments", unlinked: true },
+  { namespace: "Assignment", pattern: "/assignments", unlinked: true },
   { namespace: "Solutions", pattern: "/solutions", unlinked: true },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no

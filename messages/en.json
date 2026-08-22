@@ -212,9 +212,6 @@
       }
     }
   },
-  "Assignments": {
-    "title": "Assignments"
-  },
   "Solutions": {
     "title": "Solutions",
     "crumb": "Solution #{attempt}"
@@ -404,5 +401,56 @@
     "showing": "Showing {from}–{to} of {total}",
     "selectPage": "Select all rows on this page",
     "selectRow": "Select row"
+  },
+  "Assignment": {
+    "title": "Assignments",
+    "backToGroup": "Group assignments",
+    "badges": {
+      "bonus": "Bonus",
+      "exam": "Exam",
+      "hidden": "Hidden"
+    },
+    "submitting": {
+      "heading": "Submitting",
+      "open": "You can submit — {attempts, plural, one {# attempt left} other {# attempts left}}.",
+      "closed": "Submissions are not being accepted right now.",
+      "noAttempts": "You have used all {limit} attempts.",
+      "locked": "Submitting is temporarily disabled on this instance.",
+      "counts": "{evaluated} evaluated, {failed} failed to evaluate."
+    },
+    "text": "Assignment",
+    "noText": "This assignment has no text in any language.",
+    "externalLink": "Open the assignment elsewhere",
+    "hint": "Hint",
+    "terms": "Terms",
+    "firstDeadline": "Deadline",
+    "secondDeadline": "Second deadline",
+    "upToPoints": "up to {points} points",
+    "threshold": "Minimum to score",
+    "thresholdNote": "At least {percent} of the tests must pass before any points are awarded.",
+    "attempts": "Attempt limit",
+    "attemptsValue": "{limit, plural, one {# evaluated solution} other {# evaluated solutions}}",
+    "environments": "Languages",
+    "filesLimit": "Files per solution",
+    "sizeLimit": "Maximum solution size",
+    "mySolutions": "My solutions",
+    "attemptNumber": "Attempt {index}",
+    "columns": {
+      "attempt": "Attempt",
+      "submitted": "Submitted",
+      "points": "Points",
+      "status": "Result",
+      "flags": "Flags"
+    },
+    "flags": {
+      "best": "Best",
+      "accepted": "Accepted",
+      "reviewRequested": "Review requested",
+      "reviewed": "Reviewed"
+    },
+    "noSolutions": {
+      "title": "Nothing submitted yet",
+      "description": "Your solutions will appear here once you submit one."
+    }
   }
 }
