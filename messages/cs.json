@@ -170,6 +170,46 @@
         "observer": "Pozorovatelé"
       },
       "subgroups": "Podskupiny"
+    },
+    "assignments": {
+      "filterPlaceholder": "Filtrovat zadání",
+      "bonus": "Bonus",
+      "hidden": "Skryté",
+      "filters": {
+        "all": "Vše",
+        "open": "Otevřená",
+        "closed": "Uzavřená",
+        "submitted": "S mým řešením"
+      },
+      "columns": {
+        "name": "Zadání",
+        "firstDeadline": "Termín odevzdání",
+        "secondDeadline": "Druhý termín",
+        "maxPoints": "Max. bodů",
+        "myPoints": "Moje body",
+        "myStatus": "Můj stav"
+      },
+      "empty": {
+        "all": "Tato skupina nemá žádná zadání.",
+        "open": "Žádné zadání není otevřené k odevzdání.",
+        "closed": "Žádnému zadání neuplynul termín.",
+        "submitted": "Zatím jste zde nic neodevzdali."
+      }
+    },
+    "students": {
+      "filterPlaceholder": "Filtrovat studenty",
+      "passes": "Splňuje",
+      "belowLimit": "Pod hranicí",
+      "columns": {
+        "name": "Student",
+        "points": "Body",
+        "solved": "Vyřešeno",
+        "threshold": "Hranice"
+      },
+      "empty": {
+        "title": "Žádní studenti",
+        "description": "Do této skupiny se zatím nepřihlásil žádný student."
+      }
     }
   },
   "Assignments": {

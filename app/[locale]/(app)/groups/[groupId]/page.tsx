@@ -1,37 +1,55 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getGroupDetail } from "@/lib/api/group-detail";
+import {
+  getGroupAssignments,
+  getGroupDetail,
+  getGroupStudents,
+  type AssignmentFilter,
+} from "@/lib/api/group-detail";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
+import { AssignmentFilterNav } from "@/components/groups/assignment-filter";
+import { AssignmentTable } from "@/components/groups/assignment-table";
 import { GroupInfo } from "@/components/groups/group-info";
 import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
+import { StudentTable } from "@/components/groups/student-table";
 import { PageShell } from "@/components/page-shell";
+import { EmptyState } from "@/components/state/empty-state";
 import { Badge } from "@/components/status/badge";
 
 /**
- * A group (S-005), tabbed per `docs/IA.md` §4.2 with the tab in `searchParams` so a particular tab
- * is a shareable URL and the back button works.
+ * A group (S-005, S-006, S-007), tabbed per `docs/IA.md` §4.2 with the tab in `searchParams` so a
+ * particular tab is a shareable URL and the back button works.
  *
  * Which tabs exist is core-api's answer, not a role check here (brief §3.4): `permissionHints`
  * decides whether the reader may see assignments or students at all. Tabs whose screens are not
  * built yet (Exams, Settings -- S-008, S-009) are simply absent rather than leading to a stub.
  *
  * An unknown `?tab=` falls back to Info rather than 404ing: the tab is a view of a resource that
- * does exist, and a stale link from an older version of this app should still show the group.
+ * does exist, and a stale link from an older version of this app should still show the group. The
+ * same goes for an unknown `?filter=`.
  */
+const FILTERS: AssignmentFilter[] = ["all", "open", "closed", "submitted"];
+
 export default async function GroupPage({
   params,
   searchParams,
 }: {
   params: Promise<{ groupId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; filter?: string }>;
 }) {
-  const [{ groupId }, { tab }, locale] = await Promise.all([params, searchParams, getLocale()]);
+  const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, group] = await Promise.all([getTranslations("Group"), getGroupDetail(groupId, locale)]);
   const breadcrumbs = await resolveBreadcrumbs(`/groups/${groupId}`, locale);
 
-  const tabs: GroupTab[] = [{ id: "info", label: t("tabs.info") }];
-  const current = tabs.some((candidate) => candidate.id === tab) ? tab! : "info";
+  const tabs: GroupTab[] = [
+    { id: "info", label: t("tabs.info") },
+    ...(group.can.viewAssignments && !group.organizational
+      ? [{ id: "assignments", label: t("tabs.assignments") }]
+      : []),
+    ...(group.can.viewStudents ? [{ id: "students", label: t("tabs.students") }] : []),
+  ];
+  const current = tabs.some((candidate) => candidate.id === query.tab) ? query.tab! : "info";
 
   return (
     <PageShell
@@ -49,7 +67,55 @@ export default async function GroupPage({
       }
       tabs={<GroupTabs groupId={groupId} tabs={tabs} current={current} />}
     >
-      <GroupInfo group={group} />
+      {current === "assignments" && <AssignmentsTab groupId={groupId} filter={query.filter} />}
+      {current === "students" && <StudentsTab groupId={groupId} />}
+      {current === "info" && <GroupInfo group={group} />}
     </PageShell>
+  );
+}
+
+async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: string }) {
+  const locale = await getLocale();
+  const [t, group] = await Promise.all([
+    getTranslations("Group.assignments"),
+    getGroupDetail(groupId, locale),
+  ]);
+
+  const options = group.myStats ? FILTERS : FILTERS.filter((option) => option !== "submitted");
+  const current = (options.find((option) => option === filter) ?? "all") as AssignmentFilter;
+  const assignments = await getGroupAssignments(groupId, locale, current);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <AssignmentFilterNav
+        groupId={groupId}
+        current={current}
+        options={options}
+        labels={{
+          all: t("filters.all"),
+          open: t("filters.open"),
+          closed: t("filters.closed"),
+          submitted: t("filters.submitted"),
+        }}
+      />
+      {assignments.length === 0 ? (
+        <EmptyState title={t(`empty.${current}`)} />
+      ) : (
+        <AssignmentTable assignments={assignments} groupId={groupId} />
+      )}
+    </div>
+  );
+}
+
+async function StudentsTab({ groupId }: { groupId: string }) {
+  const [t, students] = await Promise.all([
+    getTranslations("Group.students"),
+    getGroupStudents(groupId),
+  ]);
+
+  return students.length === 0 ? (
+    <EmptyState title={t("empty.title")} description={t("empty.description")} />
+  ) : (
+    <StudentTable students={students} groupId={groupId} />
   );
 }

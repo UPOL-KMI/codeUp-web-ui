@@ -152,3 +152,150 @@ export const getGroupDetail = cache(async function getGroupDetail(
     can: group.permissionHints ?? {},
   };
 });
+
+/**
+ * The group's assignments, with the reader's own standing on each where they study here (S-006).
+ *
+ * The filter is applied server-side and lives in the URL, so "the open ones" is a shareable link
+ * and no assignment the reader filtered out is shipped to the browser. `submitted` means "I have
+ * an evaluated solution", which is the only sense the stats row can answer -- see Q-012 for the
+ * case it cannot distinguish.
+ */
+export type AssignmentFilter = "all" | "open" | "closed" | "submitted";
+
+export interface GroupAssignment {
+  id: string;
+  name: string;
+  firstDeadline: number;
+  secondDeadline: number | null;
+  allowSecondDeadline: boolean;
+  maxPoints: number;
+  maxPointsSecond: number;
+  isBonus: boolean;
+  isPublic: boolean;
+  /** The reader's own result, when they study in this group. */
+  stats: {
+    status: string | null;
+    gained: number | null;
+    bonus: number | null;
+    total: number;
+    accepted: boolean | null;
+    bestSolutionId: string | null;
+  } | null;
+}
+
+interface AssignmentPayload {
+  id: string;
+  localizedTexts?: LocalizedText[];
+  firstDeadline: number;
+  secondDeadline: number;
+  allowSecondDeadline: boolean;
+  maxPointsBeforeFirstDeadline: number;
+  maxPointsBeforeSecondDeadline: number;
+  isBonus: boolean;
+  isPublic: boolean;
+}
+
+export async function getGroupAssignments(
+  groupId: string,
+  locale: string,
+  filter: AssignmentFilter,
+): Promise<GroupAssignment[]> {
+  const [assignments, statsByGroup] = await Promise.all([
+    apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
+    getMyGroupStats(),
+  ]);
+
+  const myStats = statsByGroup.get(groupId);
+  const statsByAssignment = new Map((myStats?.assignments ?? []).map((row) => [row.id, row]));
+  const now = Date.now() / 1000;
+
+  return assignments
+    .map((assignment) => {
+      const stats = statsByAssignment.get(assignment.id);
+      const hasSecond = assignment.allowSecondDeadline && assignment.secondDeadline > 0;
+      return {
+        id: assignment.id,
+        name: localizedName(assignment.localizedTexts, locale),
+        firstDeadline: assignment.firstDeadline,
+        secondDeadline: hasSecond ? assignment.secondDeadline : null,
+        allowSecondDeadline: assignment.allowSecondDeadline,
+        maxPoints: assignment.maxPointsBeforeFirstDeadline,
+        maxPointsSecond: assignment.maxPointsBeforeSecondDeadline,
+        isBonus: assignment.isBonus,
+        isPublic: assignment.isPublic,
+        stats: myStats
+          ? {
+              status: stats?.status ?? null,
+              gained: stats?.points.gained ?? null,
+              bonus: stats?.points.bonus ?? null,
+              total: stats?.points.total ?? assignment.maxPointsBeforeFirstDeadline,
+              accepted: stats?.accepted ?? null,
+              bestSolutionId: stats?.bestSolutionId ?? null,
+            }
+          : null,
+      };
+    })
+    .filter((assignment) => {
+      const effective = assignment.secondDeadline ?? assignment.firstDeadline;
+      switch (filter) {
+        case "open":
+          return effective > now;
+        case "closed":
+          return effective <= now;
+        case "submitted":
+          return assignment.stats?.status != null;
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => a.firstDeadline - b.firstDeadline || a.name.localeCompare(b.name, locale));
+}
+
+/**
+ * The group's roster with each student's points (S-007).
+ *
+ * `GET /v1/groups/{id}/students/stats` answers with every student's row for a reader who may see
+ * group stats, and with only their own row for one who may not -- core-api decides that itself
+ * (`GroupsPresenter::actionStats`), so this does not gate on a role. Names come from the same
+ * batched `/v1/users/list` the member list uses.
+ *
+ * Per-assignment points are deliberately **not** a column each: that matrix is T-006's screen,
+ * where it can be sorted, exported and read at full width. Here each student is one row -- points,
+ * whether they pass, how many assignments they have solved.
+ */
+export interface GroupStudent {
+  id: string;
+  fullName: string;
+  gained: number;
+  total: number;
+  hasLimit: boolean;
+  passesLimit: boolean;
+  solvedCount: number;
+  assignmentCount: number;
+}
+
+export async function getGroupStudents(groupId: string): Promise<GroupStudent[]> {
+  const stats = await apiGet<GroupStudentStats[]>("/v1/groups/{id}/students/stats", {
+    pathParams: { id: groupId },
+  });
+  if (stats.length === 0) return [];
+
+  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
+    ids: [...new Set(stats.map((row) => row.userId))],
+  });
+  const names = new Map(people.map((person) => [person.id, person.fullName]));
+
+  return stats
+    .map((row) => ({
+      id: row.userId,
+      fullName: names.get(row.userId) ?? "",
+      gained: row.points.gained,
+      total: row.points.total,
+      hasLimit: row.hasLimit,
+      passesLimit: row.passesLimit,
+      solvedCount: row.assignments.filter((assignment) => assignment.status === "done").length,
+      assignmentCount: row.assignments.length,
+    }))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+}

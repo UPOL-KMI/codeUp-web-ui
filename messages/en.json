@@ -170,6 +170,46 @@
         "observer": "Observers"
       },
       "subgroups": "Subgroups"
+    },
+    "assignments": {
+      "filterPlaceholder": "Filter assignments",
+      "bonus": "Bonus",
+      "hidden": "Hidden",
+      "filters": {
+        "all": "All",
+        "open": "Open",
+        "closed": "Closed",
+        "submitted": "With my submissions"
+      },
+      "columns": {
+        "name": "Assignment",
+        "firstDeadline": "Deadline",
+        "secondDeadline": "Second deadline",
+        "maxPoints": "Max points",
+        "myPoints": "My points",
+        "myStatus": "My status"
+      },
+      "empty": {
+        "all": "This group has no assignments.",
+        "open": "No assignment is open for submission.",
+        "closed": "No assignment has passed its deadline.",
+        "submitted": "You have not submitted anything here yet."
+      }
+    },
+    "students": {
+      "filterPlaceholder": "Filter students",
+      "passes": "Passes",
+      "belowLimit": "Below threshold",
+      "columns": {
+        "name": "Student",
+        "points": "Points",
+        "solved": "Solved",
+        "threshold": "Threshold"
+      },
+      "empty": {
+        "title": "No students",
+        "description": "Nobody has joined this group as a student yet."
+      }
     }
   },
   "Assignments": {

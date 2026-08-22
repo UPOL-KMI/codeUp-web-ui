@@ -123,3 +123,69 @@ test.describe("the group detail", () => {
     ).toBeVisible();
   });
 });
+
+test.describe("the group's assignments tab", () => {
+  test("lists the assignments with the reader's own result", async ({ page }) => {
+    await signIn(page, STUDENT);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
+    await page.getByRole("link", { name: "Assignments", exact: true }).click();
+
+    const main = page.getByRole("main");
+    await expect(main.getByRole("columnheader", { name: "My status" })).toBeVisible();
+    await expect(main.getByRole("row")).not.toHaveCount(1);
+  });
+
+  test("filters server-side, in the URL", async ({ page }) => {
+    await signIn(page, STUDENT);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
+    await page.getByRole("link", { name: "Assignments", exact: true }).click();
+
+    const rows = page.getByRole("main").locator("tbody tr");
+    await expect(rows.first()).toBeVisible();
+    const rowsAll = await rows.count();
+
+    await page.getByRole("link", { name: "Closed", exact: true }).click();
+    await expect(page).toHaveURL(/filter=closed/);
+    // Both seeded assignments are still open, so "closed" is empty -- and says so.
+    await expect(page.getByText("No assignment has passed its deadline.")).toBeVisible();
+    expect(rowsAll).toBeGreaterThan(0);
+  });
+
+  test("does not offer a supervisor a filter for their own submissions", async ({ page }) => {
+    await signIn(page, SUPERADMIN);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
+    await page.getByRole("link", { name: "Assignments", exact: true }).click();
+
+    await expect(page.getByRole("link", { name: "With my submissions" })).toHaveCount(0);
+    // ...and no columns about a solution they never submitted.
+    await expect(page.getByRole("columnheader", { name: "My status" })).toHaveCount(0);
+  });
+});
+
+test.describe("the group's students tab", () => {
+  test("shows the roster with points to someone who may see it", async ({ page }) => {
+    await signIn(page, SUPERADMIN);
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: /Intro to Programming$/ })
+      .click();
+    await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
+    await page.getByRole("link", { name: "Students", exact: true }).click();
+
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: "Alice Student" })).toBeVisible();
+    await expect(main.getByRole("columnheader", { name: "Points" })).toBeVisible();
+  });
+});

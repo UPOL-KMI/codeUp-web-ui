@@ -1,5 +1,11 @@
 import { getFormatter } from "next-intl/server";
 
+import {
+  DATE_ONLY_FORMAT,
+  DATE_TIME_FORMAT,
+  DATE_TIME_SECONDS_FORMAT,
+} from "@/lib/format/date-time";
+
 /**
  * The one absolute date/time rendering (D-012). Brief §9: "One date format... shared helpers."
  *
@@ -25,10 +31,10 @@ export async function DateTime({ unixSeconds, dateOnly, withSeconds }: DateTimeP
   const format = await getFormatter();
   const date = new Date(unixSeconds * 1000);
 
-  const formatted = format.dateTime(date, {
-    dateStyle: "medium",
-    ...(dateOnly ? {} : { timeStyle: withSeconds ? "medium" : "short" }),
-  });
+  const formatted = format.dateTime(
+    date,
+    dateOnly ? DATE_ONLY_FORMAT : withSeconds ? DATE_TIME_SECONDS_FORMAT : DATE_TIME_FORMAT,
+  );
 
   return (
     <time dateTime={date.toISOString()} className="whitespace-nowrap">
