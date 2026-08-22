@@ -72,3 +72,47 @@ test("shows a teacher the same screen without personal claims about their own so
   await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
   await expect(page.getByRole("main").getByText("Nothing submitted yet")).toBeVisible();
 });
+
+test.describe("submitting a solution", () => {
+  test("uploads a file, detects the language and creates a solution", async ({ page }) => {
+    const cookie = await loginAndGetCookie(STUDENT);
+    await page.context().addCookies([{ ...cookie, url: baseURL }]);
+    await page.goto("/en/dashboard");
+    await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+
+    await page.getByRole("link", { name: "Submit a solution" }).click();
+    await expect(page).toHaveURL(/\/submit$/);
+
+    // The real chunked upload path (D-005), not a stubbed one.
+    await page.setInputFiles('input[type="file"]', {
+      name: "solution.py",
+      mimeType: "text/x-python",
+      buffer: Buffer.from('print("Hello, ReCodEx!")\n'),
+    });
+
+    // core-api derives the offered environments from the file names, so the select only fills in
+    // once the upload has finished and pre-submit has answered.
+    const environment = page.getByLabel("Language");
+    await expect(environment).toBeEnabled({ timeout: 30_000 });
+    await expect(environment).toHaveValue("python3");
+
+    await page.getByLabel("Note").fill("submitted by the e2e suite");
+    await page.getByRole("button", { name: "Submit", exact: true }).click();
+
+    // A successful submit lands on the new solution.
+    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/, { timeout: 30_000 });
+  });
+
+  test("refuses to submit before a file exists", async ({ page }) => {
+    const cookie = await loginAndGetCookie(STUDENT);
+    await page.context().addCookies([{ ...cookie, url: baseURL }]);
+    await page.goto("/en/dashboard");
+    await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+    await page.getByRole("link", { name: "Submit a solution" }).click();
+
+    await expect(page.getByRole("button", { name: "Submit", exact: true })).toBeDisabled();
+    await expect(page.getByLabel("Language")).toBeDisabled();
+  });
+});

@@ -451,6 +451,36 @@
     "noSolutions": {
       "title": "Nothing submitted yet",
       "description": "Your solutions will appear here once you submit one."
+    },
+    "submitAction": "Submit a solution"
+  },
+  "Submit": {
+    "title": "Submit a solution",
+    "back": "Back to the assignment",
+    "intro": "{attempts, plural, one {# attempt left} other {# attempts left}}. Up to {files} files per solution.",
+    "files": "Files",
+    "environment": "Language",
+    "uploadFirst": "Upload a file first",
+    "detecting": "Detecting…",
+    "choose": "Choose a language",
+    "note": "Note",
+    "notePlaceholder": "What did you change?",
+    "noteHelp": "Only you and your teachers see this.",
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "closed": {
+      "title": "You cannot submit this right now",
+      "description": "The deadline has passed, you have used all your attempts, or this group no longer accepts submissions.",
+      "locked": "Submitting is temporarily disabled on this instance."
+    },
+    "errors": {
+      "noFiles": "Upload at least one file.",
+      "noEnvironment": "Choose the language your solution is written in.",
+      "tooManyFiles": "That is more files than this assignment allows.",
+      "tooLarge": "Those files are larger than this assignment allows.",
+      "preSubmitFailed": "The uploaded files could not be checked. Try again.",
+      "submitFailed": "The solution could not be submitted.",
+      "invalid": "Check the form and try again."
     }
   }
 }

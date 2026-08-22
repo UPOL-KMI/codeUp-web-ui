@@ -106,6 +106,17 @@ fixed `[seed]` name/note before creating, so re-running does not duplicate anyth
 clean re-run against fully-seeded state produces zero creates (all `exists, reused` / `already
 exists, skipping submit`).
 
+**Two exercise-configuration bugs were found and fixed in S-014**, both invisible until something
+went through the _real_ submit path: the exercise's environment config declared no `source-files`
+variable, so `POST /pre-submit` could not match an uploaded `solution.py` to any runtime
+environment and offered none at all (the seed's own submissions never noticed, because they pass
+`runtimeEnvironmentId` directly); and assignments are _snapshots_ of their exercise, so fixing the
+exercise left every assignment already created from it on the old copy. The script now declares
+`source-files: ["*.py"]` and re-syncs every seeded assignment whose
+`exerciseSynchronizationInfo` reports it stale. That re-sync runs on **every** seed, not only the
+first, because `getOrCreateBaseExercise` deliberately rewrites the exercise's configuration each
+time -- which by definition leaves the assignments one version behind.
+
 **One exception was found and fixed in F-029:** the exercise's _reference solution_ was submitted
 unconditionally, because every other write in `getOrCreateBaseExercise` replaces and that one
 appends. Eight had accumulated on this instance before anyone looked. It is now guarded by its

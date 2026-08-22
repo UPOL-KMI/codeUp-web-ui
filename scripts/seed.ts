@@ -352,9 +352,24 @@ async function getOrCreateBaseExercise(
     token: adminToken,
     body: { hwGroups: [HW_GROUP_ID] },
   });
+  // The environment config is what declares **which uploaded files are the solution**, and it is
+  // not optional decoration: `ExerciseConfigHelper::getEnvironmentsForFiles()` -- the whole of
+  // `POST /pre-submit` -- looks for a *file* variable here, wildcard-matches the submitted file
+  // names against its values, and reports an environment as suitable only if every uploaded file
+  // was matched by one. With an empty table it matches nothing, so `pre-submit` answered
+  // `environments: []` for a perfectly good `solution.py` and the submit form had nothing to
+  // offer. The seed's own submissions never noticed, because they pass `runtimeEnvironmentId`
+  // directly and skip pre-submit entirely; S-014 is the first thing to go through the real path.
   await api("POST", `/exercises/${id}/environment-configs`, {
     token: adminToken,
-    body: { environmentConfigs: [{ runtimeEnvironmentId: "python3", variablesTable: [] }] },
+    body: {
+      environmentConfigs: [
+        {
+          runtimeEnvironmentId: "python3",
+          variablesTable: [{ name: "source-files", type: "file[]", value: ["*.py"] }],
+        },
+      ],
+    },
   });
 
   // `POST /tests` *adds* rather than replaces: re-running it with the same name fails with
@@ -554,6 +569,34 @@ async function createAssignment(
   });
   log(`assignment created: ${opts.hint}`);
   return created;
+}
+
+/**
+ * An assignment is a *snapshot* of its exercise, not a live view of it: fixing the exercise's
+ * configuration leaves every assignment already made from it on the old copy, and core-api reports
+ * the difference in `exerciseSynchronizationInfo`. This matters here because the environment
+ * config fix above (the one that makes `pre-submit` able to detect a language at all) is exactly
+ * such a change -- without this step it would only ever apply to a database seeded from scratch.
+ *
+ * Verified that syncing preserves the assignment's own settings: the deadlines, points and the
+ * `[seed]` student hint all survive; only the exercise-derived halves (config, environment
+ * configs, limits, files) are replaced.
+ */
+async function ensureAssignmentSynced(adminToken: string, assignmentId: string): Promise<boolean> {
+  const assignment = await api<{
+    exerciseSynchronizationInfo: Record<string, unknown>;
+  }>("GET", `/exercise-assignments/${assignmentId}`, { token: adminToken });
+
+  const stale = Object.entries(assignment.exerciseSynchronizationInfo).filter(
+    ([, value]) =>
+      typeof value === "object" &&
+      value !== null &&
+      (value as { upToDate?: boolean }).upToDate === false,
+  );
+  if (stale.length === 0) return false;
+
+  await api("POST", `/exercise-assignments/${assignmentId}/sync-exercise`, { token: adminToken });
+  return true;
 }
 
 /** Existing assignments in a group whose exerciseId matches -- used to make assignment creation idempotent. */
@@ -843,6 +886,20 @@ async function main() {
       `${existingFillerAssignments}/${FILLER_COUNT} filler assignments already existed, topped up the rest`,
     );
   }
+
+  // Assignments are snapshots of the exercise, so any exercise fix above has to be pushed into the
+  // ones already made from it -- see ensureAssignmentSynced. This runs on *every* seed, not only
+  // the first: `getOrCreateBaseExercise` deliberately rewrites the exercise's configuration each
+  // time (F-025's own reasoning), which by definition leaves every assignment one version behind.
+  let synced = 0;
+  for (const group of [g1, g3]) {
+    for (const assignment of await findAssignmentsForExercise(admin.token, group, exercise.id)) {
+      if (await ensureAssignmentSynced(admin.token, assignment.id)) synced++;
+    }
+  }
+  log(
+    synced > 0 ? `${synced} assignments synced with the exercise` : "assignments already in sync",
+  );
 
   log("done");
   log(

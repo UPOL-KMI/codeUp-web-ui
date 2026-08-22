@@ -451,6 +451,36 @@
     "noSolutions": {
       "title": "Zatím nic neodevzdáno",
       "description": "Jakmile odevzdáte řešení, objeví se zde."
+    },
+    "submitAction": "Odevzdat řešení"
+  },
+  "Submit": {
+    "title": "Odevzdat řešení",
+    "back": "Zpět na zadání",
+    "intro": "{attempts, plural, one {Zbývá # pokus} few {Zbývají # pokusy} many {Zbývá # pokusů} other {Zbývá # pokusů}}. Nejvýše {files} souborů na řešení.",
+    "files": "Soubory",
+    "environment": "Jazyk",
+    "uploadFirst": "Nejprve nahrajte soubor",
+    "detecting": "Zjišťuji…",
+    "choose": "Vyberte jazyk",
+    "note": "Poznámka",
+    "notePlaceholder": "Co jste změnili?",
+    "noteHelp": "Vidíte ji jen vy a vaši vyučující.",
+    "submit": "Odevzdat",
+    "submitting": "Odevzdávám…",
+    "closed": {
+      "title": "Nyní nemůžete odevzdat",
+      "description": "Uplynul termín, vyčerpali jste všechny pokusy, nebo tato skupina už řešení nepřijímá.",
+      "locked": "Odevzdávání je na této instanci dočasně vypnuté."
+    },
+    "errors": {
+      "noFiles": "Nahrajte alespoň jeden soubor.",
+      "noEnvironment": "Vyberte jazyk, ve kterém je řešení napsáno.",
+      "tooManyFiles": "To je více souborů, než toto zadání povoluje.",
+      "tooLarge": "Soubory jsou větší, než toto zadání povoluje.",
+      "preSubmitFailed": "Nahrané soubory se nepodařilo zkontrolovat. Zkuste to znovu.",
+      "submitFailed": "Řešení se nepodařilo odevzdat.",
+      "invalid": "Zkontrolujte formulář a zkuste to znovu."
     }
   }
 }

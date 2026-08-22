@@ -16,10 +16,11 @@ import { EvaluationBadge } from "@/components/status/evaluation-badge";
  * An assignment as the person solving it sees it (S-012, `docs/IA.md` §4.3): what to do, by when,
  * for how many points, and what they have submitted so far.
  *
- * **No submit button yet.** Whether submitting is possible right now is core-api's answer
- * (`/can-submit`, which folds in the deadline, the attempt limit, the group's licence, exam locks
- * and a system-wide submission lock), and it is stated here in words. The action itself is S-014,
- * which owns the upload path; a button that leads nowhere would be worse than the sentence.
+ * Whether submitting is possible right now is core-api's answer (`/can-submit`, which folds in the
+ * deadline, the attempt limit, the group's licence, exam locks and a system-wide submission lock),
+ * stated here in words. The button appears only when that answer is yes -- S-014 added the screen
+ * behind it, and the real `POST .../submit` re-checks the same rule regardless of what this page
+ * believed a moment ago.
  *
  * The attempt count deliberately reports **evaluated** solutions rather than submitted ones,
  * because that is what core-api counts against the limit (`findValidSolutions`) -- a submission
@@ -65,6 +66,16 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
               failed: assignment.submission.failed,
             })}
           </p>
+          {assignment.submission.canSubmit && (
+            <p className="mt-3">
+              <Link
+                href={`/assignments/${assignment.id}/submit`}
+                className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {t("submitAction")}
+              </Link>
+            </p>
+          )}
         </div>
       </section>
 

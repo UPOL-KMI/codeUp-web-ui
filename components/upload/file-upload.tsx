@@ -12,6 +12,14 @@ export interface FileUploadProps {
   onUploadedFilesChange?: (files: UploadedFile[]) => void;
   accept?: string;
   disabled?: boolean;
+  /**
+   * The **consumer's** ceiling, where it is lower than the deployment's -- an assignment sets its
+   * own `solutionSizeLimit` (64 KiB on the seeded one, against a 512 MiB deployment ceiling), and
+   * stating the number that will actually refuse the file is the point of showing a number at all.
+   * Display only: enforcement stays where it already is, in the orchestrator and the Route Handler
+   * for the deployment ceiling, and in core-api for the assignment's own.
+   */
+  maxBytes?: number;
 }
 
 function formatBytes(bytes: number): string {
@@ -44,7 +52,7 @@ function formatBytes(bytes: number): string {
  * replacement for it. `aria-live` on the file list means completions and failures are announced
  * rather than only shown, matching the accessibility bar brief §9 sets.
  */
-export function FileUpload({ onUploadedFilesChange, accept, disabled }: FileUploadProps) {
+export function FileUpload({ onUploadedFilesChange, accept, disabled, maxBytes }: FileUploadProps) {
   const t = useTranslations("Upload");
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +86,9 @@ export function FileUpload({ onUploadedFilesChange, accept, disabled }: FileUplo
           {t("dropzone")}
         </label>
         <p className="text-sm text-muted-foreground">
-          {t("maxSize", { size: formatBytes(MAX_UPLOAD_BYTES) })}
+          {t("maxSize", {
+            size: formatBytes(Math.min(maxBytes ?? MAX_UPLOAD_BYTES, MAX_UPLOAD_BYTES)),
+          })}
         </p>
         <input
           id={inputId}
