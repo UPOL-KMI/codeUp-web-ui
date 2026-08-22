@@ -1630,20 +1630,86 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     Second-deadline entries render in a distinct tone but are **not visually verified**: no seeded
     assignment sets `allowSecondDeadline`, so that branch has never had real data behind it.
 
+- **[2026-08-22 20:40] S-004 + S-011:** Group list and archive.
+  `app/[locale]/(app)/{groups,archive}/page.tsx`, `components/groups/group-table.tsx`,
+  `getGroupList()`, `e2e/groups.spec.ts`.
+  - _One table, not "mine" plus "discover"._ core-api already decides what a reader can see -- for
+    a student their own groups plus the ancestors above them, for an administrator the instance --
+    so two lists would have shown the same row twice. A membership column answers the same question
+    without the duplication.
+  - _The first real `DataTable` use immediately found a bug in D-003:_ its own chrome (pagination,
+    the select-all label, the empty text) was hardcoded English. Nothing caught it while the only
+    caller was the design-system showcase; a Czech reader would have seen it here. Now a `Table`
+    namespace read through `useTranslations`, which works because `NextIntlClientProvider` wraps
+    the app.
+  - _Ancestry as a path above each name_ rather than a tree widget, resolved from the same response
+    -- core-api returns the ancestors it walked through, so the map is already complete, and an
+    ancestor the reader genuinely cannot see is absent rather than shown as an id.
+  - _Client-side sort/filter/page over one response_, with the point at which that stops being
+    right (an instance with thousands of groups, where core-api offers `search` but **no** paging
+    on this endpoint -- checked) recorded as Q-015 rather than pre-solved.
+  - _No unarchive action_ on the archive: it is a mutation, and it belongs with the rest of group
+    administration in S-009 rather than being the one write on a read-only screen.
+  - _Observations:_ the "organizational" badge has no data behind it -- no seeded group is
+    organizational, including the instance root, which is merely public. Folded into F-029 with the
+    other two unreachable states rather than left as an untested claim.
+
+- **[2026-08-22 21:00] S-005 + S-010:** Group detail, Info tab, and the hierarchy.
+  `app/[locale]/(app)/groups/[groupId]/page.tsx`, `components/groups/{group-info,group-tabs}.tsx`,
+  `lib/api/group-detail.ts`.
+  - _Member names come from `POST /v1/users/list`, not `GET /v1/groups/{id}/members`._ That
+    endpoint returns ready-made user objects and is the obvious choice, but core-api marks it
+    `@deprecated` ("Members are listed in group view") **and** it omits observers -- the endpoint
+    being retired is also the one that answers less. One batched lookup over the id arrays already
+    in the group view covers all three roles.
+  - _Tabs are links to `?tab=`_, per IA §4.2's "no page reload... Server Component re-render with
+    different search params". A tab appears only when `permissionHints` allows it _and_ the screen
+    exists, so nothing advertises S-008/S-009 before they are built. An unknown `?tab=` falls back
+    to Info rather than 404ing -- it is a view of a resource that does exist.
+  - _The hierarchy needed no tree widget (S-010)._ Ancestors are the page subtitle and a parent
+    link, children a subgroup list; both directions are ordinary links, which are keyboard- and
+    screen-reader-navigable for free, where a custom tree is not. Ancestor names are fetched per
+    group rather than read off the group list, because an ancestor can be a group the reader is not
+    a member of -- and `fetchGroup` is memoized, so one shown twice costs one call.
+
+- **[2026-08-22 21:20] S-006 + S-007:** The group's assignments and students tabs.
+  `components/groups/{assignment-table,assignment-filter,student-table}.tsx`,
+  `getGroupAssignments()`, `getGroupStudents()`.
+  - _The filter is server-side and in the URL._ Each option is a real address, needs no
+    JavaScript, and the back button steps through the reader's choices; no row they filtered out is
+    shipped to the browser.
+  - _The personal columns are conditional on being a student here_, not on a role: a supervisor has
+    no solution of their own, and "0/10, not submitted" against their name would be a claim about
+    someone nobody asked to submit. Same `stats === null` signal the dashboard uses.
+  - _`DateTime` could not come along._ It is a Server Component and a `DataTable` cell renders in
+    the browser, so D-012's formatting options moved into a shared module both sides import. Same
+    options, same formatter, same pinned zone -- which is what keeps "one date format" true across
+    that boundary instead of a second set of literals drifting quietly.
+  - _The roster sorts by name, not by points._ A roster that opens ranked is a leaderboard, which
+    is a different thing to hand a teacher by default -- and ReCodEx itself treats "students see
+    each other's progress" as a per-course decision. The per-student x per-assignment matrix is
+    T-006's screen; `students/stats` already returns every cell of it, so that ticket needs no new
+    endpoint.
+  - _Observations:_ verified against the container for a student and for the superadmin, including
+    that a student of this group sees the Students tab at all -- `permissionHints.viewStudents` is
+    true because the group has `publicStats` set, which is core-api's decision to make, not this
+    app's. **92 e2e tests pass** (78 before).
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3) -- S-001, S-002 and S-003 done, so the dashboard is
-  complete. Foundation (F-001 through F-027) and Design System (D-001 through D-016) complete.
-- **Next ticket:** S-004 (group list) -- the first screen after the dashboard, and the first real
-  use of `DataTable` outside the design-system showcase.
+- **Phase:** Student Experience (Phase 3). Done: the whole dashboard (S-001, S-002, S-003), the
+  group list and archive (S-004, S-011), and the group screen with its Info, Assignments and
+  Students tabs (S-005, S-006, S-007, S-010). Foundation and Design System complete.
+- **Next ticket:** S-012 (assignment detail, student view) -- the destination every deadline row on
+  the dashboard and in the group already links to, and still a route skeleton.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 (no assignment search endpoint), Q-012 (a null assignment
   status conflates "not submitted" with "every submission failed"), Q-013 (no endpoint for a
-  teacher activity feed), Q-014 (S-003's inventory row was the iCal token manager, now reassigned
-  to S-022) — all proceeding without operator input, reasoning recorded. Q-005 resolved. Q-007
-  (SMTP — operator will test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+  teacher activity feed), Q-014 (S-003's inventory row was the iCal token manager, reassigned to
+  S-022), Q-015 (the group list fetches everything and filters in the browser) — all proceeding
+  without operator input, reasoning recorded. Q-005 resolved. Q-007 (SMTP — operator will test
+  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
 - **Known environment limitations (not code bugs):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031), so every seeded submission reads as "Not submitted"
-  (Q-012). No seeded assignment has a second deadline, so the calendar's second-deadline tone and
-  `DeadlineBadge`'s "second chance" state have never been seen with real data. Both want
-  re-verifying on a cgroup v1 host with richer seed data.
+  (Q-012). Three UI states have no seed data behind them at all — a membership-less user, a second
+  deadline, an organizational group — collected as **F-029**.
