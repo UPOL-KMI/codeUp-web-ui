@@ -42,8 +42,9 @@ type ManifestEntry = StaticManifestEntry | DynamicManifestEntry;
  * sidebar links to groups and the command palette links to groups, exercises and users, and their
  * response shapes are now confirmed against a live instance rather than guessed. Their pages are
  * still route skeletons; the breadcrumb is real. `/assignments/:assignmentId` joined them in
- * S-001, for the same reason: the dashboard links every open assignment. `/solutions/:id` stays
- * unregistered until a ticket builds it.
+ * S-001, for the same reason: the dashboard links every open assignment, and
+ * `/solutions/:solutionId` joined in S-002, whose review queues link every solution waiting on a
+ * teacher.
  */
 const MANIFEST: ManifestEntry[] = [
   { namespace: "Dashboard", pattern: "/dashboard" },
@@ -64,6 +65,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "Faq", pattern: "/faq" },
   { namespace: "Assignments", pattern: "/assignments", unlinked: true },
+  { namespace: "Solutions", pattern: "/solutions", unlinked: true },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
   // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their
@@ -94,6 +96,20 @@ const MANIFEST: ManifestEntry[] = [
         { pathParams: { id: params.assignmentId! } },
       );
       return localizedName(assignment.localizedTexts, locale);
+    },
+  },
+  {
+    // A solution has no name of its own. The attempt number is what distinguishes it from the
+    // author's other attempts at the same assignment, and is what the legacy UI labels it by.
+    pattern: "/solutions/:solutionId",
+    resolve: async (params, locale) => {
+      const [solution, t] = await Promise.all([
+        apiGet<{ attemptIndex?: number }>("/v1/assignment-solutions/{id}", {
+          pathParams: { id: params.solutionId! },
+        }),
+        getTranslations({ locale, namespace: "Solutions" }),
+      ]);
+      return t("crumb", { attempt: solution.attemptIndex ?? 1 });
     },
   },
   {

@@ -6,39 +6,49 @@ import type { UpcomingAssignment } from "@/lib/api/dashboard";
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
-import { EmptyState } from "@/components/state/empty-state";
 import { AssignmentProgressBadge } from "@/components/status/assignment-progress-badge";
 import { Badge } from "@/components/status/badge";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
 
 /**
- * "What do I owe?" (`docs/IA.md` §4.1) -- every assignment still open for submission, across every
- * group, nearest deadline first.
+ * Assignments still open for submission, nearest deadline first -- "What do I owe?" for a student
+ * (S-001) and "What's coming up?" for a teacher planning around the same dates (S-002), which is
+ * the same table minus the two columns about the viewer's own solution (`docs/IA.md` §4.1).
  *
  * Cross-group and urgency-ordered is the deliberate departure from the legacy dashboard, which
- * renders one collapsible box per group and leaves the student to scan for the nearest deadline
+ * renders one collapsible box per group and leaves the reader to scan for the nearest deadline
  * themselves. Nothing is lost: the group is a column here, and the per-group view is the group's
  * own Assignments tab (S-006).
  *
- * Truncated rather than paginated. This is a landing pad, not a list view -- a student with four
+ * Truncated rather than paginated. This is a landing pad, not a list view -- a teacher with four
  * groups can otherwise open the app to sixty rows -- and pagination controls would make the first
  * screen of the app a table widget. The footer states how many rows were held back so the count
  * is never silently wrong.
  *
  * Not a `DataTable`: sorting this by anything other than urgency defeats the point of the panel,
  * and the filter/pagination/URL-state machinery would all be inert here.
+ *
+ * The empty state is the caller's, not this component's -- "nothing is due" and "no deadlines in
+ * the groups you teach" are different sentences, and passing the whole node beats plumbing two
+ * strings through.
  */
 const VISIBLE_ROWS = 10;
 
-export async function UpcomingDeadlines({ assignments }: { assignments: UpcomingAssignment[] }) {
+export async function UpcomingDeadlines({
+  assignments,
+  empty,
+}: {
+  assignments: UpcomingAssignment[];
+  empty: React.ReactNode;
+}) {
   const t = await getTranslations("Dashboard.upcoming");
 
-  if (assignments.length === 0) {
-    return <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />;
-  }
+  if (assignments.length === 0) return empty;
 
   const visible = assignments.slice(0, VISIBLE_ROWS);
   const hidden = assignments.length - visible.length;
+  const showProgress = visible.some((assignment) => assignment.stats !== undefined);
+  const columnCount = showProgress ? 5 : 3;
 
   return (
     <div className="overflow-x-auto rounded-md border border-border">
@@ -48,8 +58,12 @@ export async function UpcomingDeadlines({ assignments }: { assignments: Upcoming
             <th className="px-3 py-2 text-left font-medium">{t("columns.assignment")}</th>
             <th className="px-3 py-2 text-left font-medium">{t("columns.group")}</th>
             <th className="px-3 py-2 text-left font-medium">{t("columns.deadline")}</th>
-            <th className="px-3 py-2 text-right font-medium">{t("columns.points")}</th>
-            <th className="px-3 py-2 text-left font-medium">{t("columns.status")}</th>
+            {showProgress && (
+              <>
+                <th className="px-3 py-2 text-right font-medium">{t("columns.points")}</th>
+                <th className="px-3 py-2 text-left font-medium">{t("columns.status")}</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -92,26 +106,33 @@ export async function UpcomingDeadlines({ assignments }: { assignments: Upcoming
                   />
                 </div>
               </td>
-              <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
-                {formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
-              </td>
-              <td className="px-3 py-2">
-                <AssignmentProgressBadge
-                  stats={{
-                    status: assignment.stats.status,
-                    gained: assignment.stats.gained,
-                    total: assignment.stats.total,
-                    accepted: assignment.stats.accepted,
-                  }}
-                />
-              </td>
+              {showProgress && assignment.stats && (
+                <>
+                  <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
+                    {formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
+                  </td>
+                  <td className="px-3 py-2">
+                    <AssignmentProgressBadge
+                      stats={{
+                        status: assignment.stats.status,
+                        gained: assignment.stats.gained,
+                        total: assignment.stats.total,
+                        accepted: assignment.stats.accepted,
+                      }}
+                    />
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
         {hidden > 0 && (
           <tfoot>
             <tr>
-              <td colSpan={5} className="px-3 py-2 text-center text-xs text-muted-foreground">
+              <td
+                colSpan={columnCount}
+                className="px-3 py-2 text-center text-xs text-muted-foreground"
+              >
                 {t("more", { count: hidden })}
               </td>
             </tr>

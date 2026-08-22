@@ -77,11 +77,22 @@
     },
     "teaching": {
       "heading": "My teaching",
-      "comingSoon": "The overview of groups you teach hasn't been built yet."
+      "upcomingHeading": "Coming up in your groups",
+      "emptyTitle": "No upcoming deadlines",
+      "emptyDescription": "Nothing in the groups you teach is open for submission right now."
     },
     "noGroups": {
       "title": "No group memberships",
       "description": "You are not a member of any group yet. Follow the instructions from your school about how to join one."
+    },
+    "reviews": {
+      "pendingHeading": "Reviews you have open",
+      "requestedHeading": "Reviews students have asked for",
+      "columns": {
+        "student": "Student",
+        "opened": "Open since",
+        "submitted": "Submitted"
+      }
     }
   },
   "Groups": {
@@ -89,6 +100,10 @@
   },
   "Assignments": {
     "title": "Assignments"
+  },
+  "Solutions": {
+    "title": "Solutions",
+    "crumb": "Solution #{attempt}"
   },
   "Exercises": {
     "title": "Exercises"

@@ -5,6 +5,7 @@ import { getMyGroups } from "@/lib/api/groups";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 
 import { StudentSection } from "@/components/dashboard/student-section";
+import { TeacherSection } from "@/components/dashboard/teacher-section";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
@@ -15,8 +16,9 @@ import { TableSkeleton } from "@/components/state/skeleton";
  *
  * Which sections appear is decided by **per-group membership**, not by the global role -- the same
  * rule the sidebar follows (D-014), and the reason a supervisor-student sees both halves rather
- * than having to pick a mode. S-001 builds the student half; the teacher half (S-002) and the
- * calendar (S-003) fill the remaining slots.
+ * than having to pick a mode. Each half fetches its own data behind its own boundary, so one of
+ * them failing or being slow does not take the other down with it. The calendar (S-003) fills the
+ * remaining slot.
  */
 export default async function DashboardPage() {
   const locale = await getLocale();
@@ -44,7 +46,11 @@ export default async function DashboardPage() {
             <h2 id="dashboard-teaching" className="mb-3 text-lg font-semibold tracking-tight">
               {t("teaching.heading")}
             </h2>
-            <p className="text-muted-foreground">{t("teaching.comingSoon")}</p>
+            <ErrorBoundary>
+              <Suspense fallback={<TableSkeleton />}>
+                <TeacherSection />
+              </Suspense>
+            </ErrorBoundary>
           </section>
         )}
 

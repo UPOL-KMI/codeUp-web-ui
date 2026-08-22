@@ -2,6 +2,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getStudentDashboard } from "@/lib/api/dashboard";
 
+import { EmptyState } from "@/components/state/empty-state";
+
 import { GroupProgressCards } from "./group-progress";
 import { UpcomingDeadlines } from "./upcoming-deadlines";
 
@@ -28,7 +30,15 @@ export async function StudentSection() {
         <h2 id="dashboard-upcoming" className="mb-3 text-lg font-semibold tracking-tight">
           {t("upcoming.heading")}
         </h2>
-        <UpcomingDeadlines assignments={dashboard.upcoming} />
+        <UpcomingDeadlines
+          assignments={dashboard.upcoming}
+          empty={
+            <EmptyState
+              title={t("upcoming.emptyTitle")}
+              description={t("upcoming.emptyDescription")}
+            />
+          }
+        />
       </section>
 
       {dashboard.progress.length > 0 && (

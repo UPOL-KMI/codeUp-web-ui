@@ -1514,17 +1514,71 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     pass** (64 before). The "no group memberships" empty state is the one branch no seeded persona
     can reach -- filed as F-029 rather than left as an untested claim.
 
+- **[2026-08-22 16:30] S-002:** Dashboard, teacher section. `components/dashboard/{teacher-section,
+review-queue}.tsx`, `getTeacherDashboard()` in `lib/api/dashboard.ts`, `/solutions/[solutionId]`
+  route skeleton + breadcrumb resolver, review fixtures in `scripts/seed.ts`, `Dashboard.reviews`/
+  `Dashboard.teaching` strings in both locales, four more tests in `e2e/dashboard.spec.ts`.
+  - _The two queues are cheap and the third panel is the expensive one._
+    `/v1/users/{id}/pending-reviews` and `/v1/users/{id}/review-requests` each answer
+    `{solutions, assignments}` -- the assignments come _with_ the solutions, so neither needs a
+    fan-out. Only the author names do: a solution carries `authorId` and nothing else about the
+    person, so both queues' authors are resolved together in one batched
+    `POST /v1/users/list`, the same endpoint the legacy dashboard uses for exactly this. The
+    deadline panel is the one that fans out, one call per taught group, for the same reason S-001's
+    does.
+  - _The panels had no data, so the seed script grew two fixtures._ A review request and an open
+    review are states no amount of submitting produces: one is a flag the _student_ sets
+    (`set-flag/reviewRequest`, authorised by `canSetFlagAsStudent`), the other is a review a
+    _teacher_ opened and did not close (`POST .../review` with `close: false`, which sets
+    `reviewStartedAt` and leaves `reviewedAt` null -- exactly what `findPendingReviewsOfTeacher`
+    looks for). Both are idempotent by reading the solution's current state first; both are now
+    documented in `SEED_ACCOUNTS.md`. Building the UI first and discovering it renders nothing was
+    the alternative.
+  - _A 403 is treated as an empty queue, not an error._ Core-api grants `listPendingReviews` from
+    the `supervisor-student` role upwards, and group membership is a separate axis from the global
+    role -- so a group admin whose global role is `student` reaches this code and is refused. Same
+    choice D-015's search route made: attempt it and let core-api decide, rather than
+    reimplementing its rule here and drifting from it.
+  - _"Sorted by waiting time" needed a timestamp core-api does not record._ There is no
+    "requested at" field; a review request is a boolean flag on the solution. The queue sorts by
+    the solution's `createdAt`, which is the honest lower bound on how long the student has been
+    waiting, and the column says "Submitted" rather than pretending otherwise. Open reviews sort by
+    `review.startedAt`, which is real.
+  - _The third thing IA §4.1 asks for is not built, and that is a considered answer, not an
+    omission._ "Recent activity -- new submissions, comments" has no endpoint behind it: core-api
+    exposes solutions per assignment or per student-in-a-group, never "everything recent across the
+    groups I teach". Assembling it would mean one request per assignment across every taught group
+    -- 27 for the seeded superadmin, unbounded for a real teacher -- on the landing page, to
+    discard most of the result. Recorded as Q-013; the legacy dashboard has no such feed either, so
+    parity is intact.
+  - _No inline "close review" button_, which the legacy list does have. Closing a review says "I
+    have read this and I am done"; a control that does it from a summary row, without the reader
+    having opened the solution, is a worse affordance than the navigation it saves. The capability
+    moves to S-018's review screen rather than being dropped (DEC-059).
+  - _One component now serves both halves' deadline tables._ S-001's `UpcomingDeadlines` grew an
+    optional `stats` and an `empty` slot instead of being copied: a teacher planning around a
+    deadline has no solution of their own, so the points and status columns simply are not there,
+    and each caller passes its own empty state because "nothing is due" and "nothing in the groups
+    you teach" are different sentences.
+  - _Observations:_ verified in the rebuilt container against real core-api data. The superadmin
+    sees both queues (Alice Student, in Intro to Programming), the ten nearest of 27 open
+    assignments across four taught groups, and an honest "17 more open assignments are not shown".
+    **73 e2e tests pass** (70 before). The smoke suite's dashboard screenshots now catch the
+    streaming skeleton rather than the content, because the teacher half is behind its own
+    `Suspense` boundary -- that is the boundary working, not a regression.
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3) -- S-001 done. Foundation (F-001 through F-027) and
-  Design System (D-001 through D-016) complete. See `docs/BACKLOG.md`.
-- **Next ticket:** S-002 (dashboard, teacher section) -- it fills the slot S-001 left, and its
-  group data layer is correct as of DEC-058.
+- **Phase:** Student Experience (Phase 3) -- S-001 and S-002 done. Foundation (F-001 through F-027)
+  and Design System (D-001 through D-016) complete. See `docs/BACKLOG.md`.
+- **Next ticket:** S-003 (dashboard, calendar view) -- the last of the three dashboard sections,
+  and the ticket that owns turning IA §4.1's `?tab=` deep-link into real behaviour (DEC-057).
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 (no assignment search endpoint — proceeding without it),
-  Q-012 (a null assignment status conflates "not submitted" with "every submission failed" —
-  proceeding with the understating label). Q-005 resolved. Q-007 (SMTP — operator will test
-  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+- **Operator inputs pending:** Q-011 (no assignment search endpoint), Q-012 (a null assignment
+  status conflates "not submitted" with "every submission failed"), Q-013 (no endpoint for a
+  teacher activity feed) — all three proceeding without operator input, reasoning recorded.
+  Q-005 resolved. Q-007 (SMTP — operator will test end-to-end later, proceed on `mail.debugMode`
+  assumption per ASS-008)
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that
   visually depends on evaluation state. S-001 is the first ticket where it shows in the UI: every

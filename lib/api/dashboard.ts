@@ -2,7 +2,9 @@ import "server-only";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
-import { apiGet } from "./client";
+import { requireSession } from "@/lib/auth/require-session";
+
+import { ApiError, apiGet, apiPost } from "./client";
 import { getMyGroups, getMyGroupStats, type GroupAssignmentStats } from "./groups";
 
 /**
@@ -27,7 +29,9 @@ export interface UpcomingAssignment {
   /** The deadline this row is sorted and filtered by: the second one where it still applies. */
   effectiveDeadline: number;
   isBonus: boolean;
-  stats: Pick<GroupAssignmentStats, "status" | "accepted"> & {
+  /** The viewer's own standing on this assignment. Absent when they are not a student in the
+   *  group -- a teacher planning around the same deadline has no solution of their own. */
+  stats?: Pick<GroupAssignmentStats, "status" | "accepted"> & {
     gained: number | null;
     bonus: number | null;
     total: number;
@@ -75,24 +79,58 @@ function effectiveDeadlineOf(assignment: AssignmentPayload): number {
     : assignment.firstDeadline;
 }
 
+/** One group's assignments, as both dashboard halves need them. */
+async function fetchGroupAssignments(groupId: string): Promise<AssignmentPayload[]> {
+  return apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", {
+    pathParams: { id: groupId },
+  });
+}
+
+/**
+ * Filtering by "now" on the server is safe where rendering it would not be (AGENTS.md §6.6): this
+ * decides which rows exist, once, and the client renders exactly that list -- nothing is
+ * recomputed during hydration, and nothing here is cached to go stale.
+ */
+function openAssignmentsOf(
+  assignments: AssignmentPayload[],
+  group: { id: string; name: string },
+  locale: string,
+  now: number,
+): UpcomingAssignment[] {
+  const open: UpcomingAssignment[] = [];
+  for (const assignment of assignments) {
+    const effectiveDeadline = effectiveDeadlineOf(assignment);
+    if (effectiveDeadline <= now) continue;
+
+    open.push({
+      id: assignment.id,
+      name: localizedName(assignment.localizedTexts, locale),
+      groupId: group.id,
+      groupName: group.name,
+      firstDeadline: assignment.firstDeadline,
+      secondDeadline: assignment.secondDeadline > 0 ? assignment.secondDeadline : null,
+      allowSecondDeadline: assignment.allowSecondDeadline,
+      effectiveDeadline,
+      isBonus: assignment.isBonus,
+    });
+  }
+  return open;
+}
+
+const byUrgency =
+  (locale: string) =>
+  (a: UpcomingAssignment, b: UpcomingAssignment): number =>
+    a.effectiveDeadline - b.effectiveDeadline || a.name.localeCompare(b.name, locale);
+
 export async function getStudentDashboard(locale: string): Promise<StudentDashboard> {
   const { member } = await getMyGroups(locale);
   if (member.length === 0) return { upcoming: [], progress: [] };
 
   const [statsByGroup, assignmentsPerGroup] = await Promise.all([
     getMyGroupStats(),
-    Promise.all(
-      member.map((group) =>
-        apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", {
-          pathParams: { id: group.id },
-        }),
-      ),
-    ),
+    Promise.all(member.map((group) => fetchGroupAssignments(group.id))),
   ]);
 
-  // Filtering by "now" on the server is safe where rendering it would not be (AGENTS.md §6.6):
-  // this decides which rows exist, once, and the client renders exactly that list -- nothing is
-  // recomputed during hydration, and nothing here is cached to go stale.
   const now = Date.now() / 1000;
   const upcoming: UpcomingAssignment[] = [];
   const progress: GroupProgress[] = [];
@@ -103,22 +141,14 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
     const statsByAssignment = new Map(
       (groupStats?.assignments ?? []).map((stats) => [stats.id, stats]),
     );
+    const maxPointsById = new Map(
+      assignments.map((assignment) => [assignment.id, assignment.maxPointsBeforeFirstDeadline]),
+    );
 
-    for (const assignment of assignments) {
-      const stats = statsByAssignment.get(assignment.id);
-      const effectiveDeadline = effectiveDeadlineOf(assignment);
-      if (effectiveDeadline <= now) continue;
-
+    for (const open of openAssignmentsOf(assignments, group, locale, now)) {
+      const stats = statsByAssignment.get(open.id);
       upcoming.push({
-        id: assignment.id,
-        name: localizedName(assignment.localizedTexts, locale),
-        groupId: group.id,
-        groupName: group.name,
-        firstDeadline: assignment.firstDeadline,
-        secondDeadline: assignment.secondDeadline > 0 ? assignment.secondDeadline : null,
-        allowSecondDeadline: assignment.allowSecondDeadline,
-        effectiveDeadline,
-        isBonus: assignment.isBonus,
+        ...open,
         stats: {
           status: stats?.status ?? null,
           accepted: stats?.accepted ?? null,
@@ -127,7 +157,7 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
           // The stats row is the authority on an assignment's maximum where it exists, but a
           // student can see an assignment that no stats row covers (a group joined moments ago),
           // and a missing maximum would render every such row as "0 points available".
-          total: stats?.points.total ?? assignment.maxPointsBeforeFirstDeadline,
+          total: stats?.points.total ?? maxPointsById.get(open.id) ?? 0,
         },
       });
     }
@@ -152,4 +182,137 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
   );
 
   return { upcoming, progress };
+}
+
+/**
+ * The teacher half of the dashboard (S-002). Three panels, three questions `docs/IA.md` §4.1
+ * asks: what needs my attention (reviews I have opened and not finished), what are students
+ * waiting on me for (reviews they have asked for), and what is coming up (deadlines in the groups
+ * I teach, for planning).
+ *
+ * The two review queues are one request each and carry their own assignments with them, so no
+ * fan-out: core-api's `pending-reviews`/`review-requests` both answer
+ * `{solutions, assignments}`. Only the author names need a second call -- solutions carry an
+ * `authorId` and nothing else about the person -- and that is one batched `POST /v1/users/list`
+ * for both queues together, the same endpoint the legacy dashboard uses for exactly this.
+ */
+export interface ReviewQueueItem {
+  solutionId: string;
+  authorId: string;
+  authorName: string;
+  assignmentId: string;
+  assignmentName: string;
+  groupId: string | null;
+  groupName: string | null;
+  /**
+   * What the queue is sorted by, oldest first. For an open review it is when the teacher opened
+   * it; for a review request it is when the student submitted the solution -- core-api records no
+   * separate "requested at" timestamp, and the submission time is the honest lower bound on how
+   * long they have been waiting.
+   */
+  since: number;
+}
+
+export interface TeacherDashboard {
+  pendingReviews: ReviewQueueItem[];
+  reviewRequests: ReviewQueueItem[];
+  upcoming: UpcomingAssignment[];
+}
+
+interface SolutionPayload {
+  id: string;
+  authorId: string;
+  assignmentId: string;
+  createdAt: number;
+  review: { startedAt: number; closedAt: number | null } | null;
+}
+
+interface ReviewQueuePayload {
+  solutions: SolutionPayload[];
+  assignments: AssignmentPayload[];
+}
+
+/**
+ * Core-api grants `listPendingReviews`/`listReviewRequests` from the `supervisor-student` role
+ * upwards, and group membership is a separate axis from the global role -- so a group admin whose
+ * global role is `student` reaches this code and is refused. Treating a 403 as an empty queue is
+ * the same choice D-015's search route made: attempt it and let core-api decide, rather than
+ * reimplementing its rule here and drifting from it.
+ */
+async function fetchReviewQueue(
+  path: "/v1/users/{id}/pending-reviews" | "/v1/users/{id}/review-requests",
+  userId: string,
+): Promise<ReviewQueuePayload> {
+  try {
+    return await apiGet<ReviewQueuePayload>(path, { pathParams: { id: userId } });
+  } catch (error) {
+    if (error instanceof ApiError && error.httpStatus === 403) {
+      return { solutions: [], assignments: [] };
+    }
+    throw error;
+  }
+}
+
+export async function getTeacherDashboard(locale: string): Promise<TeacherDashboard> {
+  const { member, teaching } = await getMyGroups(locale);
+  if (teaching.length === 0) return { pendingReviews: [], reviewRequests: [], upcoming: [] };
+
+  const session = await requireSession();
+  const [pending, requested, assignmentsPerGroup] = await Promise.all([
+    fetchReviewQueue("/v1/users/{id}/pending-reviews", session.userId),
+    fetchReviewQueue("/v1/users/{id}/review-requests", session.userId),
+    Promise.all(teaching.map((group) => fetchGroupAssignments(group.id))),
+  ]);
+
+  // A solution's group comes from its assignment, and the name from the lists already fetched --
+  // a teacher can hold a pending review in a group they also study in, so both lists count.
+  const groupNames = new Map([...member, ...teaching].map((group) => [group.id, group.name]));
+
+  const authorIds = [
+    ...new Set([...pending.solutions, ...requested.solutions].map((s) => s.authorId)),
+  ];
+  const authors =
+    authorIds.length > 0
+      ? await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", { ids: authorIds })
+      : [];
+  const authorNames = new Map(authors.map((author) => [author.id, author.fullName]));
+
+  const toQueue = (
+    payload: ReviewQueuePayload,
+    since: (solution: SolutionPayload) => number,
+  ): ReviewQueueItem[] => {
+    const assignments = new Map(payload.assignments.map((a) => [a.id, a]));
+    return payload.solutions
+      .map((solution) => {
+        const assignment = assignments.get(solution.assignmentId);
+        const groupId = assignment?.groupId ?? null;
+        return {
+          solutionId: solution.id,
+          authorId: solution.authorId,
+          // A name core-api would not disclose is not a reason to drop the row: the review is
+          // still waiting, and the assignment still identifies it.
+          authorName: authorNames.get(solution.authorId) ?? "",
+          assignmentId: solution.assignmentId,
+          assignmentName: localizedName(assignment?.localizedTexts, locale),
+          groupId,
+          groupName: groupId ? (groupNames.get(groupId) ?? null) : null,
+          since: since(solution),
+        };
+      })
+      .sort((a, b) => a.since - b.since);
+  };
+
+  const now = Date.now() / 1000;
+  const upcoming = teaching
+    .flatMap((group, index) => openAssignmentsOf(assignmentsPerGroup[index]!, group, locale, now))
+    .sort(byUrgency(locale));
+
+  return {
+    pendingReviews: toQueue(
+      pending,
+      (solution) => solution.review?.startedAt ?? solution.createdAt,
+    ),
+    reviewRequests: toQueue(requested, (solution) => solution.createdAt),
+    upcoming,
+  };
 }

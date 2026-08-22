@@ -88,6 +88,56 @@ test("shows only the sections the viewer's memberships call for", async ({ page 
   await expect(main.getByRole("heading", { name: "Upcoming deadlines" })).toHaveCount(0);
 });
 
+test.describe("as a teacher", () => {
+  test.beforeEach(async ({ page }) => {
+    // The superadmin administers every seeded group, which is where the seeded open review and
+    // review request live (`scripts/seed.ts`).
+    await signIn(page, SUPERADMIN);
+  });
+
+  test("queues the reviews waiting on the teacher, oldest first", async ({ page }) => {
+    for (const heading of ["Reviews you have open", "Reviews students have asked for"]) {
+      const queue = page.getByRole("region", { name: heading });
+      await expect(queue).toBeVisible();
+
+      const rows = queue.locator("tbody tr");
+      await expect(rows.first().getByRole("link", { name: "Alice Student" })).toBeVisible();
+
+      const waiting = await queue
+        .locator("tbody tr td:nth-child(4) time:first-child")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => Date.parse(node.getAttribute("datetime") ?? "")),
+        );
+      expect(waiting.length).toBeGreaterThan(0);
+      expect(waiting).toEqual([...waiting].sort((a, b) => a - b));
+    }
+  });
+
+  test("opens the solution behind a review row", async ({ page }) => {
+    await page
+      .getByRole("main")
+      .locator("tbody tr")
+      .first()
+      .getByRole("link", { name: "Alice Student" })
+      .click();
+
+    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/);
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(breadcrumb.getByText("Solutions")).toBeVisible();
+    await expect(breadcrumb.getByRole("link", { name: "Solutions" })).toHaveCount(0);
+  });
+
+  test("lists the deadlines coming up in the groups they teach", async ({ page }) => {
+    const main = page.getByRole("main");
+    await expect(main.getByRole("heading", { name: "Coming up in your groups" })).toBeVisible();
+
+    // A teacher has no solution of their own here, so the two columns about one are absent.
+    const table = main.getByRole("table").last();
+    await expect(table.getByRole("columnheader", { name: "Deadline" })).toBeVisible();
+    await expect(table.getByRole("columnheader", { name: "Status" })).toHaveCount(0);
+  });
+});
+
 test("shows both halves to someone who studies in one group and teaches another", async ({
   page,
 }) => {

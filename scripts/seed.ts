@@ -555,6 +555,75 @@ async function submitSolution(
   log(`submitted: ${note}`);
 }
 
+interface SolutionRecord {
+  id: string;
+  note: string;
+  reviewRequest: boolean;
+  review: { startedAt: number; closedAt: number | null; issues: number } | null;
+}
+
+async function findSolutionByNote(
+  token: string,
+  assignmentId: string,
+  studentId: string,
+  note: string,
+): Promise<SolutionRecord | null> {
+  const solutions = await api<SolutionRecord[]>(
+    "GET",
+    `/exercise-assignments/${assignmentId}/users/${studentId}/solutions`,
+    { token },
+  );
+  return solutions.find((s) => s.note === note) ?? null;
+}
+
+/**
+ * A student asking their teacher to look at a solution -- the row the teacher dashboard's
+ * "review requests" panel (S-002) is built to show. Set by the student themselves, which is who
+ * core-api authorises for this flag (`canSetFlagAsStudent`).
+ */
+async function ensureReviewRequested(
+  studentToken: string,
+  studentId: string,
+  assignmentId: string,
+  note: string,
+) {
+  const solution = await findSolutionByNote(studentToken, assignmentId, studentId, note);
+  if (!solution) throw new Error(`no solution noted '${note}' to request a review for`);
+  if (solution.reviewRequest) {
+    log(`review already requested, skipping (${note})`);
+    return;
+  }
+  await api("POST", `/assignment-solutions/${solution.id}/set-flag/reviewRequest`, {
+    token: studentToken,
+    body: { value: true },
+  });
+  log(`review requested: ${note}`);
+}
+
+/**
+ * A review a teacher has opened and not closed -- the row the teacher dashboard's "pending
+ * reviews" panel (S-002) is built to show. `close: false` sets `reviewStartedAt` and leaves
+ * `reviewedAt` null, which is exactly what `findPendingReviewsOfTeacher` looks for.
+ */
+async function ensureReviewOpened(
+  teacherToken: string,
+  studentId: string,
+  assignmentId: string,
+  note: string,
+) {
+  const solution = await findSolutionByNote(teacherToken, assignmentId, studentId, note);
+  if (!solution) throw new Error(`no solution noted '${note}' to open a review on`);
+  if (solution.review && solution.review.closedAt === null) {
+    log(`review already open, skipping (${note})`);
+    return;
+  }
+  await api("POST", `/assignment-solutions/${solution.id}/review`, {
+    token: teacherToken,
+    body: { close: false },
+  });
+  log(`review opened: ${note}`);
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -642,6 +711,22 @@ async function main() {
     primaryAssignment.id,
     `${SEED_PREFIX} wrong`,
     `print("Nope")\n`,
+  );
+
+  // Teacher-facing fixtures (S-002): one solution whose author has asked for a review, and one
+  // whose review a teacher has opened and not finished. Neither state can be produced by
+  // submitting alone, and without them the teacher dashboard has nothing to render.
+  await ensureReviewRequested(
+    student1.token,
+    student1.userId,
+    primaryAssignment.id,
+    `${SEED_PREFIX} correct`,
+  );
+  await ensureReviewOpened(
+    admin.token,
+    student1.userId,
+    primaryAssignment.id,
+    `${SEED_PREFIX} wrong`,
   );
 
   if (!existingG1Assignments[1]) {

@@ -77,11 +77,22 @@
     },
     "teaching": {
       "heading": "Moje výuka",
-      "comingSoon": "Přehled skupin, které vyučujete, zatím nebyl vytvořen."
+      "upcomingHeading": "Nadcházející termíny ve vašich skupinách",
+      "emptyTitle": "Žádné blížící se termíny",
+      "emptyDescription": "Ve skupinách, které vyučujete, není nyní nic otevřeno k odevzdání."
     },
     "noGroups": {
       "title": "Žádné členství ve skupině",
       "description": "Zatím nejste členem žádné skupiny. Postupujte podle pokynů své školy, jak se do skupiny přihlásit."
+    },
+    "reviews": {
+      "pendingHeading": "Rozpracované revize",
+      "requestedHeading": "Studenti čekají na revizi",
+      "columns": {
+        "student": "Student",
+        "opened": "Otevřeno",
+        "submitted": "Odevzdáno"
+      }
     }
   },
   "Groups": {
@@ -89,6 +100,10 @@
   },
   "Assignments": {
     "title": "Zadání"
+  },
+  "Solutions": {
+    "title": "Řešení",
+    "crumb": "Řešení č. {attempt}"
   },
   "Exercises": {
     "title": "Úlohy"

@@ -85,3 +85,23 @@ If it turns out to matter, `/v1/assignment-solvers?groupId=&userId=` returns per
 attempt counts (`lastAttemptIndex`, `evaluationsCount`) and would separate the two cases at the
 cost of one more request per group. Not done now: it buys a distinction that only exists on a
 broken worker, and the assignment's own screen (S-012) has the real solution list anyway.
+
+## Q-013: No "recent activity" feed for a teacher (S-002)
+
+`docs/IA.md` §4.1 lists three things the teacher half of the dashboard should answer, and the
+third is "Recent activity -- new submissions, comments". Two of the three are single endpoints
+(`/v1/users/{id}/pending-reviews`, `/v1/users/{id}/review-requests`) and are built. The third has
+no endpoint behind it: core-api exposes solutions per assignment or per student-in-a-group, never
+"everything recent across the groups I teach", and comments are reachable only per solution
+thread. Verified against the generated OpenAPI paths and core-api's own router.
+
+Building it from what exists would mean one request per assignment across every taught group --
+27 requests for the seeded superadmin alone, and unbounded for a real teacher -- on the landing
+page, to produce a list most of whose rows would be discarded. **Not built.** The legacy dashboard
+has no such feed either (it shows per-group assignment tables), so this is not a parity gap.
+
+The two review queues already answer "what needs my attention", which is the part of the same
+section with real urgency behind it. If an activity feed is wanted later, it needs either a
+core-api endpoint (out of scope by brief §3.1) or a deliberate, bounded approximation -- e.g. the
+most recent solutions of one selected group -- which belongs to that group's own screen (S-006),
+not to the dashboard.

@@ -67,6 +67,22 @@ solution (required before an exercise can be assigned to any group at all).
 | alice.student | Intro to Programming's primary assignment | `[seed] correct`       | Prints the exact expected greeting            |
 | alice.student | same                                      | `[seed] wrong`         | Prints something else, deliberately incorrect |
 
+## Review states (S-002 fixtures)
+
+| Solution                           | State                           | Set by              | Why                                                             |
+| ---------------------------------- | ------------------------------- | ------------------- | --------------------------------------------------------------- |
+| `alice.student` / `[seed] correct` | `reviewRequest` flag set        | the student herself | Feeds the teacher dashboard's "reviews students have asked for" |
+| `alice.student` / `[seed] wrong`   | review **opened and left open** | `admin@admin.com`   | Feeds the teacher dashboard's "reviews you have open"           |
+
+Neither state can be produced by submitting alone, and without them the teacher half of the
+dashboard has nothing to render. Both are idempotent: the script reads the solution's current
+`reviewRequest` / `review` fields and does nothing if it is already in the wanted state. A review
+counts as _pending_ precisely when `review.startedAt` is set and `review.closedAt` is `null`, so
+closing it while testing (S-018) removes the row -- re-run `pnpm seed` to get it back, which
+re-opens the closed review.
+
+---
+
 **These do not currently reach genuine pass/fail on this dev machine.** This Mac's Docker
 Desktop runs cgroup v2 only; the vendored `isolate` 1.8.1 sandbox requires cgroup v1 (see
 the compose repo's `README.md`, "Before going to production, read this: `worker` needs cgroup v1" — a
