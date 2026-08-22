@@ -61,3 +61,27 @@ project by brief §3.1, (b) client-side search over the assignments of the group
 which is bounded and probably acceptable for a student but not for an admin with hundreds of
 groups, or (c) leave as is. Recorded here so a future session does not rediscover the gap and
 assume it was an oversight.
+
+## Q-012: A student's assignment status cannot distinguish "not submitted" from "every submission failed" (S-001)
+
+`GET /v1/users/{id}/groups`' `stats` array reports, per assignment, the status of the student's
+**best** solution -- and core-api builds that from _valid_ solutions only
+(`AssignmentSolutions::findBestUserSolutionsForAssignments` → `findValidSolutionsForAssignments`).
+A student whose every attempt hit an infrastructure failure therefore has no best solution, no
+status (`null`), and no points, which is indistinguishable in this payload from a student who has
+never opened the assignment.
+
+This is visible right now on the seeded data: `alice.student` has four submitted solutions across
+two assignments, every one of them an `evaluation_failure` (`Isolate init error`, the cgroup v2
+limitation in `SEED_ACCOUNTS.md` / DEC-031), and the dashboard shows both assignments as **Not
+submitted**. The legacy dashboard shows the same thing for the same reason -- it reads the same
+field -- so this is not a regression, and on a cgroup v1 host it stops being visible at all.
+
+**Proceeding with "not submitted"** as the label for a `null` status: the alternative is to claim
+a failure the row cannot see, which would be wrong for the far more common case of a student who
+genuinely has not started.
+
+If it turns out to matter, `/v1/assignment-solvers?groupId=&userId=` returns per-assignment
+attempt counts (`lastAttemptIndex`, `evaluationsCount`) and would separate the two cases at the
+cost of one more request per group. Not done now: it buys a distinction that only exists on a
+broken worker, and the assignment's own screen (S-012) has the real solution list anyway.

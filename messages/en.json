@@ -50,10 +50,45 @@
     "title": "FAQ"
   },
   "Dashboard": {
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "upcoming": {
+      "heading": "Upcoming deadlines",
+      "emptyTitle": "Nothing is due",
+      "emptyDescription": "None of your assignments are open for submission right now.",
+      "bonus": "Bonus",
+      "more": "{count, plural, one {# more open assignment is not shown.} other {# more open assignments are not shown.}}",
+      "columns": {
+        "assignment": "Assignment",
+        "group": "Group",
+        "deadline": "Deadline",
+        "points": "Points",
+        "status": "Status"
+      }
+    },
+    "progress": {
+      "heading": "My progress",
+      "points": "points",
+      "barLabel": "Points earned in {group}",
+      "solved": "{solved} of {total} {total, plural, one {assignment} other {assignments}} solved",
+      "limit": "threshold {limit} points",
+      "limitMet": "Threshold met",
+      "limitNotMet": "Below threshold",
+      "nothingAssigned": "No assignments yet."
+    },
+    "teaching": {
+      "heading": "My teaching",
+      "comingSoon": "The overview of groups you teach hasn't been built yet."
+    },
+    "noGroups": {
+      "title": "No group memberships",
+      "description": "You are not a member of any group yet. Follow the instructions from your school about how to join one."
+    }
   },
   "Groups": {
     "title": "Groups"
+  },
+  "Assignments": {
+    "title": "Assignments"
   },
   "Exercises": {
     "title": "Exercises"
@@ -182,6 +217,10 @@
       "not-scored": {
         "label": "Evaluated",
         "description": "This assignment awards no points."
+      },
+      "not-submitted": {
+        "label": "Not submitted",
+        "description": "You have no evaluated solution for this assignment yet."
       }
     },
     "deadline": {

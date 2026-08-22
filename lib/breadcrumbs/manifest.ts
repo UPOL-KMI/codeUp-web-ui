@@ -13,11 +13,17 @@ interface StaticManifestEntry {
   namespace: string;
   /** Full pathname this segment renders at, locale-stripped (e.g. "/forgot-password/change"). */
   pattern: string;
+  /** Set where the segment names a section that has no page of its own -- `/assignments` exists
+   *  only as the parent of `/assignments/:id` (`docs/IA.md` §2). Its crumb renders as plain text;
+   *  linking it would send the user to a route that does not exist and, worse, have Next prefetch
+   *  a 404 from every page that shows the crumb. */
+  unlinked?: boolean;
   resolve?: never;
 }
 
 interface DynamicManifestEntry {
   namespace?: never;
+  unlinked?: never;
   /** Path pattern with `:param` segments, e.g. "/groups/:groupId". */
   pattern: string;
   /** Resolves this segment's own label from its matched params -- e.g. fetch a group's name. */
@@ -35,8 +41,9 @@ type ManifestEntry = StaticManifestEntry | DynamicManifestEntry;
  * ("add a `DynamicManifestEntry` here in whichever ticket builds that route for real"): the
  * sidebar links to groups and the command palette links to groups, exercises and users, and their
  * response shapes are now confirmed against a live instance rather than guessed. Their pages are
- * still route skeletons; the breadcrumb is real. The remaining IA §3.2 examples
- * (`/assignments/:id`, `/solutions/:id`) stay unregistered until a ticket builds them.
+ * still route skeletons; the breadcrumb is real. `/assignments/:assignmentId` joined them in
+ * S-001, for the same reason: the dashboard links every open assignment. `/solutions/:id` stays
+ * unregistered until a ticket builds it.
  */
 const MANIFEST: ManifestEntry[] = [
   { namespace: "Dashboard", pattern: "/dashboard" },
@@ -56,6 +63,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "Faq", pattern: "/faq" },
+  { namespace: "Assignments", pattern: "/assignments", unlinked: true },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
   // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their
@@ -76,6 +84,16 @@ const MANIFEST: ManifestEntry[] = [
         pathParams: { id: params.exerciseId! },
       });
       return localizedName(exercise.localizedTexts, locale);
+    },
+  },
+  {
+    pattern: "/assignments/:assignmentId",
+    resolve: async (params, locale) => {
+      const assignment = await apiGet<{ localizedTexts?: LocalizedText[] }>(
+        "/v1/exercise-assignments/{id}",
+        { pathParams: { id: params.assignmentId! } },
+      );
+      return localizedName(assignment.localizedTexts, locale);
     },
   },
   {
@@ -149,7 +167,8 @@ export async function resolveBreadcrumbs(
     }
     const params = matchPattern(entry.pattern, prefix)!;
     const label = await resolveLabel(entry, params, locale);
-    items.push({ label, href: i === prefixes.length - 1 ? undefined : prefix });
+    const isCurrentPage = i === prefixes.length - 1;
+    items.push({ label, href: isCurrentPage || entry.unlinked ? undefined : prefix });
   }
 
   return items;

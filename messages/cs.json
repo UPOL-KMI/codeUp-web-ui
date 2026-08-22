@@ -50,10 +50,45 @@
     "title": "FAQ"
   },
   "Dashboard": {
-    "title": "Přehled"
+    "title": "Přehled",
+    "upcoming": {
+      "heading": "Blížící se termíny",
+      "emptyTitle": "Nic vás netlačí",
+      "emptyDescription": "Žádná z vašich úloh není momentálně otevřená k odevzdání.",
+      "bonus": "Bonus",
+      "more": "{count, plural, one {Nezobrazuje se # další otevřená úloha.} few {Nezobrazují se # další otevřené úlohy.} many {Nezobrazuje se # dalších otevřených úloh.} other {Nezobrazuje se # dalších otevřených úloh.}}",
+      "columns": {
+        "assignment": "Zadání",
+        "group": "Skupina",
+        "deadline": "Termín odevzdání",
+        "points": "Body",
+        "status": "Stav"
+      }
+    },
+    "progress": {
+      "heading": "Můj postup",
+      "points": "bodů",
+      "barLabel": "Získané body ve skupině {group}",
+      "solved": "{solved} z {total} {total, plural, one {úlohy} other {úloh}} vyřešeno",
+      "limit": "hranice {limit} bodů",
+      "limitMet": "Hranice splněna",
+      "limitNotMet": "Pod hranicí",
+      "nothingAssigned": "Zatím žádné úlohy."
+    },
+    "teaching": {
+      "heading": "Moje výuka",
+      "comingSoon": "Přehled skupin, které vyučujete, zatím nebyl vytvořen."
+    },
+    "noGroups": {
+      "title": "Žádné členství ve skupině",
+      "description": "Zatím nejste členem žádné skupiny. Postupujte podle pokynů své školy, jak se do skupiny přihlásit."
+    }
   },
   "Groups": {
     "title": "Skupiny"
+  },
+  "Assignments": {
+    "title": "Zadání"
   },
   "Exercises": {
     "title": "Úlohy"
@@ -182,6 +217,10 @@
       "not-scored": {
         "label": "Vyhodnoceno",
         "description": "Za tuto úlohu se neudělují body."
+      },
+      "not-submitted": {
+        "label": "Neodevzdáno",
+        "description": "K této úloze zatím nemáte žádné vyhodnocené řešení."
       }
     },
     "deadline": {

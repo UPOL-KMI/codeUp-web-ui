@@ -2,7 +2,8 @@ import { Link } from "@/i18n/navigation";
 
 export interface BreadcrumbItem {
   label: string;
-  /** Omitted on the last crumb (the current page) -- rendered as plain text, not a link. */
+  /** Omitted on the last crumb (the current page), and on any segment that names a section with
+   *  no page of its own -- both render as plain text rather than as a link. */
   href?: string;
 }
 
@@ -56,10 +57,14 @@ export function PageShell({
                   >
                     {crumb.label}
                   </Link>
-                ) : (
+                ) : index === breadcrumbs.length - 1 ? (
                   <span aria-current="page" className="font-medium text-foreground">
                     {crumb.label}
                   </span>
+                ) : (
+                  // A section with no page of its own. Plain text, and deliberately *not*
+                  // `aria-current="page"` -- that attribute names the one crumb the user is on.
+                  <span>{crumb.label}</span>
                 )}
               </li>
             ))}

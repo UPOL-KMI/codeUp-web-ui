@@ -1454,19 +1454,78 @@ deadline-badge}.tsx`, `lib/status/evaluation.ts` + `lib/status/evaluation.test.t
     waiting on. Filed as F-028 rather than bumped mid-PR; the plugins need verifying first, since
     their lack of support was the reason for the pin.
 
+- **[2026-08-22 15:45] S-001:** Dashboard, student section. `app/[locale]/(app)/dashboard/page.tsx`,
+  `components/dashboard/{student-section,upcoming-deadlines,group-progress}.tsx`,
+  `lib/api/dashboard.ts`, `lib/status/assignment-progress.ts` + unit tests,
+  `components/status/assignment-progress-badge.tsx`, `Dashboard` strings in both locales,
+  `e2e/dashboard.spec.ts`. **Phase 3 (Student Experience) is open.**
+  - _The data was already being fetched._ `GET /v1/users/{id}/groups` returns a third key next to
+    `student`/`supervisor`: a `stats` array with, per group, the caller's points, threshold and a
+    per-assignment row (status, points, best solution). The app shell already calls this endpoint
+    every render for the sidebar, so the entire "how am I doing" half of the dashboard costs zero
+    additional requests -- `lib/api/groups.ts` now memoizes the _raw fetch_ rather than the
+    locale-dependent projection of it, which is what lets two unrelated callers share one call.
+    Only the deadlines needed more: one `/v1/groups/{id}/assignments` per group, because core-api
+    has no assignment collection endpoint at all (the same gap Q-011 records for search).
+  - _`/v1/users/{id}/groups` does not report group administrators_ -- and this is the finding that
+    mattered most, because it was breaking already-shipped code. Its `supervisor` key is
+    `User::getGroupsAsSupervisor()`, one membership type; a user who _administers_ a group appears
+    in neither list. D-014's "My Teaching" sidebar section had therefore **never rendered on this
+    instance** -- not for `sasha.mentor` (admin of Large Lecture, and the brief's own "one person,
+    two audiences" persona), not for the superadmin (admin of all four seeded groups). An absent
+    optional section looks exactly like a correct one, which is why nothing caught it. Fixed by
+    unioning in every group from `/v1/groups` whose `privateData.admins` contains the caller, the
+    same derivation the legacy app makes (DEC-058). I found this only because my own teacher slot
+    was untestable: no persona could reach it.
+  - _A `null` assignment status is ambiguous and I chose the understating reading._ core-api builds
+    the best solution from _valid_ solutions only, so a student whose every submission failed
+    infrastructurally has no status -- indistinguishable from one who never started. Visible right
+    now: `alice.student` has four submitted solutions, all `Isolate init error` (DEC-031's cgroup
+    v2 limitation), and the dashboard says "Not submitted" for both assignments. The legacy
+    dashboard reads the same field and says the same thing. Recorded as Q-012 with the endpoint
+    that would separate the two cases if it ever matters.
+  - _Deadline filtering happens on the server, deadline **rendering** does not._ Which assignments
+    are still open is decided once, server-side, and the client renders exactly that list -- no
+    recomputation during hydration, and nothing here is cached to go stale. The badge that says
+    whether a deadline has passed stays client-only (D-011's `DeadlineBadge`), because that one is
+    a live comparison against _now_. `secondDeadline` arrives as `0` rather than `null` when unset
+    (confirmed live), which without a guard produces a 1970 date and silently reports every such
+    assignment as long closed.
+  - _Two things the stats row cannot say_, both documented at the point of use rather than
+    smoothed over: a compilation failure is indistinguishable from a wrong answer (`initFailed`
+    lives on the evaluation, which stats omit), and the maximum shown is the before-first-deadline
+    one even after that deadline passes. Both belong to the assignment's own screen (S-012/S-015),
+    which has the real evaluation.
+  - _Truncated at ten rows rather than paginated._ This is a landing pad; a student in four groups
+    would otherwise open the app to sixty rows, and pagination controls would make the first screen
+    of the product a table widget. `DataTable` is deliberately not used here for the same reason --
+    sorting this by anything other than urgency defeats the panel.
+  - _Two small fixes to shipped code, both found by needing them:_ `AppShell` had no `<main>`
+    landmark at all (the page sat in a bare `<div>`, so nothing let a screen-reader user skip the
+    sidebar, and a page heading was indistinguishable from the identically-named sidebar section);
+    and `PageShell` marked _every_ unlinked crumb `aria-current="page"`, which became wrong the
+    moment a breadcrumb chain contained a section with no page of its own. `/assignments` is the
+    first such section -- IA §2 gives `/assignments/[id]` no index page -- so the manifest grew an
+    `unlinked` flag rather than each page inventing its own answer (footgun #12).
+  - _Observations:_ verified against the container with real core-api data, in both locales, in
+    dark mode and at phone width. The student sees two open assignments ordered by deadline with
+    their group, points and status; `sasha.mentor` sees the student half plus a teaching section
+    that now exists; the superadmin sees the teaching half and no student half. **70 e2e tests
+    pass** (64 before). The "no group memberships" empty state is the one branch no seeded persona
+    can reach -- filed as F-029 rather than left as an untested claim.
+
 ### Current Status
 
-- **Phase:** Design System (Phase 2) -- D-001 through D-014 and D-016 done; only D-015 (command
-  palette) remains. Foundation (F-001
-  through
-  F-026) complete. See `docs/BACKLOG.md`'s Design System table.
-- **Next ticket:** S-001 onwards (Student flows) -- the first tickets that build real screens
-  rather than the primitives they sit on. See `docs/BACKLOG.md`'s Student table.
+- **Phase:** Student Experience (Phase 3) -- S-001 done. Foundation (F-001 through F-027) and
+  Design System (D-001 through D-016) complete. See `docs/BACKLOG.md`.
+- **Next ticket:** S-002 (dashboard, teacher section) -- it fills the slot S-001 left, and its
+  group data layer is correct as of DEC-058.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 (no assignment search endpoint — proceeding without it, see
-  QUESTIONS.md). Q-005 resolved. Q-007 (SMTP — operator will test
+- **Operator inputs pending:** Q-011 (no assignment search endpoint — proceeding without it),
+  Q-012 (a null assignment status conflates "not submitted" with "every submission failed" —
+  proceeding with the understating label). Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, see DEC-031) — keep this in mind for any future ticket that
-  visually depends on evaluation state (e.g. dashboards, status badges) until re-verified on a
-  cgroup v1 host.
+  visually depends on evaluation state. S-001 is the first ticket where it shows in the UI: every
+  seeded submission reads as "Not submitted" (Q-012). Re-verify on a cgroup v1 host.

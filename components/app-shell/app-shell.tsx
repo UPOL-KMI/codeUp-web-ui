@@ -94,7 +94,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           session, and a palette that only exists on some screens is worse than none. */}
       <CommandPalette />
       <SidebarNav sections={sections} />
-      <div className="min-w-0 flex-1">{children}</div>
+      {/* The page's landmark, so assistive technology can jump past the sidebar -- and so a
+          heading in the page cannot be confused with the identically-named sidebar section. */}
+      <main className="min-w-0 flex-1">{children}</main>
     </div>
   );
 }
