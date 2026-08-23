@@ -1787,20 +1787,145 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     landing on the screen it was always going to land on; re-verify on a cgroup v1 host before
     trusting the rest.
 
+- **[2026-08-23 01:30] S-017:** The solution's source code, at `/solutions/:id/sources` --
+  `app/[locale]/(app)/solutions/[solutionId]/sources/page.tsx`,
+  `components/solutions/source-file.tsx`, `lib/api/solution-files.ts`,
+  `app/api/solutions/[solutionId]/download/route.ts`.
+  - _Its own route, not `docs/IA.md` §4.4's second column (DEC-062)._ §2 already gives sources an
+    address; the evaluation answers "what happened" and the sources answer "what did I write, and
+    what did my teacher say about it". They are read at different moments, each is long, and only
+    one of them is worth sending someone a link to a specific line of.
+  - _D-009's viewer had to be taken apart to make S-018 possible (DEC-063)._ It rendered Shiki's
+    HTML string through `dangerouslySetInnerHTML`, and there is no way to put a comment thread
+    between two lines of a string. It emits `codeToTokens` output now -- the same colouring as
+    plain data, which crosses the RSC boundary without a grammar, a theme or a highlighter
+    following it, and which React escapes token by token. **The annotated variant is a `<div>`,
+    not a `<pre>`**: `<pre>`'s content model is phrasing content, so the comment form inside one
+    is markup the parser is free to relocate -- a hydration mismatch, not a warning.
+  - _A bug that only exists once a page has two files: every line claimed `#L1`._ D-009 gave each
+    line `id="L{n}"`, which is right for one file per page and silently wrong for eight. Anchors
+    are prefixed per file now (`main-c-L12`), derived from the file's name rather than its index
+    so a link keeps pointing at the same file when another one is added.
+  - _ZIP entries are files, not archives._ core-api attaches `zipEntries` to an archive rather
+    than its contents, and the legacy app expands them into first-class rows
+    (`archive.zip#src/main.c`) -- which matters beyond display, because that string is the key a
+    review comment stores in its `file` field. Same expansion, same names, same dropped directory
+    records here. The legacy display ceiling came along too: at most 32 files totalling under
+    1 MiB, and past that the page offers the archive instead of tokenising a hundred files nobody
+    asked to read.
+  - _The archive download is a Route Handler, for D-005's reason inverted._ The response is a ZIP,
+    and `lib/api/client.ts` exists to unwrap a JSON envelope -- it would reject the bytes. The
+    handler reads the token from the cookie, streams `response.body` straight through without
+    buffering it, and the link the page renders points at this app, never at core-api with a
+    token attached.
+  - _The ZIP path had no fixture, so the seed grew one (F-029's pattern again)._ Nothing on this
+    instance had ever been submitted as an archive, which meant the expansion above would have
+    shipped unverified. `scripts/seed.ts` now submits a real `solution.zip` (`main.py` +
+    `greeting.py`) -- built by a small stored-entry ZIP writer rather than by shelling out to
+    `zip(1)`, which this script may not have. Verified live afterwards: both entries render as
+    their own files, with their own anchors (`solution-zip-main-py-L2`), and the file navigation
+    appears because there is finally more than one file. It also confirmed the anchor bug above
+    was real and is fixed.
+  - _One Playwright lesson worth keeping:_ `locator.evaluateAll()` does **not** auto-wait, and
+    `page.goto()` resolves while the route's `loading.tsx` skeleton is still on screen -- so a
+    helper that collected links that way read zero of them from a page full of them. It passed
+    against `next dev` and failed against the production build, which streams differently. The
+    spec waits for a real heading before reading.
+  - **_What this still could not verify:_** `tooLarge` (a file past core-api's preview limit) and
+    `malformedCharacters` (a non-UTF-8 file). Both notices are wired to core-api's own flags on
+    the content response; neither has rendered with data.
+  - _Observations:_ **105 e2e tests pass** (96 before), twice in a row against a production build,
+    including the archive fixture and the two-context review round trip.
+
+- **[2026-08-23 02:20] S-018:** Reviewing a solution, in the code, line by line.
+  `components/solutions/{reviewable-code,review-comment,review-controls,review-summary}.tsx`,
+  `lib/actions/solution-review.ts`, `lib/api/solution-review.ts`.
+  - **_The rule worth building the whole ticket around: a review is invisible to its author until
+    it is closed_** (DEC-064). core-api's `canViewReview` is true for the author from the moment a
+    review exists -- the legacy app shows them nothing until `closedAt` is set. That is a product
+    rule, not an oversight: closing is what counts the issues and emails the author, and a
+    half-written review is not a verdict. This is the one place in this app that deliberately
+    shows _less_ than the API would allow, which is why it is written down twice. **Verified with
+    two browser contexts in one test**: the supervisor writes a comment, the student reloads and
+    sees nothing, the supervisor closes the review, the student reloads and sees it -- asserting
+    it from the reviewer's own session would have proved nothing.
+  - _Comments can only be added to a review that has been opened_, as in the legacy app. core-api
+    will happily open one implicitly on the first comment; requiring the deliberate act keeps
+    "start a review" from being a side effect of typing, and it is what makes the open/closed
+    state mean anything to the student.
+  - _A per-line button, and the legacy double-click as well._ The legacy viewer's only way to
+    start a comment is double-clicking a line -- a gesture no keyboard can perform, on the screen
+    where a teacher does most of their work. The gutter button is what makes it reachable; the
+    double-click is kept because it is what the people migrating already do.
+  - _Who may edit which comment is two questions._ `permissionHints.addReviewComment` says whether
+    this reader may write at all; the legacy `restrictCommentAuthor` rule says a supervisor edits
+    only their own comments while a group's primary admin edits any. The second needs the group's
+    `primaryAdminsIds`, which `getSolutionDetail()` already had the group response to read. Both
+    are offers, not authorisation -- core-api re-checks every write.
+  - _No `revalidatePath` anywhere in the actions._ Every read goes through the API client, which
+    is `cache: "no-store"` unconditionally (DEC-021), so there is no cached entry to invalidate;
+    the client refreshes the router and the Server Component fetches the review again. Worth
+    stating because the reflex in a Next codebase is to add it, and here it would be cargo.
+  - **_What this could not verify:_** closing or editing a closed review sends the author an email,
+    and this deployment has no outbound SMTP (Q-007/ASS-008). The `suppressNotification` checkbox
+    is wired to core-api's own flag and only offered while the review is closed -- the only state
+    in which it does anything -- but no message was ever observed leaving.
+
+- **[2026-08-23 03:00] S-016:** Live evaluation progress -- and DEF-004 closed, with "both"
+  (DEC-065). `components/solutions/evaluation-progress.tsx`.
+  - _The monitor's channel id is disclosed once, and never again._ It comes back in the response to
+    the submit that created the job; no endpoint returns it later. That single fact decides the
+    design: a WebSocket cannot be the mechanism for a solution page opened at any other moment,
+    which is most of them. So the page **refreshes itself** on a five-second timer -- `router.refresh()`,
+    which re-runs the server render, so the result is rendered once, on the server, by the code
+    that already renders it, rather than by a second client-side copy of the test table that could
+    disagree with it. Stopped when the tab is hidden and after five minutes.
+  - _The socket is layered on top where the id exists._ `submitSolution()` now returns it and the
+    submit form carries it to `/solutions/:id?monitor=...&tasks=...`; the island connects
+    **directly to the monitor**, bypassing the BFF exactly as the legacy app does (it is
+    unauthenticated by design and its messages carry only task states, no solution data).
+  - _Protocol confirmed against a live job, not from documentation:_ the client sends the channel
+    id as the first message, then receives `{"command":"DOWNLOADED"}`, `{"command":"STARTED"}`, one
+    `{"command":"TASK", "task_state":"COMPLETED"}` per task, and finally `FAILED` or `FINISHED`.
+    The monitor **replays** a channel's messages for five minutes, so connecting a moment late
+    loses nothing -- which is what makes this work at all, given the page load sits between the
+    submit and the connection.
+  - _The socket's address comes from this deployment's config, not from the response that named
+    the channel._ core-api returns `monitorUrl: ws://recodex.local/ws`; inside the container that
+    is the same value `MONITOR_WS_URL` holds (both are built from `APP_DOMAIN`), and on a bare-host
+    dev machine it is not -- the browser reaches this stack on `localhost`, and `recodex.local`
+    resolves nowhere. Either way the island uses the env value passed in from the server: a socket
+    destination that arrives in a response body, let alone in the page's own query string, is one
+    this app did not choose.
+  - _Verified live, in pieces, because the whole cannot be:_ the socket against a real job's
+    channel (3 of 6 tasks counted, the bar red because the job genuinely failed), and the
+    self-refresh by watching a server-rendered timestamp change twice in twelve seconds. **What
+    could not be reproduced end to end is the state itself**: on this host every evaluation fails
+    in well under a second (DEC-031), so the pending window the island is built for is never open
+    long enough to photograph -- and stopping the worker produces an immediate broker failure
+    ("Worker ... dieded") rather than a queued job. Re-verify on a host with a working sandbox.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
-  S-010, S-011), the assignment screen (S-012), submitting (S-014) and the solution screen (S-015).
-  Foundation and Design System complete; F-029 closed the seed's fixture gaps.
-- **Next ticket:** S-017 (solution source viewer) -- it hangs off S-015's page as IA §4.4's right
-  column and D-009's viewer already exists. S-016 (live evaluation progress) is the other half of
-  the same screen, and S-013 (assignment detail, teacher view) is still open.
+  S-010, S-011), the assignment screen (S-012), submitting (S-014), the solution screen (S-015),
+  its source viewer (S-017), the review written on top of it (S-018) and live evaluation progress
+  (S-016). Foundation and Design System complete.
+- **Next ticket:** S-013 (assignment detail, teacher view) -- the last piece of the assignment
+  screen, and the entry point every teacher-side ticket (T-003 solutions list, T-004 stats) hangs
+  off. S-008/S-009 (the group's Exams and Settings tabs) and S-019..S-025 remain in Phase 3.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-015 — all proceeding without operator input,
   reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
-  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008)
+  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008); S-018's review
+  notifications are the newest thing that assumption now covers.
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
   solution screen's test table, compilation output and limit badges have **never been rendered with
-  real data**, and the dashboard reports every seeded submission as "Not submitted" (Q-012).
-  Everything else is verified live. Re-verify these on a cgroup v1 host.
+  real data**, and the dashboard reports every seeded submission as "Not submitted" (Q-012). S-016
+  adds one more to that list — every evaluation here fails in under a second, so the pending state
+  its progress display exists for cannot be held open long enough to see. Everything else is
+  verified live. Re-verify these on a cgroup v1 host.
+- **Unverified for want of a fixture (S-017):** no seeded solution is over core-api's preview limit
+  or non-UTF-8, so the truncation and malformed-file notices have never rendered with data. The ZIP
+  case _was_ closed the same way F-029 closed its three: the seed now submits a real archive.
