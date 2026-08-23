@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 
-import { highlightCode } from "@/lib/code/highlight";
+import { highlightToLines } from "@/lib/code/highlight";
 import { languageForFilename, PLAINTEXT } from "@/lib/code/languages";
+
+import { CodeBlock, CodeLine } from "./code-block";
 
 export interface CodeViewerProps {
   code: string;
@@ -12,31 +14,18 @@ export interface CodeViewerProps {
 }
 
 /**
- * Source code display with per-line anchors (D-009), for solution files, exercise attachments and
- * anywhere else a submitted file is read.
+ * Source code display with per-line anchors (D-009), for exercise attachments and anywhere else a
+ * file is read without being reviewed. The solution source viewer (S-017) renders the same lines
+ * through `components/solutions/source-file.tsx`, which adds the review layer.
  *
- * A Server Component that renders already-highlighted HTML: no highlighter, no grammar and no
- * theme JSON reaches the browser (brief §4). That also means the code is present in the initial
- * HTML -- readable before hydration, and findable by the browser's own Ctrl+F.
- *
- * `dangerouslySetInnerHTML` is Shiki's intended interface and is safe here for a specific reason,
- * not by assumption: the input is tokenised text, and every token is emitted as an escaped text
- * node inside a `<span>` -- Shiki never interprets the source as markup, so a solution file
- * containing `<script>` renders as the characters `<script>`. The `<a>` elements this app adds
- * come from its own transformer, not from the file.
- *
- * What this deliberately does *not* do yet: per-line review comments and collapsed unchanged
- * regions, both of which the legacy viewer has (`SourceCodeViewer.js`). Those belong to the
- * solution-review ticket, and the `id`/`data-line` attributes here are exactly the hook it will
- * need -- built now because line anchoring is this ticket, not because that ticket is being
- * started early.
+ * A Server Component: no highlighter, no grammar and no theme JSON reaches the browser (brief §4),
+ * and the code is present in the initial HTML -- readable before hydration, and findable by the
+ * browser's own Ctrl+F.
  */
 export async function CodeViewer({ code, filename, language }: CodeViewerProps) {
   const t = await getTranslations("Code");
   const resolvedLanguage = language ?? languageForFilename(filename);
-  const { html, highlighted } = await highlightCode(code, resolvedLanguage, (line) =>
-    t("lineLabel", { line }),
-  );
+  const { lines, rootStyle, highlighted } = await highlightToLines(code, resolvedLanguage);
 
   return (
     <figure className="flex flex-col overflow-hidden rounded-lg border border-border">
@@ -46,11 +35,16 @@ export async function CodeViewer({ code, filename, language }: CodeViewerProps) 
           {highlighted ? resolvedLanguage : t("notHighlighted")}
         </span>
       </figcaption>
-      <div
-        data-slot="code-block"
-        className="overflow-x-auto text-sm"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      <CodeBlock rootStyle={rootStyle}>
+        {lines.map((tokens, index) => (
+          <CodeLine
+            key={index}
+            tokens={tokens}
+            number={index + 1}
+            label={t("lineLabel", { line: index + 1 })}
+          />
+        ))}
+      </CodeBlock>
     </figure>
   );
 }

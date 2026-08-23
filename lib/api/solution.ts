@@ -60,6 +60,9 @@ export interface SolutionDetail {
   assignmentName: string;
   groupId: string | null;
   groupName: string;
+  /** The group's primary admins -- who may edit anyone's review comment, not just their own
+   *  (S-018, reproducing the legacy `restrictCommentAuthor` rule). */
+  groupPrimaryAdminIds: string[];
   authorId: string;
   environment: string;
   gained: number | null;
@@ -122,9 +125,10 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     { pathParams: { id: solution.assignmentId } },
   );
   const group = assignment.groupId
-    ? await apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
-        pathParams: { id: assignment.groupId },
-      })
+    ? await apiGet<{ localizedTexts?: LocalizedText[]; primaryAdminsIds?: string[] }>(
+        "/v1/groups/{id}",
+        { pathParams: { id: assignment.groupId } },
+      )
     : null;
 
   return {
@@ -136,6 +140,7 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     assignmentName: localizedName(assignment.localizedTexts, locale),
     groupId: assignment.groupId,
     groupName: group ? localizedName(group.localizedTexts, locale) : "",
+    groupPrimaryAdminIds: group?.primaryAdminsIds ?? [],
     authorId: solution.authorId,
     environment: solution.runtimeEnvironmentId,
     gained: solution.actualPoints,

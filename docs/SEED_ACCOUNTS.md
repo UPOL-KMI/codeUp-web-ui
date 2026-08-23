@@ -63,10 +63,11 @@ solution (required before an exercise can be assigned to any group at all).
 
 ## Submissions
 
-| Student       | Assignment                                | Note (idempotency key) | Content                                       |
-| ------------- | ----------------------------------------- | ---------------------- | --------------------------------------------- |
-| alice.student | Intro to Programming's primary assignment | `[seed] correct`       | Prints the exact expected greeting            |
-| alice.student | same                                      | `[seed] wrong`         | Prints something else, deliberately incorrect |
+| Student       | Assignment                                | Note (idempotency key) | Content                                                                                                                                                                                                |
+| ------------- | ----------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| alice.student | Intro to Programming's primary assignment | `[seed] correct`       | Prints the exact expected greeting                                                                                                                                                                     |
+| alice.student | same                                      | `[seed] wrong`         | Prints something else, deliberately incorrect                                                                                                                                                          |
+| alice.student | same                                      | `[seed] zip archive`   | A real ZIP holding `main.py` + `greeting.py` — the only submission that is an **archive**, and the only input that makes core-api report `zipEntries` (S-017 expands them into `solution.zip#main.py`) |
 
 ## Review states (S-002 fixtures)
 

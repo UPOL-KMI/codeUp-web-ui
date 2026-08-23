@@ -10,6 +10,8 @@
  * something this script does or assumes -- see docs/SEED_ACCOUNTS.md for how to reset.
  */
 
+import { crc32 } from "node:zlib";
+
 const API_BASE = process.env.API_BASE_INTERNAL ?? process.env.API_BASE_PUBLIC;
 if (!API_BASE) {
   throw new Error("API_BASE_INTERNAL or API_BASE_PUBLIC must be set (see .env.local).");
@@ -54,10 +56,11 @@ async function apiUpload(
   token: string,
   path: string,
   filename: string,
-  content: string,
+  content: string | Uint8Array<ArrayBuffer>,
+  mimeType = "text/plain",
 ): Promise<{ id: string }> {
   const form = new FormData();
-  form.append("file", new Blob([content], { type: "text/plain" }), filename);
+  form.append("file", new Blob([content], { type: mimeType }), filename);
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
@@ -70,6 +73,61 @@ async function apiUpload(
     );
   }
   return json.payload as { id: string };
+}
+
+/**
+ * A ZIP archive with no compression (method 0), written by hand.
+ *
+ * Node ships no ZIP writer and shelling out to `zip(1)` would make this script depend on a tool
+ * the operator's machine may not have -- portability that a previous review pass already asked
+ * for once. Stored entries need no deflate, so the whole format here is: a local header per file,
+ * a central directory, and the end-of-directory record. core-api accepts it as a real archive
+ * (`isZipArchive()`), which is the whole point: a solution submitted as a single ZIP is stored as
+ * a `SolutionZipFile` and is the only way to produce the `zipEntries` the source viewer (S-017)
+ * expands.
+ */
+function storedZip(entries: [name: string, content: string][]): Uint8Array<ArrayBuffer> {
+  const parts: Buffer[] = [];
+  const central: Buffer[] = [];
+  let offset = 0;
+
+  for (const [name, content] of entries) {
+    const nameBuf = Buffer.from(name, "utf8");
+    const data = Buffer.from(content, "utf8");
+    const crc = crc32(data);
+
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4); // version needed
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26);
+    parts.push(local, nameBuf, data);
+
+    const entry = Buffer.alloc(46);
+    entry.writeUInt32LE(0x02014b50, 0);
+    entry.writeUInt16LE(20, 4); // version made by
+    entry.writeUInt16LE(20, 6); // version needed
+    entry.writeUInt32LE(crc, 16);
+    entry.writeUInt32LE(data.length, 20);
+    entry.writeUInt32LE(data.length, 24);
+    entry.writeUInt16LE(nameBuf.length, 28);
+    entry.writeUInt32LE(offset, 42);
+    central.push(entry, nameBuf);
+
+    offset += local.length + nameBuf.length + data.length;
+  }
+
+  const directory = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(entries.length, 8);
+  end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(directory.length, 12);
+  end.writeUInt32LE(offset, 16);
+
+  return Buffer.concat([...parts, directory, end]);
 }
 
 function log(msg: string) {
@@ -631,7 +689,8 @@ async function submitSolution(
   studentId: string,
   assignmentId: string,
   note: string,
-  code: string,
+  code: string | Uint8Array<ArrayBuffer>,
+  file: { name: string; mimeType: string } = { name: "solution.py", mimeType: "text/plain" },
 ) {
   const existing = await api<{ note: string }[]>(
     "GET",
@@ -643,7 +702,7 @@ async function submitSolution(
     return;
   }
 
-  const upload = await apiUpload(studentToken, "/uploaded-files", "solution.py", code);
+  const upload = await apiUpload(studentToken, "/uploaded-files", file.name, code, file.mimeType);
   await api("POST", `/exercise-assignments/${assignmentId}/submit`, {
     token: studentToken,
     body: { note, files: [upload.id], runtimeEnvironmentId: "python3" },
@@ -822,6 +881,22 @@ async function main() {
     primaryAssignment.id,
     `${SEED_PREFIX} wrong`,
     `print("Nope")\n`,
+  );
+
+  // A solution submitted as a single ZIP archive (S-017). core-api stores exactly this case as a
+  // `SolutionZipFile` and reports its `zipEntries` instead of its contents, which is the one input
+  // that makes the source viewer expand entries into first-class files
+  // (`solution.zip#main.py`) -- and the only way to produce it is to submit a real archive.
+  await submitSolution(
+    student1.token,
+    student1.userId,
+    primaryAssignment.id,
+    `${SEED_PREFIX} zip archive`,
+    storedZip([
+      ["main.py", "from greeting import GREETING\n\nprint(GREETING)\n"],
+      ["greeting.py", `GREETING = "${EXPECTED_OUTPUT.trim()}"\n`],
+    ]),
+    { name: "solution.zip", mimeType: "application/zip" },
   );
 
   // Teacher-facing fixtures (S-002): one solution whose author has asked for a review, and one

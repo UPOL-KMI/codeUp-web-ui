@@ -1,13 +1,13 @@
 import "server-only";
 
-import { createHighlighter, type Highlighter, type ShikiTransformer } from "shiki";
+import { createHighlighter, type BundledLanguage, type Highlighter } from "shiki";
 
 import { PLAINTEXT, SUPPORTED_LANGUAGES } from "./languages";
 
 /**
  * Server-side syntax highlighting (D-009). Brief §4's stack table: "Code display: Shiki, rendered
  * server-side" -- so no highlighter ships to the browser at all, and a solution's source arrives
- * as already-coloured HTML.
+ * already tokenised and coloured.
  *
  * The highlighter is created **once per server process** and reused: `createHighlighter()` loads
  * and compiles every requested TextMate grammar, which is far too expensive to repeat per request.
@@ -44,46 +44,51 @@ export function getHighlighter(): Promise<Highlighter> {
  */
 export const MAX_HIGHLIGHT_BYTES = 512 * 1024;
 
-/**
- * Gives every line a stable `id` (`L1`, `L2`, ...) and a clickable line-number anchor, which is
- * D-009's actual requirement: a review comment or a bug report has to be able to link at a
- * specific line and have that line still be that line when the page reloads.
- *
- * The anchor is a real `<a>` inside the line rather than a CSS counter, because a counter cannot
- * be linked to, focused, or opened in a new tab. It is `user-select: none` in CSS so that copying
- * the code does not carry the numbers along with it (the reason GitHub uses a separate column).
- */
-function lineAnchors(lineLabel: (line: number) => string): ShikiTransformer {
-  return {
-    name: "recodex:line-anchors",
-    line(node, line) {
-      node.properties.id = `L${line}`;
-      node.properties["data-line"] = line;
-      node.children.unshift({
-        type: "element",
-        tagName: "a",
-        properties: {
-          href: `#L${line}`,
-          className: ["code-line-number"],
-          "aria-label": lineLabel(line),
-        },
-        children: [{ type: "text", value: String(line) }],
-      });
-    },
-  };
+export interface CodeToken {
+  content: string;
+  /** `--shiki-light` / `--shiki-dark` custom properties; `app/globals.css` picks one per theme. */
+  style?: Record<string, string>;
 }
 
-export interface HighlightResult {
-  html: string;
+export interface HighlightedCode {
+  /** One entry per source line, each already split into coloured tokens. */
+  lines: CodeToken[][];
+  /** The block's own foreground/background custom properties, for the `<pre>` element. */
+  rootStyle: Record<string, string>;
   /** False when the file was too large to tokenise -- the viewer surfaces this rather than hiding it. */
   highlighted: boolean;
 }
 
-export async function highlightCode(
-  code: string,
-  language: string,
-  lineLabel: (line: number) => string,
-): Promise<HighlightResult> {
+/**
+ * Shiki's `rootStyle` and token styles are CSS declaration *strings*
+ * (`--shiki-light:#24292e;--shiki-dark:#e1e4e8`). React's `style` prop takes an object, and it
+ * does accept custom properties as keys, so the string is parsed once here rather than smuggled
+ * into `dangerouslySetInnerHTML` markup on the way out.
+ */
+function parseStyle(declarations: string | undefined): Record<string, string> {
+  const style: Record<string, string> = {};
+  for (const declaration of (declarations ?? "").split(";")) {
+    const separator = declaration.indexOf(":");
+    if (separator === -1) continue;
+    const property = declaration.slice(0, separator).trim();
+    const value = declaration.slice(separator + 1).trim();
+    if (property) style[property] = value;
+  }
+  return style;
+}
+
+/**
+ * Tokens rather than Shiki's own HTML string, because the two consumers that matter need to put
+ * their own elements *between* the lines: the review viewer interleaves comment threads and a
+ * comment form (S-018), and it does so in a client island where a pre-rendered HTML blob could
+ * only be re-parsed. Tokens are plain serialisable data, so the same highlighting crosses the RSC
+ * boundary without a grammar, a theme or a highlighter following it (brief §4).
+ *
+ * Rendering them is `components/code/code-block.tsx`'s job; nothing here emits markup, which also
+ * means React escapes every token's text as an ordinary text node -- a solution file containing
+ * `<script>` renders as the characters `<script>`.
+ */
+export async function highlightToLines(code: string, language: string): Promise<HighlightedCode> {
   const highlighter = await getHighlighter();
   const loaded = highlighter.getLoadedLanguages();
   // An unmapped or unloaded grammar falls back to plaintext instead of throwing: a viewer that
@@ -91,16 +96,29 @@ export async function highlightCode(
   const resolved = loaded.includes(language) ? language : PLAINTEXT;
   const tooLarge = Buffer.byteLength(code, "utf8") > MAX_HIGHLIGHT_BYTES;
 
-  const html = highlighter.codeToHtml(code, {
-    lang: tooLarge ? PLAINTEXT : resolved,
+  const result = highlighter.codeToTokens(code, {
+    // `lang` is typed against Shiki's *bundled* language union, but this highlighter loads only
+    // the grammars in `SUPPORTED_LANGUAGES` and `resolved` is already checked against
+    // `getLoadedLanguages()` on the line above -- the runtime check the union cannot express.
+    lang: (tooLarge ? PLAINTEXT : resolved) as BundledLanguage,
     themes: { light: "github-light", dark: "github-dark" },
-    // Emits `--shiki-light`/`--shiki-dark` custom properties on every span instead of a hardcoded
+    // Emits `--shiki-light`/`--shiki-dark` custom properties on every token instead of a hardcoded
     // colour, so `app/globals.css` can pick one from next-themes' `.dark` class. `light-dark()`
     // was the alternative, but it keys off the CSS `color-scheme` property rather than that class,
     // so an explicitly-toggled theme would not follow it.
     defaultColor: false,
-    transformers: [lineAnchors(lineLabel)],
   });
 
-  return { html, highlighted: !tooLarge && resolved !== PLAINTEXT };
+  const lines = result.tokens.map((line) =>
+    line.map((token) => ({ content: token.content, style: token.htmlStyle })),
+  );
+  // A file ending in a newline tokenises to a final empty line, which would render as a numbered
+  // line that is not in the file.
+  if (lines.length > 1 && lines[lines.length - 1]!.length === 0) lines.pop();
+
+  return {
+    lines,
+    rootStyle: parseStyle(typeof result.rootStyle === "string" ? result.rootStyle : undefined),
+    highlighted: !tooLarge && resolved !== PLAINTEXT,
+  };
 }

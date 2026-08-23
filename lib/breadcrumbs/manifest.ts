@@ -69,6 +69,7 @@ const MANIFEST: ManifestEntry[] = [
   // A leaf with a static label under a dynamic parent: `matchPattern` handles the `:param`
   // segment, and the label is this page's own namespace title like any other static entry.
   { namespace: "Submit", pattern: "/assignments/:assignmentId/submit" },
+  { namespace: "Sources", pattern: "/solutions/:solutionId/sources" },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
   // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their

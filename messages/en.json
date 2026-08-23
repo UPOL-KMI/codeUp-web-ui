@@ -219,6 +219,7 @@
   "Solution": {
     "title": "Attempt {attempt}",
     "backToAssignment": "Back to the assignment",
+    "sourceCode": "Source code",
     "summary": "Summary",
     "points": "Points",
     "result": "Result",
@@ -269,6 +270,80 @@
         "title": "The solution did not build",
         "explanation": "Compilation or setup failed, so no test was run."
       }
+    }
+  },
+  "Sources": {
+    "title": "Source code",
+    "attempt": "Attempt {attempt}",
+    "download": "Download archive",
+    "backToSolution": "Back to the solution",
+    "entryPoint": "Entry point",
+    "bytes": "{size} B",
+    "fileListLabel": "Files in this solution",
+    "contentUnavailable": "This file's content could not be loaded.",
+    "malformed": "This file is not valid UTF-8. Some characters may not be shown as they were written.",
+    "truncated": "This file is too large to show in full — only its beginning is displayed. The whole file is in the downloadable archive.",
+    "empty": {
+      "title": "No files",
+      "description": "This solution has no submitted files."
+    },
+    "tooMany": {
+      "title": "Too many files to show",
+      "description": "This solution has {count} files, and at most {max} are shown here. Download the archive to read them all."
+    },
+    "reviewOpenNote": "The review is open. Your comments stay hidden from the author until you close it, and closing it sends them an email.",
+    "reviewClosedNote": "The review is closed and the author can read it. Every further change emails them again — to make larger changes, reopen the review first.",
+    "reviewedWithIssues": "Your solution was reviewed. You have {issues, plural, one {# issue} other {# issues}} to fix.",
+    "reviewedNoIssues": "Your solution was reviewed and no issues were reported."
+  },
+  "Review": {
+    "actions": {
+      "start": "Start review",
+      "markReviewed": "Mark as reviewed",
+      "close": "Close review",
+      "reopen": "Reopen review",
+      "erase": "Erase review"
+    },
+    "toast": {
+      "opened": "The review is open.",
+      "closed": "The review is closed and visible to the author.",
+      "reopened": "The review is open again.",
+      "erased": "The review was erased.",
+      "commentDeleted": "The comment was deleted."
+    },
+    "erase": {
+      "title": "Erase this review?",
+      "description": "Every comment in it is erased as well. This cannot be undone."
+    },
+    "comment": {
+      "text": "Comment",
+      "placeholder": "Write a comment on this line…",
+      "textRequired": "A comment cannot be empty.",
+      "issue": "This is an issue to fix",
+      "issueBadge": "Issue",
+      "suppressNotification": "Do not email the author about this change",
+      "add": "Add comment",
+      "addOnLine": "Comment on line {line}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteTitle": "Delete this comment?",
+      "deleteDescription": "The comment is removed from the review for good.",
+      "unknownAuthor": "Unknown author"
+    },
+    "summary": {
+      "heading": "Review summary",
+      "empty": "No comments about the solution as a whole.",
+      "add": "Add a comment about the solution"
+    },
+    "errors": {
+      "invalid": "Please check the comment before sending it.",
+      "addFailed": "The comment could not be saved.",
+      "updateFailed": "The change to the comment could not be saved.",
+      "deleteFailed": "The comment could not be deleted.",
+      "stateFailed": "The state of the review could not be changed.",
+      "deleteReviewFailed": "The review could not be erased."
     }
   },
   "Exercises": {

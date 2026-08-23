@@ -219,6 +219,7 @@
   "Solution": {
     "title": "Pokus {attempt}",
     "backToAssignment": "Zpět na zadání",
+    "sourceCode": "Zdrojový kód",
     "summary": "Přehled",
     "points": "Body",
     "result": "Výsledek",
@@ -269,6 +270,80 @@
         "title": "Řešení se nepodařilo sestavit",
         "explanation": "Selhal překlad nebo příprava, takže neproběhl žádný test."
       }
+    }
+  },
+  "Sources": {
+    "title": "Zdrojový kód",
+    "attempt": "Pokus {attempt}",
+    "download": "Stáhnout archiv",
+    "backToSolution": "Zpět na řešení",
+    "entryPoint": "Vstupní bod",
+    "bytes": "{size} B",
+    "fileListLabel": "Soubory tohoto řešení",
+    "contentUnavailable": "Obsah tohoto souboru se nepodařilo načíst.",
+    "malformed": "Tento soubor není platné UTF-8. Některé znaky nemusí být zobrazeny tak, jak byly zapsány.",
+    "truncated": "Tento soubor je příliš velký na zobrazení celý — vidíte jen jeho začátek. Celý soubor je ve staženém archivu.",
+    "empty": {
+      "title": "Žádné soubory",
+      "description": "K tomuto řešení nebyly odevzdány žádné soubory."
+    },
+    "tooMany": {
+      "title": "Příliš mnoho souborů",
+      "description": "Toto řešení má {count} souborů, zde se jich zobrazuje nejvýše {max}. Chcete-li si přečíst všechny, stáhněte si archiv."
+    },
+    "reviewOpenNote": "Recenze je otevřená. Vaše komentáře autor neuvidí, dokud ji neuzavřete; uzavřením mu odejde e-mail.",
+    "reviewClosedNote": "Recenze je uzavřená a autor si ji může přečíst. Každá další změna mu pošle další e-mail — pro rozsáhlejší úpravy recenzi nejprve znovu otevřete.",
+    "reviewedWithIssues": "Vaše řešení bylo zrecenzováno. Máte {issues, plural, one {# připomínku} few {# připomínky} many {# připomínek} other {# připomínek}} k vyřešení.",
+    "reviewedNoIssues": "Vaše řešení bylo zrecenzováno a nebyly nalezeny žádné připomínky."
+  },
+  "Review": {
+    "actions": {
+      "start": "Zahájit recenzi",
+      "markReviewed": "Označit za zrecenzované",
+      "close": "Uzavřít recenzi",
+      "reopen": "Znovu otevřít recenzi",
+      "erase": "Smazat recenzi"
+    },
+    "toast": {
+      "opened": "Recenze je otevřená.",
+      "closed": "Recenze je uzavřená a autor ji vidí.",
+      "reopened": "Recenze je znovu otevřená.",
+      "erased": "Recenze byla smazána.",
+      "commentDeleted": "Komentář byl smazán."
+    },
+    "erase": {
+      "title": "Smazat celou recenzi?",
+      "description": "Smažou se i všechny její komentáře. Tuto akci nelze vrátit zpět."
+    },
+    "comment": {
+      "text": "Komentář",
+      "placeholder": "Napište komentář k tomuto řádku…",
+      "textRequired": "Komentář nesmí být prázdný.",
+      "issue": "Jde o připomínku k vyřešení",
+      "issueBadge": "Připomínka",
+      "suppressNotification": "Neposílat autorovi e-mail o této změně",
+      "add": "Přidat komentář",
+      "addOnLine": "Přidat komentář k řádku {line}",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "edit": "Upravit",
+      "delete": "Smazat",
+      "deleteTitle": "Smazat tento komentář?",
+      "deleteDescription": "Komentář bude z recenze nenávratně odstraněn.",
+      "unknownAuthor": "Neznámý autor"
+    },
+    "summary": {
+      "heading": "Souhrn recenze",
+      "empty": "K řešení jako celku zatím nejsou žádné komentáře.",
+      "add": "Přidat komentář k řešení"
+    },
+    "errors": {
+      "invalid": "Zkontrolujte prosím komentář, než jej odešlete.",
+      "addFailed": "Komentář se nepodařilo uložit.",
+      "updateFailed": "Změnu komentáře se nepodařilo uložit.",
+      "deleteFailed": "Komentář se nepodařilo smazat.",
+      "stateFailed": "Stav recenze se nepodařilo změnit.",
+      "deleteReviewFailed": "Recenzi se nepodařilo smazat."
     }
   },
   "Exercises": {

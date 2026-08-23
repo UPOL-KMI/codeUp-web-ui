@@ -1,0 +1,132 @@
+"use server";
+
+import { getTranslations } from "next-intl/server";
+
+import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
+import type { ActionResult } from "@/lib/forms/action-result";
+
+import { reviewCommentSchema, type ReviewCommentValues } from "./solution-review.schema";
+
+/**
+ * Reviewing a solution (S-018): the comments a teacher pins to a line, and opening or closing the
+ * review that holds them.
+ *
+ * None of these check whether the caller may review. core-api's `canAddReviewComment` /
+ * `canReview` / `canDeleteReviewComment` decide that on every call, and they are the boundary --
+ * a Server Action is a public HTTP endpoint whatever the UI rendered (brief §6). What the UI does
+ * with `permissionHints` is decide what to *offer*; refusal is core-api's answer, surfaced here as
+ * the form-level error.
+ *
+ * **No `revalidatePath`.** Every read in this app goes through `lib/api/client.ts`, which is
+ * `cache: "no-store"` unconditionally (DEC-021) -- there is no cached page entry to invalidate.
+ * The caller refreshes the router after a successful action, which re-runs the Server Component
+ * and fetches the review again.
+ */
+async function failure(error: unknown, fallbackKey: string): Promise<ActionResult<never>> {
+  const t = await getTranslations("Review.errors");
+  return {
+    success: false,
+    formError: error instanceof ApiError ? error.message : t(fallbackKey),
+  };
+}
+
+function validate(values: ReviewCommentValues) {
+  const parsed = reviewCommentSchema.safeParse(values);
+  if (parsed.success) return { ok: true as const, data: parsed.data };
+  const fieldErrors: Record<string, string> = {};
+  for (const issue of parsed.error.issues) {
+    const field = issue.path.join(".");
+    if (field) fieldErrors[field] = issue.message;
+  }
+  return { ok: false as const, fieldErrors };
+}
+
+export async function addReviewComment(
+  solutionId: string,
+  file: string,
+  line: number,
+  values: ReviewCommentValues,
+): Promise<ActionResult<{ id: string }>> {
+  const t = await getTranslations("Review.errors");
+  const parsed = validate(values);
+  if (!parsed.ok)
+    return { success: false, formError: t("invalid"), fieldErrors: parsed.fieldErrors };
+
+  try {
+    const comment = await apiPost<{ id: string }>(
+      "/v1/assignment-solutions/{id}/review-comment",
+      { ...parsed.data, file, line },
+      { pathParams: { id: solutionId } },
+    );
+    return { success: true, data: { id: comment.id } };
+  } catch (error) {
+    return failure(error, "addFailed");
+  }
+}
+
+export async function updateReviewComment(
+  solutionId: string,
+  commentId: string,
+  values: ReviewCommentValues,
+): Promise<ActionResult<{ id: string }>> {
+  const t = await getTranslations("Review.errors");
+  const parsed = validate(values);
+  if (!parsed.ok)
+    return { success: false, formError: t("invalid"), fieldErrors: parsed.fieldErrors };
+
+  try {
+    await apiPost("/v1/assignment-solutions/{id}/review-comment/{commentId}", parsed.data, {
+      pathParams: { id: solutionId, commentId },
+    });
+    return { success: true, data: { id: commentId } };
+  } catch (error) {
+    return failure(error, "updateFailed");
+  }
+}
+
+export async function deleteReviewComment(
+  solutionId: string,
+  commentId: string,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiDelete("/v1/assignment-solutions/{id}/review-comment/{commentId}", {
+      pathParams: { id: solutionId, commentId },
+    });
+    return { success: true, data: { id: commentId } };
+  } catch (error) {
+    return failure(error, "deleteFailed");
+  }
+}
+
+/**
+ * Closing a review is what publishes it: core-api counts the issues at that moment, and it is what
+ * makes the comments visible to the student (`visibleReviewComments()`). Reopening reverses both.
+ */
+export async function setReviewClosed(
+  solutionId: string,
+  close: boolean,
+): Promise<ActionResult<{ closed: boolean }>> {
+  try {
+    await apiPost(
+      "/v1/assignment-solutions/{id}/review",
+      { close },
+      { pathParams: { id: solutionId } },
+    );
+    return { success: true, data: { closed: close } };
+  } catch (error) {
+    return failure(error, "stateFailed");
+  }
+}
+
+/** Erases the review and every comment in it -- core-api refuses unless the caller may delete each
+ *  comment individually, which is why this is offered only where `deleteReview` is granted. */
+export async function deleteReview(solutionId: string): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiDelete("/v1/assignment-solutions/{id}/review", {
+      pathParams: { id: solutionId },
+    });
+    return { success: true, data: { id: solutionId } };
+  } catch (error) {
+    return failure(error, "deleteReviewFailed");
+  }
+}

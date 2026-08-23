@@ -242,6 +242,65 @@
   background-color: color-mix(in oklch, var(--accent) 70%, transparent);
 }
 
+/* S-018: source code with review threads rendered between its lines. `AnnotatedCodeBlock` is a
+   <div>, not a <pre> -- a <form> inside a <pre> is invalid markup the parser may relocate -- so
+   the whitespace and font a <pre> would have given for free are set here, and undone again inside
+   a comment thread, which is prose rather than code. */
+[data-slot="code-block"] .code-annotated {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+[data-slot="code-block"] .code-line-comments {
+  white-space: normal;
+  font-family: inherit;
+  margin: 0.25rem 0 0.5rem 3.5rem;
+  max-width: 48rem;
+}
+
+[data-slot="code-block"] .code-line-comments article,
+[data-slot="code-block"] .code-line-comments form {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+/* The line and its "add a comment" control sit side by side, the control in the gutter, so a
+   comment is started where the eye already is. The line itself must not shrink: a long line is
+   what the surrounding container scrolls horizontally for. */
+[data-slot="code-block"] .code-line-commentable {
+  display: flex;
+  align-items: flex-start;
+}
+
+[data-slot="code-block"] .code-line-commentable > .line {
+  flex: 1 0 auto;
+}
+
+/* Hidden until the line is hovered or the button itself is focused -- it must stay reachable by
+   keyboard, so this is opacity, never `display: none`. */
+[data-slot="code-block"] .code-line-comment-button {
+  opacity: 0;
+  flex: 0 0 auto;
+  margin: 0 0.25rem;
+  padding: 0 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  line-height: 1.35;
+}
+
+[data-slot="code-block"] .code-line-commentable:hover .code-line-comment-button,
+[data-slot="code-block"] .code-line-comment-button:focus-visible {
+  opacity: 1;
+}
+
 /* Markdown body (D-010). Tailwind's preflight resets headings, lists and emphasis to unstyled, so
    authored content needs these back explicitly -- without them an exercise text renders as one
    undifferentiated wall. Scoped to the markdown container so it cannot leak into app chrome. */
