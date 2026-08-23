@@ -3,7 +3,11 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { preSubmitSolution, submitSolution } from "@/lib/actions/submit-solution";
+import {
+  preSubmitSolution,
+  submitSolution,
+  type SubmittedSolution,
+} from "@/lib/actions/submit-solution";
 import {
   submitSolutionSchema,
   type SubmitSolutionValues,
@@ -58,12 +62,20 @@ export function SubmitForm({
 
   const { form, onSubmit, isPending } = useServerActionForm<
     SubmitSolutionValues,
-    { solutionId: string }
+    SubmittedSolution
   >({
     schema: submitSolutionSchema,
     defaultValues: { files: [], runtimeEnvironmentId: "", note: "" },
     action: (values) => submitSolution(assignmentId, values),
-    onSuccess: ({ solutionId }) => router.push(`/solutions/${solutionId}`),
+    // The monitor channel travels in the URL because that is the only place it can: core-api
+    // hands it out once, here, and the solution screen is a fresh server render that cannot ask
+    // for it again (S-016).
+    onSuccess: ({ solutionId, monitorChannelId, expectedTasks }) =>
+      router.push(
+        monitorChannelId
+          ? `/solutions/${solutionId}?monitor=${encodeURIComponent(monitorChannelId)}&tasks=${expectedTasks}`
+          : `/solutions/${solutionId}`,
+      ),
   });
 
   const {

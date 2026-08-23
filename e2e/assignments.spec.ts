@@ -100,8 +100,12 @@ test.describe("submitting a solution", () => {
     await page.getByLabel("Note").fill("submitted by the e2e suite");
     await page.getByRole("button", { name: "Submit", exact: true }).click();
 
-    // A successful submit lands on the new solution.
-    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/, { timeout: 30_000 });
+    // A successful submit lands on the new solution, carrying the monitor channel of the job it
+    // just created (S-016) -- core-api discloses that id once, in the submit response, so if it
+    // is not in this URL it is gone for good.
+    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\?monitor=[^&]+&tasks=\d+$/, {
+      timeout: 30_000,
+    });
   });
 
   test("refuses to submit before a file exists", async ({ page }) => {

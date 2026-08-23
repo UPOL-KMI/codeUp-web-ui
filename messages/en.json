@@ -235,6 +235,11 @@
       "reviewOpen": "Review in progress",
       "reviewed": "Reviewed"
     },
+    "progress": {
+      "waiting": "This solution is being evaluated. This page updates itself when the result arrives.",
+      "running": "Evaluating — {done} of {total} steps done.",
+      "autoRefresh": "You do not need to reload the page."
+    },
     "evaluation": {
       "heading": "Evaluation",
       "pending": "This solution has been submitted and is waiting to be evaluated.",

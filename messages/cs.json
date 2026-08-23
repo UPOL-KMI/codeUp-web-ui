@@ -235,6 +235,11 @@
       "reviewOpen": "Revize probíhá",
       "reviewed": "Zrevidováno"
     },
+    "progress": {
+      "waiting": "Toto řešení se vyhodnocuje. Stránka se sama aktualizuje, jakmile bude výsledek k dispozici.",
+      "running": "Vyhodnocuje se — hotovo {done} z {total} kroků.",
+      "autoRefresh": "Stránku není potřeba znovu načítat."
+    },
     "evaluation": {
       "heading": "Vyhodnocení",
       "pending": "Řešení bylo odevzdáno a čeká na vyhodnocení.",

@@ -3,8 +3,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getSolutionDetail } from "@/lib/api/solution";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { formatPoints } from "@/lib/format/points";
+import { evaluationStatus } from "@/lib/status/evaluation";
 
 import { Link } from "@/i18n/navigation";
+import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
@@ -24,18 +26,27 @@ import { EvaluationBadge } from "@/components/status/evaluation-badge";
  * Nothing here re-derives what the reader may see. Core-api nulls measured values, limit ratios and
  * judge logs per assignment flag, and `permissionHints` says whether they may set the review
  * request or the accepted flag -- this page renders what arrived.
+ *
+ * `?monitor=` (S-016) is the monitor channel of the job that is still running -- put there by the
+ * submit form, since core-api hands the channel id out once, in the response to the submit that
+ * created it, and never again. Without it the screen still updates itself; with it, it can say
+ * which step the job is on.
  */
 export default async function SolutionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ solutionId: string }>;
+  searchParams: Promise<{ monitor?: string; tasks?: string }>;
 }) {
-  const [{ solutionId }, locale] = await Promise.all([params, getLocale()]);
+  const [{ solutionId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, solution] = await Promise.all([
     getTranslations("Solution"),
     getSolutionDetail(solutionId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
+  const pending = evaluationStatus(solution.status) === "pending";
+  const expectedTasks = Number.parseInt(query.tasks ?? "", 10);
 
   return (
     <PageShell
@@ -138,6 +149,15 @@ export default async function SolutionPage({
           <h2 id="solution-evaluation" className="mb-3 text-base font-semibold tracking-tight">
             {t("evaluation.heading")}
           </h2>
+          {pending && (
+            <div className="mb-4">
+              <EvaluationProgress
+                channelId={query.monitor ?? null}
+                monitorUrl={process.env.MONITOR_WS_URL ?? null}
+                expectedTasks={Number.isFinite(expectedTasks) ? expectedTasks : 0}
+              />
+            </div>
+          )}
           <EvaluationResults solution={solution} />
         </section>
       </div>

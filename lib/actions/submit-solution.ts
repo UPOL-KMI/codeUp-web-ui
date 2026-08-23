@@ -62,10 +62,19 @@ export async function preSubmitSolution(
   }
 }
 
+export interface SubmittedSolution {
+  solutionId: string;
+  /** The monitor channel this job reports progress on (S-016). core-api discloses it **once**, in
+   *  this response -- there is no endpoint that returns it later, which is why the submit form
+   *  carries it to the solution screen rather than that screen asking for it. */
+  monitorChannelId: string | null;
+  expectedTasks: number;
+}
+
 export async function submitSolution(
   assignmentId: string,
   values: SubmitSolutionValues,
-): Promise<ActionResult<{ solutionId: string }>> {
+): Promise<ActionResult<SubmittedSolution>> {
   const t = await getTranslations("Submit.errors");
 
   // Re-validated here rather than trusted from the client: this function is reachable as an HTTP
@@ -81,7 +90,10 @@ export async function submitSolution(
   }
 
   try {
-    const payload = await apiPost<{ solution: { id: string } }>(
+    const payload = await apiPost<{
+      solution: { id: string };
+      webSocketChannel?: { id: string; expectedTasksCount: number };
+    }>(
       "/v1/exercise-assignments/{id}/submit",
       {
         note: parsed.data.note,
@@ -90,7 +102,14 @@ export async function submitSolution(
       },
       { pathParams: { id: assignmentId } },
     );
-    return { success: true, data: { solutionId: payload.solution.id } };
+    return {
+      success: true,
+      data: {
+        solutionId: payload.solution.id,
+        monitorChannelId: payload.webSocketChannel?.id ?? null,
+        expectedTasks: payload.webSocketChannel?.expectedTasksCount ?? 0,
+      },
+    };
   } catch (error) {
     // core-api's own message is the useful one here -- it is what says *why* a submission was
     // refused (past the deadline, out of attempts, group licence expired), and this app cannot
