@@ -63,6 +63,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("q") ?? "").trim();
   const locale = searchParams.get("locale") ?? "en";
+  // `kinds=user` narrows the fan-out to one endpoint. Added for S-009's member picker, which asks
+  // on every keystroke and has no use for groups or exercises -- querying all three for it would
+  // triple core-api's load to throw two thirds of the answer away.
+  const kinds = new Set((searchParams.get("kinds") ?? "group,exercise,user").split(","));
 
   // Below two characters every list endpoint would match nearly everything, which is slow for
   // core-api and useless to the user.
@@ -73,9 +77,19 @@ export async function GET(request: Request) {
 
   const encoded = encodeURIComponent(query);
   const [groups, exercises, users] = await Promise.all([
-    fetchJson(`${apiBase}/groups?search=${encoded}`, token),
-    fetchJson(`${apiBase}/exercises?search=${encoded}&limit=${LIMIT}`, token),
-    fetchJson(`${apiBase}/users?search=${encoded}&limit=${LIMIT}`, token),
+    kinds.has("group") ? fetchJson(`${apiBase}/groups?search=${encoded}`, token) : null,
+    kinds.has("exercise")
+      ? fetchJson(`${apiBase}/exercises?search=${encoded}&limit=${LIMIT}`, token)
+      : null,
+    // `filters[search]`, not `search`: core-api's user list takes its search term inside a
+    // `filters` object (`UsersPresenter::actionDefault`) and **silently ignores** a bare `search`,
+    // answering with every user it would have returned anyway. Found live while building S-009's
+    // member picker -- which is how the palette's user section was discovered to have been listing
+    // arbitrary users since D-015. `/groups` and `/exercises` do take a bare `search`; both were
+    // re-checked against the live instance rather than assumed.
+    kinds.has("user")
+      ? fetchJson(`${apiBase}/users?filters%5Bsearch%5D=${encoded}&limit=${LIMIT}`, token)
+      : null,
   ]);
 
   const hits: SearchHit[] = [

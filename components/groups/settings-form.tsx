@@ -1,0 +1,197 @@
+"use client";
+
+import { FormProvider } from "react-hook-form";
+import { useTranslations } from "next-intl";
+
+import { updateGroupSettings } from "@/lib/actions/group-settings";
+import {
+  groupSettingsSchema,
+  PASS_MODES,
+  type GroupSettingsValues,
+} from "@/lib/actions/group-settings.schema";
+import type { GroupDetail } from "@/lib/api/group-detail";
+import { useServerActionForm } from "@/lib/forms/use-server-action-form";
+
+import { useRouter } from "@/i18n/navigation";
+import { useToast } from "@/components/toast/toast-provider";
+
+/**
+ * A group's own settings (S-009): what it is called in each language, who may see it, and what it
+ * takes to pass it.
+ *
+ * **Every locale is edited at once, and every locale is submitted at once**, because core-api
+ * replaces the whole `localizedTexts` array with what it is sent -- a form that edited only the
+ * reader's own language would silently delete the other one. The locales offered are the app's
+ * own (`routing.locales`, passed in), plus any extra locale the group already carries, so a text
+ * written by the legacy app in a third language is not dropped by opening this form.
+ *
+ * A blank name is how a language is *removed*, not an error: most seeded groups are named in one
+ * language only, and demanding a Czech name before an English one can be saved would be this form
+ * inventing a rule core-api does not have. At least one name has to survive.
+ *
+ * Passing a group is a percentage *or* an absolute number of points, never both (core-api's own
+ * rule, `setGroupPoints`), so the two are one three-way choice here rather than two fields that
+ * can contradict each other.
+ */
+export function GroupSettingsForm({
+  group,
+  locales,
+}: {
+  group: GroupDetail;
+  locales: readonly string[];
+}) {
+  const t = useTranslations("Group.settings.form");
+  const router = useRouter();
+  const toast = useToast();
+
+  const editedLocales = [
+    ...locales,
+    ...group.texts.map((text) => text.locale).filter((locale) => !locales.includes(locale)),
+  ];
+
+  const { form, onSubmit, isPending } = useServerActionForm<
+    GroupSettingsValues,
+    { groupId: string }
+  >({
+    schema: groupSettingsSchema,
+    defaultValues: {
+      texts: editedLocales.map((locale) => {
+        const existing = group.texts.find((text) => text.locale === locale);
+        return { locale, name: existing?.name ?? "", description: existing?.description ?? "" };
+      }),
+      externalId: group.externalId,
+      isPublic: group.public,
+      publicStats: group.publicStats,
+      detaining: group.detaining,
+      passMode:
+        group.threshold !== null
+          ? "threshold"
+          : group.pointsLimit !== null
+            ? "pointsLimit"
+            : "none",
+      threshold: group.threshold !== null ? Math.round(group.threshold * 100) : null,
+      pointsLimit: group.pointsLimit,
+    },
+    action: (values) => updateGroupSettings(group.id, values),
+    onSuccess: () => {
+      toast.success(t("saved"));
+      router.refresh();
+    },
+  });
+
+  const {
+    register,
+    watch,
+    formState: { errors },
+  } = form;
+  const passMode = watch("passMode");
+
+  const input =
+    "rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring aria-invalid:border-destructive";
+
+  return (
+    <FormProvider {...form}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-5">
+        {editedLocales.map((locale, index) => (
+          <fieldset key={locale} className="flex flex-col gap-2">
+            <legend className="text-sm font-medium">{t("locale", { locale })}</legend>
+            <input type="hidden" {...register(`texts.${index}.locale`)} />
+            <label className="flex flex-col gap-1 text-sm">
+              {t("name")}
+              <input type="text" className={input} {...register(`texts.${index}.name`)} />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              {t("description")}
+              <textarea rows={3} className={input} {...register(`texts.${index}.description`)} />
+            </label>
+          </fieldset>
+        ))}
+
+        <label className="flex flex-col gap-1 text-sm">
+          {t("externalId")}
+          <input type="text" className={input} {...register("externalId")} />
+          <span className="text-xs text-muted-foreground">{t("externalIdHint")}</span>
+        </label>
+
+        <div className="flex flex-col gap-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="size-4" {...register("isPublic")} />
+            {t("isPublic")}
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="size-4" {...register("publicStats")} />
+            {t("publicStats")}
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="size-4" {...register("detaining")} />
+            {t("detaining")}
+          </label>
+        </div>
+
+        <fieldset className="flex flex-col gap-2 text-sm">
+          <legend className="text-sm font-medium">{t("passing")}</legend>
+          {PASS_MODES.map((mode) => (
+            <label key={mode} className="flex items-center gap-2">
+              <input type="radio" value={mode} className="size-4" {...register("passMode")} />
+              {t(`passModes.${mode}`)}
+            </label>
+          ))}
+          {passMode === "threshold" && (
+            <label className="flex items-center gap-2">
+              {t("threshold")}
+              <input
+                type="number"
+                min={1}
+                max={100}
+                className={`${input} w-24`}
+                {...register("threshold", {
+                  setValueAs: (value) => (value === "" ? null : Number(value)),
+                })}
+              />
+            </label>
+          )}
+          {passMode === "pointsLimit" && (
+            <label className="flex items-center gap-2">
+              {t("pointsLimit")}
+              <input
+                type="number"
+                min={1}
+                className={`${input} w-24`}
+                {...register("pointsLimit", {
+                  setValueAs: (value) => (value === "" ? null : Number(value)),
+                })}
+              />
+            </label>
+          )}
+          {(errors.threshold || errors.pointsLimit) && (
+            <p role="alert" className="text-sm text-destructive">
+              {t("errors.limitRequired")}
+            </p>
+          )}
+        </fieldset>
+
+        {errors.texts && (
+          <p role="alert" className="text-sm text-destructive">
+            {t("errors.nameRequired")}
+          </p>
+        )}
+
+        {errors.root?.message && (
+          <p role="alert" className="text-sm text-destructive">
+            {errors.root.message}
+          </p>
+        )}
+
+        <div>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+          >
+            {t("save")}
+          </button>
+        </div>
+      </form>
+    </FormProvider>
+  );
+}

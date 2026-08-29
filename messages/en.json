@@ -138,7 +138,8 @@
       "info": "Info",
       "assignments": "Assignments",
       "students": "Students",
-      "exams": "Exams"
+      "exams": "Exams",
+      "settings": "Settings"
     },
     "badges": {
       "archived": "Archived",
@@ -351,6 +352,125 @@
         "removeFailed": "The exam could not be cancelled.",
         "lockFailed": "You could not be locked in.",
         "unlockFailed": "The student could not be unlocked."
+      }
+    },
+    "settings": {
+      "form": {
+        "title": "Group settings",
+        "locale": "Texts ({locale})",
+        "name": "Name",
+        "description": "Description",
+        "externalId": "External identifier",
+        "externalIdHint": "The code this group has in your school's own systems. Optional.",
+        "isPublic": "Anyone may see this group and ask to join",
+        "publicStats": "Students can see each other's results",
+        "detaining": "Students cannot leave the group on their own",
+        "passing": "What it takes to pass",
+        "passModes": {
+          "none": "Nothing in particular",
+          "threshold": "A share of the available points",
+          "pointsLimit": "A fixed number of points"
+        },
+        "threshold": "Percent needed",
+        "pointsLimit": "Points needed",
+        "save": "Save settings",
+        "saved": "The settings were saved.",
+        "errors": {
+          "nameRequired": "At least one language needs a name.",
+          "limitRequired": "Enter the number needed to pass."
+        }
+      },
+      "controls": {
+        "failed": "The change was not made.",
+        "type": {
+          "title": "Kind of group",
+          "current": "Currently: {type}",
+          "regular": "regular",
+          "organizational": "organizational",
+          "exam": "exam",
+          "makeOrganizational": "Make it organizational",
+          "makeRegular": "Make it regular",
+          "markExam": "Mark as an exam group",
+          "unmarkExam": "Unmark as an exam group",
+          "changed": "The kind of group was changed.",
+          "explain": "Organizational groups only hold other groups — no students, no assignments. The exam flag changes how a group is listed and archived; the exam terms themselves live on the Exams tab."
+        },
+        "archive": {
+          "title": "Archive",
+          "explain": "An archived group is frozen: it keeps its students, assignments and results, and is read from the Archive instead of the group list.",
+          "archive": "Archive this group",
+          "unarchive": "Bring it back from the archive",
+          "archived": "The group was archived.",
+          "unarchived": "The group is active again."
+        },
+        "relocate": {
+          "title": "Move the group",
+          "explain": "Choose the group this one should hang under. Its own subgroups move with it.",
+          "newParent": "New parent group",
+          "choose": "Choose a group…",
+          "move": "Move",
+          "done": "The group was moved."
+        },
+        "delete": {
+          "title": "Delete the group",
+          "explain": "Only a group with no subgroups can be deleted, and everything in it goes with it.",
+          "button": "Delete this group",
+          "done": "The group was deleted."
+        },
+        "confirm": {
+          "archive": {
+            "title": "Archive this group?",
+            "description": "It becomes read-only and moves to the Archive. You can bring it back from here."
+          },
+          "unarchive": {
+            "title": "Bring this group back?",
+            "description": "It becomes editable again and returns to the group list."
+          },
+          "delete": {
+            "title": "Delete this group?",
+            "description": "Its assignments, solutions and results go with it. This cannot be undone."
+          }
+        }
+      },
+      "members": {
+        "title": "People",
+        "failed": "The change was not made.",
+        "remove": "Remove",
+        "searchPlaceholder": "Search by name",
+        "searching": "Searching…",
+        "noMatches": "Nobody matches.",
+        "staff": {
+          "title": "Teachers and observers",
+          "empty": "Nobody teaches or observes this group.",
+          "role": "Role of {name}",
+          "roles": {
+            "admin": "Administrator",
+            "supervisor": "Supervisor",
+            "observer": "Observer"
+          },
+          "roleChanged": "The role was changed.",
+          "removed": "They no longer belong to this group.",
+          "add": "Add a teacher or observer",
+          "addAsSupervisor": "Add as supervisor",
+          "added": "They were added as a supervisor."
+        },
+        "students": {
+          "title": "Students",
+          "empty": "No students yet.",
+          "add": "Add a student",
+          "addButton": "Add as student",
+          "added": "The student was added.",
+          "removed": "The student was removed."
+        }
+      },
+      "errors": {
+        "invalid": "Some of the settings are not valid.",
+        "updateFailed": "The settings could not be saved.",
+        "typeFailed": "The kind of group could not be changed.",
+        "archiveFailed": "The archived status could not be changed.",
+        "relocateFailed": "The group could not be moved.",
+        "deleteFailed": "The group could not be deleted.",
+        "memberFailed": "The membership could not be changed."
       }
     }
   },

@@ -138,7 +138,8 @@
       "info": "Informace",
       "assignments": "Zadání",
       "students": "Studenti",
-      "exams": "Zkoušky"
+      "exams": "Zkoušky",
+      "settings": "Nastavení"
     },
     "badges": {
       "archived": "Archivováno",
@@ -351,6 +352,125 @@
         "removeFailed": "Zkoušku se nepodařilo zrušit.",
         "lockFailed": "Nepodařilo se vás zamknout.",
         "unlockFailed": "Studenta se nepodařilo odemknout."
+      }
+    },
+    "settings": {
+      "form": {
+        "title": "Nastavení skupiny",
+        "locale": "Texty ({locale})",
+        "name": "Název",
+        "description": "Popis",
+        "externalId": "Externí identifikátor",
+        "externalIdHint": "Kód, který má skupina ve školních systémech. Nepovinné.",
+        "isPublic": "Skupinu vidí kdokoli a může požádat o vstup",
+        "publicStats": "Studenti vidí výsledky ostatních",
+        "detaining": "Studenti nemohou skupinu sami opustit",
+        "passing": "Co je potřeba ke splnění",
+        "passModes": {
+          "none": "Nic zvláštního",
+          "threshold": "Podíl z dostupných bodů",
+          "pointsLimit": "Pevný počet bodů"
+        },
+        "threshold": "Potřebná procenta",
+        "pointsLimit": "Potřebné body",
+        "save": "Uložit nastavení",
+        "saved": "Nastavení bylo uloženo.",
+        "errors": {
+          "nameRequired": "Alespoň v jednom jazyce musí být název.",
+          "limitRequired": "Zadejte hodnotu potřebnou ke splnění."
+        }
+      },
+      "controls": {
+        "failed": "Změna se neprovedla.",
+        "type": {
+          "title": "Druh skupiny",
+          "current": "Aktuálně: {type}",
+          "regular": "běžná",
+          "organizational": "organizační",
+          "exam": "zkoušková",
+          "makeOrganizational": "Změnit na organizační",
+          "makeRegular": "Změnit na běžnou",
+          "markExam": "Označit jako zkouškovou",
+          "unmarkExam": "Zrušit označení zkouškové",
+          "changed": "Druh skupiny byl změněn.",
+          "explain": "Organizační skupiny obsahují jen další skupiny — žádné studenty ani úlohy. Příznak zkouškové skupiny mění, jak se skupina vypisuje a archivuje; samotné termíny zkoušek jsou na záložce Zkoušky."
+        },
+        "archive": {
+          "title": "Archiv",
+          "explain": "Archivovaná skupina je zmrazená: zůstávají v ní studenti, úlohy i výsledky a čte se z Archivu místo ze seznamu skupin.",
+          "archive": "Archivovat skupinu",
+          "unarchive": "Vrátit z archivu",
+          "archived": "Skupina byla archivována.",
+          "unarchived": "Skupina je opět aktivní."
+        },
+        "relocate": {
+          "title": "Přesunout skupinu",
+          "explain": "Vyberte skupinu, pod kterou má tato patřit. Její vlastní podskupiny se přesunou s ní.",
+          "newParent": "Nová nadřazená skupina",
+          "choose": "Vyberte skupinu…",
+          "move": "Přesunout",
+          "done": "Skupina byla přesunuta."
+        },
+        "delete": {
+          "title": "Smazat skupinu",
+          "explain": "Smazat lze jen skupinu bez podskupin a smaže se s ní všechno, co obsahuje.",
+          "button": "Smazat tuto skupinu",
+          "done": "Skupina byla smazána."
+        },
+        "confirm": {
+          "archive": {
+            "title": "Archivovat tuto skupinu?",
+            "description": "Stane se pouze ke čtení a přesune se do Archivu. Odsud ji můžete vrátit zpět."
+          },
+          "unarchive": {
+            "title": "Vrátit skupinu z archivu?",
+            "description": "Půjde ji opět upravovat a vrátí se do seznamu skupin."
+          },
+          "delete": {
+            "title": "Smazat tuto skupinu?",
+            "description": "Zmizí i její úlohy, řešení a výsledky. Tohle nelze vzít zpět."
+          }
+        }
+      },
+      "members": {
+        "title": "Lidé",
+        "failed": "Změna se neprovedla.",
+        "remove": "Odebrat",
+        "searchPlaceholder": "Hledat podle jména",
+        "searching": "Hledám…",
+        "noMatches": "Nikdo neodpovídá.",
+        "staff": {
+          "title": "Vyučující a pozorovatelé",
+          "empty": "Skupinu nikdo neučí ani nepozoruje.",
+          "role": "Role uživatele {name}",
+          "roles": {
+            "admin": "Správce",
+            "supervisor": "Cvičící",
+            "observer": "Pozorovatel"
+          },
+          "roleChanged": "Role byla změněna.",
+          "removed": "Do skupiny už nepatří.",
+          "add": "Přidat vyučujícího nebo pozorovatele",
+          "addAsSupervisor": "Přidat jako cvičícího",
+          "added": "Byl přidán jako cvičící."
+        },
+        "students": {
+          "title": "Studenti",
+          "empty": "Zatím žádní studenti.",
+          "add": "Přidat studenta",
+          "addButton": "Přidat jako studenta",
+          "added": "Student byl přidán.",
+          "removed": "Student byl odebrán."
+        }
+      },
+      "errors": {
+        "invalid": "Některá nastavení nejsou platná.",
+        "updateFailed": "Nastavení se nepodařilo uložit.",
+        "typeFailed": "Druh skupiny se nepodařilo změnit.",
+        "archiveFailed": "Stav archivace se nepodařilo změnit.",
+        "relocateFailed": "Skupinu se nepodařilo přesunout.",
+        "deleteFailed": "Skupinu se nepodařilo smazat.",
+        "memberFailed": "Členství se nepodařilo změnit."
       }
     }
   },

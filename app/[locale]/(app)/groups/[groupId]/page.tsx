@@ -5,12 +5,15 @@ import {
   getGroupAssignments,
   getGroupDetail,
   getGroupStudents,
+  getRelocationTargets,
   type AssignmentFilter,
   type GroupDetail,
 } from "@/lib/api/group-detail";
 import { getExamLocks, getExamRoster } from "@/lib/api/group-exams";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { currentPhase } from "@/lib/status/exam";
+
+import { routing } from "@/i18n/routing";
 
 import { AssignmentFilterNav } from "@/components/groups/assignment-filter";
 import { AssignmentTable } from "@/components/groups/assignment-table";
@@ -20,6 +23,9 @@ import { ExamStatus } from "@/components/groups/exam-status";
 import { ExamTable } from "@/components/groups/exam-table";
 import { GroupInfo } from "@/components/groups/group-info";
 import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
+import { MemberManager } from "@/components/groups/member-manager";
+import { GroupSettingsControls } from "@/components/groups/settings-controls";
+import { GroupSettingsForm } from "@/components/groups/settings-form";
 import { StudentTable } from "@/components/groups/student-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
@@ -57,6 +63,7 @@ export default async function GroupPage({
       : []),
     ...(group.can.viewStudents ? [{ id: "students", label: t("tabs.students") }] : []),
     ...(showExamsTab(group) ? [{ id: "exams", label: t("tabs.exams") }] : []),
+    ...(showSettingsTab(group) ? [{ id: "settings", label: t("tabs.settings") }] : []),
   ];
   const current = tabs.some((candidate) => candidate.id === query.tab) ? query.tab! : "info";
 
@@ -79,8 +86,70 @@ export default async function GroupPage({
       {current === "assignments" && <AssignmentsTab groupId={groupId} filter={query.filter} />}
       {current === "students" && <StudentsTab groupId={groupId} />}
       {current === "exams" && <ExamsTab group={group} selectedExam={query.exam ?? null} />}
+      {current === "settings" && <SettingsTab group={group} />}
       {current === "info" && <GroupInfo group={group} />}
     </PageShell>
+  );
+}
+
+/**
+ * The legacy app's own rule for offering its Edit screen (`GroupNavigation`'s `canEdit`): any one
+ * of the four things this tab can do. Membership changes ride along on `update`, which is what
+ * core-api requires for them anyway.
+ */
+function showSettingsTab(group: GroupDetail): boolean {
+  return (
+    group.can.update === true ||
+    group.can.archive === true ||
+    group.can.remove === true ||
+    group.can.relocate === true
+  );
+}
+
+/**
+ * Administering the group (S-009): its settings, what kind of group it is, where it sits, who
+ * belongs to it, and its removal.
+ *
+ * An **archived group is immutable**, which is why the form is not rendered for one at all rather
+ * than rendered and refused on submit -- the same reason the legacy screen hides it. Unarchiving
+ * is still offered, and is the way back.
+ */
+async function SettingsTab({ group }: { group: GroupDetail }) {
+  const [t, locale] = await Promise.all([getTranslations("Group.settings"), getLocale()]);
+  const canEditMembers = group.can.update === true && !group.archived;
+  const [relocationTargets, students] = await Promise.all([
+    group.can.relocate === true && !group.archived
+      ? getRelocationTargets(group.id, locale)
+      : Promise.resolve([]),
+    group.can.viewStudents === true && !group.organizational
+      ? getGroupStudents(group.id)
+      : Promise.resolve([]),
+  ]);
+
+  return (
+    <div className="flex flex-col gap-8">
+      {group.can.update === true && !group.archived && (
+        <section className="flex flex-col gap-3">
+          <h3 className="text-sm font-medium">{t("form.title")}</h3>
+          <GroupSettingsForm group={group} locales={routing.locales} />
+        </section>
+      )}
+
+      <GroupSettingsControls group={group} relocationTargets={relocationTargets} />
+
+      {group.can.viewStudents === true && (
+        <section className="flex flex-col gap-3">
+          <h3 className="text-sm font-medium">{t("members.title")}</h3>
+          <MemberManager
+            groupId={group.id}
+            members={group.members}
+            students={students.map((student) => ({ id: student.id, fullName: student.fullName }))}
+            canEditMembers={canEditMembers}
+            canEditStudents={canEditMembers && !group.organizational}
+          />
+        </section>
+      )}
+    </div>
   );
 }
 

@@ -30,17 +30,32 @@ export interface GroupRef {
   name: string;
 }
 
+/** One locale's name and description, as core-api stores and expects them back. */
+export interface GroupText {
+  locale: string;
+  name: string;
+  description: string;
+}
+
 export interface GroupDetail {
   id: string;
   name: string;
+  /** Every locale core-api holds for this group -- what the settings form edits (S-009). */
+  texts: GroupText[];
+  /** The course code or similar the deployment keeps beside the name; free-form, often empty. */
+  externalId: string;
   /** Markdown, in the reader's locale where it exists. Empty when the group has no description. */
   description: string;
   /** Ancestors, outermost first. */
   path: GroupRef[];
+  /** The group this one hangs under. Null only for an instance's root group, which cannot move. */
+  parentGroupId: string | null;
   subgroups: GroupRef[];
   organizational: boolean;
   public: boolean;
   archived: boolean;
+  /** Archived in its own right, as opposed to inheriting it from an archived ancestor (S-009). */
+  directlyArchived: boolean;
   exam: boolean;
   publicStats: boolean;
   detaining: boolean;
@@ -72,11 +87,14 @@ export interface ExamTerm {
 
 interface GroupPayload {
   id: string;
+  externalId?: string | null;
   localizedTexts?: LocalizedText[];
   organizational?: boolean;
   public?: boolean;
   archived?: boolean;
+  directlyArchived?: boolean;
   exam?: boolean;
+  parentGroupId?: string | null;
   parentGroupsIds?: string[];
   childGroups?: string[];
   privateData?: {
@@ -143,6 +161,12 @@ export const getGroupDetail = cache(async function getGroupDetail(
   return {
     id: group.id,
     name: localizedName(group.localizedTexts, locale),
+    texts: (group.localizedTexts ?? []).map((text) => ({
+      locale: text.locale,
+      name: text.name ?? "",
+      description: text.description ?? "",
+    })),
+    externalId: group.externalId ?? "",
     description: localizedDescription(group.localizedTexts, locale),
     path: ancestors
       .filter((ancestor): ancestor is GroupPayload => ancestor !== null)
@@ -154,9 +178,11 @@ export const getGroupDetail = cache(async function getGroupDetail(
       id: subgroup.id,
       name: localizedName(subgroup.localizedTexts, locale),
     })),
+    parentGroupId: group.parentGroupId ?? null,
     organizational: group.organizational ?? false,
     public: group.public ?? false,
     archived: group.archived ?? false,
+    directlyArchived: group.directlyArchived ?? false,
     exam: group.exam ?? false,
     publicStats: priv?.publicStats ?? false,
     detaining: priv?.detaining ?? false,
@@ -193,6 +219,39 @@ export const getGroupDetail = cache(async function getGroupDetail(
     can: group.permissionHints ?? {},
   };
 });
+
+/**
+ * The groups this one could be moved under (S-009), the legacy app's own filter
+ * (`getPossibleParentsOfGroup`): anything the reader may add a subgroup to, except this group
+ * itself and its own descendants -- moving a group under its own child would make the hierarchy a
+ * loop, which core-api refuses anyway (`checkRelocate`).
+ *
+ * Archived groups are absent because `/v1/groups` omits them unless asked, which is the right
+ * answer here for a second reason: an archived group is immutable, so it is no place to move
+ * anything into.
+ */
+export async function getRelocationTargets(groupId: string, locale: string): Promise<GroupRef[]> {
+  const groups = await apiRead<GroupPayload[]>("/v1/groups");
+
+  return groups
+    .filter(
+      (candidate) =>
+        candidate.id !== groupId &&
+        candidate.permissionHints?.addSubgroup === true &&
+        !(candidate.parentGroupsIds ?? []).includes(groupId),
+    )
+    .map((candidate) => ({
+      id: candidate.id,
+      name: [
+        ...(candidate.parentGroupsIds ?? [])
+          .map((id) => groups.find((group) => group.id === id))
+          .filter((group): group is GroupPayload => group !== undefined)
+          .map((group) => localizedName(group.localizedTexts, locale)),
+        localizedName(candidate.localizedTexts, locale),
+      ].join(" / "),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+}
 
 /**
  * The group's assignments, with the reader's own standing on each where they study here (S-006).
