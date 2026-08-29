@@ -2082,16 +2082,55 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     are self-healing -- each undoes its own change, and repairs the state a previously failed run
     would have left, because this suite shares one seeded instance with every other spec.
 
+- **[2026-08-29 19:25] S-019:** What a detection tool reported about a solution.
+  `app/[locale]/(app)/solutions/[solutionId]/plagiarisms/page.tsx`,
+  `components/solutions/marked-source.tsx`, `lib/api/plagiarism.ts`.
+  - _The screen reports; it does not accuse._ ReCodEx detects nothing itself -- an external tool
+    runs elsewhere and **uploads** what it found -- so the page names the tool, says when its
+    upload finished, and says the sentence in as many words. Everything on it is somebody else's
+    claim, and reading it that way is the whole design.
+  - _Only a teacher is ever told a report exists._ `viewDetectedPlagiarisms` is granted from
+    `supervisor-student` upwards on an observed group, and core-api **omits the solution's batch
+    field entirely** for anyone else -- so the author of a flagged solution sees no badge in their
+    own list of attempts, no link on their own solution, and the Forbidden page if they guess the
+    URL. All three verified live, as the teacher and as the student.
+  - **_Matched passages are character ranges, so `CodeViewer` is the wrong tool (DEC-077)._** A
+    detection tool reports pairs of `{offset, length}` _into the file_; D-009's viewer highlights
+    whole lines, which would widen "these 24 characters matched" into "these three lines matched"
+    on the one screen where the exact extent is the point. `MarkedSource` renders the file verbatim
+    with `<mark>` on the reported ranges, merging overlaps first -- two fragments sharing a passage
+    would otherwise nest into a darker patch that means nothing. Six unit tests cover the merge.
+  - _The other side is fetched only when core-api says this reader may open it._ A supervisor of
+    one group can be shown a match against a solution submitted somewhere they have no standing;
+    the report still says so, names what it can, and leaves the source out rather than 403-ing the
+    page around it.
+  - **_The fixture is the upload (DEC-078)._** There is no way to reach this screen with data
+    except for a tool to have uploaded some, so the seed performs exactly that upload: a second
+    seeded student (Bob Classmate), a near-identical solution, a batch, one similarity, and
+    `uploadCompleted`. The fragment offsets are computed from the two sources rather than written
+    down. It is idempotent on the batch existing, because **nothing can delete any of it** --
+    which is also why the e2e suite reads the fixture rather than uploading its own each run.
+  - _A drive-by fix to a real drift in the seed._ `findAssignmentsForExercise` returned the group's
+    assignments in whatever order core-api listed them, while callers pick "the primary assignment"
+    by position -- so an earlier run had submitted its solutions to a _different_ assignment than a
+    later one, leaving this instance with two solutions noted `[seed] correct` under two
+    assignments. Now sorted by creation time. The e2e test walks the teacher's review queue rather
+    than assuming which row is the flagged one, and says why.
+  - _Observations:_ **118 e2e tests pass** (116 before), 55 unit tests. The report was rendered with
+    real uploaded data, marks and all -- not a state this project has had for its last three
+    screens.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
-  live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), plus F-030
-  (a core-api refusal renders as one). Foundation and Design System complete.
-- **Next ticket:** S-019 (the solution plagiarism report). S-019..S-025 are what remains of Phase 3; the
-  group screens are finished, including the two actions other tickets had left to S-009
-  (unarchiving from S-011, the exam-group flag from S-008). The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
+  detected-similarities report (S-019), plus F-030 (a core-api refusal renders as one). Foundation
+  and Design System complete.
+- **Next ticket:** S-020 (shadow assignment detail), then S-021/S-022 (the user's own profile and
+  settings) and S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it can
+  mint links that lead anywhere). The group screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None

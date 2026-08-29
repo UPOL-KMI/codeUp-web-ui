@@ -25,7 +25,7 @@
 | `app/assignment/:assignmentId/solution/:solutionId`                        | Solution                   | true  | SOLUTION_DETAIL_URI_FACTORY                 | `/solutions/[id]`                      | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/sources`                | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_URI_FACTORY           | `/solutions/[id]/sources`              | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/diff/:secondSolutionId` | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_DIFF_URI_FACTORY      | `/solutions/[id]/diff/[otherId]`       | todo   |
-| `app/assignment/:assignmentId/solution/:solutionId/plagiarisms`            | SolutionPlagiarisms        | true  | SOLUTION_PLAGIARISMS_URI_FACTORY            | `/solutions/[id]/plagiarisms`          | todo   |
+| `app/assignment/:assignmentId/solution/:solutionId/plagiarisms`            | SolutionPlagiarisms        | true  | SOLUTION_PLAGIARISMS_URI_FACTORY            | `/solutions/[id]/plagiarisms`          | done   |
 | `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`             | todo   |
 | `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`        | todo   |
 | `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | todo   |
@@ -101,7 +101,7 @@
 | `pagination`                   | Pagination state                              | `searchParams` in Server Components  | todo   |
 | `pipelineFiles`                | Pipeline files                                | `pipelines/[id]`                     | todo   |
 | `pipelines`                    | Pipeline CRUD, structure                      | `pipelines`                          | todo   |
-| `plagiarisms`                  | Plagiarism detection                          | `solutions/[id]/plagiarisms`         | todo   |
+| `plagiarisms`                  | Plagiarism detection                          | `solutions/[id]/plagiarisms`         | done   |
 | `referenceSolutionEvaluations` | Reference solution evaluations                | `reference-solutions/[id]`           | todo   |
 | `referenceSolutions`           | Reference solutions                           | `exercises/[id]/reference-solutions` | todo   |
 | `registration`                 | User registration                             | `/register`                          | todo   |
