@@ -49,7 +49,7 @@
 | `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`          | todo   |
 | `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                      | todo   |
 | `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                               | todo   |
-| `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                          | todo   |
+| `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                          | done   |
 | `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/users/[id]/edit`                     | todo   |
 | `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                 | todo   |
 | `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                     | todo   |

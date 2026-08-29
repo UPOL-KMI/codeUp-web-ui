@@ -2154,18 +2154,42 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     S-008** -- locking, unlocking, the live roster and the lock records all live on the Exams tab.
     Marked done rather than left as a ticket someone would open and find finished.
 
+- **[2026-08-29 19:55] S-021:** The user profile, and "my profile" as the same screen.
+  `components/users/profile-view.tsx`, `lib/api/user-profile.ts`.
+  - _Reached from every roster that has been linking here since S-007._ That link is why the route
+    already existed as a stub; it now has the screen behind it: who the person is, and the groups
+    they study or teach in.
+  - **_A user carries no `permissionHints` at all (DEC-080)._** Verified live: the field is `null`
+    even for a superadmin reading a student, because core-api gates the _fields_ rather than the
+    entity -- `privateData` is built only under `canViewPrivateData`, and `/v1/users/{id}/groups`
+    403s under `canViewGroups`. So this screen renders whichever rows arrived and **attempts** the
+    group list, reading a 403 as "not disclosed to you" -- an absent section, not a refused page,
+    because the reader may legitimately see the name a roster link promised them. Confirmed by
+    having a student open another student's profile: a name, and nothing else.
+  - **_`/profile` renders the profile rather than redirecting to it (DEC-081)._** The redirect was
+    the first version, and it cost an extra round trip on every visit _and_ left the page
+    mid-navigation for anything looking at it -- the **token-leakage test started failing
+    intermittently** with "the page is navigating and changing the content", which is the most
+    expensive kind of failure to leave for later. One component, two routes, no race; the test's
+    original form was restored rather than taught to wait.
+  - _Three links this screen deliberately does not have yet:_ editing one's own account (S-022),
+    taking over an account (AD-003 -- the BFF route has existed since F-020, only the button is
+    missing) and the per-group solutions list (T-005). Each ticket now says it owes this screen its
+    own control, which is DEC-066's rule applied forward.
+  - _Observations:_ **122 e2e tests pass** (120 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
-  detected-similarities report (S-019), shadow assignments (S-020), plus F-030 (a core-api refusal
-  renders as one). Foundation and Design System complete.
-- **Next ticket:** S-021 (the user profile), then S-022 (user settings), S-023/S-024 (the two
-  invitation-acceptance pages, which T-018 wants before it can mint links that lead anywhere) and
-  S-025 (the dashboard's shadow-assignment rows, unblocked now that a fixture exists). The group
-  screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021), plus
+  F-030 (a core-api refusal renders as one). Foundation and Design System complete.
+- **Next ticket:** S-022 (user settings — name, email, password, and the iCal token manager Q-014
+  parked there), then S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it
+  can mint links that lead anywhere) and S-025 (the dashboard's shadow-assignment rows, unblocked
+  now that a fixture exists). The group screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None
