@@ -1959,20 +1959,56 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     student being refused another student's attempts. The 25-student group renders in ~330 ms with
     `DataTable`'s own pagination, 20 rows to a page.
 
+- **[2026-08-29 18:15] F-030:** A refusal is not an error. `lib/api/read.ts`.
+  - _One place, because there is only one boundary worth putting it at (DEC-070)._ `apiRead` (a
+    GET) and `pageRead` (a read that is already a promise) turn core-api's 403 into `forbidden()`
+    and its 404 into `notFound()`, and rethrow every other status as the `ApiError` it always was.
+    `lib/api/client.ts` is untouched: it stays the transport that throws for everyone. The whole
+    DAL and `lib/breadcrumbs/manifest.ts` read through the new module; **Route Handlers and Server
+    Actions deliberately do not** -- an interrupt raised inside a JSON endpoint is not an answer
+    its caller can read, and inside a Server Action it is eaten by the `catch` that builds the form
+    error, which would leave a submitter with no page and no message.
+  - _Three reads keep the raw client, and that is the whole subtlety of this ticket._ A
+    `try`/`catch` around an interrupt suppresses it -- Next's own docs say so, and each of these
+    three already catches: the dashboard's review queue (a 403 there means an empty queue, the
+    existing behaviour a group admin with a student's global role depends on), a group's ancestors
+    (an ancestor this reader cannot see is a missing crumb, not a missing page), and one file's
+    content on the sources page (one unreadable file must not cost the reader the other
+    thirty-one). Each carries a one-line comment saying why it is not `apiRead`.
+  - _Verified live as a student, both halves, against the running stack:_ an assignment in a group
+    she is not in now renders **Forbidden** ("You don't have permission to access this resource.")
+    and a well-formed id matching nothing renders **Page not found**. Both said "Something went
+    wrong" an hour ago. The 403 case is the exact one S-013 hit and could not fix in its own
+    ticket.
+  - _What this does not change._ The status code is still 200 (DEC-069, Q-016 -- the `(app)` shell
+    streams before any page body runs). This ticket changes what the reader is told, not what the
+    wire says, and those turn out to be separable.
+  - _One neighbour found and left alone, as F-031._ core-api answers **401** (`401-002`) once a
+    session outlives its token, and that still reaches the reader as the error page. It is not the
+    same fix: the honest response is re-authentication, and a render cannot clear a cookie --
+    `proxy.ts` sends anyone holding a session cookie back to `/dashboard`, so redirecting a stale
+    one to `/login` would loop. It belongs next to `maybeRefreshSession()`, not here.
+  - _Observations:_ **110 e2e tests pass** (108 before; `e2e/refusals.spec.ts` adds both cases,
+    finding the 403 URL the way a reader would come by one -- from a teacher who can open it),
+    39 unit tests pass, `typecheck`/`lint`/`build` green.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
-  live evaluation progress (S-016). Foundation and Design System complete.
+  live evaluation progress (S-016), plus F-030 (a core-api refusal renders as one). Foundation and
+  Design System complete.
 - **Next ticket:** S-008 (the group's Exams tab), then S-009 (Settings). S-019..S-025 remain in
   Phase 3. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
-  assignment screen a link, recorded on their backlog rows.
+  assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
+  session still reads as an error page.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-016 — all proceeding without operator input,
   reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
-  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 is new: a refused
-  page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits.
+  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 stands: a refused
+  page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits —
+  F-030 fixed the half of it that the reader can see (which page renders), not the status line.
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
   solution screen's test table, compilation output and limit badges have **never been rendered with

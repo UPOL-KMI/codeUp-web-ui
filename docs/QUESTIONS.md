@@ -168,6 +168,8 @@ the correct page either way.
 
 **What is affected today.** Anything that gates on a permission hint: S-013's per-student solutions
 page is the first, and every teacher screen from T-002 onwards will be another. The same shape
-applies to core-api's own 403s, which currently reach the reader as the generic error boundary
-("something went wrong") rather than as a refusal -- see F-030 in `docs/BACKLOG.md`, which is the
-piece worth doing first, and independently of the status code.
+applies to core-api's own 403s, which reached the reader as the generic error boundary
+("something went wrong") rather than as a refusal -- that was F-030, and it was indeed both the
+piece worth doing first and independent of the status code: **F-030 landed (DEC-070) and this
+question is unchanged by it.** A refused page now says so in words wherever the refusal comes from,
+and still answers 200.
