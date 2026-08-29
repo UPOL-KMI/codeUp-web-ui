@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { apiGet } from "./client";
+import { apiRead } from "./read";
 
 /**
  * The files a solution is made of, and their contents (S-017).
@@ -56,7 +57,7 @@ export function canDisplayFiles(files: SolutionFileEntry[]): boolean {
 export const getSolutionFiles = cache(async function getSolutionFiles(
   solutionId: string,
 ): Promise<SolutionFileEntry[]> {
-  const payload = await apiGet<SolutionFilePayload[]>("/v1/assignment-solutions/{id}/files", {
+  const payload = await apiRead<SolutionFilePayload[]>("/v1/assignment-solutions/{id}/files", {
     pathParams: { id: solutionId },
   });
 
@@ -97,6 +98,8 @@ export interface FileContent {
   tooLarge: boolean;
 }
 
+// Raw client, unlike the listing above: the sources page catches a single file's failure and
+// renders the rest, which a refusal interrupt would defeat (F-030).
 export const getFileContent = cache(async function getFileContent(
   fileId: string,
   entry: string | null,

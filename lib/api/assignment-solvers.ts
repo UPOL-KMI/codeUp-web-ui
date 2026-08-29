@@ -4,7 +4,8 @@ import { cache } from "react";
 
 import { assignmentProgress, type AssignmentProgress } from "@/lib/status/assignment-progress";
 
-import { apiGet, apiPost } from "./client";
+import { apiPost } from "./client";
+import { apiRead } from "./read";
 import type { GroupStudentStats } from "./groups";
 
 /**
@@ -57,8 +58,8 @@ export async function getAssignmentSolvers(
   groupId: string,
 ): Promise<AssignmentSolver[]> {
   const [solvers, stats] = await Promise.all([
-    apiGet<SolverPayload[]>("/v1/assignment-solvers", { query: { assignmentId } }),
-    apiGet<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
+    apiRead<SolverPayload[]>("/v1/assignment-solvers", { query: { assignmentId } }),
+    apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
   ]);
 
   const attempts = new Map(solvers.map((solver) => [solver.solverId, solver.lastAttemptIndex]));

@@ -5,6 +5,7 @@ import { cache } from "react";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
 import { apiGet, apiPost } from "./client";
+import { apiRead, pageRead } from "./read";
 import { getMyGroupStats, type GroupStudentStats } from "./groups";
 
 /**
@@ -83,6 +84,9 @@ function localizedDescription(texts: LocalizedText[] | undefined, locale: string
   return (match ?? texts.find((text) => text.description))?.description ?? "";
 }
 
+// Raw on purpose: an ancestor is fetched through here too, and that call tolerates its own
+// failure -- a `catch` around a refusal interrupt would swallow it (F-030). The group this page
+// is about goes through `pageRead` at its own call site instead.
 const fetchGroup = cache(async function fetchGroup(groupId: string): Promise<GroupPayload> {
   return apiGet<GroupPayload>("/v1/groups/{id}", { pathParams: { id: groupId } });
 });
@@ -91,7 +95,7 @@ export const getGroupDetail = cache(async function getGroupDetail(
   groupId: string,
   locale: string,
 ): Promise<GroupDetail> {
-  const group = await fetchGroup(groupId);
+  const group = await pageRead(fetchGroup(groupId));
   const priv = group.privateData;
 
   const memberRoles: [string, GroupMember["role"]][] = [
@@ -107,7 +111,7 @@ export const getGroupDetail = cache(async function getGroupDetail(
     // ancestor also shown elsewhere on the page costs nothing extra.
     Promise.all((group.parentGroupsIds ?? []).map((id) => fetchGroup(id).catch(() => null))),
     group.childGroups?.length
-      ? apiGet<GroupPayload[]>("/v1/groups/{id}/subgroups", { pathParams: { id: groupId } })
+      ? apiRead<GroupPayload[]>("/v1/groups/{id}/subgroups", { pathParams: { id: groupId } })
       : Promise.resolve([]),
     memberIds.length > 0
       ? apiPost<{ id: string; fullName: string }[]>("/v1/users/list", { ids: memberIds })
@@ -202,7 +206,7 @@ export async function getGroupAssignments(
   filter: AssignmentFilter,
 ): Promise<GroupAssignment[]> {
   const [assignments, statsByGroup] = await Promise.all([
-    apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
+    apiRead<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
     getMyGroupStats(),
   ]);
 
@@ -276,7 +280,7 @@ export interface GroupStudent {
 }
 
 export async function getGroupStudents(groupId: string): Promise<GroupStudent[]> {
-  const stats = await apiGet<GroupStudentStats[]>("/v1/groups/{id}/students/stats", {
+  const stats = await apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", {
     pathParams: { id: groupId },
   });
   if (stats.length === 0) return [];

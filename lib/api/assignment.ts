@@ -6,7 +6,7 @@ import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { requireSession } from "@/lib/auth/require-session";
 import type { EvaluationInput } from "@/lib/status/evaluation";
 
-import { apiGet } from "./client";
+import { apiRead } from "./read";
 
 /**
  * One assignment, as a student's view of it needs it (S-012).
@@ -134,7 +134,7 @@ interface CanSubmitPayload {
 
 /** Runtime environment display names, memoized per request -- the ids alone read as `cs-dotnet-core`. */
 const fetchEnvironments = cache(async function fetchEnvironments(): Promise<Map<string, string>> {
-  const environments = await apiGet<{ id: string; name: string }[]>("/v1/runtime-environments");
+  const environments = await apiRead<{ id: string; name: string }[]>("/v1/runtime-environments");
   return new Map(environments.map((environment) => [environment.id, environment.name]));
 });
 
@@ -196,7 +196,7 @@ export const getAssignmentSolutionsOf = cache(async function getAssignmentSoluti
   assignmentId: string,
   userId: string,
 ): Promise<AssignmentSolutionRow[]> {
-  const solutions = await apiGet<SolutionPayload[]>(
+  const solutions = await apiRead<SolutionPayload[]>(
     "/v1/exercise-assignments/{id}/users/{userId}/solutions",
     { pathParams: { id: assignmentId, userId } },
   );
@@ -208,21 +208,21 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
   locale: string,
 ): Promise<AssignmentDetail> {
   const session = await requireSession();
-  const assignment = await apiGet<AssignmentPayload>("/v1/exercise-assignments/{id}", {
+  const assignment = await apiRead<AssignmentPayload>("/v1/exercise-assignments/{id}", {
     pathParams: { id: assignmentId },
   });
 
   const [group, submission, solutions, environments] = await Promise.all([
     assignment.groupId
-      ? apiGet<{ localizedTexts?: LocalizedText[]; privateData?: { students?: string[] } }>(
+      ? apiRead<{ localizedTexts?: LocalizedText[]; privateData?: { students?: string[] } }>(
           "/v1/groups/{id}",
           { pathParams: { id: assignment.groupId } },
         )
       : Promise.resolve(null),
-    apiGet<CanSubmitPayload>("/v1/exercise-assignments/{id}/can-submit", {
+    apiRead<CanSubmitPayload>("/v1/exercise-assignments/{id}/can-submit", {
       pathParams: { id: assignmentId },
     }),
-    apiGet<SolutionPayload[]>("/v1/exercise-assignments/{id}/users/{userId}/solutions", {
+    apiRead<SolutionPayload[]>("/v1/exercise-assignments/{id}/users/{userId}/solutions", {
       pathParams: { id: assignmentId, userId: session.userId },
     }),
     fetchEnvironments(),

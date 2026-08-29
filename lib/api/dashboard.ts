@@ -7,6 +7,7 @@ import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { requireSession } from "@/lib/auth/require-session";
 
 import { ApiError, apiGet, apiPost } from "./client";
+import { apiRead } from "./read";
 import { getMyGroups, getMyGroupStats, type GroupAssignmentStats } from "./groups";
 
 /**
@@ -92,7 +93,7 @@ function effectiveDeadlineOf(assignment: AssignmentPayload): number {
 const fetchGroupAssignments = cache(async function fetchGroupAssignments(
   groupId: string,
 ): Promise<AssignmentPayload[]> {
-  return apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", {
+  return apiRead<AssignmentPayload[]>("/v1/groups/{id}/assignments", {
     pathParams: { id: groupId },
   });
 });

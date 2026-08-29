@@ -2,7 +2,7 @@ import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail, getAssignmentSolutionsOf } from "@/lib/api/assignment";
-import { apiGet } from "@/lib/api/client";
+import { apiRead } from "@/lib/api/read";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -35,7 +35,7 @@ export default async function AssignmentUserSolutionsPage({
 
   const [solutions, user, breadcrumbs] = await Promise.all([
     getAssignmentSolutionsOf(assignmentId, userId),
-    apiGet<{ fullName?: string }>("/v1/users/{id}", { pathParams: { id: userId } }),
+    apiRead<{ fullName?: string }>("/v1/users/{id}", { pathParams: { id: userId } }),
     resolveBreadcrumbs(`/assignments/${assignmentId}/users/${userId}`, locale),
   ]);
 

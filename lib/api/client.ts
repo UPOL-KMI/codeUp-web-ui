@@ -8,7 +8,7 @@ export type ApiPath = keyof paths;
 
 type QueryValue = string | number | boolean | undefined;
 
-interface RequestOptions {
+export interface RequestOptions {
   pathParams?: Record<string, string>;
   query?: Record<string, QueryValue>;
   body?: unknown;

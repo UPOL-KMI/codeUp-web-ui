@@ -1,7 +1,7 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
 
-import { apiGet } from "@/lib/api/client";
+import { apiRead } from "@/lib/api/read";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
 import type { BreadcrumbItem } from "@/components/page-shell";
@@ -79,7 +79,7 @@ const MANIFEST: ManifestEntry[] = [
   {
     pattern: "/groups/:groupId",
     resolve: async (params, locale) => {
-      const group = await apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
+      const group = await apiRead<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
         pathParams: { id: params.groupId! },
       });
       return localizedName(group.localizedTexts, locale);
@@ -88,7 +88,7 @@ const MANIFEST: ManifestEntry[] = [
   {
     pattern: "/exercises/:exerciseId",
     resolve: async (params, locale) => {
-      const exercise = await apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/exercises/{id}", {
+      const exercise = await apiRead<{ localizedTexts?: LocalizedText[] }>("/v1/exercises/{id}", {
         pathParams: { id: params.exerciseId! },
       });
       return localizedName(exercise.localizedTexts, locale);
@@ -97,7 +97,7 @@ const MANIFEST: ManifestEntry[] = [
   {
     pattern: "/assignments/:assignmentId",
     resolve: async (params, locale) => {
-      const assignment = await apiGet<{ localizedTexts?: LocalizedText[] }>(
+      const assignment = await apiRead<{ localizedTexts?: LocalizedText[] }>(
         "/v1/exercise-assignments/{id}",
         { pathParams: { id: params.assignmentId! } },
       );
@@ -110,7 +110,7 @@ const MANIFEST: ManifestEntry[] = [
     pattern: "/solutions/:solutionId",
     resolve: async (params, locale) => {
       const [solution, t] = await Promise.all([
-        apiGet<{ attemptIndex?: number }>("/v1/assignment-solutions/{id}", {
+        apiRead<{ attemptIndex?: number }>("/v1/assignment-solutions/{id}", {
           pathParams: { id: params.solutionId! },
         }),
         getTranslations({ locale, namespace: "Solutions" }),
@@ -121,7 +121,7 @@ const MANIFEST: ManifestEntry[] = [
   {
     pattern: "/users/:userId",
     resolve: async (params) => {
-      const user = await apiGet<{ fullName?: string }>("/v1/users/{id}", {
+      const user = await apiRead<{ fullName?: string }>("/v1/users/{id}", {
         pathParams: { id: params.userId! },
       });
       return user.fullName ?? "";
@@ -130,7 +130,7 @@ const MANIFEST: ManifestEntry[] = [
   {
     pattern: "/assignments/:assignmentId/users/:userId",
     resolve: async (params) => {
-      const user = await apiGet<{ fullName?: string }>("/v1/users/{id}", {
+      const user = await apiRead<{ fullName?: string }>("/v1/users/{id}", {
         pathParams: { id: params.userId! },
       });
       return user.fullName ?? "";

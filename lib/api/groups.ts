@@ -5,7 +5,7 @@ import { cache } from "react";
 import { requireSession } from "@/lib/auth/require-session";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
-import { apiGet } from "./client";
+import { apiRead } from "./read";
 
 /**
  * The two group lists the sidebar shows (`docs/IA.md` §3.1: "My Groups" and "My Teaching").
@@ -98,7 +98,7 @@ interface UserGroupsPayload {
  */
 const fetchUserGroups = cache(async function fetchUserGroups(): Promise<UserGroupsPayload> {
   const session = await requireSession();
-  return apiGet<UserGroupsPayload>("/v1/users/{id}/groups", {
+  return apiRead<UserGroupsPayload>("/v1/users/{id}/groups", {
     pathParams: { id: session.userId },
   });
 });
@@ -117,7 +117,7 @@ const fetchUserGroups = cache(async function fetchUserGroups(): Promise<UserGrou
 const fetchVisibleGroups = cache(async function fetchVisibleGroups(
   scope: "active" | "archived" = "active",
 ): Promise<GroupPayload[]> {
-  return apiGet<GroupPayload[]>("/v1/groups", {
+  return apiRead<GroupPayload[]>("/v1/groups", {
     query: scope === "archived" ? { onlyArchived: true } : undefined,
   });
 });

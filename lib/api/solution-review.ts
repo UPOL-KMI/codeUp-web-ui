@@ -2,7 +2,8 @@ import "server-only";
 
 import { cache } from "react";
 
-import { apiGet, apiPost } from "./client";
+import { apiPost } from "./client";
+import { apiRead } from "./read";
 
 /**
  * A solution's review: the teacher's comments, each pinned to a file and a line (S-018).
@@ -56,7 +57,7 @@ interface ReviewPayload {
 export const getSolutionReview = cache(async function getSolutionReview(
   solutionId: string,
 ): Promise<SolutionReview> {
-  const payload = await apiGet<ReviewPayload>("/v1/assignment-solutions/{id}/review", {
+  const payload = await apiRead<ReviewPayload>("/v1/assignment-solutions/{id}/review", {
     pathParams: { id: solutionId },
   });
 

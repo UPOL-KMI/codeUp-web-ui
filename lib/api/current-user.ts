@@ -4,7 +4,7 @@ import { cache } from "react";
 
 import { requireSession } from "@/lib/auth/require-session";
 
-import { apiGet } from "./client";
+import { apiRead } from "./read";
 
 /**
  * The signed-in user, as the app shell needs them (D-014).
@@ -37,7 +37,7 @@ interface UserPayload {
  */
 export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser> {
   const session = await requireSession();
-  const user = await apiGet<UserPayload>("/v1/users/{id}", { pathParams: { id: session.userId } });
+  const user = await apiRead<UserPayload>("/v1/users/{id}", { pathParams: { id: session.userId } });
 
   return {
     id: user.id,

@@ -5,7 +5,7 @@ import { cache } from "react";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import type { EvaluationInput } from "@/lib/status/evaluation";
 
-import { apiGet } from "./client";
+import { apiRead } from "./read";
 
 /**
  * One submitted solution and how it was evaluated (S-015).
@@ -116,16 +116,16 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
   solutionId: string,
   locale: string,
 ): Promise<SolutionDetail> {
-  const solution = await apiGet<SolutionPayload>("/v1/assignment-solutions/{id}", {
+  const solution = await apiRead<SolutionPayload>("/v1/assignment-solutions/{id}", {
     pathParams: { id: solutionId },
   });
 
-  const assignment = await apiGet<{ localizedTexts?: LocalizedText[]; groupId: string | null }>(
+  const assignment = await apiRead<{ localizedTexts?: LocalizedText[]; groupId: string | null }>(
     "/v1/exercise-assignments/{id}",
     { pathParams: { id: solution.assignmentId } },
   );
   const group = assignment.groupId
-    ? await apiGet<{ localizedTexts?: LocalizedText[]; primaryAdminsIds?: string[] }>(
+    ? await apiRead<{ localizedTexts?: LocalizedText[]; primaryAdminsIds?: string[] }>(
         "/v1/groups/{id}",
         { pathParams: { id: assignment.groupId } },
       )
