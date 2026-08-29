@@ -587,7 +587,72 @@
       "title": "Zatím nic neodevzdáno",
       "description": "Jakmile odevzdáte řešení, objeví se zde."
     },
-    "submitAction": "Odevzdat řešení"
+    "submitAction": "Odevzdat řešení",
+    "visibility": "Viditelné studentům",
+    "visible": "Viditelné",
+    "notVisible": "Skryté",
+    "visibleFrom": "viditelné od",
+    "assignedAt": "Zadáno",
+    "sync": {
+      "stale": {
+        "title": "Neodpovídá cvičení, ze kterého vzniklo",
+        "description": "{parts, plural, one {# část tohoto zadání se} few {# části tohoto zadání se} many {# částí tohoto zadání se} other {# částí tohoto zadání se}} od změny cvičení neaktualizovala. Řešení studentů se vyhodnocují proti starší kopii."
+      },
+      "deleted": {
+        "title": "Cvičení, ze kterého zadání vzniklo, bylo smazáno",
+        "description": "Zadání dál funguje, ale už ho nelze synchronizovat a z toho cvičení nelze vytvořit další zadání."
+      },
+      "parts": {
+        "files": "Soubory cvičení",
+        "fileLinks": "Odkazy na soubory",
+        "exerciseTests": "Testy cvičení",
+        "localizedTexts": "Texty zadání",
+        "configurationType": "Režim konfigurace",
+        "scoreConfig": "Konfigurace bodování",
+        "exerciseConfig": "Konfigurace cvičení",
+        "runtimeEnvironments": "Výběr běhových prostředí",
+        "exerciseEnvironmentConfigs": "Konfigurace prostředí",
+        "hardwareGroups": "Hardwarové skupiny",
+        "limits": "Limity",
+        "mergeJudgeLogs": "Slučování logů posuzovače"
+      }
+    },
+    "solvers": {
+      "heading": "Jak si vede skupina",
+      "filterPlaceholder": "Hledat studenty…",
+      "columns": {
+        "name": "Student",
+        "attempts": "Pokusy",
+        "points": "Body",
+        "status": "Výsledek",
+        "flags": "Příznaky"
+      },
+      "flags": {
+        "accepted": "Uznáno",
+        "reviewRequested": "Žádost o revizi"
+      },
+      "stats": {
+        "submitted": "Odevzdalo",
+        "submittedNote": "studentů s alespoň jedním pokusem",
+        "correct": "Vyřešilo úplně",
+        "average": "Průměr bodů",
+        "averageNote": "ze studentů s obodovaným řešením",
+        "averageNone": "zatím nic nebylo obodováno",
+        "reviewRequests": "Žádosti o revizi"
+      },
+      "empty": {
+        "title": "Skupina nemá žádné studenty",
+        "description": "Jakmile se do skupiny přidají studenti, uvidíte tu jejich postup na tomto zadání."
+      }
+    },
+    "userSolutions": {
+      "title": "Řešení studenta {name}",
+      "backToAssignment": "Zpět na zadání",
+      "empty": {
+        "title": "Zatím nic neodevzdáno",
+        "description": "{name} zatím k tomuto zadání neodevzdal(a) žádné řešení."
+      }
+    }
   },
   "Submit": {
     "title": "Odevzdat řešení",

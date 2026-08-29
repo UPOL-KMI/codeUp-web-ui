@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-import { STUDENT, SUPERADMIN } from "./helpers/accounts";
+import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 import type { SeedAccount } from "./helpers/accounts";
@@ -55,10 +55,12 @@ test("lists submitted solutions newest first and links each to itself", async ({
   }
 });
 
-test("shows a teacher the same screen without personal claims about their own solutions", async ({
-  page,
-}) => {
-  const cookie = await loginAndGetCookie(SUPERADMIN);
+/**
+ * The teacher half of the same screen (S-013). Reached from the teacher's own dashboard, for the
+ * same reason the student route is: the link is part of what is under test.
+ */
+async function openFirstAssignmentAsTeacher(page: Page, account: SeedAccount): Promise<void> {
+  const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await page.goto("/en/dashboard");
   await page
@@ -68,9 +70,56 @@ test("shows a teacher the same screen without personal claims about their own so
     .getByRole("link")
     .first()
     .click();
-
   await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
-  await expect(page.getByRole("main").getByText("Nothing submitted yet")).toBeVisible();
+}
+
+test("makes no personal claims to a teacher who does not study in the group", async ({ page }) => {
+  await openFirstAssignmentAsTeacher(page, SUPERADMIN);
+  const main = page.getByRole("main");
+
+  await expect(main.getByRole("heading", { name: "Terms" })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "Submitting" })).toHaveCount(0);
+  await expect(main.getByRole("heading", { name: "My solutions" })).toHaveCount(0);
+});
+
+test("shows a teacher how the group is doing, and every student's standing", async ({ page }) => {
+  await openFirstAssignmentAsTeacher(page, SUPERVISOR);
+  const main = page.getByRole("main");
+
+  await expect(main.getByRole("heading", { name: "The group's progress" })).toBeVisible();
+  await expect(main.getByText("Submitted", { exact: true })).toBeVisible();
+  await expect(main.getByText("Average points")).toBeVisible();
+  // Rows exist for students who have submitted nothing -- that is the half a teacher opens this
+  // for -- so the roster is asserted by its own column header, not by a submission.
+  await expect(main.getByRole("columnheader", { name: "Student" })).toBeVisible();
+  await expect(main.getByText("Visible to students")).toBeVisible();
+});
+
+test("leads from a student's name to that student's own attempts", async ({ page }) => {
+  await openFirstAssignmentAsTeacher(page, SUPERVISOR);
+  const main = page.getByRole("main");
+  await expect(main.getByRole("heading", { name: "The group's progress" })).toBeVisible();
+
+  const student = main.locator("tbody tr").first().getByRole("link").first();
+  const name = (await student.innerText()).trim();
+  await student.click();
+
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/users\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { name: `Solutions by ${name}` })).toBeVisible();
+});
+
+test("refuses one student a look at another student's attempts", async ({ page }) => {
+  const cookie = await loginAndGetCookie(STUDENT);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await page.goto("/en/dashboard");
+  await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+
+  const assignmentUrl = page.url();
+  // Their own id -- the point is the route, not the target: a student holds no
+  // `viewAssignmentSolutions` hint on the assignment, so the page is refused either way.
+  await page.goto(`${assignmentUrl}/users/00000000-0000-0000-0000-000000000000`);
+  await expect(page.getByText("You don't have permission to access this resource.")).toBeVisible();
 });
 
 test.describe("submitting a solution", () => {

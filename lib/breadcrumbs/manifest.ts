@@ -70,6 +70,8 @@ const MANIFEST: ManifestEntry[] = [
   // segment, and the label is this page's own namespace title like any other static entry.
   { namespace: "Submit", pattern: "/assignments/:assignmentId/submit" },
   { namespace: "Sources", pattern: "/solutions/:solutionId/sources" },
+  // `/assignments/:id/users` is a path segment with no page of its own, like `/assignments`.
+  { namespace: "Users", pattern: "/assignments/:assignmentId/users", unlinked: true },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
   // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their
@@ -118,6 +120,15 @@ const MANIFEST: ManifestEntry[] = [
   },
   {
     pattern: "/users/:userId",
+    resolve: async (params) => {
+      const user = await apiGet<{ fullName?: string }>("/v1/users/{id}", {
+        pathParams: { id: params.userId! },
+      });
+      return user.fullName ?? "";
+    },
+  },
+  {
+    pattern: "/assignments/:assignmentId/users/:userId",
     resolve: async (params) => {
       const user = await apiGet<{ fullName?: string }>("/v1/users/{id}", {
         pathParams: { id: params.userId! },

@@ -42,6 +42,9 @@ export interface AssignmentDetail {
   externalLink: string;
   groupId: string | null;
   groupName: string;
+  exerciseId: string | null;
+  createdAt: number;
+  visibleFrom: number | null;
   firstDeadline: number;
   secondDeadline: number | null;
   allowSecondDeadline: boolean;
@@ -57,6 +60,11 @@ export interface AssignmentDetail {
   isExam: boolean;
   isPublic: boolean;
   can: Record<string, boolean>;
+  /** Whether this reader studies in the group -- what decides if the page speaks to them as one. */
+  viewerIsStudent: boolean;
+  /** Parts of the assignment that have fallen behind the exercise it was copied from (S-013). */
+  staleParts: string[];
+  syncPossible: boolean;
   /** core-api's own answer to whether this reader may submit right now, and why not. */
   submission: {
     canSubmit: boolean;
@@ -72,6 +80,9 @@ interface AssignmentPayload {
   id: string;
   localizedTexts?: (LocalizedText & { text?: string; link?: string; studentHint?: string })[];
   groupId: string | null;
+  exerciseId: string | null;
+  createdAt: number;
+  visibleFrom: number | null;
   firstDeadline: number;
   secondDeadline: number;
   allowSecondDeadline: boolean;
@@ -85,8 +96,19 @@ interface AssignmentPayload {
   isBonus: boolean;
   isExam: boolean;
   isPublic: boolean;
+  exerciseSynchronizationInfo?: SynchronizationInfo;
   permissionHints?: Record<string, boolean>;
 }
+
+/**
+ * Every key but `isSynchronizationPossible` and `updatedAt` is one part of the exercise the
+ * assignment was copied from, reported as `{upToDate}` -- so the stale ones are read by filtering
+ * the object rather than by listing the parts here, which would go out of date the first time
+ * core-api grows another one.
+ */
+type SynchronizationInfo = Record<string, unknown> & {
+  isSynchronizationPossible?: boolean;
+};
 
 interface SolutionPayload {
   id: string;
@@ -128,6 +150,59 @@ function localizedText(
   };
 }
 
+function stalePartsOf(info: SynchronizationInfo | undefined): string[] {
+  if (!info) return [];
+  return Object.entries(info)
+    .filter(
+      ([, value]) =>
+        typeof value === "object" &&
+        value !== null &&
+        (value as { upToDate?: boolean }).upToDate === false,
+    )
+    .map(([part]) => part);
+}
+
+function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
+  return {
+    id: solution.id,
+    attemptIndex: solution.attemptIndex,
+    createdAt: solution.createdAt,
+    gained: solution.actualPoints,
+    bonus: solution.bonusPoints,
+    maxPoints: solution.maxPoints,
+    accepted: solution.accepted,
+    isBest: solution.isBestSolution,
+    reviewRequested: solution.reviewRequest,
+    reviewClosed: solution.review?.closedAt != null,
+    evaluation: {
+      lastSubmission: solution.lastSubmission,
+      maxPoints: solution.maxPoints,
+      accepted: solution.accepted,
+    },
+  };
+}
+
+function newestFirst(rows: AssignmentSolutionRow[]): AssignmentSolutionRow[] {
+  return rows.sort((a, b) => b.createdAt - a.createdAt || b.attemptIndex - a.attemptIndex);
+}
+
+/**
+ * One person's attempts at one assignment, for a reader who is not that person (S-013).
+ *
+ * The same endpoint the student view reads about themselves -- core-api decides whether this
+ * reader may see someone else's solutions, and answers 403 if not.
+ */
+export const getAssignmentSolutionsOf = cache(async function getAssignmentSolutionsOf(
+  assignmentId: string,
+  userId: string,
+): Promise<AssignmentSolutionRow[]> {
+  const solutions = await apiGet<SolutionPayload[]>(
+    "/v1/exercise-assignments/{id}/users/{userId}/solutions",
+    { pathParams: { id: assignmentId, userId } },
+  );
+  return newestFirst(solutions.map(solutionRow));
+});
+
 export const getAssignmentDetail = cache(async function getAssignmentDetail(
   assignmentId: string,
   locale: string,
@@ -139,9 +214,10 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
 
   const [group, submission, solutions, environments] = await Promise.all([
     assignment.groupId
-      ? apiGet<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
-          pathParams: { id: assignment.groupId },
-        })
+      ? apiGet<{ localizedTexts?: LocalizedText[]; privateData?: { students?: string[] } }>(
+          "/v1/groups/{id}",
+          { pathParams: { id: assignment.groupId } },
+        )
       : Promise.resolve(null),
     apiGet<CanSubmitPayload>("/v1/exercise-assignments/{id}/can-submit", {
       pathParams: { id: assignmentId },
@@ -162,6 +238,9 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
     externalLink: texts.link,
     groupId: assignment.groupId,
     groupName: group ? localizedName(group.localizedTexts, locale) : "",
+    exerciseId: assignment.exerciseId,
+    createdAt: assignment.createdAt,
+    visibleFrom: assignment.visibleFrom,
     firstDeadline: assignment.firstDeadline,
     secondDeadline:
       assignment.allowSecondDeadline && assignment.secondDeadline > 0
@@ -179,6 +258,9 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
     isExam: assignment.isExam,
     isPublic: assignment.isPublic,
     can: assignment.permissionHints ?? {},
+    viewerIsStudent: (group?.privateData?.students ?? []).includes(session.userId),
+    staleParts: stalePartsOf(assignment.exerciseSynchronizationInfo),
+    syncPossible: assignment.exerciseSynchronizationInfo?.isSynchronizationPossible === true,
     submission: {
       canSubmit: submission.canSubmit,
       total: submission.total,
@@ -186,24 +268,6 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
       failed: submission.failed,
       ...(submission.lockedReason ? { lockedReason: submission.lockedReason } : {}),
     },
-    mySolutions: solutions
-      .map((solution) => ({
-        id: solution.id,
-        attemptIndex: solution.attemptIndex,
-        createdAt: solution.createdAt,
-        gained: solution.actualPoints,
-        bonus: solution.bonusPoints,
-        maxPoints: solution.maxPoints,
-        accepted: solution.accepted,
-        isBest: solution.isBestSolution,
-        reviewRequested: solution.reviewRequest,
-        reviewClosed: solution.review?.closedAt != null,
-        evaluation: {
-          lastSubmission: solution.lastSubmission,
-          maxPoints: solution.maxPoints,
-          accepted: solution.accepted,
-        },
-      }))
-      .sort((a, b) => b.createdAt - a.createdAt || b.attemptIndex - a.attemptIndex),
+    mySolutions: newestFirst(solutions.map(solutionRow)),
   };
 });

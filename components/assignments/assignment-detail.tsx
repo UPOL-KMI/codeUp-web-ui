@@ -1,16 +1,15 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import type { AssignmentDetail } from "@/lib/api/assignment";
-import { formatPoints } from "@/lib/format/points";
 
 import { Link } from "@/i18n/navigation";
+import { SolutionList } from "@/components/assignments/solution-list";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { Markdown } from "@/components/markdown/markdown";
 import { EmptyState } from "@/components/state/empty-state";
 import { Badge } from "@/components/status/badge";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
-import { EvaluationBadge } from "@/components/status/evaluation-badge";
 
 /**
  * An assignment as the person solving it sees it (S-012, `docs/IA.md` §4.3): what to do, by when,
@@ -26,6 +25,12 @@ import { EvaluationBadge } from "@/components/status/evaluation-badge";
  * because that is what core-api counts against the limit (`findValidSolutions`) -- a submission
  * that died in the pipeline does not consume an attempt, and telling a student otherwise would
  * cost them one.
+ *
+ * Everything that speaks in the first person -- "you can submit", "my solutions" -- is rendered
+ * only for someone who studies in this group (S-013). core-api answers `canSubmit: true` for a
+ * supervisor as well, but the legacy app offers the button to students only, and a teacher who
+ * reads "you have 20 attempts left" under an assignment they set is being told about a
+ * submission nobody expects them to make.
  */
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -44,40 +49,49 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
     assignment.submissionsCountLimit - assignment.submission.evaluated,
   );
 
+  // `isPublic` alone, with the release date stated beside it rather than folded into it: whether
+  // `visibleFrom` has passed depends on the current time, which a Server Component has no business
+  // deciding (the same rule `DeadlineBadge` exists for).
+
+  // A former student of the group still has their attempts; they just no longer have a deadline.
+  const showMySolutions = assignment.viewerIsStudent || assignment.mySolutions.length > 0;
+
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="assignment-submitting">
-        <h2 id="assignment-submitting" className="mb-3 text-base font-semibold tracking-tight">
-          {t("submitting.heading")}
-        </h2>
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm">
-            {assignment.submission.lockedReason
-              ? t("submitting.locked")
-              : assignment.submission.canSubmit
-                ? t("submitting.open", { attempts: attemptsLeft })
-                : attemptsLeft === 0
-                  ? t("submitting.noAttempts", { limit: assignment.submissionsCountLimit })
-                  : t("submitting.closed")}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("submitting.counts", {
-              evaluated: assignment.submission.evaluated,
-              failed: assignment.submission.failed,
-            })}
-          </p>
-          {assignment.submission.canSubmit && (
-            <p className="mt-3">
-              <Link
-                href={`/assignments/${assignment.id}/submit`}
-                className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                {t("submitAction")}
-              </Link>
+      {assignment.viewerIsStudent && (
+        <section aria-labelledby="assignment-submitting">
+          <h2 id="assignment-submitting" className="mb-3 text-base font-semibold tracking-tight">
+            {t("submitting.heading")}
+          </h2>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm">
+              {assignment.submission.lockedReason
+                ? t("submitting.locked")
+                : assignment.submission.canSubmit
+                  ? t("submitting.open", { attempts: attemptsLeft })
+                  : attemptsLeft === 0
+                    ? t("submitting.noAttempts", { limit: assignment.submissionsCountLimit })
+                    : t("submitting.closed")}
             </p>
-          )}
-        </div>
-      </section>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("submitting.counts", {
+                evaluated: assignment.submission.evaluated,
+                failed: assignment.submission.failed,
+              })}
+            </p>
+            {assignment.submission.canSubmit && (
+              <p className="mt-3">
+                <Link
+                  href={`/assignments/${assignment.id}/submit`}
+                  className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t("submitAction")}
+                </Link>
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="assignment-text">
         <h2 id="assignment-text" className="mb-3 text-base font-semibold tracking-tight">
@@ -152,6 +166,30 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
           <DetailRow label={t("attempts")}>
             {t("attemptsValue", { limit: assignment.submissionsCountLimit })}
           </DetailRow>
+          {assignment.can.update && (
+            <DetailRow label={t("visibility")}>
+              <span className="flex flex-wrap items-center gap-2">
+                <Badge tone={assignment.isPublic ? "success" : "warning"}>
+                  {assignment.isPublic ? t("visible") : t("notVisible")}
+                </Badge>
+                {assignment.visibleFrom !== null && (
+                  <span className="text-muted-foreground">
+                    {t("visibleFrom")} <DateTime unixSeconds={assignment.visibleFrom} />
+                  </span>
+                )}
+              </span>
+            </DetailRow>
+          )}
+          {assignment.can.update && (
+            <DetailRow label={t("assignedAt")}>
+              <span className="flex flex-wrap items-center gap-2">
+                <DateTime unixSeconds={assignment.createdAt} />
+                <span className="text-muted-foreground">
+                  <RelativeTime unixSeconds={assignment.createdAt} />
+                </span>
+              </span>
+            </DetailRow>
+          )}
           {assignment.environments.length > 0 && (
             <DetailRow label={t("environments")}>{assignment.environments.join(", ")}</DetailRow>
           )}
@@ -168,74 +206,18 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
         </dl>
       </section>
 
-      <section aria-labelledby="assignment-solutions">
-        <h2 id="assignment-solutions" className="mb-3 text-base font-semibold tracking-tight">
-          {t("mySolutions")}
-        </h2>
-        {assignment.mySolutions.length === 0 ? (
-          <EmptyState title={t("noSolutions.title")} description={t("noSolutions.description")} />
-        ) : (
-          <div className="overflow-x-auto rounded-md border border-border">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-3 py-2 text-left font-medium">{t("columns.attempt")}</th>
-                  <th className="px-3 py-2 text-left font-medium">{t("columns.submitted")}</th>
-                  <th className="px-3 py-2 text-right font-medium">{t("columns.points")}</th>
-                  <th className="px-3 py-2 text-left font-medium">{t("columns.status")}</th>
-                  <th className="px-3 py-2 text-left font-medium">{t("columns.flags")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignment.mySolutions.map((solution) => (
-                  <tr
-                    key={solution.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30"
-                  >
-                    <td className="px-3 py-2">
-                      <Link
-                        href={`/solutions/${solution.id}`}
-                        className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                      >
-                        {t("attemptNumber", { index: solution.attemptIndex })}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <DateTime unixSeconds={solution.createdAt} withSeconds />
-                        <span className="text-muted-foreground">
-                          <RelativeTime unixSeconds={solution.createdAt} />
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
-                      {formatPoints(solution.gained ?? 0, solution.maxPoints)}
-                      {solution.bonus !== 0 && (
-                        <span className={solution.bonus > 0 ? "text-success" : "text-destructive"}>
-                          {solution.bonus > 0 ? ` +${solution.bonus}` : ` ${solution.bonus}`}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      <EvaluationBadge solution={solution.evaluation} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1">
-                        {solution.isBest && <Badge tone="success">{t("flags.best")}</Badge>}
-                        {solution.accepted && <Badge tone="info">{t("flags.accepted")}</Badge>}
-                        {solution.reviewRequested && !solution.reviewClosed && (
-                          <Badge tone="warning">{t("flags.reviewRequested")}</Badge>
-                        )}
-                        {solution.reviewClosed && <Badge>{t("flags.reviewed")}</Badge>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      {showMySolutions && (
+        <section aria-labelledby="assignment-solutions">
+          <h2 id="assignment-solutions" className="mb-3 text-base font-semibold tracking-tight">
+            {t("mySolutions")}
+          </h2>
+          {assignment.mySolutions.length === 0 ? (
+            <EmptyState title={t("noSolutions.title")} description={t("noSolutions.description")} />
+          ) : (
+            <SolutionList solutions={assignment.mySolutions} />
+          )}
+        </section>
+      )}
     </div>
   );
 }

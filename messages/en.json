@@ -587,7 +587,72 @@
       "title": "Nothing submitted yet",
       "description": "Your solutions will appear here once you submit one."
     },
-    "submitAction": "Submit a solution"
+    "submitAction": "Submit a solution",
+    "visibility": "Visible to students",
+    "visible": "Visible",
+    "notVisible": "Hidden",
+    "visibleFrom": "visible from",
+    "assignedAt": "Assigned at",
+    "sync": {
+      "stale": {
+        "title": "Behind the exercise it was created from",
+        "description": "{parts, plural, one {# part of this assignment has} other {# parts of this assignment have}} not been updated since the exercise changed. Students are being evaluated against the older copy."
+      },
+      "deleted": {
+        "title": "The exercise behind this assignment was deleted",
+        "description": "The assignment keeps working, but it can no longer be synchronised, and no new assignment can be created from that exercise."
+      },
+      "parts": {
+        "files": "Exercise files",
+        "fileLinks": "File links",
+        "exerciseTests": "Exercise tests",
+        "localizedTexts": "Assignment texts",
+        "configurationType": "Configuration mode",
+        "scoreConfig": "Score configuration",
+        "exerciseConfig": "Exercise configuration",
+        "runtimeEnvironments": "Selection of runtime environments",
+        "exerciseEnvironmentConfigs": "Environment configuration",
+        "hardwareGroups": "Hardware groups",
+        "limits": "Limits",
+        "mergeJudgeLogs": "Judge log merge flag"
+      }
+    },
+    "solvers": {
+      "heading": "The group's progress",
+      "filterPlaceholder": "Search students…",
+      "columns": {
+        "name": "Student",
+        "attempts": "Attempts",
+        "points": "Points",
+        "status": "Result",
+        "flags": "Flags"
+      },
+      "flags": {
+        "accepted": "Accepted",
+        "reviewRequested": "Review requested"
+      },
+      "stats": {
+        "submitted": "Submitted",
+        "submittedNote": "students with at least one attempt",
+        "correct": "Fully solved",
+        "average": "Average points",
+        "averageNote": "over students with a scored solution",
+        "averageNone": "nothing has been scored yet",
+        "reviewRequests": "Review requests"
+      },
+      "empty": {
+        "title": "This group has no students",
+        "description": "Once students join the group, their progress on this assignment appears here."
+      }
+    },
+    "userSolutions": {
+      "title": "Solutions by {name}",
+      "backToAssignment": "Back to the assignment",
+      "empty": {
+        "title": "Nothing submitted yet",
+        "description": "{name} has not submitted a solution to this assignment."
+      }
+    }
   },
   "Submit": {
     "title": "Submit a solution",
