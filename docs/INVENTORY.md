@@ -40,7 +40,7 @@
 | `app/pipelines/:pipelineId`                                                | Pipeline                   | true  | PIPELINE_URI_FACTORY                        | `/pipelines/[id]`                      | todo   |
 | `app/pipelines/:pipelineId/edit`                                           | EditPipeline               | true  | PIPELINE_EDIT_URI_FACTORY                   | `/pipelines/[id]/edit`                 | todo   |
 | `app/pipelines/:pipelineId/edit-struct`                                    | EditPipelineStructure      | true  | PIPELINE_EDIT_STRUCT_URI_FACTORY            | `/pipelines/[id]/edit-struct`          | todo   |
-| `app/group/:groupId/edit`                                                  | EditGroup                  | true  | GROUP_EDIT_URI_FACTORY                      | `/groups/[id]/edit`                    | todo   |
+| `app/group/:groupId/edit`                                                  | EditGroup                  | true  | GROUP_EDIT_URI_FACTORY                      | `/groups/[id]?tab=settings`            | done   |
 | `app/group/:groupId/info`                                                  | GroupInfo                  | true  | GROUP_INFO_URI_FACTORY                      | `/groups/[id]?tab=info`                | done   |
 | `app/group/:groupId/assignments`                                           | GroupAssignments           | true  | GROUP_ASSIGNMENTS_URI_FACTORY               | `/groups/[id]?tab=assignments`         | done   |
 | `app/group/:groupId/students`                                              | GroupStudents              | true  | GROUP_STUDENTS_URI_FACTORY                  | `/groups/[id]?tab=students`            | done   |

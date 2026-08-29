@@ -2043,16 +2043,55 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     with route names (`/groups/[id]/info`) that S-005..S-007 never built; they ship as `?tab=`
     views and are marked accordingly now, alongside the two exam rows.
 
+- **[2026-08-29 19:10] S-009:** The group's settings, and who belongs to it.
+  `components/groups/{settings-form,settings-controls,member-manager,user-picker}.tsx`,
+  `lib/actions/group-settings.ts`.
+  - _One tab, two legacy screens, and one deliberate omission (DEC-074)._ Everything the legacy
+    Edit Group screen does is here; so is the membership management the legacy app keeps on two
+    _other_ screens (supervisors on group info, students on group students), because `docs/IA.md`
+    §4.2 says Settings is where both belong and they are the same question about two kinds of
+    person. **Invitations are not**: T-018 already owns them and S-023 owns the page an invitation
+    link opens, so building the manager here would ship a link to a route nobody has written --
+    DEC-066's rule, applied to someone else's ticket this time. Both rows say so now.
+  - _An archived group renders no form at all._ It is immutable, so a form that submitted would be
+    refused; the legacy screen hides it for the same reason. What is still offered is the way back,
+    which is **the unarchive action S-011 deliberately left to this ticket** -- and, beside it, the
+    **exam-group flag S-008 left here**, next to the organizational one, each hidden while the other
+    holds because core-api forbids a group being both.
+  - **_A blank name deletes that language rather than failing validation (DEC-075)._** core-api
+    replaces the whole `localizedTexts` array with whatever it is sent, so the form has to submit
+    every locale at once; given that, an empty field can only mean "this group has no text in that
+    language". Most seeded groups are named in English only, and demanding a Czech name before an
+    English one could be saved would be this form inventing a rule the API does not have. One name
+    has to survive, and that is the rule the schema does enforce.
+  - **_A bug in D-015, found because this screen made it undeniable (DEC-076)._** core-api's user
+    list takes its search term as **`filters[search]`** and **silently ignores a bare `search`**,
+    answering with every user it would have returned anyway. The command palette has been listing
+    arbitrary users since D-015 -- plausible-looking output, which is exactly why it survived. A
+    member picker that ignores what you type is not plausible-looking, it is broken, so this
+    surfaced within a minute of first use. Fixed in `app/api/search/route.ts`; `/groups` and
+    `/exercises` do take the bare parameter, re-checked live rather than assumed.
+  - _Verified live as the administrator, every action and its undo:_ saving settings and putting
+    them back; marking a group as an exam group and unmarking it -- **including watching core-api
+    refuse the flag on a group that has subgroups**, which arrives as the toast's own message
+    rather than as a broken page; archiving and unarchiving the seeded archived course; moving a
+    throwaway group under another parent and then deleting it, which lands on the parent; adding a
+    student and removing them; changing a supervisor's role and changing it back. The instance was
+    left exactly as it was found.
+  - _Observations:_ **116 e2e tests pass** (113 before), 49 unit tests. The two mutating e2e tests
+    are self-healing -- each undoes its own change, and repairs the state a previously failed run
+    would have left, because this suite shares one seeded instance with every other spec.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
-  live evaluation progress (S-016), the group's exams (S-008), plus F-030 (a core-api refusal
-  renders as one). Foundation and Design System complete.
-- **Next ticket:** S-009 (the group's Settings tab), which also owes two actions other tickets
-  deliberately left it: unarchiving a group (S-011) and the exam-group flag (S-008). S-019..S-025
-  remain in Phase 3. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), plus F-030
+  (a core-api refusal renders as one). Foundation and Design System complete.
+- **Next ticket:** S-019 (the solution plagiarism report). S-019..S-025 are what remains of Phase 3; the
+  group screens are finished, including the two actions other tickets had left to S-009
+  (unarchiving from S-011, the exam-group flag from S-008). The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None
