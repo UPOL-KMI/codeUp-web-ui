@@ -127,6 +127,11 @@ Worth noting the two are the same dataset by construction: the calendar view sho
 every group the reader studies in or teaches, which is exactly what the iCal feed exports. If they
 ever disagree, one of them is wrong.
 
+**Closed by S-022.** The token manager ships on `/profile/edit`: the tokens are listed with their
+state, one can be created, and expiring is offered as the only revocation core-api has. Verified
+end to end -- a created link was fetched directly and returned a real `VCALENDAR` feed, and the
+same URL answered 400 once expired.
+
 ## Q-015: The group list fetches everything and filters in the browser (S-004)
 
 `GET /v1/groups` returns every group the caller can see -- for a student, their own plus the

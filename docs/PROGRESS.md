@@ -2178,22 +2178,49 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     own control, which is DEC-066's rule applied forward.
   - _Observations:_ **122 e2e tests pass** (120 before), 55 unit tests.
 
+- **[2026-08-29 23:15] S-022:** The reader's own account.
+  `app/[locale]/(app)/profile/edit/page.tsx`, `components/users/account-forms.tsx`,
+  `lib/actions/account.ts`, `lib/api/user-settings.ts`.
+  - _Four things, four submits._ Name and email; the password; what ReCodEx emails you (a language
+    and twelve flags, core-api's own list); and **the iCal tokens a calendar app subscribes with,
+    which closes Q-014** -- the capability S-003 was almost credited with and did not build.
+  - **_Changing a password ends the session, so the form says so and acts on it (DEC-082)._**
+    core-api sets a token validity threshold on the change, which kills the token that made the
+    request: every later click would 401 on a page that still looks signed in. The form signs out
+    through this app's own logout route and lands on `/login`. It is separate from the profile form
+    for the same reason -- name, email and the Gravatar toggle share an endpoint with the password,
+    and one combined form would cost a session for correcting a name.
+  - _About oneself only._ core-api's `canUpdateProfile` would let an administrator edit someone
+    else and the legacy app uses one page for both, but here the id comes from the **session**, not
+    the URL -- there is nothing to tamper with, and editing another account is AD-002's screen.
+  - _The calendar section states what a calendar link is._ A bearer URL: whoever holds it reads the
+    deadlines, with no other authentication. Expiring is the only revocation core-api offers -- the
+    record stays, marked -- so expired links stay listed rather than disappearing as if they had
+    never been made.
+  - _Verified live as the seeded student:_ a profile field saved and put back, a notification flag
+    toggled and put back, and a calendar link created, **fetched directly (a real `VCALENDAR`
+    feed)**, then expired -- after which the same URL answers 400.
+  - _What the e2e suite deliberately does not do:_ change a password. It would invalidate the
+    seeded account for every other spec, with no way to put it back; the spec asserts the form's own
+    rule (the two new passwords must match) instead, which is the part this app owns.
+  - _Observations:_ **125 e2e tests pass** (122 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
-  detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021), plus
-  F-030 (a core-api refusal renders as one). Foundation and Design System complete.
-- **Next ticket:** S-022 (user settings — name, email, password, and the iCal token manager Q-014
-  parked there), then S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it
-  can mint links that lead anywhere) and S-025 (the dashboard's shadow-assignment rows, unblocked
-  now that a fixture exists). The group screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021) and
+  account settings (S-022), plus F-030 (a core-api refusal renders as one). Foundation and Design
+  System complete.
+- **Next ticket:** S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it
+  can mint links that lead anywhere), then S-025 (the dashboard's shadow-assignment rows, unblocked
+  now that a fixture exists). The group screens are finished, and Q-014 is closed. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-017 — all proceeding without operator input,
+- **Operator inputs pending:** Q-011 through Q-017 (Q-014 closed by S-022) — all proceeding without operator input,
   reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 stands: a refused
   page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits —
