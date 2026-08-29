@@ -651,7 +651,35 @@
     "title": "Administrátor"
   },
   "Profile": {
-    "title": "Profil"
+    "title": "Profil",
+    "unnamed": "Uživatel bez jména",
+    "thisIsYou": "To jste vy",
+    "overview": "Účet",
+    "name": "Jméno",
+    "email": "E-mail",
+    "role": "Role",
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Cvičící a student",
+      "supervisor": "Cvičící",
+      "empowered-supervisor": "Cvičící s rozšířenými právy",
+      "superadmin": "Správce"
+    },
+    "createdAt": "Účet vytvořen",
+    "lastAuthenticationAt": "Naposledy přihlášen",
+    "externalId": "Identita {service}",
+    "verified": "E-mail ověřen",
+    "unverified": "E-mail neověřen",
+    "disabled": "Účet zablokován",
+    "groups": "Skupiny",
+    "membership": {
+      "student": "Studuje zde",
+      "supervisor": "Vyučuje zde"
+    },
+    "noGroups": {
+      "title": "Žádné skupiny",
+      "description": "Tento člověk teď v žádné skupině nestuduje ani nevyučuje."
+    }
   },
   "Upload": {
     "dropzone": "Vyberte soubory nebo je sem přetáhněte",

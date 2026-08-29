@@ -651,7 +651,35 @@
     "title": "Administration"
   },
   "Profile": {
-    "title": "Profile"
+    "title": "Profile",
+    "unnamed": "Unnamed user",
+    "thisIsYou": "This is you",
+    "overview": "Account",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Supervisor and student",
+      "supervisor": "Supervisor",
+      "empowered-supervisor": "Empowered supervisor",
+      "superadmin": "Administrator"
+    },
+    "createdAt": "Account created",
+    "lastAuthenticationAt": "Last signed in",
+    "externalId": "{service} identity",
+    "verified": "Email verified",
+    "unverified": "Email not verified",
+    "disabled": "Account disabled",
+    "groups": "Groups",
+    "membership": {
+      "student": "Studies here",
+      "supervisor": "Teaches here"
+    },
+    "noGroups": {
+      "title": "No groups",
+      "description": "This person neither studies nor teaches in any group right now."
+    }
   },
   "Upload": {
     "dropzone": "Choose files or drag them here",
