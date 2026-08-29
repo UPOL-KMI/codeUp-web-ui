@@ -173,3 +173,31 @@ applies to core-api's own 403s, which reached the reader as the generic error bo
 piece worth doing first and independent of the status code: **F-030 landed (DEC-070) and this
 question is unchanged by it.** A refused page now says so in words wherever the refusal comes from,
 and still answers 200.
+
+## Q-017: The IP half of an exam lock records infrastructure, not the student (S-008)
+
+Locking into an exam pins the student to the address the lock request came from
+(`GroupsPresenter::actionLockStudent` reads `getRemoteAddress()`), and core-api then refuses every
+later request from any other address (`BasePresenter::verifyUserIpLock`). In this app the lock
+request is made by the **server**, not by the student's browser -- the token never leaves the
+server (brief §5) -- so the address recorded is this app's container, the same for every student.
+
+**This is not a regression introduced by the BFF.** In this deployment the legacy frontend does not
+record the student's address either: the browser reaches core-api through the nginx `proxy` service,
+which does set `X-Forwarded-For`, but core-api's Nette configuration trusts no proxy (there is no
+`http: proxy:` entry in the api repo's `config.neon`, checked), so `getRemoteAddress()` is the
+proxy container's address for every request. Both frontends therefore record an infrastructure
+address; ours is simply a different one.
+
+**What this costs.** The lock still does the thing it is mostly used for -- `groupLock` confines the
+student to the exam group, and that is what "secured mode" means in the UI -- but the IP lock does
+not pin anyone to the machine in the exam room. The S-008 UI is worded accordingly: the student is
+told the group is the only one they can submit in, not that they are tied to this computer, and the
+teacher's column is labelled "address recorded" rather than "student's address".
+
+**What would fix it, and why neither is this ticket's.** Either core-api trusts a proxy header (a
+config change in the api deployment, plus a decision about who may set it -- and a header this app
+sets on behalf of a browser is only as trustworthy as this app's own view of the client), or the
+lock is taken by the browser directly against core-api, which needs a token in client JavaScript
+and is exactly what brief §5 forbids. Both are operator decisions about the deployment, not code
+this repo can write on its own.

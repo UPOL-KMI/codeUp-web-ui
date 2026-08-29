@@ -1992,23 +1992,78 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     finding the 403 URL the way a reader would come by one -- from a teacher who can open it),
     39 unit tests pass, `typecheck`/`lint`/`build` green.
 
+- **[2026-08-29 18:45] S-008:** The group's exams, from scheduling one to reading who sat it.
+  `components/groups/exam-{status,form,table,roster,locks}.tsx`, `lib/api/group-exams.ts`,
+  `lib/actions/group-exam.ts`, `lib/status/exam.ts`.
+  - _The tab appears on the legacy app's own rule, which is not a role check._ Whoever may set an
+    exam period sees it; so does anyone in a group that has held one or has one coming, because a
+    student needs this tab to lock themselves in and needs it only then. `?tab=exams`, with one
+    exam's records at `&exam=<id>` (DEC-071) -- the legacy app's second route renders the same
+    screen with one row expanded, which is a selection, not a page.
+  - **_The phase is computed twice, on purpose (DEC-072)._** The server decides it once, from its
+    own clock, because it decides what the tab _fetches_: the roster is worth a request only while
+    an exam runs, the lock records only after one ends. The status panel then ticks once a second
+    in the browser, exactly as the legacy page does, and **refreshes the route when its answer
+    stops matching what the server rendered** -- so a page open across the moment an exam begins
+    becomes the exam page instead of quietly lying. The phase _text_ renders after mount only
+    (`useSyncExternalStore`, `DeadlineBadge`'s shape); a phase printed on the server and reprinted
+    a second later in the browser is AGENTS.md §6.6's mismatch, and this screen is nothing but
+    time-dependent state.
+  - _What core-api refuses, the form does not offer._ Once an exam has begun, its beginning and its
+    lock type are fixed (`actionSetExamPeriod` rejects both), so those fields are disabled with the
+    reason stated rather than submitted and rejected. "Start now" appears only while the scheduled
+    end is under a day away, because an exam is capped at 24 hours from its beginning -- starting a
+    distant one now would be refused. Lock records are offered only to a reader holding
+    `viewExamLocks`, and never while an exam is still running.
+  - **_An exam exists only because somebody sat it._** core-api creates the `GroupExam` record in
+    `actionLockStudent` -- at the **first student lock**, not when the period is set. That single
+    fact explains the empty state ("no exams recorded", not "none held"), why a cancelled exam
+    leaves no trace, and why the seed fixture is the real sequence compressed (DEC-073): open a
+    minute-wide period, have the seeded student lock in, end it. Idempotent, and wider than the
+    sequence so a crash mid-way unsecures the group by itself instead of leaving it in exam mode.
+  - **_The IP half of an exam lock records infrastructure, not the student (Q-017)._** core-api
+    pins the lock to the address the request came from, and that request is made by this app's
+    server. **Not a regression from the BFF**: this deployment's core-api trusts no proxy (no
+    `http: proxy:` in the api repo's `config.neon`, checked), so the legacy frontend records the
+    nginx container's address for every student just as we record ours. The `groupLock` half --
+    which is what "secured mode" actually means -- works exactly as intended. The UI is worded to
+    match: the student is told this group is the only one they can submit in, not that they are
+    tied to this machine, and the teacher's column says "address recorded".
+  - _Verified live, end to end, as three people._ The teacher scheduled an exam, started it, watched
+    the roster, ended it; the student saw "exam in progress", locked in, and was told what they may
+    still reach; the teacher then saw them move from "not locked in yet" to "locked in", unlocked
+    them, and read the lock records afterwards. The run also produced the two states nothing else
+    could: a recorded exam, and a lock record with a real timestamp and address.
+  - _Observations:_ **113 e2e tests pass** (110 before: scheduling and cancelling a real exam, the
+    seeded held exam and its records, and a student's view of the same tab), 49 unit tests (four
+    new for the `h:mm` round trip and the phase boundaries). The mutating e2e test runs against a
+    different group from the read-only ones, and cancels any exam a previous failed run left behind
+    -- group-wide state is the one thing two Playwright workers can genuinely fight over.
+  - _Inventory correction found on the way:_ the Info/Assignments/Students rows still read `todo`
+    with route names (`/groups/[id]/info`) that S-005..S-007 never built; they ship as `?tab=`
+    views and are marked accordingly now, alongside the two exam rows.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
-  live evaluation progress (S-016), plus F-030 (a core-api refusal renders as one). Foundation and
-  Design System complete.
-- **Next ticket:** S-008 (the group's Exams tab), then S-009 (Settings). S-019..S-025 remain in
-  Phase 3. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  live evaluation progress (S-016), the group's exams (S-008), plus F-030 (a core-api refusal
+  renders as one). Foundation and Design System complete.
+- **Next ticket:** S-009 (the group's Settings tab), which also owes two actions other tickets
+  deliberately left it: unarchiving a group (S-011) and the exam-group flag (S-008). S-019..S-025
+  remain in Phase 3. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-016 — all proceeding without operator input,
+- **Operator inputs pending:** Q-011 through Q-017 — all proceeding without operator input,
   reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
   end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 stands: a refused
   page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits —
   F-030 fixed the half of it that the reader can see (which page renders), not the status line.
+  Q-017 is new and is genuinely an operator's: an exam's IP lock records this app's address rather
+  than the student's, as the legacy frontend already does in this deployment, and closing that gap
+  is a core-api proxy-trust decision rather than code.
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
   solution screen's test table, compilation output and limit badges have **never been rendered with

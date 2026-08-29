@@ -8,58 +8,58 @@
 
 ## Route Map (from `routes.js`)
 
-| Route (basePath)                                                           | Component                  | Auth  | Link Name                                   | Destination in New IA                 | Status |
-| -------------------------------------------------------------------------- | -------------------------- | ----- | ------------------------------------------- | ------------------------------------- | ------ |
-| `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                  | todo   |
-| `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                | todo   |
-| `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                              | todo   |
-| `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                           | todo   |
-| `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                    | todo   |
-| `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                  | todo   |
-| `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`       | todo   |
-| `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                          | done   |
-| `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                   | done   |
-| `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`    | done   |
-| `app/assignment/:assignmentId/edit`                                        | EditAssignment             | true  | ASSIGNMENT_EDIT_URI_FACTORY                 | `/assignments/[id]/edit`              | todo   |
-| `app/assignment/:assignmentId/solutions`                                   | AssignmentSolutions        | true  | ASSIGNMENT_SOLUTIONS_URI_FACTORY            | `/assignments/[id]/solutions`         | todo   |
-| `app/assignment/:assignmentId/solution/:solutionId`                        | Solution                   | true  | SOLUTION_DETAIL_URI_FACTORY                 | `/solutions/[id]`                     | todo   |
-| `app/assignment/:assignmentId/solution/:solutionId/sources`                | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_URI_FACTORY           | `/solutions/[id]/sources`             | todo   |
-| `app/assignment/:assignmentId/solution/:solutionId/diff/:secondSolutionId` | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_DIFF_URI_FACTORY      | `/solutions/[id]/diff/[otherId]`      | todo   |
-| `app/assignment/:assignmentId/solution/:solutionId/plagiarisms`            | SolutionPlagiarisms        | true  | SOLUTION_PLAGIARISMS_URI_FACTORY            | `/solutions/[id]/plagiarisms`         | todo   |
-| `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`            | todo   |
-| `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`       | todo   |
-| `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                          | todo   |
-| `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                     | todo   |
-| `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                | todo   |
-| `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`         | todo   |
-| `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions` | todo   |
-| `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`         | todo   |
-| `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`         | todo   |
-| `app/exercises/:exerciseId/reference-solution/:referenceSolutionId`        | ReferenceSolution          | true  | REFERENCE_SOLUTION_URI_FACTORY              | `/reference-solutions/[id]`           | todo   |
-| `app/pipelines`                                                            | Pipelines                  | true  | PIPELINES_URI                               | `/pipelines`                          | todo   |
-| `app/pipelines/:pipelineId`                                                | Pipeline                   | true  | PIPELINE_URI_FACTORY                        | `/pipelines/[id]`                     | todo   |
-| `app/pipelines/:pipelineId/edit`                                           | EditPipeline               | true  | PIPELINE_EDIT_URI_FACTORY                   | `/pipelines/[id]/edit`                | todo   |
-| `app/pipelines/:pipelineId/edit-struct`                                    | EditPipelineStructure      | true  | PIPELINE_EDIT_STRUCT_URI_FACTORY            | `/pipelines/[id]/edit-struct`         | todo   |
-| `app/group/:groupId/edit`                                                  | EditGroup                  | true  | GROUP_EDIT_URI_FACTORY                      | `/groups/[id]/edit`                   | todo   |
-| `app/group/:groupId/info`                                                  | GroupInfo                  | true  | GROUP_INFO_URI_FACTORY                      | `/groups/[id]/info`                   | todo   |
-| `app/group/:groupId/assignments`                                           | GroupAssignments           | true  | GROUP_ASSIGNMENTS_URI_FACTORY               | `/groups/[id]/assignments`            | todo   |
-| `app/group/:groupId/students`                                              | GroupStudents              | true  | GROUP_STUDENTS_URI_FACTORY                  | `/groups/[id]/students`               | todo   |
-| `app/group/:groupId/exams`                                                 | GroupExams                 | true  | GROUP_EXAMS_URI_FACTORY                     | `/groups/[id]/exams`                  | todo   |
-| `app/group/:groupId/exams/:examId`                                         | GroupExams                 | true  | GROUP_EXAMS_SPECIFIC_EXAM_URI_FACTORY       | `/groups/[id]/exams/[examId]`         | todo   |
-| `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`         | todo   |
-| `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                     | todo   |
-| `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                              | todo   |
-| `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                         | todo   |
-| `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/users/[id]/edit`                    | todo   |
-| `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                | todo   |
-| `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                    | todo   |
-| `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                            | todo   |
-| `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin/server`                       | todo   |
-| `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                    | todo   |
-| `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | `/admin/instances/[id]/edit`          | todo   |
-| `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`             | todo   |
-| `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                 | todo   |
-| `*`                                                                        | NotFound                   | —     | —                                           | `/[...not-found]`                     | todo   |
+| Route (basePath)                                                           | Component                  | Auth  | Link Name                                   | Destination in New IA                  | Status |
+| -------------------------------------------------------------------------- | -------------------------- | ----- | ------------------------------------------- | -------------------------------------- | ------ |
+| `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                   | todo   |
+| `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                 | todo   |
+| `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | todo   |
+| `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | todo   |
+| `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | todo   |
+| `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | todo   |
+| `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`        | todo   |
+| `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                           | done   |
+| `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                    | done   |
+| `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`     | done   |
+| `app/assignment/:assignmentId/edit`                                        | EditAssignment             | true  | ASSIGNMENT_EDIT_URI_FACTORY                 | `/assignments/[id]/edit`               | todo   |
+| `app/assignment/:assignmentId/solutions`                                   | AssignmentSolutions        | true  | ASSIGNMENT_SOLUTIONS_URI_FACTORY            | `/assignments/[id]/solutions`          | todo   |
+| `app/assignment/:assignmentId/solution/:solutionId`                        | Solution                   | true  | SOLUTION_DETAIL_URI_FACTORY                 | `/solutions/[id]`                      | todo   |
+| `app/assignment/:assignmentId/solution/:solutionId/sources`                | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_URI_FACTORY           | `/solutions/[id]/sources`              | todo   |
+| `app/assignment/:assignmentId/solution/:solutionId/diff/:secondSolutionId` | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_DIFF_URI_FACTORY      | `/solutions/[id]/diff/[otherId]`       | todo   |
+| `app/assignment/:assignmentId/solution/:solutionId/plagiarisms`            | SolutionPlagiarisms        | true  | SOLUTION_PLAGIARISMS_URI_FACTORY            | `/solutions/[id]/plagiarisms`          | todo   |
+| `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`             | todo   |
+| `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`        | todo   |
+| `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | todo   |
+| `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | todo   |
+| `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | todo   |
+| `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | todo   |
+| `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
+| `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | todo   |
+| `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`          | todo   |
+| `app/exercises/:exerciseId/reference-solution/:referenceSolutionId`        | ReferenceSolution          | true  | REFERENCE_SOLUTION_URI_FACTORY              | `/reference-solutions/[id]`            | todo   |
+| `app/pipelines`                                                            | Pipelines                  | true  | PIPELINES_URI                               | `/pipelines`                           | todo   |
+| `app/pipelines/:pipelineId`                                                | Pipeline                   | true  | PIPELINE_URI_FACTORY                        | `/pipelines/[id]`                      | todo   |
+| `app/pipelines/:pipelineId/edit`                                           | EditPipeline               | true  | PIPELINE_EDIT_URI_FACTORY                   | `/pipelines/[id]/edit`                 | todo   |
+| `app/pipelines/:pipelineId/edit-struct`                                    | EditPipelineStructure      | true  | PIPELINE_EDIT_STRUCT_URI_FACTORY            | `/pipelines/[id]/edit-struct`          | todo   |
+| `app/group/:groupId/edit`                                                  | EditGroup                  | true  | GROUP_EDIT_URI_FACTORY                      | `/groups/[id]/edit`                    | todo   |
+| `app/group/:groupId/info`                                                  | GroupInfo                  | true  | GROUP_INFO_URI_FACTORY                      | `/groups/[id]?tab=info`                | done   |
+| `app/group/:groupId/assignments`                                           | GroupAssignments           | true  | GROUP_ASSIGNMENTS_URI_FACTORY               | `/groups/[id]?tab=assignments`         | done   |
+| `app/group/:groupId/students`                                              | GroupStudents              | true  | GROUP_STUDENTS_URI_FACTORY                  | `/groups/[id]?tab=students`            | done   |
+| `app/group/:groupId/exams`                                                 | GroupExams                 | true  | GROUP_EXAMS_URI_FACTORY                     | `/groups/[id]?tab=exams`               | done   |
+| `app/group/:groupId/exams/:examId`                                         | GroupExams                 | true  | GROUP_EXAMS_SPECIFIC_EXAM_URI_FACTORY       | `/groups/[id]?tab=exams&exam=[examId]` | done   |
+| `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`          | todo   |
+| `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                      | todo   |
+| `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                               | todo   |
+| `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                          | todo   |
+| `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/users/[id]/edit`                     | todo   |
+| `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                 | todo   |
+| `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                     | todo   |
+| `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                             | todo   |
+| `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin/server`                        | todo   |
+| `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                     | todo   |
+| `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | `/admin/instances/[id]/edit`           | todo   |
+| `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`              | todo   |
+| `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                  | todo   |
+| `*`                                                                        | NotFound                   | —     | —                                           | `/[...not-found]`                      | todo   |
 
 ---
 
@@ -88,7 +88,7 @@
 | `exercises`                    | Exercise catalog, detail, edit                | `exercises`                          | todo   |
 | `files`                        | Uploaded files                                | `upload` component                   | todo   |
 | `filesContent`                 | File content preview                          | `solutions/[id]`                     | todo   |
-| `groupExamLocks`               | Exam mode locks                               | `groups/[id]/exams`                  | todo   |
+| `groupExamLocks`               | Exam mode locks                               | `groups/[id]?tab=exams`              | done   |
 | `groupExercises`               | Group-specific exercises                      | `groups/[id]/assignments`            | todo   |
 | `groupInvitations`             | Group invitations                             | `accept-group-invitation`            | todo   |
 | `groupResults`                 | Group results overview                        | `groups/[id]/assignments`            | todo   |
