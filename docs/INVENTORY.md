@@ -26,7 +26,7 @@
 | `app/assignment/:assignmentId/solution/:solutionId/sources`                | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_URI_FACTORY           | `/solutions/[id]/sources`              | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/diff/:secondSolutionId` | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_DIFF_URI_FACTORY      | `/solutions/[id]/diff/[otherId]`       | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/plagiarisms`            | SolutionPlagiarisms        | true  | SOLUTION_PLAGIARISMS_URI_FACTORY            | `/solutions/[id]/plagiarisms`          | done   |
-| `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`             | todo   |
+| `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`             | done   |
 | `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`        | todo   |
 | `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | todo   |
 | `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | todo   |
@@ -106,7 +106,7 @@
 | `referenceSolutions`           | Reference solutions                           | `exercises/[id]/reference-solutions` | todo   |
 | `registration`                 | User registration                             | `/register`                          | todo   |
 | `runtimeEnvironments`          | Runtime environments                          | `admin/server`                       | todo   |
-| `shadowAssignments`            | Shadow assignments (bonus)                    | `shadow-assignments/[id]`            | todo   |
+| `shadowAssignments`            | Shadow assignments (bonus)                    | `shadow-assignments/[id]`            | done   |
 | `solutionFiles`                | Solution source files                         | `solutions/[id]/sources`             | todo   |
 | `solutionReviews`              | Review comments on solutions                  | `solutions/[id]`                     | todo   |
 | `solutions`                    | Solution CRUD, evaluation                     | `solutions/[id]`                     | todo   |

@@ -2120,17 +2120,52 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     real uploaded data, marks and all -- not a state this project has had for its last three
     screens.
 
+- **[2026-08-29 19:35] S-020:** Shadow assignments, the kind with nothing to submit.
+  `app/[locale]/(app)/shadow-assignments/[shadowId]/page.tsx`,
+  `components/assignments/shadow-points-table.tsx`, `lib/api/shadow-assignment.ts`,
+  `lib/actions/shadow-points.ts`.
+  - _Everything odd about this screen follows from one fact: nothing is submitted._ An oral exam, a
+    presentation, attendance -- ReCodEx evaluates none of it, so there is no submit action, no
+    attempts, no evaluation badge, and **the deadline is stated as informative in those words**,
+    because core-api's own documentation says the supervisor decides whether it was breached. These
+    are the only points in the product a person types in rather than a pipeline computing.
+  - _Who sees whose points is core-api's answer, not this page's._ `viewAllPoints` decides what the
+    response contains -- every record, or only the reader's own
+    (`ShadowAssignmentViewFactory::getAssignmentPoints`) -- so one fetch feeds the teacher's table
+    and the student's "my points", and there is no branch here free to disagree with the API.
+  - _Each award says who recorded it and what date it is claimed for._ `awardedAt` is the teacher's
+    statement about when the work happened, which is not when the record was typed; the legacy
+    screen keeps the two apart and so does this one. Awarding goes through S-009's `UserPicker`
+    rather than a roster of the group: core-api takes a user id and decides for itself who may be
+    awarded, and a second roster here would be a second answer to who belongs to the group.
+  - _The group's assignments tab now lists them, under their own heading (DEC-079)._ That is where
+    the legacy group screen puts them and it is the only way this page is reachable. **Not rows in
+    the assignment table**: every column of that table is about a submission, so merging would mean
+    four blank columns and a status that has to be invented -- and the filter deliberately does not
+    apply to them, because none of its four states can.
+  - _Seeded, since none existed anywhere._ One shadow assignment with points awarded to Alice,
+    created the way core-api requires: an empty record, then `update-detail` carrying its `version`
+    (optimistic locking), then the points. **This also unblocks S-025**, whose row said it needed
+    exactly this data.
+  - _Verified live as both people:_ the teacher's table, editing an award and seeing it change,
+    awarding a second student and withdrawing it again, and the student's own points with no trace
+    of anyone else's. **120 e2e tests pass** (118 before), 55 unit tests.
+  - _Backlog correction found on the way:_ **T-017 ("group exam locks") was already shipped by
+    S-008** -- locking, unlocking, the live roster and the lock records all live on the Exams tab.
+    Marked done rather than left as a ticket someone would open and find finished.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
-  detected-similarities report (S-019), plus F-030 (a core-api refusal renders as one). Foundation
-  and Design System complete.
-- **Next ticket:** S-020 (shadow assignment detail), then S-021/S-022 (the user's own profile and
-  settings) and S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it can
-  mint links that lead anywhere). The group screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  detected-similarities report (S-019), shadow assignments (S-020), plus F-030 (a core-api refusal
+  renders as one). Foundation and Design System complete.
+- **Next ticket:** S-021 (the user profile), then S-022 (user settings), S-023/S-024 (the two
+  invitation-acceptance pages, which T-018 wants before it can mint links that lead anywhere) and
+  S-025 (the dashboard's shadow-assignment rows, unblocked now that a fixture exists). The group
+  screens are finished. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
   assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
   session still reads as an error page.
 - **Blocked tickets:** None
