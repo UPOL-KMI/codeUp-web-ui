@@ -1905,26 +1905,82 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     long enough to photograph -- and stopping the worker produces an immediate broker failure
     ("Worker ... dieded") rather than a queued job. Re-verify on a host with a working sandbox.
 
+- **[2026-08-29 12:40] S-013:** The assignment screen, as the person who set it reads it.
+  `components/assignments/{class-progress,solver-table,exercise-sync-notice,solution-list}.tsx`,
+  `lib/api/assignment-solvers.ts`,
+  `app/[locale]/(app)/assignments/[assignmentId]/users/[userId]/page.tsx`.
+  - _Two of `docs/IA.md` §4.3's three teacher additions are links to screens nobody has built
+    (DEC-066)._ "All submissions" is T-003 and "edit assignment" is T-002; a button to a 404 is
+    worse than no button, so this ticket ships the third one in full and each of those tickets
+    adds its own link here when it lands (noted on both rows in `BACKLOG.md`). What shipped is
+    everything this page can answer by itself: the class summary, the roster, the teacher-only
+    terms, and the state of the assignment's relationship with the exercise behind it.
+  - _The summary reads three cheap responses, and deliberately not the solutions list (DEC-067)._
+    `/v1/assignment-solvers?assignmentId=` says who attempted and how often,
+    `/v1/groups/{id}/students/stats` carries core-api's own points for each student's best
+    solution, and `/v1/users/list` puts names on both. `/v1/exercise-assignments/{id}/solutions`
+    would answer the same and drag every attempt by everyone along with it -- T-003's payload on
+    a page that displays none of it. **The roster comes from the stats response, not from the
+    solver list**: a solver record outlives its owner's membership, so rows built from solvers
+    would list leavers as students and omit everyone who has not started -- who are the half a
+    teacher opens this for.
+  - **_A number the dashboard has been getting wrong since S-001, fixed here because this view has
+    the missing fact (DEC-068)._** Q-012 records that a `null` best-solution status cannot
+    distinguish "never started" from "every attempt died in the pipeline", and that the dashboard
+    resolves it to `not-submitted`. `lastAttemptIndex` settles it: the seeded student, whose
+    eleven attempts all fail on this host (DEC-031), read as **"Not submitted"** in the first
+    version of this table and reads as **"Evaluation failed"** now.
+  - _Whatever speaks in the first person is now gated on studying in the group._ core-api answers
+    `canSubmit: true` for a supervisor too, but the legacy app offers the button to students only,
+    and "you have 20 attempts left" under an assignment you set is a claim about a submission
+    nobody expects. Verified live: the supervisor's page has no "Submitting" and no "My
+    solutions"; the student's is unchanged.
+  - _`visibleFrom` is stated beside `isPublic`, not folded into it._ Whether a release date has
+    passed depends on the current time, which a Server Component has no business deciding -- the
+    rule `DeadlineBadge` exists for (AGENTS.md §6.6). The row reads "Hidden · visible from 18. 9. 2026" rather than computing a verdict on the server.
+  - _The stale-sync notice is read-only, and that is not an omission._ An assignment is a snapshot
+    of its exercise; core-api reports the drift per part and the legacy app offers "update texts"
+    / "update configuration" buttons beside it. Re-syncing rewrites the assignment, which is an
+    edit, and edits are T-002's -- which now owns that action explicitly. Part names carry the
+    legacy app's own labels (`getSyncMessages`), with an unknown part rendering as its raw key
+    rather than being dropped.
+  - _Three states had no fixture, so they were produced against the live instance and then undone._
+    Hidden + `visibleFrom`, and a genuinely stale assignment (edited the seed exercise, watched
+    `localizedTexts.upToDate` go false, screenshotted the notice with real data, restored the text
+    and re-ran `pnpm seed`, which reports 28 assignments re-synced). Cheaper than growing the seed
+    for states no other screen needs, and it left the instance where it started.
+  - **_Two findings worth more than the ticket._** `forbidden()` renders the right page and answers
+    **HTTP 200** -- measured with a probe route whose whole body was that call, so it is the app
+    shell streaming before any page body runs, not a late call (DEC-069, Q-016). And a core-api
+    403 currently reaches the reader as "Something went wrong" from the error boundary: seen live
+    when a student opened the assignment while it was hidden. That one is F-030, and it is the
+    piece worth doing first.
+  - _Observations:_ **108 e2e tests pass** (105 before: four new, one rewritten), including a
+    student being refused another student's attempts. The 25-student group renders in ~330 ms with
+    `DataTable`'s own pagination, 20 rows to a page.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
-  S-010, S-011), the assignment screen (S-012), submitting (S-014), the solution screen (S-015),
-  its source viewer (S-017), the review written on top of it (S-018) and live evaluation progress
-  (S-016). Foundation and Design System complete.
-- **Next ticket:** S-013 (assignment detail, teacher view) -- the last piece of the assignment
-  screen, and the entry point every teacher-side ticket (T-003 solutions list, T-004 stats) hangs
-  off. S-008/S-009 (the group's Exams and Settings tabs) and S-019..S-025 remain in Phase 3.
+  S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
+  solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
+  live evaluation progress (S-016). Foundation and Design System complete.
+- **Next ticket:** S-008 (the group's Exams tab), then S-009 (Settings). S-019..S-025 remain in
+  Phase 3. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
+  assignment screen a link, recorded on their backlog rows.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-015 — all proceeding without operator input,
+- **Operator inputs pending:** Q-011 through Q-016 — all proceeding without operator input,
   reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
-  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008); S-018's review
-  notifications are the newest thing that assumption now covers.
+  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 is new: a refused
+  page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits.
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
   solution screen's test table, compilation output and limit badges have **never been rendered with
   real data**, and the dashboard reports every seeded submission as "Not submitted" (Q-012). S-016
   adds one more to that list — every evaluation here fails in under a second, so the pending state
-  its progress display exists for cannot be held open long enough to see. Everything else is
+  its progress display exists for cannot be held open long enough to see. S-013's class summary is
+  the same story from the teacher's side: "fully solved" has only ever been rendered as zero, and
+  the average points tile has only ever rendered "nothing has been scored yet". Everything else is
   verified live. Re-verify these on a cgroup v1 host.
 - **Unverified for want of a fixture (S-017):** no seeded solution is over core-api's preview limit
   or non-UTF-8, so the truncation and malformed-file notices have never rendered with data. The ZIP

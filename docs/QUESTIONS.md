@@ -144,3 +144,30 @@ response is large enough that fetching it at all is the cost. At that point the 
 checked) becomes the better trade, and `DataTable` would need a "the caller narrows the query"
 mode it does not have today. Recorded rather than pre-solved: this deployment has four groups, and
 the shape of the fix depends on numbers nobody has yet.
+
+---
+
+## Q-016: A refused page answers HTTP 200 (S-013)
+
+`forbidden()` renders `app/[locale]/forbidden.tsx` correctly -- the reader is told, in words, that
+they may not see this -- but the response status is **200**, not 403. Measured with a probe route
+whose entire body was `forbidden()`, so this is not about how late in the page the call sits: the
+`(app)` shell streams its first bytes before any page body runs, and the status line is written
+with them.
+
+DEC-034 chose `experimental.authInterrupts` specifically because it was "the only way to get a real
+403/401 status code from the App Router". For a route inside the authenticated shell, that turns
+out to be half true: the page is right, the status is not.
+
+**Why it is not fixed here.** The two plausible fixes are both bigger than the ticket that found
+this. Deciding the permission in `proxy.ts` would give a real status, but the proxy would have to
+ask core-api about the entity on every request -- a round trip per navigation, to answer a question
+the page then asks again. Rendering the whole `(app)` shell non-streaming would trade every page's
+first paint for a status code that only matters to non-browser clients, since a browser reader sees
+the correct page either way.
+
+**What is affected today.** Anything that gates on a permission hint: S-013's per-student solutions
+page is the first, and every teacher screen from T-002 onwards will be another. The same shape
+applies to core-api's own 403s, which currently reach the reader as the generic error boundary
+("something went wrong") rather than as a refusal -- see F-030 in `docs/BACKLOG.md`, which is the
+piece worth doing first, and independently of the status code.

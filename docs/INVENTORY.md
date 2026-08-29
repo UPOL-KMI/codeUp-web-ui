@@ -18,8 +18,8 @@
 | `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                  | todo   |
 | `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`       | todo   |
 | `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                          | done   |
-| `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                   | todo   |
-| `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`    | todo   |
+| `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                   | done   |
+| `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`    | done   |
 | `app/assignment/:assignmentId/edit`                                        | EditAssignment             | true  | ASSIGNMENT_EDIT_URI_FACTORY                 | `/assignments/[id]/edit`              | todo   |
 | `app/assignment/:assignmentId/solutions`                                   | AssignmentSolutions        | true  | ASSIGNMENT_SOLUTIONS_URI_FACTORY            | `/assignments/[id]/solutions`         | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId`                        | Solution                   | true  | SOLUTION_DETAIL_URI_FACTORY                 | `/solutions/[id]`                     | todo   |
