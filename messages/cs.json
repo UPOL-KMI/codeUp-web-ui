@@ -679,7 +679,8 @@
     "noGroups": {
       "title": "Žádné skupiny",
       "description": "Tento člověk teď v žádné skupině nestuduje ani nevyučuje."
-    }
+    },
+    "editMine": "Upravit můj účet"
   },
   "Upload": {
     "dropzone": "Vyberte soubory nebo je sem přetáhněte",
@@ -1066,6 +1067,90 @@
       "invalid": "Tyto body nejsou platné.",
       "awardFailed": "Body se nepodařilo uložit.",
       "removeFailed": "Body se nepodařilo odebrat."
+    }
+  },
+  "Account": {
+    "title": "Nastavení účtu",
+    "backToProfile": "Zpět na můj profil",
+    "profile": {
+      "title": "Profil",
+      "titlesBeforeName": "Tituly před jménem",
+      "titlesAfterName": "Tituly za jménem",
+      "firstName": "Jméno",
+      "lastName": "Příjmení",
+      "email": "E-mail",
+      "emailHint": "Po změně se na novou adresu odešle ověřovací zpráva.",
+      "gravatar": "Používat můj obrázek z Gravataru",
+      "save": "Uložit profil",
+      "saved": "Profil byl uložen.",
+      "errors": {
+        "tooShort": "Alespoň dva znaky.",
+        "invalidEmail": "Tohle není e-mailová adresa."
+      }
+    },
+    "password": {
+      "title": "Heslo",
+      "signsYouOut": "Změna hesla vás odhlásí všude, i tady.",
+      "oldPassword": "Současné heslo",
+      "newPassword": "Nové heslo",
+      "confirmPassword": "Nové heslo znovu",
+      "save": "Změnit heslo",
+      "changed": "Heslo bylo změněno. Přihlaste se prosím znovu.",
+      "errors": {
+        "required": "Zadejte nové heslo.",
+        "mismatch": "Hesla se neshodují."
+      }
+    },
+    "settings": {
+      "title": "Oznámení a jazyk",
+      "defaultLanguage": "Preferovaný jazyk",
+      "defaultLanguageHint": "Používá se pro e-maily, které vám ReCodEx posílá.",
+      "languages": {
+        "en": "Angličtina",
+        "cs": "Čeština"
+      },
+      "emails": "Poslat e-mail, když…",
+      "flags": {
+        "newAssignmentEmails": "se objeví nová úloha",
+        "assignmentDeadlineEmails": "se blíží termín úlohy",
+        "submissionEvaluatedEmails": "se vyhodnotí některé z mých řešení",
+        "solutionAcceptedEmails": "je moje řešení označeno jako uznané",
+        "pointsChangedEmails": "se změní moje body za úlohu",
+        "solutionCommentsEmails": "někdo okomentuje řešení",
+        "assignmentCommentsEmails": "někdo okomentuje úlohu",
+        "solutionReviewsEmails": "je zveřejněna revize mého řešení",
+        "solutionReviewRequestedEmails": "mě student požádá o revizi",
+        "assignmentSubmitAfterAcceptedEmails": "student odevzdá znovu po uznání řešení",
+        "assignmentSubmitAfterReviewedEmails": "student odevzdá znovu po revizi",
+        "exerciseNotificationEmails": "autor cvičení něco oznámí"
+      },
+      "save": "Uložit nastavení",
+      "saved": "Nastavení bylo uloženo.",
+      "failed": "Nastavení se neuložilo."
+    },
+    "calendars": {
+      "title": "Odběr kalendáře",
+      "explain": "Odkaz na kalendář umožní jakékoli kalendářové aplikaci číst vaše termíny. Přečte je i kdokoli jiný, kdo odkaz získá, takže s ním zacházejte opatrně — zrušit ho lze jen vypršením.",
+      "empty": "Nemáte žádné odkazy na kalendář.",
+      "create": "Vytvořit odkaz na kalendář",
+      "createAnother": "Vytvořit další odkaz",
+      "expire": "Zneplatnit",
+      "expired": "Zneplatněný",
+      "created": "Odkaz na kalendář byl vytvořen.",
+      "expiredToast": "Odkaz už nefunguje.",
+      "failed": "Odkaz na kalendář se nezměnil.",
+      "confirmExpire": {
+        "title": "Zneplatnit tento odkaz?",
+        "description": "Kalendáře, které ho odebírají, se přestanou aktualizovat. Nelze to vzít zpět — můžete vytvořit nový odkaz."
+      }
+    },
+    "errors": {
+      "invalid": "Něco z toho, co jste zadali, není platné.",
+      "profileFailed": "Profil se nepodařilo uložit.",
+      "passwordFailed": "Heslo se nepodařilo změnit.",
+      "passwordMismatch": "Hesla se neshodují.",
+      "settingsFailed": "Nastavení se nepodařilo uložit.",
+      "calendarFailed": "Odkaz na kalendář se nepodařilo změnit."
     }
   }
 }

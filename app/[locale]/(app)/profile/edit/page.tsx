@@ -1,0 +1,88 @@
+import { getLocale, getTranslations } from "next-intl/server";
+
+import { getCurrentUser } from "@/lib/api/current-user";
+import { getAccountSettings, getCalendarTokens, NOTIFICATION_FLAGS } from "@/lib/api/user-settings";
+import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+
+import { routing } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
+import {
+  CalendarTokens,
+  PasswordForm,
+  ProfileForm,
+  SettingsForm,
+} from "@/components/users/account-forms";
+import { PageShell } from "@/components/page-shell";
+
+/**
+ * The reader's own account (S-022): name and email, password, what ReCodEx emails them, and the
+ * iCal tokens a calendar app can subscribe with (Q-014, parked here by S-003).
+ *
+ * **This screen is about oneself only.** core-api's `canUpdateProfile` would let an administrator
+ * edit someone else, and the legacy app has one page for both; here that is AD-002's screen, and
+ * this route resolves the id from the session rather than the URL -- so there is no id to tamper
+ * with, and no way to arrive at someone else's account settings by editing an address bar.
+ *
+ * The password form is separate from the profile form on purpose: a successful password change
+ * invalidates every token this user holds, so it ends with a sign-out. Nobody should lose their
+ * session for correcting a name.
+ */
+export default async function AccountSettingsPage() {
+  const [locale, viewer] = await Promise.all([getLocale(), getCurrentUser()]);
+  const [t, account, tokens, breadcrumbs] = await Promise.all([
+    getTranslations("Account"),
+    getAccountSettings(viewer.id),
+    getCalendarTokens(viewer.id),
+    resolveBreadcrumbs("/profile/edit", locale),
+  ]);
+
+  const apiBase = process.env.API_BASE_PUBLIC ?? "";
+
+  return (
+    <PageShell
+      title={t("title")}
+      subtitle={account.email}
+      breadcrumbs={breadcrumbs}
+      actions={
+        <Link
+          href="/profile"
+          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {t("backToProfile")}
+        </Link>
+      }
+    >
+      <div className="flex flex-col gap-10">
+        <section aria-labelledby="account-profile">
+          <h2 id="account-profile" className="mb-3 text-base font-semibold tracking-tight">
+            {t("profile.title")}
+          </h2>
+          <ProfileForm account={account} />
+        </section>
+
+        {account.isLocal && (
+          <section aria-labelledby="account-password">
+            <h2 id="account-password" className="mb-3 text-base font-semibold tracking-tight">
+              {t("password.title")}
+            </h2>
+            <PasswordForm account={account} />
+          </section>
+        )}
+
+        <section aria-labelledby="account-settings">
+          <h2 id="account-settings" className="mb-3 text-base font-semibold tracking-tight">
+            {t("settings.title")}
+          </h2>
+          <SettingsForm account={account} locales={routing.locales} flags={NOTIFICATION_FLAGS} />
+        </section>
+
+        <section aria-labelledby="account-calendars">
+          <h2 id="account-calendars" className="mb-3 text-base font-semibold tracking-tight">
+            {t("calendars.title")}
+          </h2>
+          <CalendarTokens userId={account.id} tokens={tokens} apiBase={apiBase} />
+        </section>
+      </div>
+    </PageShell>
+  );
+}

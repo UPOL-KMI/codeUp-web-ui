@@ -64,6 +64,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "Faq", pattern: "/faq" },
+  { namespace: "Account", pattern: "/profile/edit" },
   { namespace: "Assignment", pattern: "/assignments", unlinked: true },
   { namespace: "Solutions", pattern: "/solutions", unlinked: true },
   { namespace: "Shadow", pattern: "/shadow-assignments", unlinked: true },

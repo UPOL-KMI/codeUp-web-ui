@@ -28,8 +28,8 @@ import { Badge } from "@/components/status/badge";
  * The groups link to the group, and to nothing else yet: the legacy profile also offers "user
  * solutions" per group, which is T-005's screen -- this page adds that link when that ticket lands
  * (noted on its row), rather than shipping a button to a 404 (DEC-066). Editing one's own account
- * is S-022's screen and taking over an account is AD-003's; both add their own control here for
- * the same reason.
+ * is offered because S-022 built it; taking over an account is AD-003's and adds its own control
+ * here when it lands.
  */
 export async function ProfileView({
   userId,
@@ -62,6 +62,14 @@ export async function ProfileView({
             <Badge tone="warning">{t("unverified")}</Badge>
           )}
           {profile.isAllowed === false && <Badge tone="warning">{t("disabled")}</Badge>}
+          {isMe && (
+            <Link
+              href="/profile/edit"
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("editMine")}
+            </Link>
+          )}
         </div>
       }
     >
