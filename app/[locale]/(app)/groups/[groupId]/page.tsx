@@ -1,15 +1,23 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getCurrentUser } from "@/lib/api/current-user";
 import {
   getGroupAssignments,
   getGroupDetail,
   getGroupStudents,
   type AssignmentFilter,
+  type GroupDetail,
 } from "@/lib/api/group-detail";
+import { getExamLocks, getExamRoster } from "@/lib/api/group-exams";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { currentPhase } from "@/lib/status/exam";
 
 import { AssignmentFilterNav } from "@/components/groups/assignment-filter";
 import { AssignmentTable } from "@/components/groups/assignment-table";
+import { ExamLocks } from "@/components/groups/exam-locks";
+import { ExamRoster } from "@/components/groups/exam-roster";
+import { ExamStatus } from "@/components/groups/exam-status";
+import { ExamTable } from "@/components/groups/exam-table";
 import { GroupInfo } from "@/components/groups/group-info";
 import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
 import { StudentTable } from "@/components/groups/student-table";
@@ -36,7 +44,7 @@ export default async function GroupPage({
   searchParams,
 }: {
   params: Promise<{ groupId: string }>;
-  searchParams: Promise<{ tab?: string; filter?: string }>;
+  searchParams: Promise<{ tab?: string; filter?: string; exam?: string }>;
 }) {
   const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, group] = await Promise.all([getTranslations("Group"), getGroupDetail(groupId, locale)]);
@@ -48,6 +56,7 @@ export default async function GroupPage({
       ? [{ id: "assignments", label: t("tabs.assignments") }]
       : []),
     ...(group.can.viewStudents ? [{ id: "students", label: t("tabs.students") }] : []),
+    ...(showExamsTab(group) ? [{ id: "exams", label: t("tabs.exams") }] : []),
   ];
   const current = tabs.some((candidate) => candidate.id === query.tab) ? query.tab! : "info";
 
@@ -69,8 +78,89 @@ export default async function GroupPage({
     >
       {current === "assignments" && <AssignmentsTab groupId={groupId} filter={query.filter} />}
       {current === "students" && <StudentsTab groupId={groupId} />}
+      {current === "exams" && <ExamsTab group={group} selectedExam={query.exam ?? null} />}
       {current === "info" && <GroupInfo group={group} />}
     </PageShell>
+  );
+}
+
+/**
+ * The legacy app's own rule for offering the Exams screen (`GroupNavigation`): whoever may set an
+ * exam period, plus anyone in a group that has held one or has one coming -- a student needs the
+ * tab to lock themselves in, and needs it only then.
+ */
+function showExamsTab(group: GroupDetail): boolean {
+  return (
+    group.can.setExamPeriod === true ||
+    group.can.removeExamPeriod === true ||
+    group.exams.length > 0 ||
+    group.examTerm !== null
+  );
+}
+
+/**
+ * The group's exams (S-008). The phase is decided here, once, from the server's clock: it chooses
+ * what this tab fetches -- the roster only matters while an exam runs, the lock records only for
+ * one that has ended. `ExamStatus` keeps ticking in the browser and refreshes the route when its
+ * own answer stops matching `serverPhase`, so a page left open at the moment an exam begins
+ * becomes the exam page rather than staying the page before it.
+ */
+async function ExamsTab({
+  group,
+  selectedExam,
+}: {
+  group: GroupDetail;
+  selectedExam: string | null;
+}) {
+  const t = await getTranslations("Group.exams");
+  const viewer = await getCurrentUser();
+  const phase = currentPhase(group.examTerm?.begin ?? null, group.examTerm?.end ?? null);
+
+  const canWatchRoster = group.can.viewStudents === true && group.can.setExamPeriod === true;
+  const [roster, locks] = await Promise.all([
+    phase === "running" && canWatchRoster
+      ? getExamRoster(group.studentIds, group.id)
+      : Promise.resolve([]),
+    selectedExam && group.can.viewExamLocks === true
+      ? getExamLocks(group.id, selectedExam)
+      : Promise.resolve([]),
+  ]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <ExamStatus
+        groupId={group.id}
+        begin={group.examTerm?.begin ?? null}
+        end={group.examTerm?.end ?? null}
+        lockType={group.examTerm?.lockType ?? null}
+        serverPhase={phase}
+        canSetPeriod={group.can.setExamPeriod === true}
+        canRemovePeriod={group.can.removeExamPeriod === true}
+        viewerId={viewer.id}
+        studiesHere={group.myStats !== null}
+        lockedHere={viewer.groupLock === group.id}
+        ipLock={viewer.ipLock}
+      />
+
+      {phase === "running" && canWatchRoster && <ExamRoster groupId={group.id} students={roster} />}
+
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium">{t("table.title")}</h3>
+        <ExamTable
+          exams={group.exams}
+          groupId={group.id}
+          selected={phase === "running" ? null : selectedExam}
+          selectable={phase !== "running" && group.can.viewExamLocks === true}
+        />
+      </section>
+
+      {selectedExam && phase !== "running" && group.can.viewExamLocks === true && (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">{t("locks.title")}</h3>
+          <ExamLocks locks={locks} />
+        </section>
+      )}
+    </div>
   );
 }
 

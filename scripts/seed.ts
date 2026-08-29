@@ -783,6 +783,49 @@ async function ensureReviewOpened(
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * A finished exam with one lock record (S-008).
+ *
+ * The only unreachable state on the exams tab, and the only one with a recipe: core-api creates a
+ * `GroupExam` **when a student first locks in**, never when the period is merely set, so a
+ * previous exam -- and any lock record to show under it -- exists only if someone actually sat one.
+ * The recipe is therefore the real sequence, compressed: set a period beginning now, let the
+ * student lock themselves in, then end it by moving the end to now.
+ *
+ * Idempotent on the group already having a recorded exam, so a re-run neither piles up terms nor
+ * locks anyone a second time. The period it opens is a minute wide even though it is ended within
+ * a second of that: if this script dies in the middle, the group unsecures itself shortly after
+ * rather than staying in exam mode until someone notices.
+ */
+async function ensureFinishedExam(
+  adminToken: string,
+  group: GroupRecord,
+  student: { userId: string; token: string },
+): Promise<boolean> {
+  const before = await api<{ privateData?: { exams?: unknown[] } }>("GET", `/groups/${group.id}`, {
+    token: adminToken,
+  });
+  if ((before.privateData?.exams ?? []).length > 0) return false;
+
+  const begin = Math.floor(Date.now() / 1000);
+  await api("POST", `/groups/${group.id}/examPeriod`, {
+    token: adminToken,
+    body: { begin, end: begin + 60, type: "visible" },
+  });
+  try {
+    await api("POST", `/groups/${group.id}/lock/${student.userId}`, { token: student.token });
+  } finally {
+    // Ends the exam whatever happened to the lock -- a group left in secured mode would stop
+    // every other seeded student from submitting anywhere in it. Never *at* the beginning: core-api
+    // rejects a zero-wide interval, and the whole sequence here takes well under a second.
+    await api("POST", `/groups/${group.id}/examPeriod`, {
+      token: adminToken,
+      body: { end: Math.max(begin + 2, Math.floor(Date.now() / 1000)) },
+    });
+  }
+  return true;
+}
+
 async function main() {
   log(`seeding against ${API_BASE}`);
 
@@ -961,6 +1004,13 @@ async function main() {
       `${existingFillerAssignments}/${FILLER_COUNT} filler assignments already existed, topped up the rest`,
     );
   }
+
+  // A held exam, with the one lock record that makes it exist at all (S-008).
+  log(
+    (await ensureFinishedExam(admin.token, g1, student1))
+      ? "recorded one finished exam, with a student lock"
+      : "a finished exam was already recorded",
+  );
 
   // Assignments are snapshots of the exercise, so any exercise fix above has to be pushed into the
   // ones already made from it -- see ensureAssignmentSynced. This runs on *every* seed, not only

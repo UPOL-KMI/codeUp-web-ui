@@ -18,13 +18,23 @@ export interface CurrentUser {
   fullName: string;
   avatarUrl: string | null;
   role: string;
+  /** The group this user is locked into for an exam, if any (S-008). */
+  groupLock: string | null;
+  groupLockType: string | null;
+  /** The address they are pinned to for the duration of that lock. */
+  ipLock: string | null;
 }
 
 interface UserPayload {
   id: string;
   fullName: string;
   avatarUrl: string | null;
-  privateData?: { role?: string };
+  privateData?: {
+    role?: string;
+    groupLock?: string | null;
+    groupLockType?: string | null;
+    ipLock?: string | null;
+  };
 }
 
 /**
@@ -44,6 +54,9 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     fullName: user.fullName,
     avatarUrl: user.avatarUrl,
     role: user.privateData?.role ?? "student",
+    groupLock: user.privateData?.groupLock ?? null,
+    groupLockType: user.privateData?.groupLockType ?? null,
+    ipLock: user.privateData?.ipLock ?? null,
   };
 });
 

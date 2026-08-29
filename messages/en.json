@@ -137,7 +137,8 @@
     "tabs": {
       "info": "Info",
       "assignments": "Assignments",
-      "students": "Students"
+      "students": "Students",
+      "exams": "Exams"
     },
     "badges": {
       "archived": "Archived",
@@ -209,6 +210,147 @@
       "empty": {
         "title": "No students",
         "description": "Nobody has joined this group as a student yet."
+      }
+    },
+    "exams": {
+      "table": {
+        "title": "Previous exams",
+        "columns": {
+          "begin": "Began at",
+          "end": "Ended at",
+          "lockType": "Access limit"
+        },
+        "unknownLockType": "unknown",
+        "select": "Lock records",
+        "unselect": "Hide records",
+        "empty": {
+          "title": "No exams recorded",
+          "description": "An exam is recorded from the moment the first student locks into it."
+        }
+      },
+      "status": {
+        "unknown": "Reading the clock…",
+        "running": "Exam in progress — the group is in secured mode",
+        "scheduled": "An exam is scheduled",
+        "none": "No exam is scheduled",
+        "begins": "Begins",
+        "ends": "Ends",
+        "lockType": "Access limit",
+        "ipLock": "Locked to address",
+        "clockWarning": "This reads your device's clock. If it is not synchronised, the times above may be off."
+      },
+      "actions": {
+        "schedule": "Schedule an exam",
+        "edit": "Edit the exam",
+        "start": "Start now",
+        "terminate": "End now",
+        "cancel": "Cancel the exam"
+      },
+      "confirm": {
+        "start": {
+          "title": "Start the exam now?",
+          "description": "The group switches to secured mode immediately and students can lock in."
+        },
+        "terminate": {
+          "title": "End the exam now?",
+          "description": "Locked students are released and the group returns to normal mode."
+        },
+        "cancel": {
+          "title": "Cancel the scheduled exam?",
+          "description": "The exam is removed. Nothing is recorded, because it never began."
+        }
+      },
+      "student": {
+        "locked": "You are locked in for this exam.",
+        "lockedInfo": "You can see and submit solutions to this group's exam assignments.",
+        "lockPrompt": "Lock yourself in to take the exam. Until it ends, this group is the only one you can submit in.",
+        "lockButton": "Lock me in",
+        "lockInfo": {
+          "visible": "You can still read other groups, but not submit in them.",
+          "reviewed": "You can still read reviewed and accepted solutions in other groups.",
+          "accepted": "You can still read accepted solutions in other groups.",
+          "restricted": "You cannot reach any other group until the lock expires."
+        }
+      },
+      "roster": {
+        "locked": {
+          "title": "Locked in",
+          "empty": "Nobody has locked in yet.",
+          "unlock": "Unlock"
+        },
+        "waiting": {
+          "title": "Not locked in yet",
+          "empty": "Everyone has locked in.",
+          "lastSeen": "Last signed in {when}",
+          "neverSeen": "Never signed in"
+        },
+        "toast": {
+          "unlocked": "{name} was unlocked."
+        },
+        "errors": {
+          "unlockFailed": "The student could not be unlocked."
+        }
+      },
+      "locks": {
+        "title": "Lock records",
+        "columns": {
+          "student": "Student",
+          "lockedAt": "Locked at",
+          "unlockedAt": "Unlocked at",
+          "address": "Address recorded"
+        },
+        "empty": {
+          "title": "No lock records",
+          "description": "Nobody locked into this exam."
+        }
+      },
+      "lockTypes": {
+        "visible": "All visible (read-only)",
+        "reviewed": "Reviewed and accepted solutions",
+        "accepted": "Accepted solutions",
+        "restricted": "Restricted access"
+      },
+      "lockHints": {
+        "visible": "Students taking the exam can read everything in their other groups, but not submit there.",
+        "reviewed": "Students can read reviewed and accepted solutions in their other groups.",
+        "accepted": "Students can read solutions marked as accepted in their other groups.",
+        "restricted": "Students cannot reach any other group at all — not even to read what they submitted before."
+      },
+      "form": {
+        "createTitle": "Schedule an exam",
+        "editTitle": "Edit the scheduled exam",
+        "runningDescription": "The exam has already begun, so only its end can still be moved.",
+        "begin": "Begins",
+        "beginImmediately": "Begin immediately",
+        "end": "Ends",
+        "endRelative": "Set a length instead of an end time",
+        "length": "Length (h:mm)",
+        "lockType": "What students may reach elsewhere during the exam",
+        "save": "Save",
+        "cancel": "Cancel",
+        "errors": {
+          "beginInvalid": "Enter a valid beginning.",
+          "endInvalid": "Enter a valid end.",
+          "lengthInvalid": "Enter the length as h:mm, for example 2:00.",
+          "endInPast": "The end must be in the future.",
+          "endBeforeBegin": "The end must come after the beginning.",
+          "tooLong": "An exam cannot be longer than 24 hours."
+        }
+      },
+      "toast": {
+        "scheduled": "The exam was saved.",
+        "started": "The exam has begun.",
+        "terminated": "The exam has ended.",
+        "cancelled": "The exam was cancelled.",
+        "locked": "You are locked in."
+      },
+      "errors": {
+        "invalid": "The exam period is not valid.",
+        "tooLong": "An exam cannot be longer than 24 hours.",
+        "setFailed": "The exam period could not be saved.",
+        "removeFailed": "The exam could not be cancelled.",
+        "lockFailed": "You could not be locked in.",
+        "unlockFailed": "The student could not be unlocked."
       }
     }
   },

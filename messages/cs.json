@@ -137,7 +137,8 @@
     "tabs": {
       "info": "Informace",
       "assignments": "Zadání",
-      "students": "Studenti"
+      "students": "Studenti",
+      "exams": "Zkoušky"
     },
     "badges": {
       "archived": "Archivováno",
@@ -209,6 +210,147 @@
       "empty": {
         "title": "Žádní studenti",
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
+      }
+    },
+    "exams": {
+      "table": {
+        "title": "Předchozí zkoušky",
+        "columns": {
+          "begin": "Začátek",
+          "end": "Konec",
+          "lockType": "Omezení přístupu"
+        },
+        "unknownLockType": "neznámé",
+        "select": "Záznamy zamčení",
+        "unselect": "Skrýt záznamy",
+        "empty": {
+          "title": "Žádné zaznamenané zkoušky",
+          "description": "Zkouška se zaznamená ve chvíli, kdy se do ní zamkne první student."
+        }
+      },
+      "status": {
+        "unknown": "Čte se čas…",
+        "running": "Probíhá zkouška — skupina je v zabezpečeném režimu",
+        "scheduled": "Je naplánovaná zkouška",
+        "none": "Není naplánovaná žádná zkouška",
+        "begins": "Začíná",
+        "ends": "Končí",
+        "lockType": "Omezení přístupu",
+        "ipLock": "Zamčeno na adresu",
+        "clockWarning": "Časy se porovnávají s hodinami tohoto zařízení. Pokud nejsou seřízené, mohou být uvedené údaje nepřesné."
+      },
+      "actions": {
+        "schedule": "Naplánovat zkoušku",
+        "edit": "Upravit zkoušku",
+        "start": "Spustit teď",
+        "terminate": "Ukončit teď",
+        "cancel": "Zrušit zkoušku"
+      },
+      "confirm": {
+        "start": {
+          "title": "Spustit zkoušku teď?",
+          "description": "Skupina se okamžitě přepne do zabezpečeného režimu a studenti se mohou zamknout."
+        },
+        "terminate": {
+          "title": "Ukončit zkoušku teď?",
+          "description": "Zamčení studenti budou uvolněni a skupina se vrátí do běžného režimu."
+        },
+        "cancel": {
+          "title": "Zrušit naplánovanou zkoušku?",
+          "description": "Zkouška se odstraní. Nic se nezaznamená, protože nikdy nezačala."
+        }
+      },
+      "student": {
+        "locked": "Jste zamčeni pro tuto zkoušku.",
+        "lockedInfo": "Můžete číst a odevzdávat řešení zkouškových úloh v této skupině.",
+        "lockPrompt": "Zamkněte se do zkoušky. Než skončí, bude tato skupina jediná, kde můžete odevzdávat.",
+        "lockButton": "Zamknout mě",
+        "lockInfo": {
+          "visible": "Ostatní skupiny si můžete dál číst, ale nemůžete v nich odevzdávat.",
+          "reviewed": "Můžete si dál číst zrevidovaná a uznaná řešení v ostatních skupinách.",
+          "accepted": "Můžete si dál číst uznaná řešení v ostatních skupinách.",
+          "restricted": "Do žádné jiné skupiny se až do vypršení zámku nedostanete."
+        }
+      },
+      "roster": {
+        "locked": {
+          "title": "Zamčení",
+          "empty": "Zatím se nikdo nezamkl.",
+          "unlock": "Odemknout"
+        },
+        "waiting": {
+          "title": "Zatím nezamčení",
+          "empty": "Zamkli se všichni.",
+          "lastSeen": "Naposledy přihlášen {when}",
+          "neverSeen": "Nikdy nepřihlášen"
+        },
+        "toast": {
+          "unlocked": "{name} byl odemčen."
+        },
+        "errors": {
+          "unlockFailed": "Studenta se nepodařilo odemknout."
+        }
+      },
+      "locks": {
+        "title": "Záznamy zamčení",
+        "columns": {
+          "student": "Student",
+          "lockedAt": "Zamčen",
+          "unlockedAt": "Odemčen",
+          "address": "Zaznamenaná adresa"
+        },
+        "empty": {
+          "title": "Žádné záznamy zamčení",
+          "description": "Do této zkoušky se nikdo nezamkl."
+        }
+      },
+      "lockTypes": {
+        "visible": "Vše viditelné (jen ke čtení)",
+        "reviewed": "Zrevidovaná a uznaná řešení",
+        "accepted": "Uznaná řešení",
+        "restricted": "Omezený přístup"
+      },
+      "lockHints": {
+        "visible": "Studenti u zkoušky si mohou číst vše ve svých ostatních skupinách, ale nemohou v nich odevzdávat.",
+        "reviewed": "Studenti si mohou číst zrevidovaná a uznaná řešení ve svých ostatních skupinách.",
+        "accepted": "Studenti si mohou číst řešení označená jako uznaná ve svých ostatních skupinách.",
+        "restricted": "Studenti se nedostanou do žádné jiné skupiny — ani si přečíst, co odevzdali dřív."
+      },
+      "form": {
+        "createTitle": "Naplánovat zkoušku",
+        "editTitle": "Upravit naplánovanou zkoušku",
+        "runningDescription": "Zkouška už začala, posunout lze jen její konec.",
+        "begin": "Začátek",
+        "beginImmediately": "Začít okamžitě",
+        "end": "Konec",
+        "endRelative": "Zadat délku místo času konce",
+        "length": "Délka (h:mm)",
+        "lockType": "Co smí studenti během zkoušky číst jinde",
+        "save": "Uložit",
+        "cancel": "Zrušit",
+        "errors": {
+          "beginInvalid": "Zadejte platný začátek.",
+          "endInvalid": "Zadejte platný konec.",
+          "lengthInvalid": "Zadejte délku ve tvaru h:mm, například 2:00.",
+          "endInPast": "Konec musí být v budoucnosti.",
+          "endBeforeBegin": "Konec musí být až po začátku.",
+          "tooLong": "Zkouška nesmí být delší než 24 hodin."
+        }
+      },
+      "toast": {
+        "scheduled": "Zkouška byla uložena.",
+        "started": "Zkouška začala.",
+        "terminated": "Zkouška skončila.",
+        "cancelled": "Zkouška byla zrušena.",
+        "locked": "Jste zamčeni."
+      },
+      "errors": {
+        "invalid": "Období zkoušky není platné.",
+        "tooLong": "Zkouška nesmí být delší než 24 hodin.",
+        "setFailed": "Období zkoušky se nepodařilo uložit.",
+        "removeFailed": "Zkoušku se nepodařilo zrušit.",
+        "lockFailed": "Nepodařilo se vás zamknout.",
+        "unlockFailed": "Studenta se nepodařilo odemknout."
       }
     }
   },

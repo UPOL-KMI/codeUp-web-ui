@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
+import { parseExamLockType, type ExamLockType } from "@/lib/status/exam";
 
 import { apiGet, apiPost } from "./client";
 import { apiRead, pageRead } from "./read";
@@ -51,8 +52,22 @@ export interface GroupDetail {
   assignmentCount: number;
   /** The reader's own standing, when they study here. */
   myStats: GroupStudentStats | null;
+  /** Ids of the group's students, when this reader may see them -- the exam roster is built from these. */
+  studentIds: string[];
+  /** The exam this group is currently running or about to (S-008). Null when none is set. */
+  examTerm: ExamTerm | null;
+  /** Exams that have been recorded, newest last. core-api only records one once a student locks in. */
+  exams: ExamTerm[];
   /** core-api's own answer to what this reader may do (brief §3.4) -- never re-derived from roles. */
   can: Record<string, boolean>;
+}
+
+export interface ExamTerm {
+  /** Absent on the group's own current period -- core-api records an exam entity only on the first lock. */
+  id: number | null;
+  begin: number;
+  end: number;
+  lockType: ExamLockType | null;
 }
 
 interface GroupPayload {
@@ -74,6 +89,10 @@ interface GroupPayload {
     detaining?: boolean;
     threshold?: number | null;
     pointsLimit?: number | null;
+    examBegin?: number | null;
+    examEnd?: number | null;
+    examLockType?: string | null;
+    exams?: { id: number; begin: number; end: number; type?: string | null }[];
   };
   permissionHints?: Record<string, boolean>;
 }
@@ -153,6 +172,24 @@ export const getGroupDetail = cache(async function getGroupDetail(
     studentCount: priv?.students?.length ?? null,
     assignmentCount: priv?.assignments?.length ?? 0,
     myStats: statsByGroup.get(groupId) ?? null,
+    studentIds: priv?.students ?? [],
+    examTerm:
+      priv?.examBegin && priv?.examEnd
+        ? {
+            id: null,
+            begin: priv.examBegin,
+            end: priv.examEnd,
+            lockType: parseExamLockType(priv.examLockType),
+          }
+        : null,
+    exams: [...(priv?.exams ?? [])]
+      .sort((a, b) => a.end - b.end || a.begin - b.begin)
+      .map((exam) => ({
+        id: exam.id,
+        begin: exam.begin,
+        end: exam.end,
+        lockType: parseExamLockType(exam.type),
+      })),
     can: group.permissionHints ?? {},
   };
 });
