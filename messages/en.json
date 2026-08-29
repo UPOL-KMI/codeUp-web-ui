@@ -537,7 +537,8 @@
         "title": "The solution did not build",
         "explanation": "Compilation or setup failed, so no test was run."
       }
-    }
+    },
+    "plagiarisms": "Similarities"
   },
   "Sources": {
     "title": "Source code",
@@ -843,7 +844,8 @@
       "best": "Best",
       "accepted": "Accepted",
       "reviewRequested": "Review requested",
-      "reviewed": "Reviewed"
+      "reviewed": "Reviewed",
+      "similarities": "Similarities"
     },
     "noSolutions": {
       "title": "Nothing submitted yet",
@@ -943,6 +945,31 @@
       "preSubmitFailed": "The uploaded files could not be checked. Try again.",
       "submitFailed": "The solution could not be submitted.",
       "invalid": "Check the form and try again."
+    }
+  },
+  "Plagiarism": {
+    "title": "Detected similarities",
+    "attempt": "Attempt {attempt}",
+    "backToSolution": "Back to the solution",
+    "batch": "Reported by {tool}. ReCodEx does not detect similarities itself — an external tool uploads what it found.",
+    "unknownTool": "an unnamed tool",
+    "checkedAt": "Upload finished",
+    "matches": "Who this was matched against",
+    "byAuthor": "{name} — {percent} similar",
+    "unknownAuthor": "An author you may not see",
+    "show": "Compare",
+    "showing": "Shown below",
+    "comparison": "This solution beside {name}'s, file {file}",
+    "thisSolution": "This solution — {file}",
+    "otherSolution": "The other solution — {file}",
+    "unknownFile": "an unnamed file",
+    "openAttempt": "Open attempt {attempt}",
+    "openSolution": "Open the solution",
+    "submittedAt": "Submitted",
+    "otherNotVisible": "The other solution is in a group you cannot read, so its source is not shown here. The matched passages in this solution are marked on the left.",
+    "empty": {
+      "title": "Nothing was reported",
+      "description": "No detection tool has reported a similarity for this solution."
     }
   }
 }

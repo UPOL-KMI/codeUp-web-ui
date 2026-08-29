@@ -15,6 +15,10 @@ import { EvaluationBadge } from "@/components/status/evaluation-badge";
  * Shared by the assignment screen's "my solutions" (S-012) and by the same table read about
  * someone else (S-013) -- the columns are identical because the question is, and a teacher
  * comparing their own view against a student's should not be reading two different tables.
+ *
+ * The similarities flag (S-019) is the one row that reads differently for the two audiences, and
+ * not by this component's doing: core-api discloses a solution's detection batch only to a reader
+ * holding `viewDetectedPlagiarisms`, so the badge simply is not there for the solution's author.
  */
 export async function SolutionList({ solutions }: { solutions: AssignmentSolutionRow[] }) {
   const t = await getTranslations("Assignment");
@@ -72,6 +76,14 @@ export async function SolutionList({ solutions }: { solutions: AssignmentSolutio
                     <Badge tone="warning">{t("flags.reviewRequested")}</Badge>
                   )}
                   {solution.reviewClosed && <Badge>{t("flags.reviewed")}</Badge>}
+                  {solution.plagiarismBatchId !== null && (
+                    <Link
+                      href={`/solutions/${solution.id}/plagiarisms`}
+                      className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      <Badge tone="warning">{t("flags.similarities")}</Badge>
+                    </Link>
+                  )}
                 </div>
               </td>
             </tr>

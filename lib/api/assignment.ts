@@ -30,6 +30,9 @@ export interface AssignmentSolutionRow {
   isBest: boolean;
   reviewRequested: boolean;
   reviewClosed: boolean;
+  /** The detection batch that reported similarities for this attempt (S-019), for the reader
+   *  allowed to know -- core-api omits the field entirely for everyone else. */
+  plagiarismBatchId: string | null;
   /** Shaped for `evaluationStatus()` -- real evaluation data, not the stats row's coarse string. */
   evaluation: EvaluationInput;
 }
@@ -121,6 +124,7 @@ interface SolutionPayload {
   isBestSolution: boolean;
   reviewRequest: boolean;
   review: { startedAt: number; closedAt: number | null } | null;
+  plagiarism?: string | null;
   lastSubmission: EvaluationInput["lastSubmission"];
 }
 
@@ -174,6 +178,7 @@ function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
     isBest: solution.isBestSolution,
     reviewRequested: solution.reviewRequest,
     reviewClosed: solution.review?.closedAt != null,
+    plagiarismBatchId: solution.plagiarism ?? null,
     evaluation: {
       lastSubmission: solution.lastSubmission,
       maxPoints: solution.maxPoints,

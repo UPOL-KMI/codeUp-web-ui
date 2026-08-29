@@ -537,7 +537,8 @@
         "title": "Řešení se nepodařilo sestavit",
         "explanation": "Selhal překlad nebo příprava, takže neproběhl žádný test."
       }
-    }
+    },
+    "plagiarisms": "Podobnosti"
   },
   "Sources": {
     "title": "Zdrojový kód",
@@ -843,7 +844,8 @@
       "best": "Nejlepší",
       "accepted": "Uznáno",
       "reviewRequested": "Žádost o revizi",
-      "reviewed": "Zrevidováno"
+      "reviewed": "Zrevidováno",
+      "similarities": "Podobnosti"
     },
     "noSolutions": {
       "title": "Zatím nic neodevzdáno",
@@ -943,6 +945,31 @@
       "preSubmitFailed": "Nahrané soubory se nepodařilo zkontrolovat. Zkuste to znovu.",
       "submitFailed": "Řešení se nepodařilo odevzdat.",
       "invalid": "Zkontrolujte formulář a zkuste to znovu."
+    }
+  },
+  "Plagiarism": {
+    "title": "Nalezené podobnosti",
+    "attempt": "Pokus {attempt}",
+    "backToSolution": "Zpět na řešení",
+    "batch": "Nahlásil nástroj {tool}. ReCodEx podobnosti sám nehledá — externí nástroj nahraje, co našel.",
+    "unknownTool": "nepojmenovaný nástroj",
+    "checkedAt": "Nahrávání dokončeno",
+    "matches": "S kým se řešení shoduje",
+    "byAuthor": "{name} — shoda {percent}",
+    "unknownAuthor": "Autor, kterého nevidíte",
+    "show": "Porovnat",
+    "showing": "Zobrazeno níže",
+    "comparison": "Toto řešení vedle řešení uživatele {name}, soubor {file}",
+    "thisSolution": "Toto řešení — {file}",
+    "otherSolution": "Druhé řešení — {file}",
+    "unknownFile": "nepojmenovaný soubor",
+    "openAttempt": "Otevřít pokus {attempt}",
+    "openSolution": "Otevřít řešení",
+    "submittedAt": "Odevzdáno",
+    "otherNotVisible": "Druhé řešení je ve skupině, do které nevidíte, takže se jeho zdrojový kód nezobrazuje. Shodné pasáže v tomto řešení jsou vyznačené vlevo.",
+    "empty": {
+      "title": "Nic nebylo nahlášeno",
+      "description": "Pro toto řešení žádný nástroj podobnost nenahlásil."
     }
   }
 }

@@ -82,6 +82,10 @@ export interface SolutionDetail {
   failure: { type: string; description: string } | null;
   /** Shaped for `evaluationStatus()`, so this screen's badge and every list's agree. */
   status: EvaluationInput;
+  /** The detection batch that found similarities *for this solution* (S-019). Null when none did,
+   *  and absent entirely for a reader without `viewDetectedPlagiarisms` -- core-api omits the
+   *  field rather than nulling it, which is why this is read as "batch or nothing". */
+  plagiarismBatchId: string | null;
   can: Record<string, boolean>;
 }
 
@@ -109,6 +113,7 @@ interface SolutionPayload {
   review: { startedAt: number; closedAt: number | null; issues: number } | null;
   submissions: string[];
   lastSubmission: SubmissionPayload | null;
+  plagiarism?: string | null;
   permissionHints?: Record<string, boolean>;
 }
 
@@ -157,6 +162,7 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     submittedAt: solution.lastSubmission?.submittedAt ?? null,
     evaluation: solution.lastSubmission?.evaluation ?? null,
     failure: solution.lastSubmission?.failure ?? null,
+    plagiarismBatchId: solution.plagiarism ?? null,
     status: {
       lastSubmission: solution.lastSubmission,
       maxPoints: solution.maxPoints,

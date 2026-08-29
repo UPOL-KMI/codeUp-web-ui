@@ -572,6 +572,7 @@ async function getOrCreateBaseExercise(
 interface AssignmentDetail {
   id: string;
   version: number;
+  createdAt: number;
   solutionFilesLimit: number;
   solutionSizeLimit: number;
 }
@@ -681,7 +682,11 @@ async function findAssignmentsForExercise(
     );
     if (a.exerciseId === exerciseId) result.push(a);
   }
-  return result;
+  // Sorted, because callers pick "the primary assignment" by position and core-api returns the
+  // group's assignment ids in no promised order. An unsorted list made an earlier run submit its
+  // solutions to a different assignment than a later one -- which is how this instance ended up
+  // with two solutions noted "[seed] correct" under two different assignments.
+  return result.sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
 }
 
 async function submitSolution(
@@ -826,6 +831,81 @@ async function ensureFinishedExam(
   return true;
 }
 
+/**
+ * A reported similarity between two students' solutions (S-019).
+ *
+ * ReCodEx detects nothing itself: an external tool uploads what it found, so this fixture *is* the
+ * upload -- create a batch, append one similarity, mark the batch complete. There is no other way
+ * to reach the screen, and no endpoint to delete any of it afterwards, which is why this is
+ * idempotent on the batch already existing for the tested solution.
+ *
+ * The fragment offsets are computed from the two sources rather than written down, so the marked
+ * passages stay correct if either seeded solution is ever edited.
+ */
+const PLAGIARISM_TOOL = "seed-fixture";
+
+async function firstSolutionFileId(token: string, solutionId: string): Promise<string> {
+  const files = await api<{ id: string }[]>("GET", `/assignment-solutions/${solutionId}/files`, {
+    token,
+  });
+  const file = files[0];
+  if (!file) throw new Error(`solution ${solutionId} has no files to point a similarity at`);
+  return file.id;
+}
+
+async function ensureDetectedSimilarity(
+  adminToken: string,
+  assignmentId: string,
+  tested: { solutionId: string; source: string },
+  other: { solutionId: string; authorId: string; source: string },
+  sharedText: string,
+): Promise<boolean> {
+  const batches = await api<{ id: string }[]>(
+    "GET",
+    `/plagiarism?detectionTool=${encodeURIComponent(PLAGIARISM_TOOL)}&solutionId=${tested.solutionId}`,
+    { token: adminToken },
+  );
+  if (batches.length > 0) return false;
+
+  const [testedFileId, otherFileId] = await Promise.all([
+    firstSolutionFileId(adminToken, tested.solutionId),
+    firstSolutionFileId(adminToken, other.solutionId),
+  ]);
+
+  const batch = await api<{ id: string }>("POST", "/plagiarism", {
+    token: adminToken,
+    body: { detectionTool: PLAGIARISM_TOOL, detectionToolParams: "--seeded" },
+  });
+
+  await api("POST", `/plagiarism/${batch.id}/${tested.solutionId}`, {
+    token: adminToken,
+    body: {
+      solutionFileId: testedFileId,
+      authorId: other.authorId,
+      similarity: 0.87,
+      files: [
+        {
+          solutionId: other.solutionId,
+          solutionFileId: otherFileId,
+          fileEntry: "",
+          fragments: [
+            [
+              { offset: tested.source.indexOf(sharedText), length: sharedText.length },
+              { offset: other.source.indexOf(sharedText), length: sharedText.length },
+            ],
+          ],
+        },
+      ],
+    },
+  });
+
+  await api("POST", `/plagiarism/${batch.id}`, {
+    token: adminToken,
+    body: { uploadCompleted: true, assignments: [assignmentId] },
+  });
+  return true;
+}
+
 async function main() {
   log(`seeding against ${API_BASE}`);
 
@@ -858,6 +938,15 @@ async function main() {
     lastName: "Student",
   });
   await ensureStudentMember(admin.token, g1, student1.userId);
+
+  // A second student in G1, so there is somebody for a detected similarity to be *with* (S-019):
+  // a plagiarism record needs two authors, and Alice was the only student in the group.
+  const student2 = await getOrCreateUser(admin.token, instanceId, {
+    email: "bob.classmate@seed.recodex.local",
+    firstName: "Bob",
+    lastName: "Classmate",
+  });
+  await ensureStudentMember(admin.token, g1, student2.userId);
 
   const supervisor1 = await getOrCreateUser(admin.token, instanceId, {
     email: "sam.supervisor@seed.recodex.local",
@@ -1002,6 +1091,45 @@ async function main() {
   if (existingFillerAssignments > 0) {
     log(
       `${existingFillerAssignments}/${FILLER_COUNT} filler assignments already existed, topped up the rest`,
+    );
+  }
+
+  // A reported similarity between two students (S-019). Bob's solution shares one line with
+  // Alice's, which is the passage the fixture marks on both sides.
+  const SHARED_LINE = `print("${EXPECTED_OUTPUT.trim()}")`;
+  const aliceSource = `${SHARED_LINE}\n`;
+  const bobSource = `# my own work, obviously\n${SHARED_LINE}\n`;
+  await submitSolution(
+    student2.token,
+    student2.userId,
+    primaryAssignment.id,
+    `${SEED_PREFIX} borrowed`,
+    bobSource,
+  );
+
+  const aliceSolution = await findSolutionByNote(
+    admin.token,
+    primaryAssignment.id,
+    student1.userId,
+    `${SEED_PREFIX} correct`,
+  );
+  const bobSolution = await findSolutionByNote(
+    admin.token,
+    primaryAssignment.id,
+    student2.userId,
+    `${SEED_PREFIX} borrowed`,
+  );
+  if (aliceSolution && bobSolution) {
+    log(
+      (await ensureDetectedSimilarity(
+        admin.token,
+        primaryAssignment.id,
+        { solutionId: aliceSolution.id, source: aliceSource },
+        { solutionId: bobSolution.id, authorId: student2.userId, source: bobSource },
+        SHARED_LINE,
+      ))
+        ? "uploaded one detected similarity between two students"
+        : "a detected similarity was already recorded",
     );
   }
 

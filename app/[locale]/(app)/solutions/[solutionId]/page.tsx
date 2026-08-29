@@ -64,6 +64,14 @@ export default async function SolutionPage({
           ) : solution.reviewRequested ? (
             <Badge tone="warning">{t("flags.reviewRequested")}</Badge>
           ) : null}
+          {solution.plagiarismBatchId !== null && (
+            <Link
+              href={`/solutions/${solutionId}/plagiarisms`}
+              className="rounded-md border border-warning/60 px-3 py-1.5 text-sm text-foreground hover:bg-warning/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("plagiarisms")}
+            </Link>
+          )}
           <Link
             href={`/solutions/${solutionId}/sources`}
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
