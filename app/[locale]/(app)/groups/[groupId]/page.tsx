@@ -10,11 +10,13 @@ import {
   type GroupDetail,
 } from "@/lib/api/group-detail";
 import { getExamLocks, getExamRoster } from "@/lib/api/group-exams";
+import { getGroupShadowAssignments } from "@/lib/api/shadow-assignment";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { currentPhase } from "@/lib/status/exam";
 
 import { routing } from "@/i18n/routing";
 
+import { Link } from "@/i18n/navigation";
 import { AssignmentFilterNav } from "@/components/groups/assignment-filter";
 import { AssignmentTable } from "@/components/groups/assignment-table";
 import { ExamLocks } from "@/components/groups/exam-locks";
@@ -242,7 +244,14 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 
   const options = group.myStats ? FILTERS : FILTERS.filter((option) => option !== "submitted");
   const current = (options.find((option) => option === filter) ?? "all") as AssignmentFilter;
-  const assignments = await getGroupAssignments(groupId, locale, current);
+  // Shadow assignments are the group's other kind of work (S-020) -- nothing is submitted for
+  // them and nothing is evaluated, so they are a list of their own rather than rows mixed into a
+  // table whose columns are all about submissions. The legacy group screen shows both here too,
+  // and the filter above deliberately does not apply to them: none of its four states can.
+  const [assignments, shadowAssignments] = await Promise.all([
+    getGroupAssignments(groupId, locale, current),
+    getGroupShadowAssignments(groupId, locale),
+  ]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -261,6 +270,37 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
         <EmptyState title={t(`empty.${current}`)} />
       ) : (
         <AssignmentTable assignments={assignments} groupId={groupId} />
+      )}
+
+      {shadowAssignments.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">{t("shadow.title")}</h3>
+          <p className="text-xs text-muted-foreground">{t("shadow.explain")}</p>
+          <ul className="flex flex-col gap-2">
+            {shadowAssignments.map((shadow) => (
+              <li
+                key={shadow.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3 text-sm"
+              >
+                <Link
+                  href={`/shadow-assignments/${shadow.id}`}
+                  className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {shadow.name || t("shadow.untitled")}
+                </Link>
+                <span className="flex flex-wrap items-center gap-2">
+                  {shadow.isBonus && <Badge tone="info">{t("shadow.bonus")}</Badge>}
+                  {!shadow.isPublic && <Badge tone="warning">{t("shadow.hidden")}</Badge>}
+                  <span className="tabular-nums text-muted-foreground">
+                    {shadow.myPoints !== null
+                      ? t("shadow.myPoints", { points: shadow.myPoints, max: shadow.maxPoints })
+                      : t("shadow.maxPoints", { max: shadow.maxPoints })}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

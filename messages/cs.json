@@ -196,6 +196,15 @@
         "open": "Žádné zadání není otevřené k odevzdání.",
         "closed": "Žádnému zadání neuplynul termín.",
         "submitted": "Zatím jste zde nic neodevzdali."
+      },
+      "shadow": {
+        "title": "Stínové úlohy",
+        "explain": "Práce, která se tu neodevzdává — body se udělují ručně.",
+        "untitled": "Nepojmenovaná stínová úloha",
+        "bonus": "Bonus",
+        "hidden": "Skrytá",
+        "myPoints": "{points}/{max} bodů",
+        "maxPoints": "až {max} bodů"
       }
     },
     "students": {
@@ -970,6 +979,65 @@
     "empty": {
       "title": "Nic nebylo nahlášeno",
       "description": "Pro toto řešení žádný nástroj podobnost nenahlásil."
+    }
+  },
+  "Shadow": {
+    "title": "Stínová úloha",
+    "untitled": "Nepojmenovaná stínová úloha",
+    "backToGroup": "Zpět do skupiny",
+    "description": "Popis",
+    "noDescription": "Tato stínová úloha nemá popis.",
+    "terms": "Podmínky",
+    "maxPoints": "Dostupné body",
+    "deadline": "Termín",
+    "noDeadline": "Žádný",
+    "deadlineNote": "Termín je jen informativní. Body se tu udělují ručně, takže o zmeškaném termínu rozhoduje vyučující, ne systém.",
+    "bonus": "Bonus",
+    "yes": "Ano",
+    "no": "Ne",
+    "visibility": "Viditelná studentům",
+    "visible": "Ano",
+    "hiddenFromStudents": "Ne — studenti ji zatím nevidí",
+    "myPoints": "Moje body",
+    "noPointsYet": "Zatím vám tu nebyly uděleny žádné body.",
+    "flags": {
+      "bonus": "Bonus",
+      "hidden": "Skrytá"
+    },
+    "points": {
+      "title": "Udělené body",
+      "empty": "Zatím nebyly uděleny žádné body.",
+      "columns": {
+        "student": "Student",
+        "points": "Body",
+        "note": "Poznámka",
+        "awardedAt": "Uděleno za",
+        "awardedBy": "Zapsal"
+      },
+      "edit": "Upravit",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "remove": "Odebrat",
+      "failed": "Body se nezměnily.",
+      "award": {
+        "title": "Udělit body",
+        "who": "Komu",
+        "button": "Udělit"
+      },
+      "toast": {
+        "awarded": "Body byly uděleny.",
+        "saved": "Body byly změněny.",
+        "removed": "Body byly odebrány."
+      },
+      "confirmRemove": {
+        "title": "Odebrat tyto body?",
+        "description": "Záznam se smaže a studentovi o ně klesne celkový součet."
+      }
+    },
+    "errors": {
+      "invalid": "Tyto body nejsou platné.",
+      "awardFailed": "Body se nepodařilo uložit.",
+      "removeFailed": "Body se nepodařilo odebrat."
     }
   }
 }

@@ -66,6 +66,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "Faq", pattern: "/faq" },
   { namespace: "Assignment", pattern: "/assignments", unlinked: true },
   { namespace: "Solutions", pattern: "/solutions", unlinked: true },
+  { namespace: "Shadow", pattern: "/shadow-assignments", unlinked: true },
   // A leaf with a static label under a dynamic parent: `matchPattern` handles the `:param`
   // segment, and the label is this page's own namespace title like any other static entry.
   { namespace: "Submit", pattern: "/assignments/:assignmentId/submit" },
@@ -93,6 +94,17 @@ const MANIFEST: ManifestEntry[] = [
         pathParams: { id: params.exerciseId! },
       });
       return localizedName(exercise.localizedTexts, locale);
+    },
+  },
+  {
+    // A shadow assignment carries its name in `localizedTexts` like every other named entity.
+    pattern: "/shadow-assignments/:shadowId",
+    resolve: async (params, locale) => {
+      const assignment = await apiRead<{ localizedTexts?: LocalizedText[] }>(
+        "/v1/shadow-assignments/{id}",
+        { pathParams: { id: params.shadowId! } },
+      );
+      return localizedName(assignment.localizedTexts, locale);
     },
   },
   {

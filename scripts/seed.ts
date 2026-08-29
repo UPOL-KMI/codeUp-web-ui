@@ -906,6 +906,66 @@ async function ensureDetectedSimilarity(
   return true;
 }
 
+/**
+ * A shadow assignment with points awarded to one student (S-020).
+ *
+ * The only kind of assignment in ReCodEx with nothing to submit: the teacher types the points in.
+ * Creating one takes two calls -- `POST /shadow-assignments` makes an empty, non-public record,
+ * and `update-detail` is what gives it a name, a text, a points limit and visibility (its `version`
+ * has to match, which is core-api's optimistic-locking check).
+ *
+ * Idempotent on the group already having a shadow assignment, and on the student already having
+ * points in it.
+ */
+async function ensureShadowAssignment(
+  adminToken: string,
+  group: GroupRecord,
+  awardee: { userId: string },
+): Promise<boolean> {
+  const existing = await api<{ id: string; points?: { awardeeId: string }[] }[]>(
+    "GET",
+    `/groups/${group.id}/shadow-assignments`,
+    { token: adminToken },
+  );
+  if (existing.length > 0) {
+    const awarded = existing[0]!.points?.some((record) => record.awardeeId === awardee.userId);
+    if (awarded) return false;
+    await api("POST", `/shadow-assignments/${existing[0]!.id}/create-points`, {
+      token: adminToken,
+      body: { userId: awardee.userId, points: 8, note: `${SEED_PREFIX} oral exam` },
+    });
+    return true;
+  }
+
+  const created = await api<{ id: string; version: number }>("POST", "/shadow-assignments", {
+    token: adminToken,
+    body: { groupId: group.id },
+  });
+  await api("POST", `/shadow-assignments/${created.id}`, {
+    token: adminToken,
+    body: {
+      version: created.version,
+      isPublic: true,
+      isBonus: false,
+      maxPoints: 10,
+      sendNotification: false,
+      deadline: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
+      localizedTexts: [
+        {
+          locale: "en",
+          name: `${SEED_PREFIX} Oral Exam`,
+          text: "Points for the oral exam. Nothing is submitted here — the examiner awards the points.",
+        },
+      ],
+    },
+  });
+  await api("POST", `/shadow-assignments/${created.id}/create-points`, {
+    token: adminToken,
+    body: { userId: awardee.userId, points: 8, note: `${SEED_PREFIX} oral exam` },
+  });
+  return true;
+}
+
 async function main() {
   log(`seeding against ${API_BASE}`);
 
@@ -1132,6 +1192,13 @@ async function main() {
         : "a detected similarity was already recorded",
     );
   }
+
+  // A shadow assignment with points awarded to Alice (S-020) -- work with nothing to submit.
+  log(
+    (await ensureShadowAssignment(admin.token, g1, student1))
+      ? "created a shadow assignment with awarded points"
+      : "a shadow assignment with points already existed",
+  );
 
   // A held exam, with the one lock record that makes it exist at all (S-008).
   log(
