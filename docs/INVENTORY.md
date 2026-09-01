@@ -58,7 +58,7 @@
 | `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                     | todo   |
 | `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | `/admin/instances/[id]/edit`           | todo   |
 | `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`              | done   |
-| `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                  | todo   |
+| `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                  | done   |
 | `*`                                                                        | NotFound                   | —     | —                                           | `/[...not-found]`                      | todo   |
 
 ---
@@ -75,7 +75,7 @@
 | `broker`                       | Broker communication (evaluation)                          | Server Actions                                 | todo   |
 | `canSubmit`                    | Permission: can user submit to assignment                  | Server Component data fetching                 | todo   |
 | `comments`                     | Discussion threads on exercises, assignments and solutions | T-022 (**not** S-018's inline review comments) | todo   |
-| `emailVerification`            | Email verification flow                                    | `/email-verification`                          | todo   |
+| `emailVerification`            | Email verification flow                                    | `/email-verification`                          | done   |
 | `evaluationProgress`           | Live evaluation progress (WebSocket/polling)               | `solutions/[id]` live updates                  | todo   |
 | `exerciseAuthors`              | Exercise author management                                 | `exercises/[id]`                               | todo   |
 | `exerciseConfigs`              | Exercise configuration (pipelines, variables)              | `exercises/[id]/edit-config`                   | todo   |

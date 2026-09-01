@@ -308,6 +308,36 @@
   - _Verified live in both locales._
   - _Observations:_ **186 e2e tests pass** (181 before), 76 unit tests (72 before).
 
+- **[2026-09-01 20:55] A-006:** Confirming an address, and the nudge to do it.
+  `app/[locale]/(anon)/email-verification/page.tsx`,
+  `components/auth/{verify-email,resend-verification}.tsx`,
+  `app/api/auth/email-verification/{route,resend/route}.ts`.
+  - _core-api's own template is `"%webapp.address%/email-verification?{token}"`,_ which is this
+    route exactly -- so unlike A-005's link, nothing has to forward it. The token is the whole
+    query string again, read by `readQueryToken`.
+  - **_Confirming is a click, not something opening the link does._** The legacy page verifies on
+    load; this one does not, because the link lands in an inbox and mail clients, link scanners and
+    prefetchers open links by themselves. A confirmation that happens because a scanner looked at
+    the message is a confirmation nobody made.
+  - _The token is the identity for that one call and never a session:_ core-api's action is
+    `@LoggedIn` and reads the **token's** own user and `email` payload, checking that the address
+    it was issued for is still the account's.
+  - _The legacy dashboard's `NotVerifiedEmailCallout` is here too_, with the resend button, and it
+    says what an unconfirmed address actually costs: ReCodEx keeps mailing there, so it means
+    silence, not a locked account. Nothing in the product is withheld for it, and pretending
+    otherwise would be inventing a rule core-api does not have.
+  - **_Verified live, both halves._** The confirmation was driven end to end with a real
+    `email-verification` token minted from the instance's own key (the same method A-005 used):
+    `seed.filler.25` went from `isVerified: false` to `true` through the BFF route. **That one is
+    not undoable** -- core-api has no endpoint that un-verifies an address -- so it was done on a
+    filler account rather than on a seeded persona, and every seeded account is still unverified,
+    which is what keeps the dashboard's callout visible to look at.
+  - _The resend button's failure is core-api's own sentence_ ("Email cannot be sent, please try it
+    later.") on this deployment, because its SMTP host is `smtp.example.com` (Q-007). The spec
+    asserts exactly that: the reader is told, rather than left with a button that seems to have
+    worked.
+  - _Observations:_ **189 e2e tests pass** (186 before), 76 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2813,14 +2843,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
   its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
   solutions and pipeline screens (T-009..T-016) are what remains of it.
-  **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder) and
-  A-004 + A-005 (the password reset it links to).
+  **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
+  A-004 + A-005 (the password reset it links to) and A-006 (confirming an address, and the
+  dashboard's nudge to do it).
   Foundation and Design System complete.
-- **Next ticket:** A-003 (registration) -- with a caveat found while building A-004: this
-  deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api will refuse to create an account
-  and the screen can only be verified as far as that refusal. Then A-006 (email verification),
-  A-008 (the locale switch), and back to T-009 (the exercise configuration editor, the hardest
-  screen in the product by the brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
+- **Next ticket:** A-008 (the locale switch) and A-003 (registration) -- the latter with a caveat
+  found while building A-004: this deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api
+  refuses to create an account and the screen can only be verified as far as that refusal. Then
+  back to T-009 (the exercise configuration editor, the hardest screen in the product by the
+  brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
   mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
   administrators, and forking). The anonymous flows (A-001..A-008)

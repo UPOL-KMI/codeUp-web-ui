@@ -18,6 +18,8 @@ export interface CurrentUser {
   fullName: string;
   avatarUrl: string | null;
   role: string;
+  /** False until the address on the account has been confirmed (A-006). */
+  isVerified: boolean;
   /** The group this user is locked into for an exam, if any (S-008). */
   groupLock: string | null;
   groupLockType: string | null;
@@ -29,6 +31,7 @@ interface UserPayload {
   id: string;
   fullName: string;
   avatarUrl: string | null;
+  isVerified?: boolean;
   privateData?: {
     role?: string;
     groupLock?: string | null;
@@ -52,6 +55,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   return {
     id: user.id,
     fullName: user.fullName,
+    isVerified: user.isVerified ?? true,
     avatarUrl: user.avatarUrl,
     role: user.privateData?.role ?? "student",
     groupLock: user.privateData?.groupLock ?? null,

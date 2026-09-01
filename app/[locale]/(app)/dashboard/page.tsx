@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getCurrentUser } from "@/lib/api/current-user";
 import { getMyGroups } from "@/lib/api/groups";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 
+import { ResendVerification } from "@/components/auth/resend-verification";
 import { CalendarSection } from "@/components/dashboard/calendar-section";
 import { SectionNav, type SectionNavItem } from "@/components/dashboard/section-nav";
 import { StudentSection } from "@/components/dashboard/student-section";
@@ -43,10 +45,13 @@ export default async function DashboardPage({
   searchParams: Promise<DashboardSearchParams>;
 }) {
   const locale = await getLocale();
-  const [breadcrumbs, t, groups, params] = await Promise.all([
+  const [breadcrumbs, t, groups, viewer, params] = await Promise.all([
     resolveBreadcrumbsForNamespace("Dashboard", locale),
     getTranslations("Dashboard"),
     getMyGroups(locale),
+    // A-006's nudge lives here because this is where the legacy app puts it, and because it is the
+    // one screen everybody passes through.
+    getCurrentUser(),
     searchParams,
   ]);
 
@@ -95,6 +100,8 @@ export default async function DashboardPage({
   return (
     <PageShell title={breadcrumbs[breadcrumbs.length - 1]!.label} breadcrumbs={breadcrumbs}>
       <div className="flex flex-col gap-10">
+        {!viewer.isVerified && <ResendVerification />}
+
         <SectionNav items={ordered} label={t("nav.label")} />
 
         {ordered.map((section) => (

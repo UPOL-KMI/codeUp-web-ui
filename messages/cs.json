@@ -82,7 +82,24 @@
     }
   },
   "EmailVerification": {
-    "title": "Ověření e-mailu"
+    "title": "Potvrzení e-mailové adresy",
+    "explain": "Tento odkaz přišel na adresu vedenou u vašeho účtu v ReCodExu.",
+    "verify": "Potvrdit adresu",
+    "verifying": "Potvrzuji…",
+    "done": "Adresa je potvrzená. ReCodEx vás na ní zastihne.",
+    "toDashboard": "Přejít na přehled",
+    "toLogin": "Přejít na přihlášení",
+    "noToken": "Na této adrese žádný potvrzovací odkaz není. Otevřete odkaz z e-mailu.",
+    "errors": {
+      "failed": "Adresu se nepodařilo potvrdit. Odkaz mohl vypršet."
+    },
+    "callout": {
+      "explain": "Vaše e-mailová adresa zatím není potvrzená. ReCodEx na ni posílá termíny, výsledky vyhodnocení i upozornění na revize — nepotvrzená adresa tedy znamená ticho, ne zamčený účet.",
+      "resend": "Poslat zprávu znovu",
+      "sending": "Odesílám…",
+      "sent": "Zpráva je na cestě. Adresu potvrdíte odkazem v ní.",
+      "failed": "Zprávu se nepodařilo odeslat. Zkuste to později."
+    }
   },
   "AcceptInvitation": {
     "title": "Přijetí pozvánky",

@@ -82,7 +82,24 @@
     }
   },
   "EmailVerification": {
-    "title": "Email verification"
+    "title": "Confirm your email address",
+    "explain": "This link was sent to the address on your ReCodEx account.",
+    "verify": "Confirm the address",
+    "verifying": "Confirming…",
+    "done": "The address is confirmed. ReCodEx can reach you there.",
+    "toDashboard": "Go to the dashboard",
+    "toLogin": "Go to signing in",
+    "noToken": "This address carries no confirmation link. Open the link from the email.",
+    "errors": {
+      "failed": "The address was not confirmed. The link may have expired."
+    },
+    "callout": {
+      "explain": "Your email address has not been confirmed yet. ReCodEx sends deadlines, evaluation results and review notices there, so an unconfirmed address means silence rather than a locked account.",
+      "resend": "Send the message again",
+      "sending": "Sending…",
+      "sent": "The message is on its way. Open the link in it to confirm the address.",
+      "failed": "The message could not be sent. Try again later."
+    }
   },
   "AcceptInvitation": {
     "title": "Accept invitation",
