@@ -398,9 +398,11 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 
 async function StudentsTab({ groupId }: { groupId: string }) {
   const locale = await getLocale();
-  const [t, tPoints, students, matrix] = await Promise.all([
+  const [t, tPoints, group, viewer, students, matrix] = await Promise.all([
     getTranslations("Group.students"),
     getTranslations("Group.points"),
+    getGroupDetail(groupId, locale),
+    getCurrentUser(),
     getGroupStudents(groupId),
     getGroupPointsMatrix(groupId, locale),
   ]);
@@ -409,9 +411,19 @@ async function StudentsTab({ groupId }: { groupId: string }) {
     return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
   }
 
+  // Whoever administers, supervises or observes this group. `members` is exactly those three
+  // roles (S-005), and it is the legacy roster's own rule for who may read another student's
+  // submissions -- see `StudentTable`'s note, and DEC-090 for why there is no hint to ask.
+  const staffView = group.members.some((member) => member.id === viewer.id);
+
   return (
     <div className="flex flex-col gap-8">
-      <StudentTable students={students} groupId={groupId} />
+      <StudentTable
+        students={students}
+        groupId={groupId}
+        viewerId={viewer.id}
+        staffView={staffView}
+      />
 
       {/* T-006. Both tables come out of the same `/students/stats` response, so the matrix costs
           one call for the assignment names and nothing for the data. */}
@@ -422,6 +434,20 @@ async function StudentsTab({ groupId }: { groupId: string }) {
           </h3>
           <p className="text-xs text-muted-foreground">{tPoints("explain")}</p>
           <PointsMatrixTable matrix={matrix} />
+          {staffView && (
+            <div>
+              {/* T-007. A plain link to this app's own Route Handler, not a client-side blob:
+                  it needs no JavaScript, and the file is built from a fresh read (see the
+                  handler's note). `locale` travels with it because the column headers are the
+                  assignment names, and `/api/...` has no locale segment to read one from. */}
+              <a
+                href={`/api/groups/${groupId}/points?locale=${locale}`}
+                className="inline-block rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {tPoints("download")}
+              </a>
+            </div>
+          )}
         </section>
       )}
     </div>

@@ -12,7 +12,11 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
 
 /**
- * Every attempt at one assignment (T-003), newest first.
+ * Attempts, newest first: every one at a single assignment (T-003), or every one a single student
+ * made anywhere in a group (T-005). `lead` picks which of the two the first column names -- the
+ * rest of the columns are the same seven either way, deliberately, because a teacher moving
+ * between the two screens is reading the same rows sliced differently and should not have to
+ * re-learn the table.
  *
  * One row per **submission**, which is the difference between this and the class-progress table on
  * the assignment screen: that one summarises a student, this one is the individual attempts, so a
@@ -26,44 +30,93 @@ import { Badge } from "@/components/status/badge";
  * The date is relative and client-rendered for the reason D-012 gives; the absolute value travels
  * with it in the `<time>` element, and sorting is on the raw timestamp rather than on either.
  */
+export type SolutionsTableRow = AssignmentSolutionRow & {
+  /** Present only in `lead="assignment"` mode, where the rows span a whole group (T-005). */
+  assignment?: { id: string; name: string; canViewSolutions: boolean };
+};
+
 export function SolutionsTable({
   solutions,
-  assignmentId,
+  scopeId,
+  lead = "author",
 }: {
-  solutions: AssignmentSolutionRow[];
-  assignmentId: string;
+  solutions: SolutionsTableRow[];
+  /** Whatever the rows are a list *of* -- an assignment (T-003) or a student (T-005). Only its
+   *  first bytes are used, to key this table's own `searchParams` (see `DataTable`'s `id`). */
+  scopeId: string;
+  lead?: "author" | "assignment";
 }) {
   const t = useTranslations("AssignmentSolutions");
   const tStatus = useTranslations("Status.evaluation");
 
   const showPlagiarism = solutions.some((solution) => solution.plagiarismBatchId !== null);
 
-  const columns: DataTableColumn<AssignmentSolutionRow>[] = [
-    {
-      id: "author",
-      header: t("columns.author"),
-      sortable: true,
-      sortValue: (solution) => solution.authorName,
-      filterValue: (solution) => `${solution.authorName} ${solution.note}`,
-      cell: (solution) => (
-        <span className="flex flex-col gap-0.5">
-          <Link
-            href={`/solutions/${solution.id}`}
-            className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {solution.authorName || solution.authorId}
-          </Link>
-          {solution.note && <span className="text-xs text-muted-foreground">{solution.note}</span>}
-        </span>
-      ),
-    },
+  const leadColumn: DataTableColumn<SolutionsTableRow> =
+    lead === "author"
+      ? {
+          id: "author",
+          header: t("columns.author"),
+          sortable: true,
+          sortValue: (solution) => solution.authorName,
+          filterValue: (solution) => `${solution.authorName} ${solution.note}`,
+          cell: (solution) => (
+            <span className="flex flex-col gap-0.5">
+              <Link
+                href={`/solutions/${solution.id}`}
+                className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {solution.authorName || solution.authorId}
+              </Link>
+              {solution.note && (
+                <span className="text-xs text-muted-foreground">{solution.note}</span>
+              )}
+            </span>
+          ),
+        }
+      : {
+          id: "assignment",
+          header: t("columns.assignment"),
+          sortable: true,
+          sortValue: (solution) => solution.assignment?.name ?? "",
+          filterValue: (solution) => `${solution.assignment?.name ?? ""} ${solution.note}`,
+          cell: (solution) => (
+            <span className="flex flex-col gap-0.5">
+              <Link
+                href={
+                  solution.assignment?.canViewSolutions
+                    ? `/assignments/${solution.assignment.id}/solutions`
+                    : `/assignments/${solution.assignment?.id}`
+                }
+                className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {solution.assignment?.name || t("untitledAssignment")}
+              </Link>
+              {solution.note && (
+                <span className="text-xs text-muted-foreground">{solution.note}</span>
+              )}
+            </span>
+          ),
+        };
+
+  const columns: DataTableColumn<SolutionsTableRow>[] = [
+    leadColumn,
     {
       id: "attempt",
       header: t("columns.attempt"),
       className: "text-right tabular-nums",
       sortable: true,
       sortValue: (solution) => solution.attemptIndex,
-      cell: (solution) => solution.attemptIndex,
+      // The row's way into the solution itself. In `lead="author"` mode the name above is that
+      // link too; in `lead="assignment"` mode the lead cell names the *assignment*, so without
+      // this the row would list a submission with no way to open it.
+      cell: (solution) => (
+        <Link
+          href={`/solutions/${solution.id}`}
+          className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {solution.attemptIndex}
+        </Link>
+      ),
     },
     {
       id: "submitted",
@@ -147,10 +200,10 @@ export function SolutionsTable({
           {
             id: "plagiarism",
             header: t("columns.similarities"),
-            sortValue: (solution: AssignmentSolutionRow) =>
+            sortValue: (solution: SolutionsTableRow) =>
               solution.plagiarismBatchId === null ? 0 : 1,
             sortable: true,
-            cell: (solution: AssignmentSolutionRow) =>
+            cell: (solution: SolutionsTableRow) =>
               solution.plagiarismBatchId === null ? (
                 <span className="text-muted-foreground">—</span>
               ) : (
@@ -168,11 +221,11 @@ export function SolutionsTable({
 
   return (
     <DataTable
-      id={`solutions-${assignmentId.slice(0, 8)}`}
+      id={`solutions-${scopeId.slice(0, 8)}`}
       columns={columns}
       data={solutions}
       getRowId={(solution) => solution.id}
-      filterPlaceholder={t("filterPlaceholder")}
+      filterPlaceholder={lead === "author" ? t("filterPlaceholder") : t("filterByAssignment")}
     />
   );
 }

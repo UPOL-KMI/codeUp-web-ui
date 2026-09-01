@@ -46,7 +46,7 @@
 | `app/group/:groupId/students`                                              | GroupStudents              | true  | GROUP_STUDENTS_URI_FACTORY                  | `/groups/[id]?tab=students`            | done   |
 | `app/group/:groupId/exams`                                                 | GroupExams                 | true  | GROUP_EXAMS_URI_FACTORY                     | `/groups/[id]?tab=exams`               | done   |
 | `app/group/:groupId/exams/:examId`                                         | GroupExams                 | true  | GROUP_EXAMS_SPECIFIC_EXAM_URI_FACTORY       | `/groups/[id]?tab=exams&exam=[examId]` | done   |
-| `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`          | todo   |
+| `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`          | done   |
 | `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                      | todo   |
 | `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                               | todo   |
 | `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                          | done   |
@@ -91,7 +91,7 @@
 | `groupExamLocks`               | Exam mode locks                               | `groups/[id]?tab=exams`              | done   |
 | `groupExercises`               | Group-specific exercises                      | `groups/[id]/assignments`            | todo   |
 | `groupInvitations`             | Group invitations                             | `accept-group-invitation`            | done   |
-| `groupResults`                 | Group results overview                        | `groups/[id]/assignments`            | todo   |
+| `groupResults`                 | Group results overview                        | `groups/[id]?tab=students`           | done   |
 | `groups`                       | Group CRUD, hierarchy, membership             | `groups`                             | todo   |
 | `hwGroups`                     | Hardware groups                               | `admin/server`                       | todo   |
 | `instances`                    | Instance management                           | `admin/instances`                    | todo   |
@@ -159,7 +159,7 @@
 | Archived/organisational groups                     | `groups` module                                            | Filter in UI                              | todo   |
 | Group invitations                                  | `AcceptGroupInvitation` page                               | Accepting (S-023) and minting (T-018)     | done   |
 | Nested subgroups                                   | `groups` module                                            | Tree navigation                           | todo   |
-| Points exports                                     | `groupResults` module                                      | CSV/Excel export                          | todo   |
+| Points exports                                     | `groupResults` module                                      | CSV via a Route Handler (T-007)           | done   |
 | Attempt limits                                     | `limits` module                                            | Per-assignment config                     | todo   |
 | Per-environment assignment settings                | `exerciseEnvironmentConfigs`                               | `assignments/[id]/edit`                   | todo   |
 | Success-exit-code config                           | `exerciseScoreConfig`                                      | `exercises/[id]/edit`                     | todo   |

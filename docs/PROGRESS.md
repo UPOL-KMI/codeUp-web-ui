@@ -36,6 +36,70 @@
 - **[2026-05-11 12:00] RECON-009:** Verified `docs/QUESTIONS.md` exists with operator and technical questions. No unresolved questions block recon.
   - _Observations:_ All questions have reasonable assumptions recorded. Will proceed on these assumptions per §3's "Never block" rule.
 
+- **[2026-09-01 14:20] T-005:** One student's whole course, submission by submission.
+  `app/[locale]/(app)/groups/[groupId]/users/[userId]/page.tsx`, `lib/api/group-user-solutions.ts`,
+  `components/groups/close-pending-reviews.tsx`, `closePendingReviews()`.
+  - _The third way this app cuts the same solutions._ T-003 is one assignment across the class,
+    S-013's per-user page is one assignment for one person; this is one **person** across the whole
+    course, which is the view a teacher wants when the question stops being about the work.
+  - **_It is one table with an Assignment column, not the legacy screen's stack of boxes
+    (DEC-094)._** Sorting that column is the grouping, and it lives in the URL rather than in
+    `localStorage`; the filter box then narrows to one assignment by name or to a note across all of
+    them, which the boxes cannot do at all. "Best solutions only" stays a real filter (`?filter=`)
+    because no sort expresses it.
+  - _T-003's table grew a `lead` mode rather than being copied._ Six of its seven columns ask the
+    same question of the same rows; only the first names something different (author there,
+    assignment here). The attempt number became the row's link to the solution, since in this mode
+    the lead cell links to the **assignment**.
+  - **_A student may open their own page and is refused a classmate's_** -- core-api's
+    `canViewStudentStats` is written against the student as well as the group, so there is no hint
+    to read (DEC-090's shape, third time). The roster's own rule is restated instead: staff of the
+    group, or one's own row. Verified live from both sides: 200 for herself, 403 for the classmate.
+  - _core-api answers **400**, not 404, for "this person does not study here"_ -- mapped to
+    `notFound()` in this one module, since for every other endpoint a 400 really is a bug in the
+    request.
+  - **_Closing every open review at once_** is the screen's only write, and it confirms first, which
+    the legacy button does not: closing publishes the comments to the student and mails them, and
+    reopening does not un-read them. `Promise.allSettled`, so one refusal does not abandon the rest.
+  - _S-021's owed link is paid:_ a group the person studies in now links to what they submitted
+    there, where the reader teaches that group or is that person.
+  - **_A missing string was found by looking, not by any check we had._** `Profile.groupSolutions`
+    rendered as its own key on the profile page -- next-intl prints the path rather than throwing,
+    and nothing in `typecheck`/`lint`/`build` sees message keys at all. `lib/i18n-text/messages.test.ts`
+    now asserts both locales hold the same keys and that every literal key the source asks for
+    exists; it fails on that exact bug, checked by removing the key again.
+  - _Verified live in both locales_, and the bulk close was exercised on a review this session
+    opened and erased, leaving the three seeded ones -- the dashboard's queue fixture -- untouched.
+  - _Observations:_ **164 e2e tests pass** (156 before), 64 unit tests (55 before).
+
+- **[2026-09-01 14:55] T-007:** The points matrix as a file.
+  `app/api/groups/[groupId]/points/route.ts`, `getGroupPointsExport()`, `lib/format/csv.ts`.
+  - **_A Route Handler, not a browser-side blob (DEC-095)._** The link needs no JavaScript, can be
+    bookmarked or curl'd, and re-reads the numbers from core-api at the moment of the download
+    rather than shipping whatever the page was rendered with -- which also means core-api re-checks
+    the reader, instead of the download trusting a button that was rendered.
+  - _Semicolons and a UTF-8 BOM,_ which is what the legacy "Excel export" actually is: the deployment's
+    Excel splits on `;`, and the BOM is the difference between `Jiří Novák` and mojibake. **CSV only**
+    -- a real `.xlsx` is a new dependency or a hand-rolled ZIP for a capability legacy never had, so
+    the ticket's "(CSV/Excel)" is answered the way legacy answers it, and the row now says so.
+  - **_Shadow assignments are columns here, though the matrix on screen has none._** Their points are
+    inside every row total (DEC-079), and a file whose columns do not add up to its own total column
+    is one somebody will spend an afternoon disbelieving. The seeded group makes the case by itself:
+    Alice's 8 points are entirely a shadow assignment's.
+  - _Emails ride along where core-api discloses them_ -- the same `/v1/users/list` response the names
+    come from, so no extra request -- because matching a row to a person in another system is the
+    reason to export at all. Verified: a reader who may not see them gets the column empty, not absent.
+  - **_A legacy bug not reproduced._** `escapeString` is JavaScript string escaping applied to a CSV
+    field, so the legacy file backslash-escapes an embedded quote; RFC 4180 doubles it. A student
+    named `O"Brien` breaks the legacy file and not this one. Unit-tested, with the file name
+    sanitiser beside it -- a group name is free text and a `Content-Disposition` header is exactly
+    where an unescaped one stops being an inconvenience.
+  - _Verified live:_ downloaded in both locales (the column headers are the assignment names, so the
+    locale rides in the query string -- `/api/...` has no locale segment for next-intl to read), an
+    unknown locale falls back rather than failing, a session-less request lands on the login page, and
+    a student's download is core-api's own narrowed answer rather than this app's.
+  - _Observations:_ **164 e2e tests pass**, 64 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2536,11 +2600,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
   deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
-  T-004 turned out to have shipped with S-013.
+  T-004 turned out to have shipped with S-013, T-005 (one student's whole course) and T-007 (the
+  matrix as a downloadable file).
   Foundation and Design System complete.
-- **Next ticket:** T-005 (the per-student drill-down, which owes the user profile its per-group
-  solutions link) and T-007 (exporting the matrix T-006 just built). The exercise-authoring tickets
-  (T-008..T-012) are the largest block left, and T-016's Graphviz question is still open.
+- **Next ticket:** T-008 (create/edit an exercise), which opens the largest block left --
+  exercise authoring, T-008..T-016, with T-016's Graphviz question still open. T-019 (the submission
+  failures log) is the other unblocked teacher ticket and is small. The anonymous flows (A-001..A-008)
+  are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
+  every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.

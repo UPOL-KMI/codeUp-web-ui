@@ -296,7 +296,8 @@
       "empty": {
         "title": "Žádní studenti",
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
-      }
+      },
+      "viewSolutions": "Odevzdání"
     },
     "points": {
       "title": "Body po jednotlivých zadáních",
@@ -309,6 +310,13 @@
       "columns": {
         "student": "Student",
         "total": "Celkem"
+      },
+      "download": "Stáhnout jako CSV",
+      "export": {
+        "student": "Student",
+        "email": "E-mail",
+        "gained": "Body",
+        "maximum": "Z možných"
       }
     },
     "exams": {
@@ -795,6 +803,7 @@
     "unverified": "E-mail neověřen",
     "disabled": "Účet zablokován",
     "groups": "Skupiny",
+    "groupSolutions": "Odevzdání",
     "membership": {
       "student": "Studuje zde",
       "supervisor": "Vyučuje zde"
@@ -1210,7 +1219,8 @@
       "points": "Body",
       "status": "Výsledek",
       "review": "Revize",
-      "similarities": "Podobnosti"
+      "similarities": "Podobnosti",
+      "assignment": "Zadání"
     },
     "flags": {
       "best": "Nejlepší",
@@ -1223,6 +1233,37 @@
       "open": "Probíhá",
       "closed": "Hotova",
       "closedWithIssues": "{count, plural, one {# výhrada} few {# výhrady} other {# výhrad}}"
+    },
+    "untitledAssignment": "Nepojmenované zadání",
+    "filterByAssignment": "Filtrovat podle zadání nebo poznámky"
+  },
+  "GroupUserSolutions": {
+    "title": "Odevzdání v této skupině",
+    "viewProfile": "Profil",
+    "backToGroup": "Zpět na skupinu",
+    "summary": "{solutions, plural, one {# odevzdání} few {# odevzdání} other {# odevzdání}} napříč {assignments, plural, one {# zadáním} few {# zadáními} other {# zadáními}}.",
+    "similarities": "U {count, plural, one {jednoho řešení} few {# řešení} other {# řešení}} byla nahlášena podobnost s cizí prací.",
+    "filters": {
+      "all": "Vše",
+      "best": "Jen nejlepší řešení"
+    },
+    "empty": {
+      "title": "Tady zatím nic není",
+      "description": "V této skupině zatím od {name} nedorazilo žádné řešení."
+    },
+    "noBest": {
+      "title": "Zatím žádné nejlepší řešení",
+      "description": "Žádné z těchto odevzdání zatím není označeno jako nejlepší pro své zadání."
+    },
+    "pendingReviews": {
+      "note": "{count, plural, one {# revize je stále otevřená} few {# revize jsou stále otevřené} other {# revizí je stále otevřených}}. Komentáře student uvidí až po uzavření revize.",
+      "action": "Uzavřít otevřené revize",
+      "closed": "{count, plural, one {Uzavřena # revize} few {Uzavřeny # revize} other {Uzavřeno # revizí}}.",
+      "failed": "Revize se nepodařilo uzavřít",
+      "confirm": {
+        "title": "Uzavřít otevřené revize?",
+        "description": "Uzavřením se komentáře zpřístupní studentovi a odejde mu upozornění. Týká se to {count, plural, one {# revize} few {# revizí} other {# revizí}}."
+      }
     }
   },
   "Submit": {

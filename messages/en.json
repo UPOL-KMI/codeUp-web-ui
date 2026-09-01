@@ -296,7 +296,8 @@
       "empty": {
         "title": "No students",
         "description": "Nobody has joined this group as a student yet."
-      }
+      },
+      "viewSolutions": "Submissions"
     },
     "points": {
       "title": "Points, assignment by assignment",
@@ -309,6 +310,13 @@
       "columns": {
         "student": "Student",
         "total": "Total"
+      },
+      "download": "Download as CSV",
+      "export": {
+        "student": "Student",
+        "email": "Email",
+        "gained": "Points",
+        "maximum": "Out of"
       }
     },
     "exams": {
@@ -795,6 +803,7 @@
     "unverified": "Email not verified",
     "disabled": "Account disabled",
     "groups": "Groups",
+    "groupSolutions": "Submissions",
     "membership": {
       "student": "Studies here",
       "supervisor": "Teaches here"
@@ -1210,7 +1219,8 @@
       "points": "Points",
       "status": "Result",
       "review": "Review",
-      "similarities": "Similarities"
+      "similarities": "Similarities",
+      "assignment": "Assignment"
     },
     "flags": {
       "best": "Best",
@@ -1223,6 +1233,37 @@
       "open": "In progress",
       "closed": "Done",
       "closedWithIssues": "{count, plural, one {# issue} other {# issues}}"
+    },
+    "untitledAssignment": "Unnamed assignment",
+    "filterByAssignment": "Filter by assignment or note"
+  },
+  "GroupUserSolutions": {
+    "title": "Submissions in this group",
+    "viewProfile": "Profile",
+    "backToGroup": "Back to the group",
+    "summary": "{solutions, plural, one {# submission} other {# submissions}} across {assignments, plural, one {# assignment} other {# assignments}}.",
+    "similarities": "{count, plural, one {One solution has} other {# solutions have}} reported similarities with somebody else's work.",
+    "filters": {
+      "all": "Everything",
+      "best": "Best solutions only"
+    },
+    "empty": {
+      "title": "Nothing submitted here",
+      "description": "Nothing has arrived from {name} in this group yet."
+    },
+    "noBest": {
+      "title": "No best solution yet",
+      "description": "None of these submissions has been marked as the best one for its assignment."
+    },
+    "pendingReviews": {
+      "note": "{count, plural, one {# review is} other {# reviews are}} still open. The comments stay hidden from the student until the review is closed.",
+      "action": "Close open reviews",
+      "closed": "{count, plural, one {# review closed} other {# reviews closed}}.",
+      "failed": "The reviews could not be closed",
+      "confirm": {
+        "title": "Close open reviews?",
+        "description": "Closing publishes the comments to the student and sends them a notification. This affects {count, plural, one {# review} other {# reviews}}."
+      }
     }
   },
   "Submit": {

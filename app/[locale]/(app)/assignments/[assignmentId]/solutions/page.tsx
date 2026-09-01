@@ -59,7 +59,7 @@ export default async function AssignmentSolutionsPage({
           <p className="text-sm text-muted-foreground">
             {t("summary", { solutions: solutions.length, authors })}
           </p>
-          <SolutionsTable solutions={solutions} assignmentId={assignmentId} />
+          <SolutionsTable solutions={solutions} scopeId={assignmentId} />
         </div>
       )}
     </PageShell>

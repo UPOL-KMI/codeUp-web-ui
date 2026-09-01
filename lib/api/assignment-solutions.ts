@@ -46,7 +46,7 @@ export interface AssignmentSolutionRow {
   status: EvaluationInput;
 }
 
-interface SolutionListPayload {
+export interface SolutionListPayload {
   id: string;
   attemptIndex: number;
   note?: string | null;
@@ -69,6 +69,44 @@ interface SolutionListPayload {
   plagiarism?: string | null;
 }
 
+/**
+ * One payload row as this app's screens read it. Shared with T-005's group-wide list
+ * (`group-user-solutions.ts`), which reads the same solution objects from a different endpoint --
+ * so the two screens cannot disagree about what a submission's points or review state are.
+ */
+export function solutionRow(
+  solution: SolutionListPayload,
+  authorName: string,
+): AssignmentSolutionRow {
+  return {
+    id: solution.id,
+    attemptIndex: solution.attemptIndex,
+    note: solution.note ?? "",
+    createdAt: solution.createdAt,
+    authorId: solution.authorId,
+    authorName,
+    environment: solution.runtimeEnvironmentId,
+    gained: solution.actualPoints,
+    bonus: solution.bonusPoints,
+    overridden: solution.overriddenPoints,
+    maxPoints: solution.maxPoints,
+    accepted: solution.accepted,
+    isBest: solution.isBestSolution,
+    reviewRequested: solution.reviewRequest,
+    reviewStartedAt: solution.review?.startedAt ?? null,
+    reviewClosedAt: solution.review?.closedAt ?? null,
+    reviewIssues: solution.review?.issues ?? 0,
+    // core-api sends a count of seconds past the deadline, `0` for on time -- not a boolean.
+    pastDeadline: (solution.pastDeadline ?? 0) > 0,
+    plagiarismBatchId: solution.plagiarism ?? null,
+    status: {
+      lastSubmission: solution.lastSubmission,
+      maxPoints: solution.maxPoints,
+      accepted: solution.accepted,
+    },
+  };
+}
+
 export const getAssignmentSolutions = cache(async function getAssignmentSolutions(
   assignmentId: string,
 ): Promise<AssignmentSolutionRow[]> {
@@ -86,33 +124,7 @@ export const getAssignmentSolutions = cache(async function getAssignmentSolution
 
   return (
     solutions
-      .map((solution) => ({
-        id: solution.id,
-        attemptIndex: solution.attemptIndex,
-        note: solution.note ?? "",
-        createdAt: solution.createdAt,
-        authorId: solution.authorId,
-        authorName: names.get(solution.authorId) ?? "",
-        environment: solution.runtimeEnvironmentId,
-        gained: solution.actualPoints,
-        bonus: solution.bonusPoints,
-        overridden: solution.overriddenPoints,
-        maxPoints: solution.maxPoints,
-        accepted: solution.accepted,
-        isBest: solution.isBestSolution,
-        reviewRequested: solution.reviewRequest,
-        reviewStartedAt: solution.review?.startedAt ?? null,
-        reviewClosedAt: solution.review?.closedAt ?? null,
-        reviewIssues: solution.review?.issues ?? 0,
-        // core-api sends a count of seconds past the deadline, `0` for on time -- not a boolean.
-        pastDeadline: (solution.pastDeadline ?? 0) > 0,
-        plagiarismBatchId: solution.plagiarism ?? null,
-        status: {
-          lastSubmission: solution.lastSubmission,
-          maxPoints: solution.maxPoints,
-          accepted: solution.accepted,
-        },
-      }))
+      .map((solution) => solutionRow(solution, names.get(solution.authorId) ?? ""))
       // Newest first: a teacher opening this screen is almost always looking at what just came in.
       .sort((a, b) => b.createdAt - a.createdAt)
   );

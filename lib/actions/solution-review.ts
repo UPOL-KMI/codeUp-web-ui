@@ -118,6 +118,37 @@ export async function setReviewClosed(
   }
 }
 
+/**
+ * Closing every review left open on one student's solutions at once (T-005), which is what the
+ * legacy group-user-solutions page offers and the only thing on that screen that writes.
+ *
+ * One request per solution, because core-api has no bulk form -- and deliberately
+ * `Promise.allSettled` rather than `Promise.all`: a reader may hold `review` on some of these
+ * solutions and not on others, and one refusal should not abandon the rest half-closed. The count
+ * that came back is what the caller reports; the page re-reads its list afterwards either way, so
+ * what the reader ends up looking at is the truth rather than this function's summary of it.
+ *
+ * Which solutions are eligible is decided by the page from each solution's own `review` hint;
+ * core-api re-decides it per call, as it does for the single-solution control (S-018).
+ */
+export async function closePendingReviews(
+  solutionIds: string[],
+): Promise<ActionResult<{ closed: number }>> {
+  const results = await Promise.allSettled(
+    solutionIds.map((solutionId) =>
+      apiPost(
+        "/v1/assignment-solutions/{id}/review",
+        { close: true },
+        { pathParams: { id: solutionId } },
+      ),
+    ),
+  );
+
+  const refused = results.find((result) => result.status === "rejected");
+  if (refused) return failure(refused.reason, "stateFailed");
+  return { success: true, data: { closed: results.length } };
+}
+
 /** Erases the review and every comment in it -- core-api refuses unless the caller may delete each
  *  comment individually, which is why this is offered only where `deleteReview` is granted. */
 export async function deleteReview(solutionId: string): Promise<ActionResult<{ id: string }>> {

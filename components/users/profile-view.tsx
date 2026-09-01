@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
+import { getMyGroups } from "@/lib/api/groups";
 import { getUserGroups, getUserProfile } from "@/lib/api/user-profile";
 
 import { Link } from "@/i18n/navigation";
@@ -25,9 +26,10 @@ import { Badge } from "@/components/status/badge";
  * carries no `permissionHints` at all (verified live), so the list is fetched and a 403 read as
  * "not disclosed", which is the section simply not being there.
  *
- * The groups link to the group, and to nothing else yet: the legacy profile also offers "user
- * solutions" per group, which is T-005's screen -- this page adds that link when that ticket lands
- * (noted on its row), rather than shipping a button to a 404 (DEC-066). Editing one's own account
+ * A group the person **studies** in also links to what they have submitted there (T-005), where
+ * that is the reader's to read: their own, or a group the reader teaches. `viewStudentStats` is a
+ * two-subject rule with no hint of its own (DEC-090), so the offer is decided from the reader's own
+ * group lists rather than from something core-api says about this page. Editing one's own account
  * is offered because S-022 built it; taking over an account is AD-003's and adds its own control
  * here when it lands.
  */
@@ -39,14 +41,19 @@ export async function ProfileView({
   breadcrumbs: BreadcrumbItem[];
 }) {
   const locale = await getLocale();
-  const [t, profile, viewer, groups] = await Promise.all([
+  const [t, profile, viewer, groups, mine] = await Promise.all([
     getTranslations("Profile"),
     getUserProfile(userId),
     getCurrentUser(),
     getUserGroups(userId, locale),
+    // Already fetched for the app shell's own sidebar this request, so this costs nothing: what
+    // it adds here is which of these groups the *reader* teaches, which is what decides whether
+    // T-005's drill-down is theirs to open.
+    getMyGroups(locale),
   ]);
 
   const isMe = viewer.id === profile.id;
+  const teaching = new Set(mine.teaching.map((group) => group.id));
   const externalIds = Object.entries(profile.externalIds);
 
   return (
@@ -143,9 +150,19 @@ export async function ProfileView({
                     >
                       {group.name}
                     </Link>
-                    <Badge tone={group.role === "supervisor" ? "info" : "neutral"}>
-                      {t(`membership.${group.role}`)}
-                    </Badge>
+                    <span className="flex flex-wrap items-center gap-3">
+                      {group.role === "student" && (isMe || teaching.has(group.id)) && (
+                        <Link
+                          href={`/groups/${group.id}/users/${profile.id}`}
+                          className="text-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t("groupSolutions")}
+                        </Link>
+                      )}
+                      <Badge tone={group.role === "supervisor" ? "info" : "neutral"}>
+                        {t(`membership.${group.role}`)}
+                      </Badge>
+                    </span>
                   </li>
                 ))}
               </ul>

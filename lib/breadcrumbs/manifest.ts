@@ -83,6 +83,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "Plagiarism", pattern: "/solutions/:solutionId/plagiarisms" },
   // `/assignments/:id/users` is a path segment with no page of its own, like `/assignments`.
   { namespace: "Users", pattern: "/assignments/:assignmentId/users", unlinked: true },
+  { namespace: "Users", pattern: "/groups/:groupId/users", unlinked: true },
 
   // Dynamic segments. Each fetches the entity's own display name -- in a Server Component, so no
   // client-side waterfall (docs/IA.md §3.2). Groups and exercises carry no top-level `name`; their
@@ -164,6 +165,17 @@ const MANIFEST: ManifestEntry[] = [
   },
   {
     pattern: "/assignments/:assignmentId/users/:userId",
+    resolve: async (params) => {
+      const user = await apiRead<{ fullName?: string }>("/v1/users/{id}", {
+        pathParams: { id: params.userId! },
+      });
+      return user.fullName ?? "";
+    },
+  },
+  {
+    // T-005's drill-down. The person is the crumb, the same way they are on the assignment's own
+    // per-user page above -- the group is already named by the crumb before it.
+    pattern: "/groups/:groupId/users/:userId",
     resolve: async (params) => {
       const user = await apiRead<{ fullName?: string }>("/v1/users/{id}", {
         pathParams: { id: params.userId! },

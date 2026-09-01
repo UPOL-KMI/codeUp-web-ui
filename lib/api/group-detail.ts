@@ -490,3 +490,105 @@ export async function getGroupPointsMatrix(groupId: string, locale: string): Pro
 
   return { columns, rows };
 }
+
+/**
+ * The same matrix as a file (T-007), which is the one thing this app builds for a reader to take
+ * somewhere else.
+ *
+ * Three differences from what the screen shows, and each is because a spreadsheet is not a table
+ * on a page. **Shadow assignments are columns here**: they carry points a teacher awarded by hand,
+ * those points are inside every row total (core-api folds them in), and a file whose columns do
+ * not add up to its own total column is a file someone will spend an afternoon disbelieving --
+ * the screen can leave them out because it says so in words next to the table, a CSV cannot.
+ * **Emails ride along** where core-api discloses them, because matching a row to a person in
+ * another system is the reason to export at all; they cost no extra request, being in the same
+ * `/v1/users/list` response the names come from. And **bonus points stay visible** as `8+2` rather
+ * than being summed away, which is the legacy export's own notation.
+ *
+ * Raw `apiGet`/`apiPost` rather than `apiRead`: this is read by a Route Handler, where `forbidden()`
+ * and friends are not answers a caller can read (`read.ts`'s own rule). The handler maps
+ * `ApiError` to a status instead.
+ */
+export interface PointsExportColumn {
+  id: string;
+  name: string;
+  maxPoints: number;
+}
+
+export interface PointsExportRow {
+  fullName: string;
+  /** Present only where core-api disclosed the person's private data to this reader. */
+  email: string | null;
+  gained: number;
+  total: number;
+  cells: Record<string, { gained: number | null; bonus: number | null }>;
+  shadowCells: Record<string, number | null>;
+}
+
+export interface PointsExport {
+  groupName: string;
+  columns: PointsExportColumn[];
+  shadowColumns: PointsExportColumn[];
+  rows: PointsExportRow[];
+}
+
+interface ShadowPayload {
+  id: string;
+  localizedTexts?: LocalizedText[];
+  maxPoints: number;
+}
+
+export async function getGroupPointsExport(groupId: string, locale: string): Promise<PointsExport> {
+  const [group, stats, assignments, shadows] = await Promise.all([
+    apiGet<GroupPayload>("/v1/groups/{id}", { pathParams: { id: groupId } }),
+    apiGet<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
+    apiGet<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
+    apiGet<ShadowPayload[]>("/v1/groups/{id}/shadow-assignments", { pathParams: { id: groupId } }),
+  ]);
+
+  const groupName = localizedName(group.localizedTexts, locale);
+  const byName = (a: PointsExportColumn, b: PointsExportColumn) =>
+    a.name.localeCompare(b.name, locale);
+
+  const columns = assignments
+    .map((assignment) => ({
+      id: assignment.id,
+      name: localizedName(assignment.localizedTexts, locale),
+      maxPoints: assignment.maxPointsBeforeFirstDeadline,
+    }))
+    .sort(byName);
+  const shadowColumns = shadows
+    .map((shadow) => ({
+      id: shadow.id,
+      name: localizedName(shadow.localizedTexts, locale),
+      maxPoints: shadow.maxPoints,
+    }))
+    .sort(byName);
+
+  if (stats.length === 0) return { groupName, columns, shadowColumns, rows: [] };
+
+  const people = await apiPost<
+    { id: string; fullName: string; privateData?: { email?: string } }[]
+  >("/v1/users/list", { ids: [...new Set(stats.map((row) => row.userId))] });
+  const byId = new Map(people.map((person) => [person.id, person]));
+
+  const rows = stats
+    .map((row) => ({
+      fullName: byId.get(row.userId)?.fullName ?? "",
+      email: byId.get(row.userId)?.privateData?.email ?? null,
+      gained: row.points.gained,
+      total: row.points.total,
+      cells: Object.fromEntries(
+        row.assignments.map((entry) => [
+          entry.id,
+          { gained: entry.points.gained, bonus: entry.points.bonus },
+        ]),
+      ),
+      shadowCells: Object.fromEntries(
+        row.shadowAssignments.map((entry) => [entry.id, entry.points.gained]),
+      ),
+    }))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName, locale));
+
+  return { groupName, columns, shadowColumns, rows };
+}

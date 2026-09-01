@@ -18,7 +18,18 @@ import { Badge } from "@/components/status/badge";
  * settings treat "students can see each other's progress" as a decision a course makes rather than
  * an assumption.
  */
-export function StudentTable({ students, groupId }: { students: GroupStudent[]; groupId: string }) {
+export function StudentTable({
+  students,
+  groupId,
+  viewerId,
+  staffView,
+}: {
+  students: GroupStudent[];
+  groupId: string;
+  viewerId: string;
+  /** The reader administers, supervises or observes this group. */
+  staffView: boolean;
+}) {
   const t = useTranslations("Group.students");
 
   const showThreshold = students.some((student) => student.hasLimit);
@@ -54,6 +65,27 @@ export function StudentTable({ students, groupId }: { students: GroupStudent[]; 
       sortable: true,
       sortValue: (student) => student.solvedCount,
       cell: (student) => `${student.solvedCount}/${student.assignmentCount}`,
+    },
+    {
+      id: "solutions",
+      // No header: the link names itself, the way the legacy roster's action column does.
+      header: "",
+      // T-005's drill-down, offered by the legacy roster's own rule: staff may read anyone's
+      // submissions in their group, a student only their own. There is no permission hint to ask
+      // -- `viewStudentStats` is written against two subjects, group *and* student, so core-api
+      // computes none for the group alone (DEC-090's shape) -- so the ACL's own condition
+      // (`student.isSameUser`) is restated here and core-api decides for real on the page.
+      cell: (student) =>
+        staffView || student.id === viewerId ? (
+          <Link
+            href={`/groups/${groupId}/users/${student.id}`}
+            className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("viewSolutions")}
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
     },
     ...(showThreshold
       ? [
