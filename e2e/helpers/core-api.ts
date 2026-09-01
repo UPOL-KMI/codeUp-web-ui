@@ -36,9 +36,13 @@ async function coreApiToken(): Promise<string> {
  *
  * **The only fixture in this suite fetched from core-api rather than found in the app**, and
  * deliberately so: an invitation id reaches its recipient out of band -- in an email, or pasted
- * into a chat -- so there is no screen a test could read it from, and until T-018 builds the
- * group's invitation list there is not even one for the person who *minted* the link. Replace this
- * with a click on that list once it exists; the states the spec then asserts do not change.
+ * into a chat -- so there is no screen a *recipient* could read it from.
+ *
+ * T-018 built the minting side, and the S-023 row expected that to retire this helper. It does
+ * not, quite: two of the five seeded fixtures are on groups whose settings tab shows no invitation
+ * section at all -- an organizational group cannot be joined, so the section is hidden there, and
+ * so the only way to a link on one is this. What T-018 did change is that the *ordinary* case is
+ * now clickable, which is what `group-invitations.spec.ts`'s management test exercises.
  *
  * Called once per spec file (`test.beforeAll`), not per test -- core-api's login is bcrypt-slow,
  * which is the same reason `loginAndGetCookie` is called once per persona.

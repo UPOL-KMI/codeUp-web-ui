@@ -90,7 +90,7 @@
 | `filesContent`                 | File content preview                          | `solutions/[id]`                     | todo   |
 | `groupExamLocks`               | Exam mode locks                               | `groups/[id]?tab=exams`              | done   |
 | `groupExercises`               | Group-specific exercises                      | `groups/[id]/assignments`            | todo   |
-| `groupInvitations`             | Group invitations                             | `accept-group-invitation`            | todo   |
+| `groupInvitations`             | Group invitations                             | `accept-group-invitation`            | done   |
 | `groupResults`                 | Group results overview                        | `groups/[id]/assignments`            | todo   |
 | `groups`                       | Group CRUD, hierarchy, membership             | `groups`                             | todo   |
 | `hwGroups`                     | Hardware groups                               | `admin/server`                       | todo   |
@@ -157,7 +157,7 @@
 | Third-party extensions                             | `SIS-ext-webapp` repo mentioned                            | Investigate token handoff                 | todo   |
 | QR code of current page                            | Header component                                           | Reproduce                                 | todo   |
 | Archived/organisational groups                     | `groups` module                                            | Filter in UI                              | todo   |
-| Group invitations                                  | `AcceptGroupInvitation` page                               | Accepting done (S-023); minting is T-018  | todo   |
+| Group invitations                                  | `AcceptGroupInvitation` page                               | Accepting (S-023) and minting (T-018)     | done   |
 | Nested subgroups                                   | `groups` module                                            | Tree navigation                           | todo   |
 | Points exports                                     | `groupResults` module                                      | CSV/Excel export                          | todo   |
 | Attempt limits                                     | `limits` module                                            | Per-assignment config                     | todo   |

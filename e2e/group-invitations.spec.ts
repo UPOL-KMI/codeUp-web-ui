@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { STUDENT } from "./helpers/accounts";
+import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 import { seededInvitationIds } from "./helpers/core-api";
@@ -96,4 +96,85 @@ test("sends an existing member on to the group instead of asking them to join it
 test("reads a link to an invitation that no longer exists as a missing page", async ({ page }) => {
   await page.goto("/en/accept-group-invitation/00000000-0000-4000-8000-000000000000");
   await expect(page.getByRole("main")).toContainText("Page not found");
+});
+
+/**
+ * Minting, editing and revoking the links (T-018), from the group's Settings tab.
+ *
+ * Creates its own link and deletes it again, so it leaves nothing behind and runs twice in a row --
+ * and so it never touches the five seeded fixtures the tests above depend on. The note it uses is
+ * its own, which is also how it finds its own row again after each step.
+ */
+test.describe("managing the links", () => {
+  const NOTE = "[e2e] a link this test made";
+  const RENAMED = "[e2e] and then renamed";
+
+  test.beforeEach(async ({ page }) => {
+    const cookie = await loginAndGetCookie(SUPERADMIN);
+    await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  });
+
+  test("creates a link, changes it, and deletes it again", async ({ page }) => {
+    await page.goto("/en/groups");
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: "[seed] Large Lecture", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "[seed] Large Lecture", level: 1 }),
+    ).toBeVisible();
+    await page.goto(`${page.url().split("?")[0]}?tab=settings`);
+
+    const section = page
+      .getByRole("main")
+      .locator("section")
+      .filter({ has: page.getByRole("heading", { name: "Invitation links" }) });
+    await expect(section).toBeVisible();
+
+    // Leftovers from a run that died mid-test, so this starts from a known state either way.
+    for (const note of [NOTE, RENAMED]) {
+      const stale = section.locator("li").filter({ hasText: note });
+      while ((await stale.count()) > 0) {
+        await stale.first().getByRole("button", { name: "Delete" }).click();
+        await page.getByRole("alertdialog").getByRole("button", { name: "Confirm" }).click();
+        await expect(page.getByText("The link was deleted.", { exact: true })).toBeVisible();
+      }
+    }
+
+    const before = await section.locator("li").count();
+
+    // A date already gone is refused by the form itself, before core-api is asked.
+    await section.getByLabel("Note for whoever opens the link").fill(NOTE);
+    await section.getByLabel("Expires").fill("2020-01-01T09:00");
+    await section.getByRole("button", { name: "Create the link" }).click();
+    await expect(page.getByText("Check the dates and try again.", { exact: true })).toBeVisible();
+    await expect(section.locator("li")).toHaveCount(before);
+
+    // Empty means a link that never expires, which is core-api's own nullable `expireAt`.
+    await section.getByLabel("Expires").fill("");
+    await section.getByRole("button", { name: "Create the link" }).click();
+    await expect(page.getByText("The link was created.", { exact: true })).toBeVisible();
+
+    const row = section.locator("li").filter({ hasText: NOTE });
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText("Never expires");
+    // The link is shown in full: it is the thing being handed out, and it points at S-023's page.
+    await expect(row.locator("code")).toContainText("/accept-group-invitation/");
+
+    await row.getByRole("button", { name: "Edit" }).click();
+    await row.getByLabel("Note for whoever opens the link").fill(RENAMED);
+    await row.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("The link was changed.", { exact: true })).toBeVisible();
+    await expect(section.locator("li").filter({ hasText: RENAMED })).toHaveCount(1);
+
+    const renamed = section.locator("li").filter({ hasText: RENAMED });
+    await renamed.getByRole("button", { name: "Delete" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(
+      dialog.getByRole("heading", { name: "Delete this invitation link?" }),
+    ).toBeVisible();
+    await dialog.getByRole("button", { name: "Confirm" }).click();
+    await expect(page.getByText("The link was deleted.", { exact: true })).toBeVisible();
+    await expect(section.locator("li")).toHaveCount(before);
+  });
 });

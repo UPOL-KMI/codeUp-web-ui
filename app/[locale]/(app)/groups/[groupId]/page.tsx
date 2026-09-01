@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getCurrentUser } from "@/lib/api/current-user";
+import { getCurrentUser, type CurrentUser } from "@/lib/api/current-user";
 import {
   getGroupAssignments,
   getGroupDetail,
@@ -10,8 +10,10 @@ import {
   type GroupDetail,
 } from "@/lib/api/group-detail";
 import { getExamLocks, getExamRoster } from "@/lib/api/group-exams";
+import { getGroupInvitations } from "@/lib/api/group-invitation";
 import { getGroupShadowAssignments } from "@/lib/api/shadow-assignment";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { requestOrigin } from "@/lib/http/absolute-url";
 import { currentPhase } from "@/lib/status/exam";
 
 import { routing } from "@/i18n/routing";
@@ -25,7 +27,9 @@ import { ExamStatus } from "@/components/groups/exam-status";
 import { ExamTable } from "@/components/groups/exam-table";
 import { GroupInfo } from "@/components/groups/group-info";
 import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
+import { InvitationManager } from "@/components/groups/invitation-manager";
 import { MemberManager } from "@/components/groups/member-manager";
+import { MembershipButton } from "@/components/groups/membership-button";
 import { GroupSettingsControls } from "@/components/groups/settings-controls";
 import { GroupSettingsForm } from "@/components/groups/settings-form";
 import { StudentTable } from "@/components/groups/student-table";
@@ -55,8 +59,13 @@ export default async function GroupPage({
   searchParams: Promise<{ tab?: string; filter?: string; exam?: string }>;
 }) {
   const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, group] = await Promise.all([getTranslations("Group"), getGroupDetail(groupId, locale)]);
+  const [t, group, viewer] = await Promise.all([
+    getTranslations("Group"),
+    getGroupDetail(groupId, locale),
+    getCurrentUser(),
+  ]);
   const breadcrumbs = await resolveBreadcrumbs(`/groups/${groupId}`, locale);
+  const membership = ownMembershipAction(group, viewer);
 
   const tabs: GroupTab[] = [
     { id: "info", label: t("tabs.info") },
@@ -77,10 +86,11 @@ export default async function GroupPage({
       }
       breadcrumbs={breadcrumbs}
       actions={
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap items-center gap-2">
           {group.archived && <Badge tone="warning">{t("badges.archived")}</Badge>}
           {group.exam && <Badge tone="warning">{t("badges.exam")}</Badge>}
           {group.public && <Badge tone="info">{t("badges.public")}</Badge>}
+          {membership && <MembershipButton groupId={groupId} action={membership} />}
         </div>
       }
       tabs={<GroupTabs groupId={groupId} tabs={tabs} current={current} />}
@@ -95,6 +105,49 @@ export default async function GroupPage({
 }
 
 /**
+ * Whether this reader can put themselves into this group, or take themselves out (S-026).
+ *
+ * **The one place in this app that reads an ACL's conditions instead of a permission hint, because
+ * there is no hint to read (DEC-090).** `addStudent` and `removeStudent` are absent from a group's
+ * `permissionHints` entirely -- confirmed live, the keys are missing rather than `false` -- because
+ * both rules are written against a *student* subject (`student.isSameUser`,
+ * `student.isNotGroupLocked`) and a hint computed for the group alone has nobody to put there. The
+ * conditions are all fields this page already holds, so they are restated here and core-api decides
+ * for real on the call: joining a group that is not public answers 403, verified live.
+ *
+ * The shape is the legacy screen's own (`GroupInfo`: `!isAdmin && !isSupervisor && !organizational
+ * && !archived && (public || (isStudent && !detaining))`), with two conditions core-api's ACL adds
+ * and the legacy check leaves to the API: an exam group detains by definition (`removeStudent`'s
+ * `group.isNotExam`), and a reader locked into an exam elsewhere may join nothing (`addStudent`'s
+ * `student.isNotGroupLocked`).
+ *
+ * `myStats` is what "I study here" means -- it exists only for groups core-api computes the
+ * reader's own stats for.
+ */
+function ownMembershipAction(group: GroupDetail, viewer: CurrentUser): "join" | "leave" | null {
+  // Staff of this group are not offered a student's membership in it. core-api would allow it, and
+  // the legacy screen hides it for exactly these two roles -- for the administrator of a course,
+  // "join" is a misclick rather than an intention.
+  const isStaff = group.members.some(
+    (member) =>
+      member.id === viewer.id && (member.role === "admin" || member.role === "supervisor"),
+  );
+  if (isStaff || group.organizational || group.archived) return null;
+
+  if (group.myStats !== null) {
+    // A group that detains its students, or is running as an exam, does not let them walk out.
+    if (group.detaining || group.exam) return null;
+    if (viewer.groupLock === group.id) return null;
+    return "leave";
+  }
+
+  if (!group.public) return null;
+  // Locked into an exam somewhere: core-api refuses every other group until it ends.
+  if (viewer.groupLock !== null) return null;
+  return "join";
+}
+
+/**
  * The legacy app's own rule for offering its Edit screen (`GroupNavigation`'s `canEdit`): any one
  * of the four things this tab can do. Membership changes ride along on `update`, which is what
  * core-api requires for them anyway.
@@ -104,7 +157,10 @@ function showSettingsTab(group: GroupDetail): boolean {
     group.can.update === true ||
     group.can.archive === true ||
     group.can.remove === true ||
-    group.can.relocate === true
+    group.can.relocate === true ||
+    // T-018 put the invitation links here, and `editInvitations` is granted separately from
+    // `update` in core-api's own ACL -- so a reader who may only mint links still needs the tab.
+    group.can.editInvitations === true
   );
 }
 
@@ -117,15 +173,25 @@ function showSettingsTab(group: GroupDetail): boolean {
  * is still offered, and is the way back.
  */
 async function SettingsTab({ group }: { group: GroupDetail }) {
-  const [t, locale] = await Promise.all([getTranslations("Group.settings"), getLocale()]);
+  // Two namespaces: this tab's own copy, and T-018's invitation section, which is its own
+  // namespace because the client component that owns the section reads it directly.
+  const [t, tInvitations, locale] = await Promise.all([
+    getTranslations("Group.settings"),
+    getTranslations("Group.invitations"),
+    getLocale(),
+  ]);
   const canEditMembers = group.can.update === true && !group.archived;
-  const [relocationTargets, students] = await Promise.all([
+  const [relocationTargets, students, invitations, origin] = await Promise.all([
     group.can.relocate === true && !group.archived
       ? getRelocationTargets(group.id, locale)
       : Promise.resolve([]),
     group.can.viewStudents === true && !group.organizational
       ? getGroupStudents(group.id)
       : Promise.resolve([]),
+    group.can.viewInvitations === true && !group.organizational
+      ? getGroupInvitations(group.id)
+      : Promise.resolve([]),
+    requestOrigin(),
   ]);
 
   return (
@@ -138,6 +204,18 @@ async function SettingsTab({ group }: { group: GroupDetail }) {
       )}
 
       <GroupSettingsControls group={group} relocationTargets={relocationTargets} />
+
+      {group.can.viewInvitations === true && !group.organizational && (
+        <section className="flex flex-col gap-3">
+          <h3 className="text-sm font-medium">{tInvitations("title")}</h3>
+          <InvitationManager
+            groupId={group.id}
+            invitations={invitations}
+            origin={origin}
+            canEdit={group.can.editInvitations === true && !group.archived}
+          />
+        </section>
+      )}
 
       {group.can.viewStudents === true && (
         <section className="flex flex-col gap-3">

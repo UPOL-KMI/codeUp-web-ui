@@ -2350,6 +2350,52 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     a ticket, because no capability is lost -- only the wording of one failure.
   - _Observations:_ **141 e2e tests pass** (138 before), 55 unit tests.
 
+- **[2026-09-01 10:40] S-026 + T-018:** The two ways into a group that are not an invitation, and
+  the links themselves. `lib/actions/group-membership.ts`,
+  `components/groups/membership-button.tsx`, `components/groups/invitation-manager.tsx`,
+  `getGroupInvitations()`, `requestOrigin()`.
+  - **_S-026 is the one screen in this app that reads an ACL's conditions instead of a permission
+    hint, because there is no hint to read (DEC-090)._** `addStudent` and `removeStudent` are
+    **absent from a group's `permissionHints` entirely** -- confirmed live, the keys are missing
+    rather than `false` -- because both rules are written against a _student_ subject
+    (`student.isSameUser`, `student.isNotGroupLocked`) and a hint computed for the group alone has
+    nobody to put there. Same shape as DEC-080's user objects. So the conditions are restated from
+    fields the page already holds, and core-api decides for real: joining a group that is not public
+    answers 403, verified live.
+  - _Neither action takes a user id._ It comes from the session, so there is nothing in the request
+    that could enrol somebody else -- S-022's reasoning applied to a second screen. The offer's shape
+    is the legacy screen's own, down to **a group's admins and supervisors being shown neither
+    control**: core-api would permit it, and for the administrator of a course "join" is a misclick.
+    Putting _other_ people in and out stays in S-009's member manager, gated on `update`, which is a
+    different question with a different answer.
+  - _Seeded `[seed] Open Enrolment`._ No group was public and unjoined, so the Join control -- the
+    only way into a group without an invitation -- had never been rendered. Making it public found a
+    real trap on the way: `actionUpdateGroup` replaces the whole group with what it is sent, and
+    omitting `externalId` is a **500**, not a 400.
+  - _T-018 puts the links on the Settings tab._ Create, edit, delete. Expired links stay listed and
+    marked, because letting one lapse and deleting it are genuinely different -- the first can be
+    given a new date, the second 404s forever -- and a link quietly vanishing is how a teacher ends
+    up minting a second one for the same class.
+  - **_The link is printed in full, from the request's own `Host` (DEC-091)._** It is the thing being
+    handed out, so a copy button over an invisible value would not do. `API_BASE_PUBLIC` was the
+    tempting shortcut and is wrong: it names core-api, which is the same origin in the compose
+    deployment and a **different port** in local development, so the link would work in production
+    and quietly not on a developer's machine.
+  - _`editInvitations` is granted separately from `update` in core-api's ACL_, so the Settings tab
+    now appears for a reader who may only mint links -- it used to require one of the other four.
+  - _Verified live as the seeded student and as the superadmin:_ join, the sidebar and "my standing"
+    appearing, leave with its confirmation, and the group back to zero students; then a link created,
+    a past expiry refused by the form before core-api was asked, an empty expiry saved as "never
+    expires", the note edited, and the link deleted -- in both locales.
+  - _What T-018 did **not** retire:_ `e2e/helpers/core-api.ts` survives. An organizational group
+    shows no invitation section (nobody can be enrolled in one), so two of the five seeded fixtures
+    are still unreachable by clicking. The ordinary case is now clickable, and the management spec
+    exercises it.
+  - _Both specs undo what they do_, and both start by clearing anything a crashed earlier run left
+    behind -- which was not paranoia: three failed attempts at the membership spec each left the
+    account enrolled, and that is exactly how the next run starts from the wrong state.
+  - _Observations:_ **146 e2e tests pass** (141 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2359,15 +2405,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021),
   account settings (S-022), both invitation-acceptance pages (S-023, S-024) and the dashboard's
   shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one) and F-031 (a dead
-  session signs the reader out instead of looping). Foundation and Design System complete.
-- **Next ticket:** S-026 (joining a public group and leaving one, the gap S-023 found), which is the
-  last student-phase ticket. **T-018 is unblocked** now that invitation links lead somewhere, and it
-  owes `e2e/helpers/core-api.ts` its retirement. The teacher phase's first two tickets (T-002 edit,
-  T-003 solutions list) each owe the assignment screen a link, recorded on their backlog rows.
-- **New ticket from this session:** **S-026** -- joining a public group and leaving a group are
-  both legacy capabilities nothing here has built. Accepting an invitation is a one-way door
-  in this app today, which is why `e2e/group-invitations.spec.ts` asserts every state except the
-  accept.
+  session signs the reader out instead of looping), S-026 (joining and leaving a group) and T-018
+  (the invitation links themselves). **The Student phase is complete.** Foundation and Design
+  System complete.
+- **Next ticket:** the Teacher phase opens with T-002 (edit an assignment) and T-003 (its solutions
+  list), each of which owes the assignment screen a link, recorded on their backlog rows. The
+  Student phase is complete.
+- **Closed this session:** **S-026**, which this session also created -- joining a public group
+  and leaving one were legacy capabilities nothing here had built, found while S-023 was making
+  invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-018 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will

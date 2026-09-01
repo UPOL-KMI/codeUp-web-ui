@@ -291,6 +291,39 @@ async function ensureArchived(adminToken: string, group: GroupRecord) {
   log(`group archived: ${group.localizedTexts[0]?.name ?? group.id}`);
 }
 
+/**
+ * A group anyone in the instance may walk into (S-026). No seeded group was public and unjoined,
+ * so the Join control -- and the only path a student has into a group without an invitation -- had
+ * never been rendered. `isPublic` is part of the group's own settings, and core-api replaces the
+ * whole group with what it is sent, so the existing texts have to go back with it.
+ */
+async function ensurePublic(adminToken: string, group: GroupRecord) {
+  const detail = await api<{
+    public: boolean;
+    externalId: string;
+    localizedTexts: { locale: string; name: string; description: string }[];
+  }>("GET", `/groups/${group.id}`, { token: adminToken });
+  if (detail.public) return false;
+
+  // `actionUpdateGroup` replaces the whole group with what it is sent -- every field it reads has
+  // to be present, or the ones left out are cleared (and `externalId` missing is a 500, not a 400).
+  await api("POST", `/groups/${group.id}`, {
+    token: adminToken,
+    body: {
+      localizedTexts: detail.localizedTexts.map((text) => ({
+        locale: text.locale,
+        name: text.name,
+        description: text.description,
+      })),
+      externalId: detail.externalId ?? "",
+      isPublic: true,
+      publicStats: true,
+      detaining: false,
+    },
+  });
+  return true;
+}
+
 async function ensureStudentMember(adminToken: string, group: GroupRecord, userId: string) {
   if (group.privateData.students.includes(userId)) return;
   await api("POST", `/groups/${group.id}/students/${userId}`, { token: adminToken });
@@ -1253,6 +1286,17 @@ async function main() {
     shadowSeeded > 0
       ? `created or awarded ${shadowSeeded} shadow assignments`
       : "both shadow assignments already existed",
+  );
+
+  // A public group nobody is enrolled in (S-026): the one shape of group a student can join on
+  // their own, and the only way the Join control is reachable at all.
+  const g5 = await getOrCreateGroup(admin.token, instanceId, {
+    name: `${SEED_PREFIX} Open Enrolment`,
+  });
+  log(
+    (await ensurePublic(admin.token, g5))
+      ? "made a public group anyone may join"
+      : "the public group already existed",
   );
 
   // One invitation link per state S-023's page renders (S-023). G3 is the group Alice can still

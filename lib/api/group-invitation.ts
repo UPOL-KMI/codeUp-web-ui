@@ -159,3 +159,55 @@ export const getGroupInvitation = cache(async function getGroupInvitation(
       !alreadyMember,
   };
 });
+
+export interface GroupInvitationSummary {
+  id: string;
+  note: string;
+  createdAt: number;
+  expireAt: number | null;
+  hasExpired: boolean;
+  hostId: string;
+  hostName: string;
+}
+
+/**
+ * Every invitation link a group has (T-018), for the person who mints them.
+ *
+ * `GET /v1/groups/{groupId}/invitations` is gated by `canViewDetail`, not by `viewInvitations` --
+ * checked in `GroupInvitationsPresenter::checkList`, not assumed from the name. The settings tab
+ * offers the section on `viewInvitations` anyway, which is the narrower of the two and the hint
+ * the legacy screen uses; a reader who has one has the other.
+ *
+ * Host names come from the same batched `POST /v1/users/list` the roster screens use. Expired
+ * links stay in the list, marked -- core-api keeps them until someone deletes them, and a link
+ * silently vanishing is how a teacher ends up minting a second one for the same class.
+ */
+export const getGroupInvitations = cache(async function getGroupInvitations(
+  groupId: string,
+): Promise<GroupInvitationSummary[]> {
+  const invitations = await apiRead<InvitationPayload[]>("/v1/groups/{groupId}/invitations", {
+    pathParams: { groupId },
+  });
+  if (invitations.length === 0) return [];
+
+  const hostIds = [...new Set(invitations.map((invitation) => invitation.hostId))];
+  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
+    ids: hostIds,
+  });
+  const names = new Map(people.map((person) => [person.id, person.fullName]));
+
+  return invitations
+    .map((invitation) => {
+      const expireAt = invitation.expireAt ?? null;
+      return {
+        id: invitation.id,
+        note: invitation.note ?? "",
+        createdAt: invitation.createdAt,
+        expireAt,
+        hasExpired: expireAt !== null && expireAt * 1000 <= Date.now(),
+        hostId: invitation.hostId,
+        hostName: names.get(invitation.hostId) ?? "",
+      };
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+});

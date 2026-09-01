@@ -1,4 +1,5 @@
 import "server-only";
+import { headers } from "next/headers";
 
 /**
  * Builds an absolute URL for a redirect from inside a Route Handler, using the request's own
@@ -20,4 +21,22 @@ export function buildAbsoluteUrl(request: Request, pathname: string): string {
   const protocol = fallback.protocol;
 
   return `${protocol}//${host}${pathname}`;
+}
+
+/**
+ * The origin this app is being served from, for a Server Component that has to *show* a URL rather
+ * than redirect to one (T-018's invitation links).
+ *
+ * Same `Host`-over-`request.url` reasoning as above, read from `headers()` because a Server
+ * Component has no `Request`. Deliberately not derived from `API_BASE_PUBLIC`: that names core-api,
+ * which is the same origin in the compose deployment and a different port in local development --
+ * so it would print a link that works in production and quietly does not on a developer's machine.
+ */
+export async function requestOrigin(): Promise<string> {
+  const headerList = await headers();
+  const fallback = new URL(process.env.API_BASE_PUBLIC ?? "http://localhost");
+  const host = headerList.get("host") ?? fallback.host;
+  const protocol = headerList.get("x-forwarded-proto") ?? fallback.protocol.replace(":", "");
+
+  return `${protocol}://${host}`;
 }

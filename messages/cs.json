@@ -234,6 +234,20 @@
       },
       "subgroups": "Podskupiny"
     },
+    "membership": {
+      "join": "Vstoupit do skupiny",
+      "leave": "Opustit skupinu",
+      "joined": "Do skupiny jste vstoupili.",
+      "left": "Skupinu jste opustili.",
+      "confirmLeave": {
+        "title": "Opustit tuto skupinu?",
+        "description": "Přestanete vidět její zadání a vaše body zde se už nebudou počítat do vašeho přehledu. Co jste už odevzdali, zůstává, kde je."
+      },
+      "errors": {
+        "joinFailed": "Vstup do skupiny se nezdařil.",
+        "leaveFailed": "Opuštění skupiny se nezdařilo."
+      }
+    },
     "assignments": {
       "filterPlaceholder": "Filtrovat zadání",
       "bonus": "Bonus",
@@ -541,6 +555,40 @@
         "relocateFailed": "Skupinu se nepodařilo přesunout.",
         "deleteFailed": "Skupinu se nepodařilo smazat.",
         "memberFailed": "Členství se nepodařilo změnit."
+      }
+    },
+    "invitations": {
+      "title": "Odkazy s pozvánkou",
+      "explain": "Kdokoli, kdo některý z těchto odkazů otevře, přihlásí se a je studentem této instance, může jeho pomocí do skupiny vstoupit. Sdílejte odkaz jen s lidmi, které chcete pozvat.",
+      "empty": "Tato skupina nemá žádné odkazy s pozvánkou.",
+      "createTitle": "Nový odkaz",
+      "create": "Vytvořit odkaz",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "edit": "Upravit",
+      "delete": "Smazat",
+      "note": "Poznámka pro toho, kdo odkaz otevře",
+      "expiresAt": "Platnost do",
+      "expiresAtHint": "Ponechte prázdné pro odkaz bez omezení platnosti.",
+      "expiresOn": "Platnost do {date}",
+      "neverExpires": "Bez omezení platnosti",
+      "expired": "Platnost vypršela",
+      "mintedBy": "vytvořil(a) {name}",
+      "created": "Odkaz byl vytvořen.",
+      "updated": "Odkaz byl změněn.",
+      "deleted": "Odkaz byl smazán.",
+      "failed": "To se nepodařilo.",
+      "confirmDelete": {
+        "title": "Smazat tento odkaz s pozvánkou?",
+        "description": "Komu odkaz zůstal, uvidí stránku „nenalezeno“. Kdo už s ním do skupiny vstoupil, zůstává členem."
+      },
+      "errors": {
+        "invalid": "Zkontrolujte data a zkuste to znovu.",
+        "createFailed": "Odkaz se nepodařilo vytvořit.",
+        "updateFailed": "Odkaz se nepodařilo změnit.",
+        "deleteFailed": "Odkaz se nepodařilo smazat.",
+        "invalidDate": "To není datum.",
+        "pastDate": "Tento okamžik už uplynul."
       }
     }
   },

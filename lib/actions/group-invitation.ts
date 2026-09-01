@@ -2,8 +2,10 @@
 
 import { getTranslations } from "next-intl/server";
 
-import { ApiError, apiPost } from "@/lib/api/client";
+import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
 import type { ActionResult } from "@/lib/forms/action-result";
+
+import { invitationSchema, type InvitationValues } from "./group-invitation.schema";
 
 /**
  * Joining a group from an invitation link (S-023).
@@ -33,5 +35,83 @@ export async function acceptGroupInvitation(
       success: false,
       formError: error instanceof ApiError ? error.message : t("acceptFailed"),
     };
+  }
+}
+
+/**
+ * Minting, editing and revoking a group's invitation links (T-018).
+ *
+ * core-api gates all three on `canEditInvitations`; the settings tab offers them on the same hint.
+ * `expireAt` is a unix timestamp or `null` for a link that never expires -- both accepted, and the
+ * nullable case is what a course running all term wants.
+ *
+ * There is no "revoke" in core-api's vocabulary: `DELETE /v1/group-invitations/{id}` removes the
+ * record, after which the link 404s. Letting one expire and deleting it are different things and
+ * the screen offers both.
+ */
+async function invitationFailure(
+  error: unknown,
+  fallbackKey: string,
+): Promise<ActionResult<never>> {
+  const t = await getTranslations("Group.invitations.errors");
+  return {
+    success: false,
+    formError: error instanceof ApiError ? error.message : t(fallbackKey),
+  };
+}
+
+function expiryTimestamp(expiresAt: string): number | null {
+  if (expiresAt === "") return null;
+  return Math.floor(Date.parse(expiresAt) / 1000);
+}
+
+export async function createGroupInvitation(
+  groupId: string,
+  values: InvitationValues,
+): Promise<ActionResult<{ invitationId: string }>> {
+  const t = await getTranslations("Group.invitations.errors");
+  const parsed = invitationSchema.safeParse(values);
+  if (!parsed.success) return { success: false, formError: t("invalid") };
+
+  try {
+    const created = await apiPost<{ id: string }>(
+      "/v1/groups/{groupId}/invitations",
+      { expireAt: expiryTimestamp(parsed.data.expiresAt), note: parsed.data.note },
+      { pathParams: { groupId } },
+    );
+    return { success: true, data: { invitationId: created.id } };
+  } catch (error) {
+    return invitationFailure(error, "createFailed");
+  }
+}
+
+export async function updateGroupInvitation(
+  invitationId: string,
+  values: InvitationValues,
+): Promise<ActionResult<{ invitationId: string }>> {
+  const t = await getTranslations("Group.invitations.errors");
+  const parsed = invitationSchema.safeParse(values);
+  if (!parsed.success) return { success: false, formError: t("invalid") };
+
+  try {
+    await apiPost(
+      "/v1/group-invitations/{id}",
+      { expireAt: expiryTimestamp(parsed.data.expiresAt), note: parsed.data.note },
+      { pathParams: { id: invitationId } },
+    );
+    return { success: true, data: { invitationId } };
+  } catch (error) {
+    return invitationFailure(error, "updateFailed");
+  }
+}
+
+export async function deleteGroupInvitation(
+  invitationId: string,
+): Promise<ActionResult<{ invitationId: string }>> {
+  try {
+    await apiDelete("/v1/group-invitations/{id}", { pathParams: { id: invitationId } });
+    return { success: true, data: { invitationId } };
+  } catch (error) {
+    return invitationFailure(error, "deleteFailed");
   }
 }

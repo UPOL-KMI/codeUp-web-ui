@@ -234,6 +234,20 @@
       },
       "subgroups": "Subgroups"
     },
+    "membership": {
+      "join": "Join this group",
+      "leave": "Leave this group",
+      "joined": "You have joined the group.",
+      "left": "You have left the group.",
+      "confirmLeave": {
+        "title": "Leave this group?",
+        "description": "You will stop seeing its assignments, and your points here will no longer count towards your own overview. Anything you have already submitted stays where it is."
+      },
+      "errors": {
+        "joinFailed": "Joining the group did not work.",
+        "leaveFailed": "Leaving the group did not work."
+      }
+    },
     "assignments": {
       "filterPlaceholder": "Filter assignments",
       "bonus": "Bonus",
@@ -541,6 +555,40 @@
         "relocateFailed": "The group could not be moved.",
         "deleteFailed": "The group could not be deleted.",
         "memberFailed": "The membership could not be changed."
+      }
+    },
+    "invitations": {
+      "title": "Invitation links",
+      "explain": "Anyone who opens one of these links, signs in, and is a student of this instance can join the group with it. Share a link only with the people you mean to invite.",
+      "empty": "This group has no invitation links.",
+      "createTitle": "New link",
+      "create": "Create the link",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "note": "Note for whoever opens the link",
+      "expiresAt": "Expires",
+      "expiresAtHint": "Leave empty for a link that never expires.",
+      "expiresOn": "Expires {date}",
+      "neverExpires": "Never expires",
+      "expired": "Expired",
+      "mintedBy": "created by {name}",
+      "created": "The link was created.",
+      "updated": "The link was changed.",
+      "deleted": "The link was deleted.",
+      "failed": "That did not work.",
+      "confirmDelete": {
+        "title": "Delete this invitation link?",
+        "description": "Anyone still holding it will get a \\u201cnot found\\u201d page. People who already joined with it stay in the group."
+      },
+      "errors": {
+        "invalid": "Check the dates and try again.",
+        "createFailed": "The link could not be created.",
+        "updateFailed": "The link could not be changed.",
+        "deleteFailed": "The link could not be deleted.",
+        "invalidDate": "That is not a date.",
+        "pastDate": "That moment has already passed."
       }
     }
   },
