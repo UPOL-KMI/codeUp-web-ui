@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { shortSessionSeconds } from "@/lib/auth/short-session";
 
+import { Link } from "@/i18n/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 
 /**
@@ -24,7 +25,7 @@ import { LoginForm } from "@/components/auth/login-form";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; externalAuthError?: string }>;
+  searchParams: Promise<{ from?: string; externalAuthError?: string; passwordChanged?: string }>;
 }) {
   const [query, t] = await Promise.all([searchParams, getTranslations("Login")]);
   const shortSession = shortSessionSeconds();
@@ -42,6 +43,12 @@ export default async function LoginPage({
         </p>
       )}
 
+      {query.passwordChanged && (
+        <p className="rounded-lg border border-success bg-success/10 p-3 text-sm">
+          {t("passwordChanged")}
+        </p>
+      )}
+
       {query.externalAuthError && (
         <p
           role="alert"
@@ -55,6 +62,15 @@ export default async function LoginPage({
         from={query.from}
         shortSessionMinutes={shortSession === null ? null : Math.round(shortSession / 60)}
       />
+
+      <p className="text-sm">
+        <Link
+          href="/forgot-password"
+          className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {t("forgotPassword")}
+        </Link>
+      </p>
     </div>
   );
 }

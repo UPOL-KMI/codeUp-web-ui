@@ -41,16 +41,45 @@
     "shortSessionHint": "For a public computer: the session ends sooner, even if you forget to sign out.",
     "errors": {
       "failed": "Signing in did not work. Check the address and the password."
-    }
+    },
+    "forgotPassword": "I cannot remember my password",
+    "passwordChanged": "Your password was changed. Sign in with the new one."
   },
   "Register": {
     "title": "Create account"
   },
   "ForgotPassword": {
-    "title": "Reset password"
+    "title": "Reset password",
+    "explain": "Give the address you sign in with and we will send a link that lets you choose a new password.",
+    "email": "Email",
+    "send": "Send the link",
+    "sending": "Sending…",
+    "sent": "If {email} belongs to an account here, a message with the link is on its way. It is valid for a limited time.",
+    "backToLogin": "Back to signing in",
+    "errors": {
+      "failed": "The request could not be sent. Try again."
+    }
   },
   "ForgotPasswordChange": {
-    "title": "Change forgotten password"
+    "title": "Choose a new password",
+    "explain": "This link was sent to your address and works once.",
+    "password": "New password",
+    "confirmation": "New password again",
+    "save": "Change the password",
+    "saving": "Changing…",
+    "noToken": "This address carries no reset link. Open the link from the email, or ask for a new one.",
+    "askAgain": "Ask for a new link",
+    "strength": {
+      "0": "Too weak — choose a different one.",
+      "1": "Weak.",
+      "2": "Fair.",
+      "3": "Strong.",
+      "4": "Very strong."
+    },
+    "errors": {
+      "mismatch": "The two passwords differ.",
+      "failed": "The password was not changed. The link may have expired."
+    }
   },
   "EmailVerification": {
     "title": "Email verification"

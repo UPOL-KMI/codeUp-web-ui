@@ -41,16 +41,45 @@
     "shortSessionHint": "Pro veřejný počítač: relace skončí dřív, i když se zapomenete odhlásit.",
     "errors": {
       "failed": "Přihlášení se nepovedlo. Zkontrolujte adresu a heslo."
-    }
+    },
+    "forgotPassword": "Nepamatuji si heslo",
+    "passwordChanged": "Heslo bylo změněno. Přihlaste se novým."
   },
   "Register": {
     "title": "Zaregistrovat se"
   },
   "ForgotPassword": {
-    "title": "Resetování hesla"
+    "title": "Obnovení hesla",
+    "explain": "Zadejte adresu, kterou se přihlašujete, a pošleme vám odkaz, kterým si zvolíte nové heslo.",
+    "email": "E-mail",
+    "send": "Poslat odkaz",
+    "sending": "Odesílám…",
+    "sent": "Pokud {email} patří ke zdejšímu účtu, je zpráva s odkazem na cestě. Odkaz platí omezenou dobu.",
+    "backToLogin": "Zpět na přihlášení",
+    "errors": {
+      "failed": "Žádost se nepodařilo odeslat. Zkuste to znovu."
+    }
   },
   "ForgotPasswordChange": {
-    "title": "Změna zapomenutého hesla"
+    "title": "Zvolte nové heslo",
+    "explain": "Tento odkaz přišel na vaši adresu a funguje jednou.",
+    "password": "Nové heslo",
+    "confirmation": "Nové heslo znovu",
+    "save": "Změnit heslo",
+    "saving": "Měním…",
+    "noToken": "Na této adrese žádný odkaz pro obnovu není. Otevřete odkaz z e-mailu, nebo si vyžádejte nový.",
+    "askAgain": "Vyžádat nový odkaz",
+    "strength": {
+      "0": "Příliš slabé — zvolte jiné.",
+      "1": "Slabé.",
+      "2": "Průměrné.",
+      "3": "Silné.",
+      "4": "Velmi silné."
+    },
+    "errors": {
+      "mismatch": "Hesla se neshodují.",
+      "failed": "Heslo se nezměnilo. Odkaz mohl vypršet."
+    }
   },
   "EmailVerification": {
     "title": "Ověření e-mailu"

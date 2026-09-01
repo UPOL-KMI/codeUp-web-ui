@@ -269,6 +269,45 @@
     right one lands where `?from=` said, and an absolute `from` lands on the dashboard instead.
   - _Observations:_ **181 e2e tests pass** (176 before), 72 unit tests (68 before).
 
+- **[2026-09-01 20:10] A-004 + A-005:** Getting back in without a password.
+  `app/[locale]/(anon)/forgot-password/{page,change/page}.tsx`,
+  `components/auth/{forgot-password-form,change-password-form}.tsx`,
+  `app/api/auth/{forgotten-password,forgotten-password/change,password-strength}/route.ts`,
+  `lib/auth/query-token.ts`.
+  - **_The request form answers the same way for every address (DEC-100)._** core-api 404s for an
+    unknown login; passing that through would make this form an account-existence oracle for
+    anybody with a list of addresses. "If we know that address, a message is on its way" is true
+    and is all anybody needs.
+  - **_This app answers the address core-api's own emails point at._** `WebappLinks.php` builds the
+    link as `"%webapp.address%/forgotten-password/change?{token}"` and this app's IA spells that
+    screen `/forgot-password/change`, so `proxy.ts` forwards the old address with its query intact
+    -- otherwise every deployment would have to override `linkTemplates` before its own emails
+    worked. Done in the proxy and not in a page calling `redirect()`: a page must await
+    `searchParams` first, and by then Next has begun streaming and falls back to a one-second
+    `<meta refresh>`, which was verified rather than assumed.
+  - _The token is the **whole query string**,_ as S-024 found for invitations -- so that page's
+    reader was extracted into `lib/auth/query-token.ts` and both use it, with tests.
+  - **_It is a bearer for exactly one call, never a session._** core-api issues it with the
+    `change-password` scope and, on success, sets the user's token validity threshold -- which
+    kills that token and every other one they hold. So the reader is sent to sign in with the new
+    password, and the login page says so; being signed in here is not something this app declined
+    to do, it is something that no longer exists to be done.
+  - _Password strength is core-api's own zxcvbn_ (`/forgotten-password/validate-password-strength`,
+    proxied so the browser never has to know where core-api is), asked for on a debounce. A score
+    of **zero is refused**, exactly as the legacy form refuses it; the rest is advice.
+  - **_Verified end to end with a real token, by hand._** core-api will not issue a change-password
+    token through `issue-restricted-token` ("Password change tokens can only be issued through the
+    password reset endpoint") and the only real one is mailed, which this deployment cannot send
+    (Q-007) -- so one was minted with the instance's own `JWT_SECRET`, the way S-024 did. The whole
+    flow ran on **`seed.filler.25`**, whose password was changed and then set back to the seeded
+    value through the same form; both states were checked by logging in against core-api, and the
+    used token was confirmed dead afterwards ("Your access token was revoked").
+  - _Its spec covers everything that does not need a real token_ -- the neutral answer, the
+    forwarding, the missing-token state, a refused score, mismatched confirmations, and core-api's
+    own message for a token it will not accept.
+  - _Verified live in both locales._
+  - _Observations:_ **186 e2e tests pass** (181 before), 76 unit tests (72 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2774,12 +2813,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
   its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
   solutions and pipeline screens (T-009..T-016) are what remains of it.
-  **The anonymous flows have begun** with A-002: `/login` is a real form rather than a placeholder.
+  **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder) and
+  A-004 + A-005 (the password reset it links to).
   Foundation and Design System complete.
-- **Next ticket:** the rest of the anonymous block -- A-004/A-005 (password reset, which the
-  sign-in page owes a link to), A-003 (registration), A-006 (email verification) and A-008 (the
-  locale switch) -- then back to T-009 (the exercise configuration editor, the hardest screen in
-  the product by the brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
+- **Next ticket:** A-003 (registration) -- with a caveat found while building A-004: this
+  deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api will refuse to create an account
+  and the screen can only be verified as far as that refusal. Then A-006 (email verification),
+  A-008 (the locale switch), and back to T-009 (the exercise configuration editor, the hardest
+  screen in the product by the brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
   mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
   administrators, and forking). The anonymous flows (A-001..A-008)

@@ -74,6 +74,20 @@ export default async function proxy(request: NextRequest) {
 
   const locale = request.nextUrl.pathname.split("/")[1];
   const pathname = stripLocale(request.nextUrl.pathname);
+
+  // The address core-api's own password-reset emails point at (A-005). `WebappLinks.php` builds
+  // them from "%webapp.address%/forgotten-password/change?{token}" by default, and this app's IA
+  // calls that screen `/forgot-password/change` -- so the old address answers and forwards here,
+  // rather than every deployment having to override core-api's `linkTemplates` before its own
+  // emails work (DEC-100). Done here rather than in a page that calls `redirect()`: a page has to
+  // await `searchParams` first, by which point Next has begun streaming and falls back to a
+  // one-second `<meta http-equiv="refresh">` -- verified, not assumed. The query string survives
+  // untouched, which matters because the query string **is** the token.
+  if (pathname === "/forgotten-password/change") {
+    const forwarded = request.nextUrl.clone();
+    forwarded.pathname = `/${locale}/forgot-password/change`;
+    return NextResponse.redirect(forwarded);
+  }
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
   // A cookie that is past its own `exp` is not a session, and treating it as one was a redirect
   // loop, not a cosmetic problem (F-031): `/dashboard`'s `requireSession()` sent the reader to

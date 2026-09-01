@@ -14,7 +14,7 @@
 | `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                 | todo   |
 | `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | done   |
 | `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | todo   |
-| `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | todo   |
+| `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | done   |
 | `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | done   |
 | `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`        | done   |
 | `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                           | done   |
@@ -57,7 +57,7 @@
 | `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin/server`                        | todo   |
 | `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                     | todo   |
 | `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | `/admin/instances/[id]/edit`           | todo   |
-| `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`              | todo   |
+| `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`              | done   |
 | `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                  | todo   |
 | `*`                                                                        | NotFound                   | —     | —                                           | `/[...not-found]`                      | todo   |
 

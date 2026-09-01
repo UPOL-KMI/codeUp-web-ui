@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { decodeInvitationToken } from "@/lib/auth/invitation-token";
+import { readQueryToken } from "@/lib/auth/query-token";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { DateTime } from "@/components/format/date-time";
@@ -14,26 +15,15 @@ import { AcceptInvitationForm } from "@/components/users/accept-invitation-form"
  *
  * **The token is the whole query string**, not a named parameter -- core-api builds the link from
  * `invitationUrl: "%webapp.address%/accept-invitation?{token}"` (`app/config/config.neon`), so
- * what arrives is `?eyJhbGciOi...` with no key. A deployment that overrides that template could
- * name it, so `?token=` is read too rather than assumed away.
+ * what arrives is `?eyJhbGciOi...` with no key. `readQueryToken` handles that (and a deployment
+ * that overrides the template to name it); it lives in `lib/auth/` because A-005's password-reset
+ * link arrives exactly the same way.
  *
  * Everything shown here comes out of the token itself, decoded on the server -- there is no
  * session yet, so there is no endpoint to ask. What the reader supplies is a password; core-api
  * then verifies the signature it wrote, creates the account, and returns a token that
  * `/api/auth/accept-invitation` turns into a session.
  */
-function readToken(searchParams: Record<string, string | string[] | undefined>): string | null {
-  const named = searchParams.token;
-  if (typeof named === "string" && named !== "") return named;
-
-  // `?<jwt>` parses as a single key with an empty value. A JWT is three base64url segments joined
-  // by dots -- no `=`, `&` or `?` -- so it survives that round trip unchanged.
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (value === "" && key.split(".").length === 3) return key;
-  }
-  return null;
-}
-
 export default async function AcceptInvitationPage({
   searchParams,
 }: {
@@ -45,7 +35,7 @@ export default async function AcceptInvitationPage({
     resolveBreadcrumbs("/accept-invitation", locale),
   ]);
 
-  const rawToken = readToken(params);
+  const rawToken = readQueryToken(params);
   const claims = rawToken ? decodeInvitationToken(rawToken) : null;
   const fullName = claims
     ? [claims.titlesBeforeName, claims.firstName, claims.lastName, claims.titlesAfterName]
