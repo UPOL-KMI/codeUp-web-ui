@@ -43,10 +43,39 @@
       "failed": "Signing in did not work. Check the address and the password."
     },
     "forgotPassword": "I cannot remember my password",
-    "passwordChanged": "Your password was changed. Sign in with the new one."
+    "passwordChanged": "Your password was changed. Sign in with the new one.",
+    "createAccount": "Create an account"
   },
   "Register": {
-    "title": "Create account"
+    "title": "Create account",
+    "explain": "An account here is yours: your solutions, your points, your deadlines.",
+    "closedShort": "Not on this ReCodEx instance.",
+    "closed": "This instance does not let people create their own accounts. Accounts are made by whoever administers it — usually your faculty or your teacher — or by signing in through the institution's own login service.",
+    "haveAccount": "I already have an account",
+    "firstName": "Given name",
+    "lastName": "Surname",
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Password again",
+    "instance": "Instance",
+    "create": "Create the account",
+    "creating": "Creating…",
+    "strength": {
+      "0": "Too weak — choose a different one.",
+      "1": "Weak.",
+      "2": "Fair.",
+      "3": "Strong.",
+      "4": "Very strong."
+    },
+    "collision": {
+      "explain": "Somebody is already registered under this name: {names}. If that is you, sign in instead — if it is not, carry on.",
+      "continue": "It is somebody else — carry on"
+    },
+    "errors": {
+      "failed": "The account was not created.",
+      "emailTaken": "That address already has an account here.",
+      "mismatch": "The two passwords differ."
+    }
   },
   "ForgotPassword": {
     "title": "Reset password",

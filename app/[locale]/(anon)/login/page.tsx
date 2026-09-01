@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { localRegistrationEnabled } from "@/lib/auth/registration";
 import { shortSessionSeconds } from "@/lib/auth/short-session";
 
 import { Link } from "@/i18n/navigation";
@@ -63,13 +64,23 @@ export default async function LoginPage({
         shortSessionMinutes={shortSession === null ? null : Math.round(shortSession / 60)}
       />
 
-      <p className="text-sm">
+      <p className="flex flex-wrap gap-4 text-sm">
         <Link
           href="/forgot-password"
           className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           {t("forgotPassword")}
         </Link>
+        {/* Only where this deployment lets people create their own accounts (A-003): a link to a
+            page that explains it cannot be done is a link nobody should be offered. */}
+        {localRegistrationEnabled() && (
+          <Link
+            href="/register"
+            className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("createAccount")}
+          </Link>
+        )}
       </p>
     </div>
   );

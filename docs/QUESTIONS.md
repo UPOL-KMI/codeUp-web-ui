@@ -233,3 +233,28 @@ an API change, which this repo may not make (constraint 1), so it is recorded he
 operator. Until then the page's own copy is deliberately plain about what it is asking for, and the
 `iat`/`exp` pair is shown so a recipient can at least see whether the dates match the mail they
 received.
+
+## Q-019: Whether local registration is open has to be configured twice (A-003)
+
+core-api decides whether anybody may create their own account (`localRegistration.enabled`, from
+the compose repo's `LOCAL_REGISTRATION_ENABLED` -- **false** on this deployment) and **publishes no
+endpoint that reports it**: checked against the whole of `openapi/core-api.yaml`, not assumed. So a
+frontend that wants to know before showing a form has to be told separately, which is why the
+legacy app carries its own `ALLOW_LOCAL_REGISTRATION` config var and why this app now does too.
+
+**What it costs.** Two places to configure one fact, and they can disagree. If this app says open
+while core-api says closed, a reader fills in the form and meets core-api's "Forbidden Request --
+Access denied" -- honest, but late. If it says closed while core-api is open, an account that could
+have been created is not offered. Neither is dangerous; both are avoidable only by an operator
+setting both.
+
+**What would close it.** Anything core-api serves that says so -- a field on an existing public
+endpoint (`/v1/instances` already answers `isOpen` per instance and would be a natural home) or a
+small `GET /v1/registration-config`. That is an API change, which this repo may not make
+(constraint 1), so it is recorded here.
+
+**What is unverified because of it.** On this deployment the success path of A-003 cannot be
+exercised at all: the form, the "that address is taken" check and core-api's refusal are verified,
+but no account has ever been created through this screen, and neither has the **name-collision**
+branch (core-api's `{user: null, usersWithSameName}` answer, which the form turns into "is one of
+these you?"). Re-verify both on an instance with local registration enabled.

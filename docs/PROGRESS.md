@@ -356,6 +356,37 @@
     ambiguity, and the rename is what removes it.
   - _Observations:_ **191 e2e tests pass** (189 before), 76 unit tests.
 
+- **[2026-09-01 22:05] A-003:** An account of one's own, where the instance allows it.
+  `app/[locale]/(anon)/register/page.tsx`, `components/auth/register-form.tsx`,
+  `app/api/auth/{register,registration-check}/route.ts`, `lib/auth/registration.ts`.
+  - **_Whether this page has a form on it is a deployment's choice, and core-api will not say which
+    (Q-019)._** `localRegistration.enabled` decides it server-side and no endpoint reports it --
+    checked against the whole spec -- so this app carries `ALLOW_LOCAL_REGISTRATION`, exactly as
+    the legacy frontend carries the same variable. **It is off here**, so the page explains rather
+    than offering a form core-api would refuse, and the sign-in page does not link to it: an
+    instance that authenticates through CAS has no use for one, and a form that always fails is
+    worse than a sentence.
+  - **_A name collision is a question, not a failure._** core-api answers a registration with
+    `{user: null, usersWithSameName}` and a **200** when somebody with the same first and last name
+    already exists in the instance -- it is asking whether one of them is this person. The form
+    shows who they are and offers to carry on, which sends `ignoreNameCollision` the second time.
+    Treating that as an error would strand somebody behind a name they cannot change.
+  - _Two things are asked of core-api while the form is being filled in,_ from one public endpoint
+    (`users/validate-registration-data`): whether the address is free, and how strong the password
+    is. Telling somebody their address is taken before they have chosen a password is the
+    difference between a hint and a rejection.
+  - **_A bug this ticket's own verification found:_** the page was **statically prerendered**, so
+    the build baked in whichever `ALLOW_LOCAL_REGISTRATION` the _builder_ had -- turning the flag
+    on at run time changed nothing. It is `force-dynamic` now, which is what a page whose content
+    is deployment configuration has to be.
+  - _Verified live both ways:_ closed (this deployment's real state, which is what the spec
+    asserts), and open via `ALLOW_LOCAL_REGISTRATION=true` -- the form renders with the instance
+    from `/v1/instances`, "That address already has an account here." and "Very strong." appear
+    while typing, and submitting meets core-api's own refusal. **The success path and the
+    collision branch cannot be exercised here at all** (Q-019); re-verify them on an instance with
+    registration enabled.
+  - _Observations:_ **193 e2e tests pass** (191 before), 76 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2863,14 +2894,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   solutions and pipeline screens (T-009..T-016) are what remains of it.
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
   A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
-  nudge to do it) and A-008 (the language switch).
+  nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
+  and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** A-003 (registration) -- with a caveat found while building A-004: this
-  deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api refuses to create an account and
-  the screen can only be verified as far as that refusal. A-001 (the public landing page) and
-  A-007 (CAS finalisation, which needs an authenticator this deployment does not configure) are
-  what would then remain of the anonymous block. After that, T-009 -- the exercise configuration
-  editor, the hardest screen in the product by the brief's own reckoning. **Two parity gaps are filed and open:** T-022 (the
+- **Next ticket:** T-009 -- the exercise configuration editor: tests, pipelines and variables, the
+  hardest screen in the product by the brief's own reckoning, and the gate in front of T-010..T-016.
+  What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
+  and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
+  configure -- Q-004). **Two parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
   mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
   administrators, and forking). The anonymous flows (A-001..A-008)
@@ -2880,7 +2911,7 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-018 (Q-014 closed by S-022) — all proceeding without
+- **Operator inputs pending:** Q-011 through Q-019 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
   test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008; S-024 hit this again
   and worked around it by minting a token with the instance's own key rather than reading one out of

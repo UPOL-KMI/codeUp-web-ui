@@ -43,10 +43,39 @@
       "failed": "Přihlášení se nepovedlo. Zkontrolujte adresu a heslo."
     },
     "forgotPassword": "Nepamatuji si heslo",
-    "passwordChanged": "Heslo bylo změněno. Přihlaste se novým."
+    "passwordChanged": "Heslo bylo změněno. Přihlaste se novým.",
+    "createAccount": "Vytvořit účet"
   },
   "Register": {
-    "title": "Zaregistrovat se"
+    "title": "Vytvoření účtu",
+    "explain": "Účet je váš: vaše řešení, vaše body, vaše termíny.",
+    "closedShort": "Na této instanci ReCodExu ne.",
+    "closed": "Tato instance nedovoluje zakládat si účty samostatně. Účty zřizuje její správce — obvykle fakulta nebo vyučující — nebo vznikají přihlášením přes přihlašovací službu instituce.",
+    "haveAccount": "Účet už mám",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "email": "E-mail",
+    "password": "Heslo",
+    "passwordConfirm": "Heslo znovu",
+    "instance": "Instance",
+    "create": "Vytvořit účet",
+    "creating": "Vytvářím…",
+    "strength": {
+      "0": "Příliš slabé — zvolte jiné.",
+      "1": "Slabé.",
+      "2": "Průměrné.",
+      "3": "Silné.",
+      "4": "Velmi silné."
+    },
+    "collision": {
+      "explain": "Pod tímto jménem už je někdo zaregistrovaný: {names}. Pokud jste to vy, přihlaste se — pokud ne, pokračujte.",
+      "continue": "Je to někdo jiný — pokračovat"
+    },
+    "errors": {
+      "failed": "Účet se nepodařilo vytvořit.",
+      "emailTaken": "Na tuto adresu už účet existuje.",
+      "mismatch": "Hesla se neshodují."
+    }
   },
   "ForgotPassword": {
     "title": "Obnovení hesla",

@@ -13,7 +13,7 @@
 | `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                   | todo   |
 | `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                 | todo   |
 | `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | done   |
-| `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | todo   |
+| `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | done   |
 | `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | done   |
 | `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | done   |
 | `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`        | done   |
@@ -104,7 +104,7 @@
 | `plagiarisms`                  | Plagiarism detection                                       | `solutions/[id]/plagiarisms`                   | done   |
 | `referenceSolutionEvaluations` | Reference solution evaluations                             | `reference-solutions/[id]`                     | todo   |
 | `referenceSolutions`           | Reference solutions                                        | `exercises/[id]/reference-solutions`           | todo   |
-| `registration`                 | User registration                                          | `/register`                                    | todo   |
+| `registration`                 | User registration                                          | `/register`                                    | done   |
 | `runtimeEnvironments`          | Runtime environments                                       | `admin/server`                                 | todo   |
 | `shadowAssignments`            | Shadow assignments (bonus)                                 | `shadow-assignments/[id]`                      | done   |
 | `solutionFiles`                | Solution source files                                      | `solutions/[id]/sources`                       | todo   |
