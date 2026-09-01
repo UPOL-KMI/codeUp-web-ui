@@ -755,7 +755,56 @@
     }
   },
   "Exercises": {
-    "title": "Exercises"
+    "title": "Exercises",
+    "subtitle": "Every exercise you may see, whoever wrote it. An assignment is a copy of one of these.",
+    "summary": "Showing {from}–{to} of {total}.",
+    "untitled": "Unnamed exercise",
+    "columns": {
+      "name": "Exercise",
+      "difficulty": "Difficulty",
+      "environments": "Languages",
+      "tags": "Tags",
+      "author": "Author",
+      "updated": "Updated"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "flags": {
+      "archived": "Archived",
+      "private": "Private",
+      "locked": "Locked",
+      "broken": "Broken",
+      "noReferenceSolution": "No reference solution"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Name or text",
+      "environment": "Language",
+      "anyEnvironment": "Any",
+      "tag": "Tag",
+      "anyTag": "Any",
+      "archived": "Archived",
+      "archivedScopes": {
+        "default": "Hidden",
+        "all": "Included",
+        "only": "Only archived"
+      },
+      "apply": "Search"
+    },
+    "pagination": {
+      "label": "Catalog pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {total}"
+    },
+    "empty": {
+      "title": "No exercises",
+      "description": "Nothing in the catalog is yours to see yet.",
+      "noMatch": "Nothing matches those filters."
+    }
   },
   "Pipelines": {
     "title": "Pipelines"
@@ -1265,7 +1314,8 @@
     "cannot": {
       "locked": "Locked by its author",
       "broken": "Its configuration is incomplete",
-      "notYours": "Not yours to assign"
+      "notYours": "Not yours to assign",
+      "noReferenceSolution": "It has no reference solution yet"
     },
     "empty": {
       "title": "No exercises to assign",
@@ -1274,7 +1324,8 @@
     },
     "errors": {
       "createFailed": "The exercise could not be assigned."
-    }
+    },
+    "noReferenceSolution": "No reference solution"
   },
   "AssignmentSolutions": {
     "title": "All submissions",

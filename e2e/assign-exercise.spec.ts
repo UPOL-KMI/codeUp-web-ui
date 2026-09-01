@@ -36,6 +36,15 @@ test("assigns an exercise, lands on its settings, and removes it again", async (
   await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+\/assign$/);
 
   const main = page.getByRole("main");
+
+  // The search is core-api's, not a filter over what was already fetched -- and it was silently
+  // doing nothing until T-020 found that `?search=` is not the parameter core-api reads
+  // (`filters[search]` is). Asserting on an exercise that must *disappear* is what makes this a
+  // test of the search rather than of the list.
+  await main.getByPlaceholder("Search by name").fill("Echo");
+  await main.getByRole("button", { name: "Search" }).click();
+  await expect(main.getByRole("listitem").filter({ hasText: "[seed] Merge Sort" })).toHaveCount(0);
+
   const row = main.getByRole("listitem").filter({ hasText: "[seed] Echo Greeting" });
   await expect(row).toHaveCount(1);
   await row.getByRole("button", { name: "Assign" }).click();

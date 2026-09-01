@@ -16,10 +16,11 @@ import { Badge } from "@/components/status/badge";
  * (T-002), because there is no call that does both -- so the reader lands where the deadline and
  * the points are, with the thing already real. That is the legacy flow too.
  *
- * A row that cannot be assigned says why *where it is known*: locked, broken, or simply not this
- * reader's to assign. The one precondition no list payload carries -- an exercise with no
- * reference solution -- surfaces as core-api's own message on the attempt, which is why a failure
- * here is shown verbatim rather than replaced with a generic sentence.
+ * A row that cannot be assigned says why, and **all five reasons are known before the click**:
+ * locked, broken, no reference solution, or simply not this reader's to assign. DEC-093 recorded
+ * the fourth as invisible to any list payload; it is not -- `hasReferenceSolutions` is right there
+ * in the response, and T-020 found it while building the catalog on the same endpoint. core-api's
+ * own message is still shown verbatim when an attempt fails anyway, since it is the authority.
  */
 export function ExercisePicker({
   exercises,
@@ -58,7 +59,11 @@ export function ExercisePicker({
 
       <ul className="flex flex-col gap-2">
         {exercises.map((exercise) => {
-          const blocked = exercise.isLocked || exercise.isBroken || !exercise.canAssign;
+          const blocked =
+            exercise.isLocked ||
+            exercise.isBroken ||
+            !exercise.hasReferenceSolutions ||
+            !exercise.canAssign;
           return (
             <li
               key={exercise.id}
@@ -73,6 +78,9 @@ export function ExercisePicker({
                   )}
                   {exercise.isLocked && <Badge tone="warning">{t("locked")}</Badge>}
                   {exercise.isBroken && <Badge tone="danger">{t("broken")}</Badge>}
+                  {!exercise.hasReferenceSolutions && (
+                    <Badge tone="warning">{t("noReferenceSolution")}</Badge>
+                  )}
                 </span>
               </span>
               {blocked ? (
@@ -81,7 +89,9 @@ export function ExercisePicker({
                     ? t("cannot.broken")
                     : exercise.isLocked
                       ? t("cannot.locked")
-                      : t("cannot.notYours")}
+                      : !exercise.hasReferenceSolutions
+                        ? t("cannot.noReferenceSolution")
+                        : t("cannot.notYours")}
                 </span>
               ) : (
                 <button

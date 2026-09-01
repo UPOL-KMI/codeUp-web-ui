@@ -368,9 +368,13 @@ async function findExerciseByName(
   adminToken: string,
   name: string,
 ): Promise<ExerciseRecord | null> {
+  // `filters[archived]=all` is not optional here: the default list **excludes archived
+  // exercises**, so without it a lookup by name cannot see one -- and this function's caller
+  // would create a second copy of it on every run. Found exactly that way (T-020's archived
+  // catalog fixture was duplicated once before this line was written).
   const results = await api<{ items: { name: string; id: string }[] }>(
     "GET",
-    "/exercises?limit=1000",
+    "/exercises?limit=1000&filters%5Barchived%5D=all",
     {
       token: adminToken,
     },
@@ -413,6 +417,108 @@ async function findPipelineId(
     );
   }
   return match.id;
+}
+
+/**
+ * Exercises whose only job is to be *found* (T-020).
+ *
+ * The catalog is a search-and-filter screen and this instance held exactly one exercise, which
+ * proves nothing about either. These are deliberately **unconfigured**: created with core-api's
+ * defaults and left that way, so each is `isBroken`, has no reference solution and cannot be
+ * assigned -- which is a real state a catalog has to render, and the same state a half-written
+ * exercise is in. One is archived, some carry tags, and the difficulties vary, so every filter on
+ * the screen has something to filter by.
+ *
+ * Idempotent like everything else here: matched by name before creating, and the properties are
+ * rewritten each run (a `POST /exercises/{id}` replaces, it does not merge).
+ */
+const CATALOG_DIFFICULTIES = ["easy", "medium", "hard"] as const;
+
+const CATALOG_FILLERS: {
+  suffix: string;
+  difficulty: string;
+  tags: string[];
+  archived: boolean;
+}[] = [
+  { suffix: "Binary Search", difficulty: "easy", tags: ["seed-algorithms"], archived: false },
+  { suffix: "Merge Sort", difficulty: "medium", tags: ["seed-algorithms"], archived: false },
+  {
+    suffix: "Graph Colouring",
+    difficulty: "hard",
+    tags: ["seed-algorithms", "seed-graphs"],
+    archived: false,
+  },
+  { suffix: "String Reversal", difficulty: "easy", tags: [], archived: false },
+  { suffix: "Matrix Multiplication", difficulty: "medium", tags: ["seed-graphs"], archived: false },
+  { suffix: "Retired Puzzle", difficulty: "hard", tags: [], archived: true },
+  // Bulk, so the catalog is more than one page: the same reason FILLER_COUNT exists above.
+  ...Array.from({ length: 18 }, (_, index) => ({
+    suffix: `Catalog Filler ${String(index + 1).padStart(2, "0")}`,
+    difficulty: CATALOG_DIFFICULTIES[index % CATALOG_DIFFICULTIES.length]!,
+    tags: [] as string[],
+    archived: false,
+  })),
+];
+
+async function ensureCatalogExercises(adminToken: string, ownerGroupId: string): Promise<number> {
+  let created = 0;
+
+  for (const filler of CATALOG_FILLERS) {
+    const name = `${SEED_PREFIX} ${filler.suffix}`;
+    const existing = await findExerciseByName(adminToken, name);
+    const id =
+      existing?.id ??
+      (
+        await api<{ id: string }>("POST", "/exercises", {
+          token: adminToken,
+          body: { groupId: ownerGroupId },
+        })
+      ).id;
+    if (!existing) created++;
+
+    const current = await api<{ version: number; tags: string[]; archivedAt: number | null }>(
+      "GET",
+      `/exercises/${id}`,
+      { token: adminToken },
+    );
+
+    await api("POST", `/exercises/${id}`, {
+      token: adminToken,
+      body: {
+        version: current.version,
+        difficulty: filler.difficulty,
+        localizedTexts: [
+          {
+            locale: "en",
+            name,
+            text: `A catalog fixture. Nothing is configured here, so it cannot be assigned.`,
+            link: "",
+            description: "",
+          },
+        ],
+        solutionFilesLimit: 5,
+        solutionSizeLimit: 65536,
+        mergeJudgeLogs: true,
+        isPublic: true,
+        isLocked: false,
+      },
+    });
+
+    for (const tag of filler.tags) {
+      if (!current.tags.includes(tag)) {
+        await api("POST", `/exercises/${id}/tags/${tag}`, { token: adminToken });
+      }
+    }
+
+    if ((current.archivedAt !== null) !== filler.archived) {
+      await api("POST", `/exercises/${id}/archived`, {
+        token: adminToken,
+        body: { archived: filler.archived },
+      });
+    }
+  }
+
+  return created;
 }
 
 async function getOrCreateBaseExercise(
@@ -1339,6 +1445,14 @@ async function main() {
   }
   log(
     synced > 0 ? `${synced} assignments synced with the exercise` : "assignments already in sync",
+  );
+
+  // Enough exercises for the catalog to be a catalog (T-020).
+  const fillersCreated = await ensureCatalogExercises(admin.token, g1.id);
+  log(
+    fillersCreated > 0
+      ? `created ${fillersCreated} catalog exercises`
+      : "the catalog exercises already existed",
   );
 
   log("done");

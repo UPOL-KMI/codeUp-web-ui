@@ -45,12 +45,24 @@ Override the admin credentials the script logs in as via `SEED_ADMIN_EMAIL` /
 
 ---
 
-## Exercise
+## Exercises
 
-Exactly **one** exercise, `[seed] Echo Greeting` (python3, stdin→stdout diff against a fixed
+One **working** exercise, `[seed] Echo Greeting` (python3, stdin→stdout diff against a fixed
 expected output), reused across every assignment below instead of building a new exercise per
 assignment — see `docs/DECISIONS.md` for the full API recipe and why. It has one reference
 solution (required before an exercise can be assigned to any group at all).
+
+Plus **24 catalog fixtures** (T-020), created with core-api's defaults and left that way: six named
+ones (`[seed] Binary Search`, `Merge Sort`, `Graph Colouring`, `String Reversal`,
+`Matrix Multiplication`, and `Retired Puzzle`, which is **archived**) and eighteen
+`[seed] Catalog Filler NN`. Being unconfigured, every one of them is `isBroken`, has no reference
+solution and cannot be assigned — which is a real state the catalog has to render, and the state a
+half-written exercise is in. Tags (`seed-algorithms`, `seed-graphs`) and difficulties vary so that
+each filter on the catalog screen has something to filter by, and the total is past one page.
+
+**A gotcha this uncovered:** `GET /exercises` **excludes archived exercises by default**, so a
+lookup by name must pass `filters[archived]=all` or it cannot see one — `findExerciseByName` does,
+and without it the archived fixture was re-created on every run.
 
 ---
 

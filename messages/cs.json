@@ -755,7 +755,56 @@
     }
   },
   "Exercises": {
-    "title": "Úlohy"
+    "title": "Úlohy",
+    "subtitle": "Všechny úlohy, které smíte vidět, ať je psal kdokoli. Zadání je kopie jedné z nich.",
+    "summary": "Zobrazeno {from}–{to} z {total}.",
+    "untitled": "Nepojmenovaná úloha",
+    "columns": {
+      "name": "Úloha",
+      "difficulty": "Obtížnost",
+      "environments": "Jazyky",
+      "tags": "Štítky",
+      "author": "Autor",
+      "updated": "Změněno"
+    },
+    "difficulty": {
+      "easy": "Lehká",
+      "medium": "Střední",
+      "hard": "Těžká"
+    },
+    "flags": {
+      "archived": "Archivovaná",
+      "private": "Neveřejná",
+      "locked": "Zamčená",
+      "broken": "Rozbitá",
+      "noReferenceSolution": "Bez vzorového řešení"
+    },
+    "filters": {
+      "search": "Hledat",
+      "searchPlaceholder": "Název nebo text",
+      "environment": "Jazyk",
+      "anyEnvironment": "Libovolný",
+      "tag": "Štítek",
+      "anyTag": "Libovolný",
+      "archived": "Archivované",
+      "archivedScopes": {
+        "default": "Skryté",
+        "all": "Zahrnuté",
+        "only": "Jen archivované"
+      },
+      "apply": "Hledat"
+    },
+    "pagination": {
+      "label": "Stránky katalogu",
+      "previous": "Předchozí",
+      "next": "Další",
+      "page": "Stránka {page} z {total}"
+    },
+    "empty": {
+      "title": "Žádné úlohy",
+      "description": "Zatím tu není žádná úloha, kterou byste směli vidět.",
+      "noMatch": "Danému filtru nic neodpovídá."
+    }
   },
   "Pipelines": {
     "title": "Pipeline"
@@ -1265,7 +1314,8 @@
     "cannot": {
       "locked": "Uzamčeno autorem",
       "broken": "Nemá dokončenou konfiguraci",
-      "notYours": "Nemůžete ho zadat"
+      "notYours": "Nemůžete ho zadat",
+      "noReferenceSolution": "Zatím nemá vzorové řešení"
     },
     "empty": {
       "title": "Není co zadat",
@@ -1274,7 +1324,8 @@
     },
     "errors": {
       "createFailed": "Cvičení se nepodařilo zadat."
-    }
+    },
+    "noReferenceSolution": "Bez vzorového řešení"
   },
   "AssignmentSolutions": {
     "title": "Všechna odevzdání",

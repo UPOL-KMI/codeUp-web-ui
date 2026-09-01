@@ -6,7 +6,9 @@ import type { paths } from "./core-api.generated";
 
 export type ApiPath = keyof paths;
 
-type QueryValue = string | number | boolean | undefined;
+/** An array becomes one repeated `key[]=` pair per item, which is how core-api's `VArray` query
+ *  parameters arrive (`filters[runtimeEnvironments][]=python3`, verified against a live instance). */
+type QueryValue = string | number | boolean | undefined | readonly string[];
 
 export interface RequestOptions {
   pathParams?: Record<string, string>;
@@ -70,7 +72,12 @@ function buildQueryString(query?: Record<string, QueryValue>): string {
   if (!query) return "";
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined) params.set(key, String(value));
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) params.append(`${key}[]`, item);
+    } else {
+      params.set(key, String(value));
+    }
   }
   const serialized = params.toString();
   return serialized ? `?${serialized}` : "";

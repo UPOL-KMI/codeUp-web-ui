@@ -130,6 +130,42 @@
     this instance mints a new one every time the submit spec runs -- noted in the spec itself.
   - _Observations:_ **167 e2e tests pass** (164 before), 64 unit tests.
 
+- **[2026-09-01 16:45] T-020 (filed this session):** The exercise catalog, and a search that was
+  not searching. `app/[locale]/(app)/exercises/page.tsx`, `getExerciseCatalog()`,
+  `components/exercises/exercise-table.tsx`, `lib/api/runtime-environments.ts`, `scripts/seed.ts`.
+  - **_The ticket did not exist._** The teacher block goes from assigning an exercise (T-001)
+    straight to editing one (T-008), and `INVENTORY.md` carried the catalog and the exercise detail
+    as todo rows nobody owned -- while the sidebar has linked to the catalog since D-014 and found a
+    `PlaceholderPage`. Filed as T-020 and T-021, the same correction S-026 was.
+  - **_A shipped bug, found by reading the endpoint's own whitelist:_** core-api takes its filters
+    in a **`filters` array** (`filters[search]`, `filters[archived]`, `filters[runtimeEnvironments][]`),
+    and an unknown top-level parameter is silently ignored -- so T-001's picker, which sent
+    `?search=`, had a search box that did nothing and a "matched" count that was the size of the
+    whole catalog. Confirmed live before and after (`filters[search]=zzz` answers `totalCount: 0`;
+    `search=zzz` answers everything). Fixed for both callers, and T-001's spec now asserts on an
+    exercise that must **disappear**, which is what makes it a test of the search.
+  - **_DEC-093 was wrong about one thing and is corrected in place:_** `hasReferenceSolutions` _is_
+    in the list payload, so the fifth condition on assigning is knowable before the click. The
+    picker now says "No reference solution" instead of letting core-api refuse the attempt.
+  - _Everything that narrows the list is a query parameter (DEC-097)_ -- search, tag, language,
+    archived scope, page -- so the screen is a plain `GET` form and two links, works without
+    JavaScript, and a narrowed view is an address. Ordering is core-api's too, collated in the
+    reader's locale: a page of twenty sorted in the browser would be sorting the wrong twenty.
+  - **_Creating an exercise is deliberately not here._** `POST /exercises` makes an empty, broken,
+    unassignable exercise; it belongs with T-008's editor, the way assigning belongs with T-002's
+    settings. A create button now would land the reader on a route that does not exist.
+  - **_The seed grew 24 catalog fixtures_**, unconfigured on purpose: every one is `isBroken` with
+    no reference solution, which is exactly the state a half-written exercise is in and one the
+    catalog has to render. Tags, difficulties and one archived exercise, so each filter has
+    something to filter by, and the list is past one page.
+  - _A seeding gotcha found the hard way:_ `GET /exercises` **excludes archived exercises**, so the
+    seed's lookup-by-name could not see the archived fixture and created a second copy of it on
+    every run. `findExerciseByName` now passes `filters[archived]=all`; the stray copy was deleted
+    and a re-run confirmed idempotence (25 exercises before and after).
+  - _Verified live in both locales:_ search, tag, language and archived filters, both pages of the
+    catalog, and the picker's search actually narrowing.
+  - _Observations:_ **171 e2e tests pass** (167 before), 64 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2631,14 +2667,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
   deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
   T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
-  matrix as a downloadable file) and T-019 (the submission-failure queue).
+  matrix as a downloadable file), T-019 (the submission-failure queue) and T-020 (the exercise
+  catalog, a ticket this session filed).
   Foundation and Design System complete.
-- **Next ticket:** T-008 (create/edit an exercise), which opens the largest block left --
-  exercise authoring, T-008..T-016, with T-016's Graphviz question still open. **The exercise
-  _catalog_ and _detail_ screens have no ticket of their own** (`INVENTORY.md` lists both as todo
-  rows; the backlog jumps straight to editing), and both are still `PlaceholderPage`s that the
-  sidebar links to -- worth filing before T-008, since an edit screen reachable only by URL is not
-  reachable. The anonymous flows (A-001..A-008)
+- **Next ticket:** T-021 (the exercise detail screen, filed alongside T-020), then T-008
+  (create/edit an exercise) and the rest of the authoring block T-009..T-016, with T-016's Graphviz
+  question still open. The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group

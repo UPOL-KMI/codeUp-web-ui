@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import type { EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
+import { environmentNames } from "./runtime-environments";
 
 /**
  * One assignment, as a student's view of it needs it (S-012).
@@ -137,11 +138,6 @@ interface CanSubmitPayload {
 }
 
 /** Runtime environment display names, memoized per request -- the ids alone read as `cs-dotnet-core`. */
-const fetchEnvironments = cache(async function fetchEnvironments(): Promise<Map<string, string>> {
-  const environments = await apiRead<{ id: string; name: string }[]>("/v1/runtime-environments");
-  return new Map(environments.map((environment) => [environment.id, environment.name]));
-});
-
 function localizedText(
   texts: AssignmentPayload["localizedTexts"],
   locale: string,
@@ -230,7 +226,7 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
     apiRead<SolutionPayload[]>("/v1/exercise-assignments/{id}/users/{userId}/solutions", {
       pathParams: { id: assignmentId, userId: session.userId },
     }),
-    fetchEnvironments(),
+    environmentNames(),
   ]);
 
   const texts = localizedText(assignment.localizedTexts, locale);

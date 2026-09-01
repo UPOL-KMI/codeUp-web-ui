@@ -2,30 +2,44 @@ import "server-only";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
+import { apiPost } from "./client";
 import { apiRead } from "./read";
 
 /**
- * The exercise catalog, as the "assign one to this group" picker reads it (T-001).
+ * The exercise catalog: the list every teacher starts from (T-020), and the narrower read the
+ * "assign one to this group" picker makes of it (T-001).
  *
  * `/v1/exercises` answers a **paginated envelope** (`{items, totalCount, offset, limit, ...}`),
  * unlike `/v1/groups`, which is a bare array -- the same inconsistency `app/api/search/route.ts`
- * already had to normalise, restated here because this is the second consumer and the shape is
- * easy to get wrong once.
+ * already had to normalise.
  *
- * `canAssign` is core-api's own hint on the exercise. It is **not the whole precondition**:
- * `AssignmentsPresenter::actionCreate` also refuses a locked exercise, a broken one, and one with
- * no reference solution. The first two are in this payload and are reported here; the third is
- * not, so the picker cannot know it in advance and core-api's own message is what the reader gets
- * on the attempt. Guessing it would mean a second round trip per row to find out.
+ * **Its filters live under a `filters` parameter, not at the top level, and getting that wrong
+ * fails silently.** `?search=` is simply ignored -- core-api reads `filters[search]`, and an
+ * unknown query parameter is not an error -- so T-001's picker shipped with a search box that
+ * answered with the first twenty-five exercises whatever was typed into it, and a "matched" count
+ * that was the size of the whole catalog. Found while building T-020 against the same endpoint,
+ * by reading `ExercisesPresenter::actionDefault`'s own whitelist; confirmed live
+ * (`filters[search]=zzz` answers `totalCount: 0`, `search=zzz` answers the lot).
+ *
+ * This is the one list in this app that is **not** fetched whole (Q-015's trade, inverted): the
+ * endpoint is genuinely paginated and an instance can hold thousands, so the query -- search,
+ * filters, ordering and page -- goes to core-api and the reader is told how many matched.
  */
-export interface AssignableExercise {
+export interface ExerciseListItem {
   id: string;
   name: string;
   difficulty: string;
   environments: string[];
+  tags: string[];
+  authorId: string;
+  createdAt: number;
+  updatedAt: number;
+  isPublic: boolean;
   isLocked: boolean;
   isBroken: boolean;
-  canAssign: boolean;
+  archived: boolean;
+  hasReferenceSolutions: boolean;
+  can: Record<string, boolean>;
 }
 
 interface ExercisePayload {
@@ -33,8 +47,15 @@ interface ExercisePayload {
   localizedTexts?: LocalizedText[];
   difficulty: string;
   runtimeEnvironments?: { id: string }[];
+  tags?: string[];
+  authorId: string;
+  createdAt: number;
+  updatedAt: number;
+  isPublic: boolean;
   isLocked: boolean;
   isBroken: boolean;
+  archivedAt: number | null;
+  hasReferenceSolutions: boolean;
   permissionHints?: Record<string, boolean>;
 }
 
@@ -43,13 +64,117 @@ interface ExerciseEnvelope {
   totalCount: number;
 }
 
-export interface AssignableExercises {
-  exercises: AssignableExercise[];
-  /** How many the query matched in total, which need not be how many are listed. */
-  totalCount: number;
+/** core-api's own three (its `archived` filter): what is live, everything, or only what is retired. */
+export type ArchivedScope = "default" | "all" | "only";
+
+export interface ExerciseQuery {
+  search: string;
+  archived: ArchivedScope;
+  environments: string[];
+  tags: string[];
+  /** Zero-based. */
+  page: number;
 }
 
-const PAGE_SIZE = 25;
+export interface ExerciseCatalogPage {
+  items: ExerciseListItem[];
+  /** How many the query matched in total, which need not be how many are listed. */
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  /** The authors of the rows on this page, by id -- one batched lookup, not one per row. */
+  authors: Map<string, string>;
+}
+
+export const CATALOG_PAGE_SIZE = 20;
+const PICKER_PAGE_SIZE = 25;
+
+function listItem(exercise: ExercisePayload, locale: string): ExerciseListItem {
+  return {
+    id: exercise.id,
+    name: localizedName(exercise.localizedTexts, locale),
+    difficulty: exercise.difficulty,
+    environments: (exercise.runtimeEnvironments ?? []).map((environment) => environment.id),
+    tags: [...(exercise.tags ?? [])].sort(),
+    authorId: exercise.authorId,
+    createdAt: exercise.createdAt,
+    updatedAt: exercise.updatedAt,
+    isPublic: exercise.isPublic,
+    isLocked: exercise.isLocked,
+    isBroken: exercise.isBroken,
+    archived: exercise.archivedAt !== null,
+    hasReferenceSolutions: exercise.hasReferenceSolutions,
+    can: exercise.permissionHints ?? {},
+  };
+}
+
+/**
+ * One page of the catalog, ordered by name **in the reader's own locale** -- core-api takes
+ * `orderBy` together with the `locale` it should collate by, so this is a real ordering of the
+ * whole result rather than a sorted page of twenty.
+ */
+export async function getExerciseCatalog(
+  query: ExerciseQuery,
+  locale: string,
+): Promise<ExerciseCatalogPage> {
+  const envelope = await apiRead<ExerciseEnvelope>("/v1/exercises", {
+    query: {
+      limit: CATALOG_PAGE_SIZE,
+      offset: query.page * CATALOG_PAGE_SIZE,
+      orderBy: "name",
+      locale,
+      ...(query.search !== "" && { "filters[search]": query.search }),
+      ...(query.archived !== "default" && { "filters[archived]": query.archived }),
+      ...(query.environments.length > 0 && { "filters[runtimeEnvironments]": query.environments }),
+      ...(query.tags.length > 0 && { "filters[tags]": query.tags }),
+    },
+  });
+
+  const items = envelope.items.map((exercise) => listItem(exercise, locale));
+  const authorIds = [...new Set(items.map((item) => item.authorId))];
+  const people =
+    authorIds.length > 0
+      ? await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", { ids: authorIds })
+      : [];
+
+  return {
+    items,
+    totalCount: envelope.totalCount,
+    page: query.page,
+    pageSize: CATALOG_PAGE_SIZE,
+    authors: new Map(people.map((person) => [person.id, person.fullName])),
+  };
+}
+
+/** Every tag anybody has put on an exercise, for the catalog's own filter. */
+export async function getExerciseTags(): Promise<string[]> {
+  const tags = await apiRead<string[]>("/v1/exercises/tags");
+  return [...tags].sort();
+}
+
+/**
+ * The picker's read (T-001): the same catalog, seen through what may be assigned.
+ *
+ * `canAssign` is core-api's own hint. **All five preconditions on assigning are visible here** --
+ * the hint, `isLocked`, `isBroken`, and, contrary to what DEC-093 recorded, `hasReferenceSolutions`
+ * as well: it is in the list payload after all. That correction is why the picker no longer waits
+ * for core-api to refuse an exercise that has no reference solution.
+ */
+export interface AssignableExercise {
+  id: string;
+  name: string;
+  difficulty: string;
+  environments: string[];
+  isLocked: boolean;
+  isBroken: boolean;
+  hasReferenceSolutions: boolean;
+  canAssign: boolean;
+}
+
+export interface AssignableExercises {
+  exercises: AssignableExercise[];
+  totalCount: number;
+}
 
 export async function getAssignableExercises(
   locale: string,
@@ -57,22 +182,28 @@ export async function getAssignableExercises(
 ): Promise<AssignableExercises> {
   const envelope = await apiRead<ExerciseEnvelope>("/v1/exercises", {
     query: {
-      limit: PAGE_SIZE,
+      limit: PICKER_PAGE_SIZE,
       offset: 0,
-      ...(search !== "" && { search }),
+      orderBy: "name",
+      locale,
+      ...(search !== "" && { "filters[search]": search }),
     },
   });
 
   return {
     totalCount: envelope.totalCount,
-    exercises: envelope.items.map((exercise) => ({
-      id: exercise.id,
-      name: localizedName(exercise.localizedTexts, locale),
-      difficulty: exercise.difficulty,
-      environments: (exercise.runtimeEnvironments ?? []).map((environment) => environment.id),
-      isLocked: exercise.isLocked,
-      isBroken: exercise.isBroken,
-      canAssign: exercise.permissionHints?.assign === true,
-    })),
+    exercises: envelope.items.map((exercise) => {
+      const row = listItem(exercise, locale);
+      return {
+        id: row.id,
+        name: row.name,
+        difficulty: row.difficulty,
+        environments: row.environments,
+        isLocked: row.isLocked,
+        isBroken: row.isBroken,
+        hasReferenceSolutions: row.hasReferenceSolutions,
+        canAssign: row.can.assign === true,
+      };
+    }),
   };
 }
