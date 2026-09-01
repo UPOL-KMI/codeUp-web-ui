@@ -950,6 +950,7 @@
   "Assignment": {
     "title": "Assignments",
     "backToGroup": "Group assignments",
+    "allSolutions": "All submissions",
     "badges": {
       "bonus": "Bonus",
       "exam": "Exam",
@@ -1063,6 +1064,38 @@
         "title": "Nothing submitted yet",
         "description": "{name} has not submitted a solution to this assignment."
       }
+    }
+  },
+  "AssignmentSolutions": {
+    "title": "All submissions",
+    "backToAssignment": "Back to the assignment",
+    "summary": "{solutions, plural, one {# submission} other {# submissions}} from {authors, plural, one {# person} other {# people}}.",
+    "filterPlaceholder": "Filter by name or note",
+    "empty": {
+      "title": "Nothing has been submitted yet",
+      "description": "Once somebody submits a solution to this assignment, every attempt shows up here."
+    },
+    "columns": {
+      "author": "Author",
+      "attempt": "Attempt",
+      "submitted": "Submitted",
+      "environment": "Environment",
+      "points": "Points",
+      "status": "Result",
+      "review": "Review",
+      "similarities": "Similarities"
+    },
+    "flags": {
+      "best": "Best",
+      "accepted": "Accepted",
+      "late": "After the deadline",
+      "similarities": "Found"
+    },
+    "review": {
+      "requested": "Requested",
+      "open": "In progress",
+      "closed": "Done",
+      "closedWithIssues": "{count, plural, one {# issue} other {# issues}}"
     }
   },
   "Submit": {

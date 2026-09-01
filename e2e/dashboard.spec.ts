@@ -47,6 +47,11 @@ test.describe("as a student", () => {
   });
 
   test("orders the deadlines by urgency, nearest first", async ({ page }) => {
+    // `evaluateAll` does not auto-wait, so the section has to be there before it runs -- this
+    // section is streamed behind a `Suspense` boundary, and reading it early yields an empty list
+    // and an assertion that passes or fails on timing rather than on order.
+    await expect(upcoming(page).locator("tbody tr").first()).toBeVisible();
+
     const timestamps = await upcoming(page)
       .locator("tbody tr td:nth-child(3) time:first-child")
       .evaluateAll((nodes) => nodes.map((node) => Date.parse(node.getAttribute("datetime") ?? "")));

@@ -2396,6 +2396,38 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     account enrolled, and that is exactly how the next run starts from the wrong state.
   - _Observations:_ **146 e2e tests pass** (141 before), 55 unit tests.
 
+- **[2026-09-01 11:20] T-003:** Every attempt at one assignment.
+  `app/[locale]/(app)/assignments/[assignmentId]/solutions/page.tsx`,
+  `components/assignments/solutions-table.tsx`, `lib/api/assignment-solutions.ts`.
+  - _One row per **submission**, where S-013's class progress is one row per student._ That is the
+    whole difference, and it is what a teacher wants when they are looking at a particular attempt
+    rather than at how the group is doing: the seeded student appears three times here and once
+    there. Each row opens its own solution, not the author's best one.
+  - _Both screens are gated on the same hint._ `viewAssignmentSolutions` decides whether the class
+    progress renders and whether this link is offered; the page itself asks core-api and lets a 403
+    become F-030's refusal, so a student who types the URL is refused rather than quietly shown
+    everyone's work. Verified as both people: the teacher has the link and the page, the student has
+    neither.
+  - _The assignment screen owes this one a link, and now has it (DEC-066)._ "Edit assignment" is
+    still absent, because T-002 has not built that screen.
+  - _`pastDeadline` is a count of seconds, not a boolean_ -- `0` for on time. Read as a number, or
+    every solution reports as late.
+  - _The badge is rendered inline rather than through `EvaluationBadge`._ Not a duplicate: the state
+    still comes from `evaluationStatus()`, the one function the solution screen and the dashboard
+    also ask, but `DataTable`'s columns must be defined inside the client boundary and
+    `EvaluationBadge` is a Server Component. The tone and the label come from the same table either
+    way, so the two cannot disagree about what a solution's state is.
+  - _Everything is fetched at once and the table filters in the browser_, the same trade
+    `getGroupList` makes and Q-015 records: core-api offers no paging on this endpoint.
+  - _Verified live in both locales_, and the filter's URL round trip asserted: filtering to one
+    author, sharing the URL, and getting the same view back.
+  - _One flaky assertion fixed on the way, in the dashboard's spec._ It read the deadline table with
+    `evaluateAll`, which does not auto-wait, while that section is streamed behind a `Suspense`
+    boundary -- so it was asserting order on whatever had arrived, and S-025's extra fan-out per
+    group was enough to make it lose the race. It now waits for the first row, the way the test
+    beside it already did.
+  - _Observations:_ **150 e2e tests pass** (146 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2406,11 +2438,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   account settings (S-022), both invitation-acceptance pages (S-023, S-024) and the dashboard's
   shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one) and F-031 (a dead
   session signs the reader out instead of looping), S-026 (joining and leaving a group) and T-018
-  (the invitation links themselves). **The Student phase is complete.** Foundation and Design
+  (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has begun with T-003 (every attempt
+  at an assignment). Foundation and Design
   System complete.
-- **Next ticket:** the Teacher phase opens with T-002 (edit an assignment) and T-003 (its solutions
-  list), each of which owes the assignment screen a link, recorded on their backlog rows. The
-  Student phase is complete.
+- **Next ticket:** T-002 (edit an assignment), which also owns the re-sync action S-013's notice
+  only reports, and then T-001 (create one from an exercise). T-004's stats and T-006's points
+  matrix both read data these screens already fetch.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.

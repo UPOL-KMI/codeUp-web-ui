@@ -950,6 +950,7 @@
   "Assignment": {
     "title": "Zadání",
     "backToGroup": "Zadání skupiny",
+    "allSolutions": "Všechna odevzdání",
     "badges": {
       "bonus": "Bonus",
       "exam": "Zkouška",
@@ -1063,6 +1064,38 @@
         "title": "Zatím nic neodevzdáno",
         "description": "{name} zatím k tomuto zadání neodevzdal(a) žádné řešení."
       }
+    }
+  },
+  "AssignmentSolutions": {
+    "title": "Všechna odevzdání",
+    "backToAssignment": "Zpět na zadání",
+    "summary": "{solutions, plural, one {# odevzdání} few {# odevzdání} other {# odevzdání}} od {authors, plural, one {# člověka} few {# lidí} other {# lidí}}.",
+    "filterPlaceholder": "Filtrovat podle jména nebo poznámky",
+    "empty": {
+      "title": "Zatím nikdo nic neodevzdal",
+      "description": "Jakmile někdo odevzdá řešení tohoto zadání, objeví se tu každý pokus."
+    },
+    "columns": {
+      "author": "Autor",
+      "attempt": "Pokus",
+      "submitted": "Odevzdáno",
+      "environment": "Prostředí",
+      "points": "Body",
+      "status": "Výsledek",
+      "review": "Revize",
+      "similarities": "Podobnosti"
+    },
+    "flags": {
+      "best": "Nejlepší",
+      "accepted": "Přijato",
+      "late": "Po termínu",
+      "similarities": "Nalezeny"
+    },
+    "review": {
+      "requested": "Vyžádána",
+      "open": "Probíhá",
+      "closed": "Hotova",
+      "closedWithIssues": "{count, plural, one {# výhrada} few {# výhrady} other {# výhrad}}"
     }
   },
   "Submit": {

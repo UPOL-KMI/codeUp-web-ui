@@ -73,6 +73,10 @@ const MANIFEST: ManifestEntry[] = [
   // A leaf with a static label under a dynamic parent: `matchPattern` handles the `:param`
   // segment, and the label is this page's own namespace title like any other static entry.
   { namespace: "Submit", pattern: "/assignments/:assignmentId/submit" },
+  {
+    namespace: "AssignmentSolutions",
+    pattern: "/assignments/:assignmentId/solutions",
+  },
   { namespace: "Sources", pattern: "/solutions/:solutionId/sources" },
   { namespace: "Plagiarism", pattern: "/solutions/:solutionId/plagiarisms" },
   // `/assignments/:id/users` is a path segment with no page of its own, like `/assignments`.

@@ -21,7 +21,7 @@
 | `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                    | done   |
 | `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`     | done   |
 | `app/assignment/:assignmentId/edit`                                        | EditAssignment             | true  | ASSIGNMENT_EDIT_URI_FACTORY                 | `/assignments/[id]/edit`               | todo   |
-| `app/assignment/:assignmentId/solutions`                                   | AssignmentSolutions        | true  | ASSIGNMENT_SOLUTIONS_URI_FACTORY            | `/assignments/[id]/solutions`          | todo   |
+| `app/assignment/:assignmentId/solutions`                                   | AssignmentSolutions        | true  | ASSIGNMENT_SOLUTIONS_URI_FACTORY            | `/assignments/[id]/solutions`          | done   |
 | `app/assignment/:assignmentId/solution/:solutionId`                        | Solution                   | true  | SOLUTION_DETAIL_URI_FACTORY                 | `/solutions/[id]`                      | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/sources`                | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_URI_FACTORY           | `/solutions/[id]/sources`              | todo   |
 | `app/assignment/:assignmentId/solution/:solutionId/diff/:secondSolutionId` | SolutionSourceCodes        | true  | SOLUTION_SOURCE_CODES_DIFF_URI_FACTORY      | `/solutions/[id]/diff/[otherId]`       | todo   |
