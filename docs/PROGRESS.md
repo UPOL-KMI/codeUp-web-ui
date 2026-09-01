@@ -2317,6 +2317,39 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     h4 with no jump.
   - _Observations:_ **138 e2e tests pass** (136 before), 55 unit tests.
 
+- **[2026-09-01 09:50] F-031:** A session that outlived its token.
+  `proxy.ts`, `app/api/auth/session-expired/route.ts`, `isSessionTokenLive()` in
+  `lib/auth/session-cookie.ts`, 401 handling in `lib/api/read.ts`.
+  - **_The symptom was worse than the ticket said._** This was filed as "an expired session reads
+    as an error page". It does not: it reads as **an infinite redirect loop**. `proxy.ts` tested the
+    cookie for _presence_, so a token past its own `exp` still counted as a session --
+    `requireSession()` sent the reader to `/login`, `proxy.ts` saw a cookie and sent them back to
+    `/dashboard`, forever. Reproduced with `curl` before a line was changed: 12 hops and still
+    going, which in a browser is `ERR_TOO_MANY_REDIRECTS` and no page at all. Every ReCodEx token
+    lasts seven days, so this is what waiting a week over a holiday looked like.
+  - _Both layers now ask one question of one value._ `isSessionTokenLive()` is shared by `proxy.ts`
+    and `requireSession()`, so they cannot disagree about whether a cookie counts -- and the
+    disagreement _was_ the bug, not either answer on its own. `proxy.ts` clears what it rejects,
+    because it is the only layer that both sees the request and can write a cookie.
+  - **_The other way a session dies is invisible to that check (DEC-089)._** core-api can refuse a
+    token whose `exp` has not passed: a password change sets a validity threshold (S-022's own
+    finding, from the other side), and an administrator can invalidate every token a user holds.
+    That answer arrives as `401` during a render, where no cookie can be written -- so
+    `lib/api/read.ts` redirects out to a Route Handler that clears it and lands on `/login`. Two
+    mechanisms because there are genuinely two failures.
+  - _Verified live, both paths, with a cookie jar so `Set-Cookie` actually took effect:_ expired by
+    `exp` resolves in one redirect to `/en/login?from=/en/dashboard`; refused by core-api resolves
+    in three, through `/api/auth/session-expired`; the cookie is gone in both. A healthy session
+    still reaches `/dashboard` untouched, and still bounces `/login` back to `/dashboard`.
+  - _The spec's strongest assertion is that `page.goto()` returns at all_ -- a loop fails it
+    outright. Both new tests were confirmed to fail against a stashed tree and the control to pass
+    in both states, the way F-024's were.
+  - _What is still rough:_ a **Server Action** that hits the same 401 shows core-api's own message
+    ("Access token ... is not valid") in the form rather than signing the reader out. It
+    self-corrects on their next navigation, and it is on F-031's backlog row rather than invented as
+    a ticket, because no capability is lost -- only the wording of one failure.
+  - _Observations:_ **141 e2e tests pass** (138 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2325,15 +2358,16 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
   detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021),
   account settings (S-022), both invitation-acceptance pages (S-023, S-024) and the dashboard's
-  shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one). Foundation and
-  Design System complete.
-- **Next ticket:** F-031 (an expired session still reads as an error page), then the student phase
-  has only S-026 left. **T-018 is unblocked** now that invitation links lead somewhere, and it owes
-  `e2e/helpers/core-api.ts` its retirement. The teacher phase's first two tickets (T-002 edit, T-003
-  solutions list) each owe the assignment screen a link, recorded on their backlog rows.
-- **New ticket from this session:** **S-026** -- joining a public group and leaving a group are both
-  legacy capabilities nothing here has built. Accepting an invitation is a one-way door in this app
-  today, which is why `e2e/group-invitations.spec.ts` asserts every state except the accept.
+  shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one) and F-031 (a dead
+  session signs the reader out instead of looping). Foundation and Design System complete.
+- **Next ticket:** S-026 (joining a public group and leaving one, the gap S-023 found), which is the
+  last student-phase ticket. **T-018 is unblocked** now that invitation links lead somewhere, and it
+  owes `e2e/helpers/core-api.ts` its retirement. The teacher phase's first two tickets (T-002 edit,
+  T-003 solutions list) each owe the assignment screen a link, recorded on their backlog rows.
+- **New ticket from this session:** **S-026** -- joining a public group and leaving a group are
+  both legacy capabilities nothing here has built. Accepting an invitation is a one-way door
+  in this app today, which is why `e2e/group-invitations.spec.ts` asserts every state except the
+  accept.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-018 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will

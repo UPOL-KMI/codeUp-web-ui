@@ -52,6 +52,27 @@ export async function establishSession(accessToken: string): Promise<boolean> {
 }
 
 /**
+ * Whether this cookie value is still a token worth presenting to core-api (F-031).
+ *
+ * **A present-but-dead cookie is worse than no cookie at all**, which is why this exists as its
+ * own exported predicate rather than living inside `requireSession()`. `proxy.ts` used to test
+ * only for *presence*: a session past its `exp` therefore counted as signed in, so `/login` was
+ * bounced to `/dashboard`, whose `requireSession()` redirected to `/login`, which bounced back --
+ * an actual infinite redirect loop, reproduced with `curl` before this function existed. Both
+ * layers now ask the same question of the same value, so they cannot disagree about it.
+ *
+ * Signature is not verified, for the reason `jwt.ts` gives: this app set the cookie from a token
+ * core-api handed it. core-api remains the authority on whether a *live-looking* token is
+ * actually still accepted -- it can refuse one whose `exp` has not passed (a password change sets
+ * a validity threshold, S-022) and that answer arrives as a 401 on a real call, which
+ * `lib/api/read.ts` routes to `/api/auth/session-expired`.
+ */
+export function isSessionTokenLive(value: string): boolean {
+  const claims = decodeJwtPayload(value);
+  return claims !== null && claims.exp * 1000 > Date.now();
+}
+
+/**
  * Reads the session token without `requireSession()`'s redirect. Route Handlers invoked by
  * client-side `fetch()` (the auth module's restricted-token route, the upload proxy routes) must
  * answer with a JSON 401 the caller can branch on -- a `redirect("/login")` there would be

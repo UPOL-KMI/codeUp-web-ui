@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { decodeJwtPayload } from "./jwt";
-import { SESSION_COOKIE_NAME } from "./session-cookie";
+import { isSessionTokenLive, SESSION_COOKIE_NAME } from "./session-cookie";
 
 export interface Session {
   token: string;
@@ -11,9 +11,12 @@ export interface Session {
 }
 
 function decodeSessionCookie(value: string): Session | null {
+  // Liveness is `isSessionTokenLive`'s question, shared with proxy.ts so the two layers cannot
+  // disagree about whether a cookie counts -- when they did, the disagreement was a redirect loop
+  // (F-031). F-018 handles refreshing one that is merely close to expiry; this only reads.
+  if (!isSessionTokenLive(value)) return null;
   const payload = decodeJwtPayload(value);
   if (!payload) return null;
-  if (payload.exp * 1000 <= Date.now()) return null; // expired -- F-018 handles refresh, not this
   return { token: value, userId: payload.sub };
 }
 

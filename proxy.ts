@@ -3,7 +3,11 @@ import type { NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
 import { maybeRefreshSession } from "./lib/auth/refresh-session";
-import { sessionCookieOptions, SESSION_COOKIE_NAME } from "./lib/auth/session-cookie";
+import {
+  isSessionTokenLive,
+  sessionCookieOptions,
+  SESSION_COOKIE_NAME,
+} from "./lib/auth/session-cookie";
 import { routing } from "./i18n/routing";
 
 // Filename must be proxy.ts, not middleware.ts -- middleware.ts is a deprecated Edge-runtime
@@ -48,8 +52,10 @@ function stripLocale(pathname: string): string {
  * May 2026 advisories were middleware/proxy bypasses; the actual authorisation boundary is
  * requireSession() in the server-side data access layer (F-015), called by every function that
  * touches core-api, not by this file. All this does is avoid flashing a page that's about to
- * fail, or showing a login form to someone who's already signed in -- both are checked by
- * *presence* of the session cookie only, never by validating it.
+ * fail, or showing a login form to someone who's already signed in. The cookie is read, never
+ * *trusted*: its signature is not verified here or anywhere in this app, and the only thing this
+ * file decides from it is whether it is worth treating as a session at all. It does have to decide
+ * that much -- presence alone was not enough, and the gap was an infinite redirect loop (F-031).
  *
  * Also handles proactive token refresh (brief §5: "Token refresh and expiry handling happen in
  * proxy.ts or Route Handlers only" -- Server Components can't set cookies). Applied to whichever
@@ -69,7 +75,12 @@ export default async function proxy(request: NextRequest) {
   const locale = request.nextUrl.pathname.split("/")[1];
   const pathname = stripLocale(request.nextUrl.pathname);
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  const hasSession = !!sessionCookie;
+  // A cookie that is past its own `exp` is not a session, and treating it as one was a redirect
+  // loop, not a cosmetic problem (F-031): `/dashboard`'s `requireSession()` sent the reader to
+  // `/login`, the branch below saw a cookie and sent them back, forever. Same predicate as
+  // `requireSession()` uses, so the two cannot disagree.
+  const staleSession = sessionCookie !== undefined && !isSessionTokenLive(sessionCookie.value);
+  const hasSession = sessionCookie !== undefined && !staleSession;
 
   let response: NextResponse;
 
@@ -88,7 +99,13 @@ export default async function proxy(request: NextRequest) {
     response = intlResponse;
   }
 
-  if (sessionCookie) {
+  if (staleSession) {
+    // Cleared here rather than left for the reader to notice: this is the only layer that both
+    // sees the request and can write a cookie, and every later layer would otherwise keep being
+    // told there is a session. `maxAge: 0` with the same options it was set with -- a delete that
+    // misses `path` leaves the original in place.
+    response.cookies.set(SESSION_COOKIE_NAME, "", sessionCookieOptions(0));
+  } else if (sessionCookie) {
     const refreshed = await maybeRefreshSession(sessionCookie.value);
     if (refreshed) {
       response.cookies.set(
