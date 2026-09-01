@@ -804,6 +804,14 @@
       "title": "No exercises",
       "description": "Nothing in the catalog is yours to see yet.",
       "noMatch": "Nothing matches those filters."
+    },
+    "create": {
+      "group": "New exercise in",
+      "choose": "Choose a group",
+      "action": "Create",
+      "creating": "Creating…",
+      "explain": "A new exercise starts empty and unfinished — nobody can assign it until it has a text, tests and a reference solution. You land on its settings straight away.",
+      "failed": "The exercise could not be created."
     }
   },
   "Exercise": {
@@ -867,6 +875,91 @@
       "no-hwgroups": "No hardware group has been selected for it.",
       "config": "Some tests are incompletely configured — this usually happens after a test or a file is removed.",
       "limits": "Memory or time limits are not set properly."
+    },
+    "edit": "Settings"
+  },
+  "ExerciseEdit": {
+    "title": "Exercise settings",
+    "backToExercise": "Back to the exercise",
+    "settings": "Basic settings",
+    "archivedNotice": "This exercise is archived, so ReCodEx will not let it be changed. Restore it below if you need to edit it.",
+    "readOnlyNotice": "You may not change this exercise's settings — only the controls below are yours.",
+    "form": {
+      "locale": "Language: {locale}",
+      "name": "Name",
+      "text": "Text",
+      "textHint": "Markdown. This is what a student reads.",
+      "description": "Short description",
+      "descriptionHint": "Only teachers see this — a note about what the exercise is for.",
+      "link": "External text",
+      "linkHint": "An address holding the full text, when it is kept outside ReCodEx.",
+      "difficulty": "Difficulty",
+      "difficulties": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "isPublic": "Other teachers may see and assign this exercise",
+      "isLocked": "Locked — nobody may assign it, even so",
+      "mergeJudgeLogs": "Fold the judge's error output into its normal output",
+      "solutionFilesLimit": "Files per solution",
+      "solutionSizeLimit": "Total size (bytes)",
+      "solutionSizeLimitHint": "Leave empty for no limit of its own.",
+      "save": "Save settings",
+      "saved": "The settings were saved.",
+      "errors": {
+        "nameRequired": "Name the exercise in at least one language."
+      }
+    },
+    "tags": {
+      "title": "Tags",
+      "explain": "Tags are shared across the whole instance and are what the catalog filters by.",
+      "none": "No tags yet.",
+      "add": "New tag",
+      "addAction": "Add",
+      "added": "The tag was added.",
+      "remove": "Remove the tag {tag}",
+      "removed": "The tag was removed."
+    },
+    "groups": {
+      "title": "Groups",
+      "explain": "An exercise lives in one or more groups; whoever administers those groups may edit it. It has to live in at least one.",
+      "attach": "Add to a group",
+      "attachAction": "Add",
+      "attached": "The exercise was added to the group.",
+      "choose": "Choose a group",
+      "detach": "Remove",
+      "detached": "The exercise was removed from the group.",
+      "undisclosed": "and {count, plural, one {# group} other {# groups}} you cannot see"
+    },
+    "archive": {
+      "title": "Archiving",
+      "explain": "An archived exercise stays readable and keeps the assignments already made from it, but it is out of the catalog's way and cannot be changed or assigned.",
+      "action": "Archive this exercise",
+      "archived": "The exercise was archived.",
+      "restore": "Restore this exercise",
+      "restored": "The exercise was restored."
+    },
+    "delete": {
+      "title": "Deleting",
+      "explain": "Assignments already made from this exercise survive it — they are copies — but they can never be synchronised with it again.",
+      "action": "Delete this exercise",
+      "deleted": "The exercise was deleted.",
+      "confirm": {
+        "title": "Delete this exercise?",
+        "description": "It disappears from every group it belongs to. The assignments made from it stay, and stop being able to sync."
+      }
+    },
+    "errors": {
+      "failed": "That did not work",
+      "invalid": "Check the form and try again.",
+      "createFailed": "The exercise could not be created.",
+      "saveFailed": "The settings could not be saved.",
+      "invalidTag": "A tag can only hold letters, digits, dots and dashes.",
+      "tagFailed": "The tag could not be changed.",
+      "groupFailed": "The group could not be changed.",
+      "archiveFailed": "The exercise could not be archived.",
+      "deleteFailed": "The exercise could not be deleted."
     }
   },
   "Pipelines": {

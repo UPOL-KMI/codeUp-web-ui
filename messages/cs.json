@@ -804,6 +804,14 @@
       "title": "Žádné úlohy",
       "description": "Zatím tu není žádná úloha, kterou byste směli vidět.",
       "noMatch": "Danému filtru nic neodpovídá."
+    },
+    "create": {
+      "group": "Nová úloha ve skupině",
+      "choose": "Vyberte skupinu",
+      "action": "Vytvořit",
+      "creating": "Vytvářím…",
+      "explain": "Nová úloha vzniká prázdná a nehotová — zadat ji nejde, dokud nemá zadání, testy a vzorové řešení. Rovnou se dostanete na její nastavení.",
+      "failed": "Úlohu se nepodařilo vytvořit."
     }
   },
   "Exercise": {
@@ -867,6 +875,91 @@
       "no-hwgroups": "Nebyla pro ni vybrána hardwarová skupina.",
       "config": "Některé testy mají neúplnou konfiguraci — typicky poté, co byl odebrán test nebo soubor.",
       "limits": "Paměťové nebo časové limity nejsou správně nastavené."
+    },
+    "edit": "Nastavení"
+  },
+  "ExerciseEdit": {
+    "title": "Nastavení úlohy",
+    "backToExercise": "Zpět na úlohu",
+    "settings": "Základní nastavení",
+    "archivedNotice": "Tato úloha je archivovaná, takže ji ReCodEx nedovolí měnit. Pokud ji potřebujete upravit, obnovte ji níže.",
+    "readOnlyNotice": "Nastavení této úlohy měnit nesmíte — vaše jsou jen ovládací prvky níže.",
+    "form": {
+      "locale": "Jazyk: {locale}",
+      "name": "Název",
+      "text": "Zadání",
+      "textHint": "Markdown. Tohle čte student.",
+      "description": "Krátký popis",
+      "descriptionHint": "Vidí jen učitelé — poznámka, k čemu úloha je.",
+      "link": "Externí zadání",
+      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo ReCodEx.",
+      "difficulty": "Obtížnost",
+      "difficulties": {
+        "easy": "Lehká",
+        "medium": "Střední",
+        "hard": "Těžká"
+      },
+      "isPublic": "Ostatní učitelé smí úlohu vidět a zadávat",
+      "isLocked": "Zamčeno — zadat ji nesmí nikdo, ani tak",
+      "mergeJudgeLogs": "Sloučit chybový výstup soudce do běžného",
+      "solutionFilesLimit": "Souborů na řešení",
+      "solutionSizeLimit": "Celková velikost (v bajtech)",
+      "solutionSizeLimitHint": "Prázdné znamená bez vlastního limitu.",
+      "save": "Uložit nastavení",
+      "saved": "Nastavení bylo uloženo.",
+      "errors": {
+        "nameRequired": "Pojmenujte úlohu aspoň v jednom jazyce."
+      }
+    },
+    "tags": {
+      "title": "Štítky",
+      "explain": "Štítky jsou společné pro celou instanci a katalog podle nich filtruje.",
+      "none": "Zatím žádné štítky.",
+      "add": "Nový štítek",
+      "addAction": "Přidat",
+      "added": "Štítek byl přidán.",
+      "remove": "Odebrat štítek {tag}",
+      "removed": "Štítek byl odebrán."
+    },
+    "groups": {
+      "title": "Skupiny",
+      "explain": "Úloha patří do jedné nebo více skupin; upravovat ji smí správci těchto skupin. Aspoň v jedné být musí.",
+      "attach": "Přidat do skupiny",
+      "attachAction": "Přidat",
+      "attached": "Úloha byla přidána do skupiny.",
+      "choose": "Vyberte skupinu",
+      "detach": "Odebrat",
+      "detached": "Úloha byla ze skupiny odebrána.",
+      "undisclosed": "a {count, plural, one {# skupina} few {# skupiny} other {# skupin}}, které nevidíte"
+    },
+    "archive": {
+      "title": "Archivace",
+      "explain": "Archivovaná úloha zůstává čitelná a zachovává zadání, která z ní vznikla, ale nepřekáží v katalogu a nejde měnit ani zadávat.",
+      "action": "Archivovat úlohu",
+      "archived": "Úloha byla archivována.",
+      "restore": "Obnovit úlohu",
+      "restored": "Úloha byla obnovena."
+    },
+    "delete": {
+      "title": "Smazání",
+      "explain": "Zadání, která z úlohy už vznikla, ji přežijí — jsou to kopie — ale už nikdy nepůjdou synchronizovat.",
+      "action": "Smazat úlohu",
+      "deleted": "Úloha byla smazána.",
+      "confirm": {
+        "title": "Smazat tuto úlohu?",
+        "description": "Zmizí ze všech skupin, do kterých patří. Zadání z ní vzniklá zůstanou a přestanou jít synchronizovat."
+      }
+    },
+    "errors": {
+      "failed": "Nepovedlo se",
+      "invalid": "Zkontrolujte formulář a zkuste to znovu.",
+      "createFailed": "Úlohu se nepodařilo vytvořit.",
+      "saveFailed": "Nastavení se nepodařilo uložit.",
+      "invalidTag": "Štítek smí obsahovat jen písmena, číslice, tečky a pomlčky.",
+      "tagFailed": "Štítek se nepodařilo změnit.",
+      "groupFailed": "Skupinu se nepodařilo změnit.",
+      "archiveFailed": "Úlohu se nepodařilo archivovat.",
+      "deleteFailed": "Úlohu se nepodařilo smazat."
     }
   },
   "Pipelines": {

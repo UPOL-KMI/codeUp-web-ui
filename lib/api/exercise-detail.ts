@@ -67,6 +67,9 @@ export interface ExerciseDetail {
   forkedFrom: string | null;
   solutionFilesLimit: number | null;
   solutionSizeLimit: number | null;
+  /** Whether the judge's stderr is folded into its stdout -- a setting only T-008's form reads,
+   *  carried here so that saving the form cannot silently flip it. */
+  mergeJudgeLogs: boolean;
   files: ExerciseFile[];
   /** Assignments made from this exercise **that this reader may see** -- core-api filters them. */
   assignmentCount: number;
@@ -94,6 +97,7 @@ interface ExerciseDetailPayload {
   forkedFrom: string | null;
   solutionFilesLimit: number | null;
   solutionSizeLimit: number | null;
+  mergeJudgeLogs?: boolean;
   permissionHints?: Record<string, boolean>;
 }
 
@@ -185,6 +189,7 @@ export async function getExerciseDetail(
     forkedFrom: exercise.forkedFrom,
     solutionFilesLimit: exercise.solutionFilesLimit,
     solutionSizeLimit: exercise.solutionSizeLimit,
+    mergeJudgeLogs: exercise.mergeJudgeLogs ?? true,
     files: files.map((file) => ({ id: file.id, name: file.name, size: file.size })),
     assignmentCount: assignments.length,
     can: exercise.permissionHints ?? {},

@@ -51,6 +51,14 @@ export default async function ExercisePage({
           {!exercise.isPublic && <Badge tone="neutral">{t("flags.private")}</Badge>}
           {exercise.isLocked && <Badge tone="warning">{t("flags.locked")}</Badge>}
           {exercise.isBroken && <Badge tone="danger">{t("flags.broken")}</Badge>}
+          {exercise.can.update === true && (
+            <Link
+              href={`/exercises/${exerciseId}/edit`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("edit")}
+            </Link>
+          )}
           <Link
             href="/exercises"
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

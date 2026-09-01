@@ -30,7 +30,7 @@
 | `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`        | todo   |
 | `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | done   |
 | `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | done   |
-| `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | todo   |
+| `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | done   |
 | `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | todo   |
 | `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
 | `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | todo   |
@@ -85,7 +85,7 @@
 | `exercisePipelinesVariables`   | Pipeline variables                                         | `exercises/[id]/edit-config`                   | todo   |
 | `exerciseScoreConfig`          | Score configuration                                        | `exercises/[id]`                               | todo   |
 | `exerciseTests`                | Exercise tests                                             | `exercises/[id]`                               | todo   |
-| `exercises`                    | Exercise catalog, detail, edit                             | `exercises`                                    | todo   |
+| `exercises`                    | Exercise catalog, detail, edit                             | `exercises`                                    | done   |
 | `files`                        | Uploaded files                                             | `upload` component                             | todo   |
 | `filesContent`                 | File content preview                                       | `solutions/[id]`                               | todo   |
 | `groupExamLocks`               | Exam mode locks                                            | `groups/[id]?tab=exams`                        | done   |

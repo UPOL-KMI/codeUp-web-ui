@@ -6,10 +6,12 @@ import {
   getExerciseTags,
   type ArchivedScope,
 } from "@/lib/api/exercises";
+import { getMyGroups } from "@/lib/api/groups";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
+import { CreateExercise } from "@/components/exercises/create-exercise";
 import { ExerciseTable } from "@/components/exercises/exercise-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
@@ -53,11 +55,14 @@ export default async function ExercisesPage({
   const tags = query.tag ? [query.tag] : [];
   const page = Math.max(0, Number(query.page ?? "0") || 0);
 
-  const [t, catalog, allEnvironments, allTags, breadcrumbs] = await Promise.all([
+  const [t, catalog, allEnvironments, allTags, mine, breadcrumbs] = await Promise.all([
     getTranslations("Exercises"),
     getExerciseCatalog({ search, archived, environments, tags, page }, locale),
     getRuntimeEnvironments(),
     getExerciseTags(),
+    // Where a new exercise could go: core-api's `createExercise` wants a group the reader
+    // supervises or administers, which is exactly this list (T-008).
+    getMyGroups(locale),
     resolveBreadcrumbsForNamespace("Exercises", locale),
   ]);
 
@@ -80,6 +85,8 @@ export default async function ExercisesPage({
   return (
     <PageShell title={t("title")} subtitle={t("subtitle")} breadcrumbs={breadcrumbs}>
       <div className="flex flex-col gap-4">
+        <CreateExercise groups={mine.teaching} />
+
         {/* A plain GET form: the filters are the server's business, and the URL they produce is
             the shareable view (brief §9). The page resets to the first whenever they change,
             which is why it is not carried in a hidden field. */}

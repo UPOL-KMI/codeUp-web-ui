@@ -201,6 +201,43 @@
     and an archived one.
   - _Observations:_ **174 e2e tests pass** (171 before), 68 unit tests (64 before).
 
+- **[2026-09-01 18:30] T-008:** Making an exercise, and everything about it that is a setting.
+  `app/[locale]/(app)/exercises/[exerciseId]/edit/page.tsx`,
+  `components/exercises/{exercise-form,exercise-controls,create-exercise}.tsx`,
+  `lib/actions/exercise.ts`.
+  - **_Create first, configure second (DEC-098)._** core-api's `actionCreate` takes a group and
+    nothing else -- it names the exercise after its author, in the author's own language, and
+    leaves it without tests -- so there is nothing a wizard could collect first. The reader lands
+    on the settings form with the exercise already real, and a new exercise is **broken by
+    construction**: nobody can assign it and no student can meet it in the meantime.
+  - _One save carrying every field, with `version` as the optimistic lock_ -- core-api replaces the
+    exercise with what it is sent, exactly as it does an assignment (DEC-092's reasoning, second
+    time). Every locale is edited at once for the same reason, and a locale left blank is dropped
+    rather than saved empty, which is how core-api deletes one.
+  - _Tags, groups, archiving and deletion are **not** fields of that save._ Each is its own call
+    that takes effect immediately, so they sit beside the form rather than in it -- folding them in
+    would mean faking a transaction that does not exist.
+  - **_A bug its own spec found, one step after archiving:_** core-api's update rule carries
+    `exercise.notArchived`, so **archiving an exercise takes `update` away** -- and the page,
+    gated on `update`, refused the reader the very screen holding the button that undoes it. The
+    gate is now any of `update`/`archive`/`remove` (S-009's rule for an archived group, which had
+    the same shape and got it right), the form is rendered only where `update` is real, and the
+    group controls are hidden for an archived exercise because core-api refuses those too.
+  - _Attaching and detaching a group have no hint_ -- both rules are written against the exercise
+    **and** the group (DEC-090's shape, fourth time) -- so the offer is the groups the reader
+    teaches, and detaching the **last** group is not offered at all, because
+    `exercise.hasAtLeastTwoAttachedGroups` refuses it.
+  - _`mergeJudgeLogs` is carried through the detail module purely so the form cannot flip it._ It
+    is not shown anywhere else; a form that defaulted it would have quietly changed a setting
+    nobody edited.
+  - **_What T-008 deliberately does not do is filed as T-023, not dropped:_** the exercise's own
+    files and their link keys (which the markdown renderer does not substitute yet -- assignments
+    have the same gap), its administrators, and forking it into another group.
+  - _Verified live in both locales_, and by a spec that creates a real exercise, saves it, tags it,
+    attaches a second group, archives and restores it, reads it back on the detail screen and
+    deletes it -- 25 exercises before and after.
+  - _Observations:_ **176 e2e tests pass** (174 before), 68 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2702,14 +2739,17 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
   deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
   T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
-  matrix as a downloadable file), T-019 (the submission-failure queue), and T-020 + T-021 (the
-  exercise catalog and one exercise read, two tickets this session filed).
+  matrix as a downloadable file), T-019 (the submission-failure queue), T-020 + T-021 (the exercise
+  catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
+  its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
+  solutions and pipeline screens (T-009..T-016) are what remains of it.
   Foundation and Design System complete.
-- **Next ticket:** T-008 (create/edit an exercise), now that the catalog (T-020) and the detail
-  screen (T-021) exist for it to return to -- then the rest of the authoring block, T-009..T-016,
-  with T-016's Graphviz question still open. **T-022 is new and is a parity gap, not a plan item:**
-  the legacy discussion threads on exercises, assignments and solutions were never built here, and
-  `INVENTORY.md` had mistaken them for S-018's inline review comments. The anonymous flows (A-001..A-008)
+- **Next ticket:** T-009 (the exercise configuration editor -- tests, pipelines and variables,
+  the hardest screen in the product by the brief's own reckoning), then T-010..T-016, with T-016's
+  Graphviz question still open. **Two parity gaps are filed and open:** T-022 (the legacy
+  discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had mistaken for
+  S-018's inline review comments) and T-023 (exercise files and their link keys, administrators,
+  and forking). The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
