@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { establishSession } from "@/lib/auth/session-cookie";
+import { shortSessionSeconds } from "@/lib/auth/short-session";
 
 // z.email(), not the deprecated z.string().email() chain -- verified against the installed zod
 // 4.4.3's own type defs, which flag the chained form deprecated in favor of this.
 const loginSchema = z.object({
   email: z.email(),
   password: z.string().min(1),
+  /** A-002's "short session" checkbox. The *length* is the deployment's, not the caller's. */
+  short: z.boolean().optional(),
 });
 
 interface CoreApiErrorResponse {
@@ -34,12 +37,16 @@ export async function POST(request: Request) {
     throw new Error("API_BASE_INTERNAL is not set.");
   }
 
+  const shortSession = shortSessionSeconds();
   const apiResponse = await fetch(`${apiBase}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       username: parsed.data.email,
       password: parsed.data.password,
+      // core-api sizes the token it issues; `establishSession` then sizes the cookie from that
+      // token's own `exp`, so asking for a shorter session needs nothing else here.
+      ...(parsed.data.short && shortSession !== null && { expiration: shortSession }),
     }),
   });
 

@@ -29,7 +29,19 @@
     "comingSoon": "Tato stránka zatím nebyla vytvořena."
   },
   "Login": {
-    "title": "Přihlásit se"
+    "title": "Přihlášení",
+    "subtitle": "ReCodEx — vaše zadání, vaše řešení a jak byla vyhodnocena.",
+    "email": "E-mail",
+    "password": "Heslo",
+    "signIn": "Přihlásit se",
+    "signingIn": "Přihlašuji…",
+    "signInRequired": "Tato stránka je pro přihlášené. Po přihlášení se na ni dostanete.",
+    "externalAuthFailed": "Přihlášení přes externí službu se nepovedlo. Zkuste to znovu, nebo použijte heslo k ReCodExu níže.",
+    "shortSession": "Krátká relace ({minutes} minut)",
+    "shortSessionHint": "Pro veřejný počítač: relace skončí dřív, i když se zapomenete odhlásit.",
+    "errors": {
+      "failed": "Přihlášení se nepovedlo. Zkontrolujte adresu a heslo."
+    }
   },
   "Register": {
     "title": "Zaregistrovat se"

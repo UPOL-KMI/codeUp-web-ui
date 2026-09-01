@@ -8,9 +8,11 @@ export interface SessionCookie {
 
 /**
  * Logs in via the real Auth BFF Route Handler (`app/api/auth/login/route.ts`, F-016) rather than
- * driving a login *form* -- there isn't one yet (`/login` is still F-013's `PlaceholderPage`; a
- * real form is a later Design System / Anonymous Flows ticket). This helper needs to change to
- * drive the UI once that form exists; the underlying session mechanism (the cookie) won't.
+ * driving the login *form*, which A-002 has now built. It stays this way deliberately: core-api
+ * hashes passwords with bcrypt (slow on purpose), and this is called once per **persona** rather
+ * than once per test -- driving the form here would multiply that cost by every test in the suite.
+ * `login.spec.ts` is the one place that signs in through the real form, so what every other spec
+ * assumes is checked somewhere.
  *
  * Deliberately plain `fetch()`, not any Playwright-provided request context (`page.request`,
  * `playwright.request.newContext()`) -- both were tried first and both threw `ENOENT` reading a

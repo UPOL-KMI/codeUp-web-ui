@@ -238,6 +238,37 @@
     deletes it -- 25 exercises before and after.
   - _Observations:_ **176 e2e tests pass** (174 before), 68 unit tests.
 
+- **[2026-09-01 19:15] A-002:** The front door -- a sign-in form, at last.
+  `app/[locale]/(anon)/login/page.tsx`, `components/auth/login-form.tsx`,
+  `lib/auth/{redirect-target,short-session}.ts`.
+  - _`/login` has been a `PlaceholderPage` since F-013,_ in front of a BFF route that only the e2e
+    suite ever called -- which is to say the product had no way in. It has one now.
+  - **_It posts to the Route Handler, not to a Server Action (DEC-099)._** That route is what sets
+    the httpOnly cookie (brief §5) and has existed since F-016; wrapping it in an action would add
+    a hop and a second thing to keep in step. `router.refresh()` runs before the navigation,
+    because the app shell is a Server Component that reads the session and would otherwise render
+    the next page still believing nobody is signed in.
+  - **_`?from=` is an open-redirect guard first._** `proxy.ts` writes the refused path there, and
+    anything that is not a single-slash path on this app becomes the dashboard --
+    `//evil.example`, an absolute URL, `/\evil.example`. Unit-tested, and the spec proves it is
+    wired: a sign-in form that forwards the browser wherever a link says is a phishing tool.
+  - _Three things reach this page and each says why:_ `?from=` (you asked for a page behind the
+    session), `?externalAuthError=1` (F-019's callback could not use its token) and nothing at all.
+    A visitor who already has a session never sees it -- `proxy.ts` sends them to the dashboard,
+    which is why there is no "you are already signed in" branch the legacy page needs.
+  - _Short sessions are supported where a deployment configures them_ (`SHORT_SESSION_MINUTES`,
+    the legacy `SHORT_SESSION` in the same unit) and computed server-side; this deployment sets
+    none, so the checkbox is absent, exactly as the legacy app hides it.
+  - _External sign-in is still not offered_ -- no authenticator is configured here (Q-004) -- so
+    A-007 owns that button. The callback's failure is already rendered.
+  - **_`e2e/helpers/auth.ts` keeps calling the route, and its note now says why:_** core-api hashes
+    passwords with bcrypt, and the helper runs once per persona rather than once per test.
+    `login.spec.ts` is the one place that drives the real form, so what every other spec assumes is
+    checked somewhere.
+  - _Verified live:_ a wrong password answers with core-api's own words and keeps the address, a
+    right one lands where `?from=` said, and an absolute `from` lands on the dashboard instead.
+  - _Observations:_ **181 e2e tests pass** (176 before), 72 unit tests (68 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2743,13 +2774,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
   its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
   solutions and pipeline screens (T-009..T-016) are what remains of it.
+  **The anonymous flows have begun** with A-002: `/login` is a real form rather than a placeholder.
   Foundation and Design System complete.
-- **Next ticket:** T-009 (the exercise configuration editor -- tests, pipelines and variables,
-  the hardest screen in the product by the brief's own reckoning), then T-010..T-016, with T-016's
-  Graphviz question still open. **Two parity gaps are filed and open:** T-022 (the legacy
-  discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had mistaken for
-  S-018's inline review comments) and T-023 (exercise files and their link keys, administrators,
-  and forking). The anonymous flows (A-001..A-008)
+- **Next ticket:** the rest of the anonymous block -- A-004/A-005 (password reset, which the
+  sign-in page owes a link to), A-003 (registration), A-006 (email verification) and A-008 (the
+  locale switch) -- then back to T-009 (the exercise configuration editor, the hardest screen in
+  the product by the brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
+  legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
+  mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
+  administrators, and forking). The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group

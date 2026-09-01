@@ -12,7 +12,7 @@
 | -------------------------------------------------------------------------- | -------------------------- | ----- | ------------------------------------------- | -------------------------------------- | ------ |
 | `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                   | todo   |
 | `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                 | todo   |
-| `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | todo   |
+| `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | done   |
 | `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | todo   |
 | `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | todo   |
 | `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | done   |
@@ -70,7 +70,7 @@
 | `app`                          | Global app state (locale, title)                           | Server Components + `params.lang`              | todo   |
 | `assignments`                  | Assignment CRUD, detail, edit                              | `assignments/[id]`                             | todo   |
 | `asyncJobs`                    | Async job polling (evaluation progress)                    | Server Actions + WebSocket/polling             | todo   |
-| `auth`                         | Login, logout, token refresh, takeover                     | BFF + httpOnly cookies                         | todo   |
+| `auth`                         | Login, logout, token refresh, takeover                     | BFF + httpOnly cookies                         | done   |
 | `boxes`                        | Box component (UI primitive)                               | shadcn/ui Card                                 | todo   |
 | `broker`                       | Broker communication (evaluation)                          | Server Actions                                 | todo   |
 | `canSubmit`                    | Permission: can user submit to assignment                  | Server Component data fetching                 | todo   |

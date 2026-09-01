@@ -29,7 +29,19 @@
     "comingSoon": "This page hasn't been built yet."
   },
   "Login": {
-    "title": "Sign in"
+    "title": "Sign in",
+    "subtitle": "ReCodEx — your assignments, your solutions and how they were evaluated.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "signInRequired": "That page is for signed-in users. Sign in and you will be taken there.",
+    "externalAuthFailed": "Signing in through the external service did not work. Try again, or use your ReCodEx password below.",
+    "shortSession": "Short session ({minutes} minutes)",
+    "shortSessionHint": "For a public computer: the session ends sooner, even if you forget to sign out.",
+    "errors": {
+      "failed": "Signing in did not work. Check the address and the password."
+    }
   },
   "Register": {
     "title": "Create account"
