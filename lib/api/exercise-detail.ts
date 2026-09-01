@@ -61,6 +61,8 @@ export interface ExerciseDetail {
   isPublic: boolean;
   isLocked: boolean;
   isBroken: boolean;
+  /** `simpleExerciseConfig` or `advancedExerciseConfig` -- which editor T-009's screen offers. */
+  configurationType: string;
   /** core-api's `@key`-prefixed reasons, split apart. Empty when the exercise is fine. */
   validationErrors: string[];
   hasReferenceSolutions: boolean;
@@ -92,6 +94,7 @@ interface ExerciseDetailPayload {
   isPublic: boolean;
   isLocked: boolean;
   isBroken: boolean;
+  configurationType?: string;
   validationError: string | null;
   hasReferenceSolutions: boolean;
   forkedFrom: string | null;
@@ -184,6 +187,7 @@ export async function getExerciseDetail(
     isPublic: exercise.isPublic,
     isLocked: exercise.isLocked,
     isBroken: exercise.isBroken,
+    configurationType: exercise.configurationType ?? "simpleExerciseConfig",
     validationErrors: validationErrors(exercise.validationError),
     hasReferenceSolutions: exercise.hasReferenceSolutions,
     forkedFrom: exercise.forkedFrom,

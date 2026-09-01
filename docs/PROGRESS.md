@@ -387,6 +387,49 @@
     registration enabled.
   - _Observations:_ **193 e2e tests pass** (191 before), 76 unit tests.
 
+- **[2026-09-01 20:30] T-009:** The exercise configuration editor -- tests, languages, and what each
+  test does. `app/[locale]/(app)/exercises/[exerciseId]/edit-config/page.tsx`,
+  `lib/exercise-config/`, `lib/api/exercise-config.ts`, `lib/actions/exercise-config.ts`,
+  `components/exercises/config/`.
+  - _The brief calls this the hardest screen in the product, and the reason turns out to be
+    ordering._ There are three saves and each one invalidates the next: a test rename changes the
+    test's **id** (core-api copies a test rather than updating it and rewrites the configuration to
+    point at the copy), and adding a language adds a whole branch of the configuration. So the
+    screen is three forms in dependency order, each refreshing the page after it saves, and the
+    third is not rendered at all without the first two -- with the reason named, rather than a form
+    whose every select is empty.
+  - **_What each test offers is read off the instance's pipelines, not assumed._** `parameters` on
+    a pipeline (`hasEntryPoint`, `hasSuccessExitCodes`, `isCompilationPipeline`, ...) is the one
+    part of this contract core-api publishes, and it is enough: Java's pipelines declare no entry
+    point and C's take no jar files, so neither field is offered there. Everything else -- which
+    variables exist, what they mean, the nine built-in judges -- is published nowhere and had to be
+    ported from the legacy `configSimple.js` descriptor table. **Q-020 filed:** all five endpoints
+    this screen uses are `"Placeholder response"` in the OpenAPI description, with no schema at all.
+  - **_Reading is permissive, writing normalises, and unknown variables survive._** The reader
+    ignores the pipeline filters and takes the first variable of each name it finds, so a
+    configuration written by hand or by the legacy advanced editor still loads; the writer rebuilds
+    the pipeline list from the instance's catalogue and places each variable where a pipeline
+    declares it. Saving is therefore **not** a no-op. What keeps that from being destructive is
+    that the merge starts from the variables already in the pipeline (DEC-102).
+  - _Verified as a real round trip against the live API_, not only in unit tests: a two-environment
+    exercise (Java + C++, two tests, compiler arguments, jar files, exit-code ranges, an
+    output-file test) read, written, re-read -- identical, and core-api's own validator raised
+    nothing about the configuration. The scratch exercise was deleted afterwards, along with four
+    left behind by earlier failed spec runs; the instance is back to its 24 seeded exercises.
+  - **_Two things this screen deliberately does not touch, both now tickets._** An
+    `advancedExerciseConfig` is built from hand-picked pipelines, and rewriting one through this
+    form would silently replace them -- so it is left alone and says so, **with the refusal in the
+    Server Action as well as the UI**, because here the boundary has to be this app's: core-api has
+    no rule against it (DEC-101, T-024). A `universal` score is an expression tree this app cannot
+    write back, so an exercise using one keeps it and is offered no switch away -- offering one
+    would be a door out of a state nothing here could restore (DEC-103, T-025).
+  - _One accessibility fix found by writing the spec:_ a `<select>` wrapped in its own `<label>`
+    takes the **whole** label -- every option's text included -- as its accessible name. Every
+    control in these forms now names itself explicitly.
+  - _T-021's exercise screen links here_, which is the DEC-066 rule paying out for the second time.
+  - _Observations:_ **197 e2e tests pass** (193 before), **99 unit tests** (76 before), both locales
+    rendered and checked.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2890,28 +2933,33 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
   matrix as a downloadable file), T-019 (the submission-failure queue), T-020 + T-021 (the exercise
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
-  its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
-  solutions and pipeline screens (T-009..T-016) are what remains of it.
+  its basic settings). **Exercise authoring has begun**, and T-009 has now built its configuration
+  editor -- the gate the rest of that block sits behind -- leaving the limits, the reference
+  solutions and the pipeline screens (T-010..T-016), plus the two tickets T-009 filed for the parts
+  of its own screen it does not own (T-024, T-025).
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
   A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-009 -- the exercise configuration editor: tests, pipelines and variables, the
-  hardest screen in the product by the brief's own reckoning, and the gate in front of T-010..T-016.
+- **Next ticket:** T-010 -- the exercise limits editor, which is per-environment and per-hardware-
+  group, and is the `@no-hwgroups` half of what still keeps a freshly configured exercise broken.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
-  configure -- Q-004). **Two parity gaps are filed and open:** T-022 (the
+  configure -- Q-004). **Four parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
-  mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
-  administrators, and forking). The anonymous flows (A-001..A-008)
+  mistaken for S-018's inline review comments), T-023 (exercise files and their link keys,
+  administrators, and forking) and, filed by T-009, T-024 (the advanced configuration and the
+  switch between the two kinds) and T-025 (the custom score expression editor). **T-023 is now
+  load-bearing**: the configuration editor points every file field at the exercise's attached
+  files, and nothing in this app can attach one yet. The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-019 (Q-014 closed by S-022) — all proceeding without
+- **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
   test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008; S-024 hit this again
   and worked around it by minting a token with the instance's own key rather than reading one out of
@@ -2935,3 +2983,10 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
 - **Unverified for want of a fixture (S-017):** no seeded solution is over core-api's preview limit
   or non-UTF-8, so the truncation and malformed-file notices have never rendered with data. The ZIP
   case _was_ closed the same way F-029 closed its three: the seed now submits a real archive.
+
+- **Unverified for want of an environment (T-009):** this deployment installs six ordinary runtime
+  environments, so three pieces of the configuration editor have never been rendered with data --
+  the `data-linux` and `haskell` descriptor variants, and the rule that five environments
+  (`arduino-gcc`, `data-linux`, `prolog`, `haskell`, `pyspark`) cannot share an exercise with
+  another. All three are ported from the legacy tables and carried deliberately (Q-020); re-verify
+  on an instance that has them.

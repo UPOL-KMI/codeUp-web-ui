@@ -258,3 +258,31 @@ exercised at all: the form, the "that address is taken" check and core-api's ref
 but no account has ever been created through this screen, and neither has the **name-collision**
 branch (core-api's `{user: null, usersWithSameName}` answer, which the form turns into "is one of
 these you?"). Re-verify both on an instance with local registration enabled.
+
+---
+
+## Q-020: The exercise configuration endpoints publish no schema at all (T-009)
+
+Every endpoint this screen reads and writes -- `/v1/exercises/{id}/tests`, `/config`,
+`/environment-configs`, `/score-config`, `/config/variables` -- is described in
+`openapi/core-api.yaml` as a `"Placeholder response"` with **no response schema**, and the request
+bodies are `type: array, items: {}`. The vocabulary a configuration is built from -- which
+variables exist (`expected-output`, `judge-type`, `success-exit-codes`, ...), what their types are,
+which pipeline each belongs in, which nine judge programs are built in -- is published nowhere:
+core-api validates against it and the legacy frontend hard-codes it in
+`helpers/exercise/configSimple.js`.
+
+**What it cost.** The shapes here were read off a live instance and out of the legacy descriptor
+table, and are re-stated in `lib/exercise-config/`. That table is now a second copy of an
+unpublished contract; an environment or a variable added to core-api will not appear here until
+somebody notices. The unit tests pin the shapes against the payloads that were actually observed,
+which is the most this side can do.
+
+**What would close it.** Real schemas on those five operations, or -- better -- an endpoint that
+serves the descriptor table itself. The pipelines already publish their `parameters`, which is what
+makes deciding _where_ a variable goes possible without guessing; what is missing is the list of
+variables and their meanings. That is an API change, which this repo may not make (constraint 1).
+
+**What is unverified because of it.** The `data-linux` and `haskell` descriptor variants, and the
+five exclusive environments, are ported from the legacy table and have **never been rendered**:
+this deployment installs none of them. Re-verify on an instance that has them.

@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { describeValidationError } from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
 import { ExerciseDetailPanel } from "@/components/exercises/exercise-detail";
@@ -20,9 +21,10 @@ import { Badge } from "@/components/status/badge";
  * the page -- `@no-tests`, `@no-runtimes` and the rest are each a specific missing piece, which
  * this app states in words rather than showing a red badge and leaving the reader to guess.
  *
- * Nothing here writes. Editing is T-008's, the tests are T-009's, the limits T-010's, the
- * reference solutions T-011's and the assignments made from this exercise T-012's; none of those
- * screens exists yet, so this page names what it knows and links to none of them (DEC-066).
+ * Nothing here writes. Editing is T-008's and the tests and their configuration are T-009's, and
+ * both are linked from here now that those screens exist. The limits are T-010's, the reference
+ * solutions T-011's and the assignments made from this exercise T-012's; none of those exists yet,
+ * so this page names what it knows of them and links to none (DEC-066).
  */
 export default async function ExercisePage({
   params,
@@ -59,6 +61,14 @@ export default async function ExercisePage({
               {t("edit")}
             </Link>
           )}
+          {exercise.can.viewConfig === true && (
+            <Link
+              href={`/exercises/${exerciseId}/edit-config`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("configure")}
+            </Link>
+          )}
           <Link
             href="/exercises"
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -80,7 +90,7 @@ export default async function ExercisePage({
             <p className="mt-1 text-muted-foreground">{t("broken.explain")}</p>
             <ul className="mt-2 list-disc pl-5">
               {exercise.validationErrors.map((error) => (
-                <li key={error}>{describe(error, t)}</li>
+                <li key={error}>{describeValidationError(error, t)}</li>
               ))}
             </ul>
           </section>
@@ -158,27 +168,4 @@ export default async function ExercisePage({
       </div>
     </PageShell>
   );
-}
-
-/**
- * core-api's validation failures arrive as `@key some English sentence`. The keys are a closed set
- * the legacy app translates one by one; this does the same, and falls back to core-api's own words
- * for a key nobody has a sentence for yet -- which is better than dropping a reason.
- */
-function describe(error: string, t: (key: string) => string): string {
-  const match = /^@([\w-]+)\s*(.*)$/s.exec(error);
-  if (!match) return error;
-  const [, key, rest] = match;
-  const known = [
-    "no-texts",
-    "no-tests",
-    "score",
-    "no-runtimes",
-    "runtimes",
-    "no-configs",
-    "no-hwgroups",
-    "config",
-    "limits",
-  ];
-  return known.includes(key!) ? t(`validation.${key}`) : (rest ?? error);
 }

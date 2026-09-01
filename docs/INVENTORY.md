@@ -33,7 +33,7 @@
 | `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | done   |
 | `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | todo   |
 | `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
-| `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | todo   |
+| `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | done   |
 | `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`          | todo   |
 | `app/exercises/:exerciseId/reference-solution/:referenceSolutionId`        | ReferenceSolution          | true  | REFERENCE_SOLUTION_URI_FACTORY              | `/reference-solutions/[id]`            | todo   |
 | `app/pipelines`                                                            | Pipelines                  | true  | PIPELINES_URI                               | `/pipelines`                           | todo   |
@@ -78,13 +78,13 @@
 | `emailVerification`            | Email verification flow                                    | `/email-verification`                          | done   |
 | `evaluationProgress`           | Live evaluation progress (WebSocket/polling)               | `solutions/[id]` live updates                  | todo   |
 | `exerciseAuthors`              | Exercise author management                                 | `exercises/[id]`                               | todo   |
-| `exerciseConfigs`              | Exercise configuration (pipelines, variables)              | `exercises/[id]/edit-config`                   | todo   |
-| `exerciseEnvironmentConfigs`   | Per-environment config                                     | `exercises/[id]/edit-config`                   | todo   |
+| `exerciseConfigs`              | Exercise configuration (pipelines, variables)              | `exercises/[id]/edit-config`                   | done   |
+| `exerciseEnvironmentConfigs`   | Per-environment config                                     | `exercises/[id]/edit-config`                   | done   |
 | `exerciseFiles`                | Exercise supplementary files                               | `exercises/[id]`                               | todo   |
 | `exerciseFilesLinks`           | File links                                                 | `exercises/[id]`                               | todo   |
-| `exercisePipelinesVariables`   | Pipeline variables                                         | `exercises/[id]/edit-config`                   | todo   |
-| `exerciseScoreConfig`          | Score configuration                                        | `exercises/[id]`                               | todo   |
-| `exerciseTests`                | Exercise tests                                             | `exercises/[id]`                               | todo   |
+| `exercisePipelinesVariables`   | Pipeline variables (advanced config only — T-024)          | `exercises/[id]/edit-config`                   | todo   |
+| `exerciseScoreConfig`          | Score configuration                                        | `exercises/[id]/edit-config`                   | done   |
+| `exerciseTests`                | Exercise tests                                             | `exercises/[id]/edit-config`                   | done   |
 | `exercises`                    | Exercise catalog, detail, edit                             | `exercises`                                    | done   |
 | `files`                        | Uploaded files                                             | `upload` component                             | todo   |
 | `filesContent`                 | File content preview                                       | `solutions/[id]`                               | todo   |
@@ -162,7 +162,7 @@
 | Points exports                                     | `groupResults` module                                      | CSV via a Route Handler (T-007)           | done   |
 | Attempt limits                                     | `limits` module                                            | Per-assignment config                     | todo   |
 | Per-environment assignment settings                | `exerciseEnvironmentConfigs`                               | `assignments/[id]/edit`                   | todo   |
-| Success-exit-code config                           | `exerciseScoreConfig`                                      | `exercises/[id]/edit`                     | todo   |
+| Success-exit-code config                           | `exerciseConfigs`                                          | `exercises/[id]/edit-config` (T-009)      | done   |
 | Judge log display                                  | `submissionEvaluations`                                    | `solutions/[id]`                          | todo   |
 | Deprecated SIS integration                         | Separate repo                                              | Document or drop                          | todo   |
 
