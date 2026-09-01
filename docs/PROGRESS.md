@@ -2205,29 +2205,115 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     rule (the two new passwords must match) instead, which is the part this app owns.
   - _Observations:_ **125 e2e tests pass** (122 before), 55 unit tests.
 
+- **[2026-09-01 08:05] S-023:** The page an invitation link leads to.
+  `app/[locale]/(app)/accept-group-invitation/[invitationId]/page.tsx`,
+  `components/groups/invitation-accept.tsx`, `lib/api/group-invitation.ts`,
+  `lib/actions/group-invitation.ts`.
+  - **_The button follows core-api's hint, not the reader's role (DEC-083)._** The legacy page
+    refuses anyone who is not a student outright -- "the invitation links are available only to
+    students, supervisors may not use them" -- and core-api simply does not agree: verified live, a
+    supervisor, a supervisor-student **and** a superadmin all read `acceptInvitation: true` on the
+    same invitation, because every role inherits the `student` rule. Constraint 4 decides which of
+    the two answers this app uses. So the button is offered on the hint, and the page says what
+    accepting does instead: _enrols you as a student of this group_.
+  - _One request answers the whole screen._ `GET /v1/group-invitations/{id}` returns the invitation
+    **plus the ancestral closure of its group** -- core-api's own reason is "so a name can be
+    constructed", and "Lab A" alone does not tell a student which course they are joining. The
+    group's administrators are named through the same batched `POST /v1/users/list` the roster
+    screens use, and whether the reader is already a member comes from `getMyGroups()`, which the
+    app shell has already fetched for its sidebar on that very render.
+  - _Every reason the button can be missing is a sentence, not a greyed-out control._ Expired,
+    organizational, archived, already a member -- four states, four different things to say.
+    Expiry and `organizational` are mirrored from core-api's `checkAccept` because the hint does
+    not carry them; **`archived` deliberately is not**, since `group.isNotArchived` is already a
+    condition on that hint's own rule and a second copy here would be free to drift.
+  - _Seeded, since no group had a single invitation and every branch was unreachable._ Five links:
+    open, expired, on a group already joined, on an organizational group, on an archived one. An
+    archived group still accepts new invitations -- only accepting them is refused -- which is what
+    makes that last fixture possible at all.
+  - _Verified live as the seeded student:_ all five states in both locales, a dead invitation id
+    reading as the not-found page, and the accept itself end to end -- the toast, the redirect to
+    the group's assignments, the sidebar gaining the group, and the same URL then rendering "you
+    already study here". Alice was removed from the group again afterwards.
+  - **_What the e2e spec deliberately does not do: accept._** It would leave the account enrolled
+    with no way to put it back, because **leaving a group is a legacy capability this app has not
+    built** -- found here, now **backlog S-026** (joining a public group is the other half of the
+    same gap). The other five states are asserted. The invitation ids come from core-api through a
+    new `e2e/helpers/core-api.ts`, the only fixture in the suite not found by clicking: an
+    invitation link genuinely arrives out of band, and until T-018 there is not even a list for the
+    person who minted it. **T-018 is unblocked** and owes that helper its retirement.
+  - _Also:_ `localizedDescription` was a private copy inside `group-detail.ts`; it now sits beside
+    `localizedName` in `lib/i18n-text/localized.ts`, where the second caller found it.
+
+- **[2026-09-01 08:25] S-024:** The invitation that arrives by email, and the account it creates.
+  `app/[locale]/(anon)/accept-invitation/page.tsx`, `components/users/accept-invitation-form.tsx`,
+  `app/api/auth/accept-invitation/route.ts`, `lib/auth/invitation-token.ts`.
+  - _The only screen in the product that creates an account, and the only one reached with no
+    session at all._ Everything it shows comes out of the token itself -- there is nobody to ask yet.
+  - _The token is the whole query string._ core-api builds the link from
+    `invitationUrl: "%webapp.address%/accept-invitation?{token}"`, so what arrives is
+    `?eyJhbGciOi...` with no key at all. `?token=` is read too, for a deployment that overrides
+    that template, rather than assumed away.
+  - **_Decoded on the server; the raw token goes back to the form untouched (DEC-084)._** The
+    legacy page parses the JWT in the browser and picks its four-part `usr` array apart there. The
+    raw token still reaches the client -- it is already in the address bar, and the form has to
+    send it back -- but the parser and the payload do not.
+  - **_Nothing here verifies the signature, because nothing here can (DEC-085, Q-018)._** core-api
+    signs with a key this app deliberately does not hold, and there is no endpoint that will
+    validate an invitation token on its behalf (checked against the whole spec). Nothing is granted
+    on what the page displays: a forged link renders a name its own author chose and is then
+    refused at submit. The residual -- a legitimate-looking page on the real domain -- is the same
+    one the legacy frontend has, and it is written up rather than papered over.
+  - **_Accepting mints a session, so it is a Route Handler (DEC-086)._** core-api answers `201`
+    with `{user, accessToken}` -- "so the user can log-in right away", in its own comment -- which
+    makes this a registration and a login in one call. It joins login, the CAS callback and
+    takeover in `app/api/auth/`, so `establishSession()` has exactly one class of caller. The cost
+    is a hand-rolled form rather than D-004's kit, whose contract is a Server Action.
+  - _Verified live against a **real** invitation token_, minted locally with the instance's own
+    signing key because this deployment has no working SMTP and no `mail.debugMode` archive to read
+    one from (Q-007): the account was created, verified (core-api marks an invited email verified on
+    sight), enrolled in the group the token named, signed in, and landed on the dashboard. The
+    account was deleted afterwards. The expired, unreadable and mismatched-password states were
+    checked in both locales.
+  - _The spec builds its own tokens with a signature that is not real_, which the page's contract
+    allows and which is itself the assertion that it does not verify. It covers the three display
+    states and the local password check; the submit cannot be tested without core-api's key, and
+    that is the one step verified by hand.
+  - _One real bug found by writing the spec:_ **every `(anon)` page was missing its `<main>`
+    landmark.** `(app)` has always had one in the app shell; login, register, password reset, the
+    FAQ and this page had none. Fixed in `(anon)/layout.tsx`.
+  - _Observations:_ **136 e2e tests pass** (125 before these two tickets), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
-  detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021) and
-  account settings (S-022), plus F-030 (a core-api refusal renders as one). Foundation and Design
-  System complete.
-- **Next ticket:** S-023/S-024 (the two invitation-acceptance pages, which T-018 wants before it
-  can mint links that lead anywhere), then S-025 (the dashboard's shadow-assignment rows, unblocked
-  now that a fixture exists). The group screens are finished, and Q-014 is closed. The teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the
-  assignment screen a link, recorded on their backlog rows. F-031 is new and small: an expired
-  session still reads as an error page.
+  detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021),
+  account settings (S-022) and both invitation-acceptance pages (S-023, S-024), plus F-030 (a
+  core-api refusal renders as one). Foundation and Design System complete.
+- **Next ticket:** S-025 (the dashboard's shadow-assignment rows, unblocked since S-020 seeded a
+  fixture), then F-031 (an expired session still reads as an error page). **T-018 is unblocked** now
+  that invitation links lead somewhere, and it owes `e2e/helpers/core-api.ts` its retirement. The
+  teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the assignment
+  screen a link, recorded on their backlog rows.
+- **New ticket from this session:** **S-026** -- joining a public group and leaving a group are both
+  legacy capabilities nothing here has built. Accepting an invitation is a one-way door in this app
+  today, which is why `e2e/group-invitations.spec.ts` asserts every state except the accept.
 - **Blocked tickets:** None
-- **Operator inputs pending:** Q-011 through Q-017 (Q-014 closed by S-022) — all proceeding without operator input,
-  reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will test
-  end-to-end later, proceed on `mail.debugMode` assumption per ASS-008). Q-016 stands: a refused
-  page answers HTTP 200, which no ticket is blocked on but every permission-gated screen inherits —
-  F-030 fixed the half of it that the reader can see (which page renders), not the status line.
-  Q-017 is new and is genuinely an operator's: an exam's IP lock records this app's address rather
-  than the student's, as the legacy frontend already does in this deployment, and closing that gap
-  is a core-api proxy-trust decision rather than code.
+- **Operator inputs pending:** Q-011 through Q-018 (Q-014 closed by S-022) — all proceeding without
+  operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
+  test end-to-end later, proceed on `mail.debugMode` assumption per ASS-008; S-024 hit this again
+  and worked around it by minting a token with the instance's own key rather than reading one out of
+  an email). Q-016 stands: a refused page answers HTTP 200, which no ticket is blocked on but every
+  permission-gated screen inherits — F-030 fixed the half of it that the reader can see (which page
+  renders), not the status line. Q-017 is an operator's: an exam's IP lock records this app's
+  address rather than the student's. **Q-018 is new and is genuinely an operator's too:** this app
+  cannot tell a real invitation token from a forged one before submitting it, because core-api
+  exposes no way to ask — the same gap the legacy frontend has, and one validation endpoint would
+  close it.
+
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
   solution screen's test table, compilation output and limit badges have **never been rendered with

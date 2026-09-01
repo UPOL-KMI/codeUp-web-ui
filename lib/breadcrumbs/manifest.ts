@@ -1,6 +1,7 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
 
+import { getGroupInvitation } from "@/lib/api/group-invitation";
 import { apiRead } from "@/lib/api/read";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
@@ -63,6 +64,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "ForgotPasswordChange", pattern: "/forgot-password/change" },
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
+  { namespace: "GroupInvitation", pattern: "/accept-group-invitation", unlinked: true },
   { namespace: "Faq", pattern: "/faq" },
   { namespace: "Account", pattern: "/profile/edit" },
   { namespace: "Assignment", pattern: "/assignments", unlinked: true },
@@ -130,6 +132,19 @@ const MANIFEST: ManifestEntry[] = [
         getTranslations({ locale, namespace: "Solutions" }),
       ]);
       return t("crumb", { attempt: solution.attemptIndex ?? 1 });
+    },
+  },
+  {
+    // The group is what the reader is being invited to, so it is the crumb -- not the invitation's
+    // own uuid, which names nothing. `getGroupInvitation` is memoized, so this shares the page's
+    // own fetch rather than adding one.
+    pattern: "/accept-group-invitation/:invitationId",
+    resolve: async (params, locale) => {
+      const [invitation, t] = await Promise.all([
+        getGroupInvitation(params.invitationId!, locale),
+        getTranslations({ locale, namespace: "GroupInvitation" }),
+      ]);
+      return invitation.group.name || t("unnamedGroup");
     },
   },
   {

@@ -44,7 +44,52 @@
     "title": "Ověření e-mailu"
   },
   "AcceptInvitation": {
-    "title": "Přijmout pozvání"
+    "title": "Přijetí pozvánky",
+    "welcome": "Byli jste pozváni do ReCodExu. Vaše údaje jsou z pozvánky už vyplněné a nelze je zde měnit — zbývá jen zvolit heslo k novému účtu.",
+    "details": "Pozvánka",
+    "invitedPerson": "Pozvaná osoba",
+    "email": "E-mail, který je zároveň přihlašovacím jménem",
+    "issuedAt": "Odesláno",
+    "expiresAt": "Platnost do",
+    "groupCount": "Přijetím se zároveň zapíšete do {count, plural, one {# skupiny} few {# skupin} other {# skupin}}.",
+    "choosePassword": "Zvolte heslo",
+    "passwordHint": "Jakmile bude účet vytvořen, budete rovnou přihlášeni.",
+    "password": "Heslo",
+    "passwordConfirm": "Heslo znovu",
+    "submit": "Vytvořit účet a přihlásit se",
+    "submitting": "Vytváříme účet…",
+    "expired": "Platnost této pozvánky vypršela. Požádejte o novou toho, kdo vás pozval.",
+    "unreadableToken": "Tento odkaz na pozvánku nelze přečíst. Nejspíš se cestou poškodil — zkuste ho otevřít znovu z původního e-mailu, nebo si vyžádejte nový.",
+    "errors": {
+      "mismatch": "Zadaná hesla se neshodují.",
+      "failed": "Účet se nepodařilo vytvořit. Platnost pozvánky mohla vypršet, nebo už byla použita."
+    }
+  },
+  "GroupInvitation": {
+    "title": "Pozvánka do skupiny",
+    "unnamedGroup": "Nepojmenovaná skupina",
+    "noDescription": "Tato skupina nemá popis.",
+    "terms": "Pozvánka",
+    "admins": "Správci skupiny",
+    "noAdmins": "Nikdo není uveden",
+    "note": "Poznámka ke skupině",
+    "expireAt": "Platnost do",
+    "neverExpires": "Nikdy",
+    "createdAt": "Vytvořeno",
+    "joining": "Vstup do skupiny",
+    "enrolsYouAsStudent": "Přijetím se zapíšete do této skupiny jako student.",
+    "accept": "Přijmout pozvánku a vstoupit do skupiny",
+    "joined": "Do skupiny jste vstoupili.",
+    "alreadyMember": "V této skupině už studujete, takže není co přijímat.",
+    "goToAssignments": "Přejít na zadání",
+    "goToGroup": "Přejít do skupiny",
+    "expired": "Platnost tohoto odkazu vypršela. Požádejte o nový toho, kdo vám ho poslal.",
+    "organizational": "Tato skupina je organizační — sdružuje další skupiny, nikoli studenty, takže do ní nelze nikoho zapsat.",
+    "archived": "Tato skupina je archivovaná a archivované skupiny nepřijímají nové studenty.",
+    "notAllowed": "Do této skupiny se tímto odkazem přihlásit nelze. Může patřit do jiné instance ReCodExu, nebo jste uzamčeni ve zkoušce jinde.",
+    "errors": {
+      "acceptFailed": "Vstup do skupiny se nezdařil. Zkontrolujte odkaz na pozvánku a zkuste to znovu."
+    }
   },
   "Faq": {
     "title": "FAQ"

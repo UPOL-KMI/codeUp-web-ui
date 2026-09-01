@@ -19,3 +19,16 @@ export function localizedName(texts: LocalizedText[] | undefined, locale: string
   const match = texts.find((text) => text.locale === locale) ?? texts[0]!;
   return match.name ?? "";
 }
+
+/**
+ * The description half of the same array. Kept separate from `localizedName` because the two fall
+ * back differently: a group named only in Czech still has a name to show an English reader, but a
+ * group whose Czech text carries a description and whose English one does not should show the
+ * Czech description rather than nothing -- so the fallback here is "the first entry that actually
+ * has one", not "the first entry".
+ */
+export function localizedDescription(texts: LocalizedText[] | undefined, locale: string): string {
+  if (!texts?.length) return "";
+  const match = texts.find((text) => text.locale === locale && text.description);
+  return (match ?? texts.find((text) => text.description))?.description ?? "";
+}

@@ -44,7 +44,52 @@
     "title": "Email verification"
   },
   "AcceptInvitation": {
-    "title": "Accept invitation"
+    "title": "Accept invitation",
+    "welcome": "You have been invited to ReCodEx. Your details are already filled in from the invitation and cannot be changed here — all that is left is to choose a password for your new account.",
+    "details": "The invitation",
+    "invitedPerson": "Invited person",
+    "email": "Email, which is also your login name",
+    "issuedAt": "Sent",
+    "expiresAt": "Valid until",
+    "groupCount": "Accepting also enrols you in {count, plural, one {# group} other {# groups}}.",
+    "choosePassword": "Choose a password",
+    "passwordHint": "You will be signed in as soon as the account is created.",
+    "password": "Password",
+    "passwordConfirm": "Password again",
+    "submit": "Create the account and sign in",
+    "submitting": "Creating the account…",
+    "expired": "This invitation has expired. Ask whoever invited you to send a new one.",
+    "unreadableToken": "This invitation link cannot be read. It was probably damaged in transit — try opening it again from the original email, or ask for a new one.",
+    "errors": {
+      "mismatch": "The two passwords do not match.",
+      "failed": "The account could not be created. The invitation may have expired or already been used."
+    }
+  },
+  "GroupInvitation": {
+    "title": "Group invitation",
+    "unnamedGroup": "Unnamed group",
+    "noDescription": "This group has no description.",
+    "terms": "The invitation",
+    "admins": "Group administrators",
+    "noAdmins": "None listed",
+    "note": "Note from the group",
+    "expireAt": "Expires",
+    "neverExpires": "Never",
+    "createdAt": "Created",
+    "joining": "Joining",
+    "enrolsYouAsStudent": "Accepting enrols you as a student of this group.",
+    "accept": "Accept and join the group",
+    "joined": "You have joined the group.",
+    "alreadyMember": "You already study in this group, so there is nothing left to accept.",
+    "goToAssignments": "Go to the assignments",
+    "goToGroup": "Go to the group",
+    "expired": "This invitation link has expired. Ask whoever sent it to you for a new one.",
+    "organizational": "This group is organizational — it holds other groups rather than students, so nobody can be enrolled in it.",
+    "archived": "This group has been archived, and archived groups take no new students.",
+    "notAllowed": "You cannot join this group with this link. It may belong to a different ReCodEx instance, or you may be locked into an exam elsewhere.",
+    "errors": {
+      "acceptFailed": "Joining the group did not work. Check the invitation link and try again."
+    }
   },
   "Faq": {
     "title": "FAQ"

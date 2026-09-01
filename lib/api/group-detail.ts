@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
+import { localizedDescription, localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { parseExamLockType, type ExamLockType } from "@/lib/status/exam";
 
 import { apiGet, apiPost } from "./client";
@@ -113,12 +113,6 @@ interface GroupPayload {
     exams?: { id: number; begin: number; end: number; type?: string | null }[];
   };
   permissionHints?: Record<string, boolean>;
-}
-
-function localizedDescription(texts: LocalizedText[] | undefined, locale: string): string {
-  if (!texts?.length) return "";
-  const match = texts.find((text) => text.locale === locale && text.description);
-  return (match ?? texts.find((text) => text.description))?.description ?? "";
 }
 
 // Raw on purpose: an ancestor is fetched through here too, and that call tolerates its own

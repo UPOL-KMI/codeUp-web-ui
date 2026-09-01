@@ -206,3 +206,30 @@ sets on behalf of a browser is only as trustworthy as this app's own view of the
 lock is taken by the browser directly against core-api, which needs a token in client JavaScript
 and is exactly what brief §5 forbids. Both are operator decisions about the deployment, not code
 this repo can write on its own.
+
+## Q-018: This app cannot tell a real invitation from a forged one until it is submitted (S-024)
+
+`/accept-invitation` renders the invited person's name, their email and the invitation's dates
+straight out of the JWT in the URL. It does not verify the signature, and **it has no way to**:
+core-api signs the token with `accessManager.verificationKey`, which this app deliberately does not
+hold (DEC-085), and there is no endpoint that will validate an invitation token on its behalf --
+checked against the whole of `openapi/core-api.yaml`, not assumed.
+
+**What this does not cost.** Nothing is granted on the strength of what the page displays. The
+account is created by `POST /v1/users/accept-invitation`, which decodes the token with the key it
+was signed with and rejects anything else (`InvalidAccessTokenException` → `400-000`). A forged
+link ends in "The account could not be created", and no password reaches anyone but core-api.
+
+**What it does cost.** Anyone can craft a link on this deployment's own domain that shows an
+arbitrary name and email above a password field. The strings are rendered as text, so there is no
+injection -- the exposure is that the page looks legitimate because it _is_ the legitimate page.
+That is the same exposure the legacy frontend has (it decodes in the browser and checks only
+`exp`), so this is not a regression; it is a gap both frontends inherit from there being nothing to
+ask.
+
+**What would close it.** A core-api endpoint that answers "is this invitation token valid and
+unused" without creating anything -- the same shape as `users/validate-registration-data`. That is
+an API change, which this repo may not make (constraint 1), so it is recorded here for the
+operator. Until then the page's own copy is deliberately plain about what it is asking for, and the
+`iat`/`exp` pair is shown so a recipient can at least see whether the dates match the mail they
+received.

@@ -15,8 +15,8 @@
 | `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                               | todo   |
 | `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                            | todo   |
 | `forgotten-password`                                                       | ResetPassword              | —     | RESET_PASSWORD_URI                          | `/forgot-password`                     | todo   |
-| `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | todo   |
-| `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`        | todo   |
+| `accept-invitation`                                                        | AcceptInvitation           | —     | ACCEPT_INVITATION_URI                       | `/accept-invitation`                   | done   |
+| `accept-group-invitation/:invitationId`                                    | AcceptGroupInvitation      | true  | ACCEPT_GROUP_INVITATION_URI_FACTORY         | `/accept-group-invitation/[id]`        | done   |
 | `app`                                                                      | Dashboard                  | true  | DASHBOARD_URI                               | `/dashboard`                           | done   |
 | `app/assignment/:assignmentId`                                             | Assignment                 | true  | ASSIGNMENT_DETAIL_URI_FACTORY               | `/assignments/[id]`                    | done   |
 | `app/assignment/:assignmentId/user/:userId`                                | Assignment                 | true  | ASSIGNMENT_DETAIL_SPECIFIC_USER_URI_FACTORY | `/assignments/[id]/users/[userId]`     | done   |
@@ -157,7 +157,7 @@
 | Third-party extensions                             | `SIS-ext-webapp` repo mentioned                            | Investigate token handoff                 | todo   |
 | QR code of current page                            | Header component                                           | Reproduce                                 | todo   |
 | Archived/organisational groups                     | `groups` module                                            | Filter in UI                              | todo   |
-| Group invitations                                  | `AcceptGroupInvitation` page                               | Reproduce flow                            | todo   |
+| Group invitations                                  | `AcceptGroupInvitation` page                               | Accepting done (S-023); minting is T-018  | todo   |
 | Nested subgroups                                   | `groups` module                                            | Tree navigation                           | todo   |
 | Points exports                                     | `groupResults` module                                      | CSV/Excel export                          | todo   |
 | Attempt limits                                     | `limits` module                                            | Per-assignment config                     | todo   |

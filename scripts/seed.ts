@@ -966,8 +966,38 @@ async function ensureShadowAssignment(
   return true;
 }
 
+/**
+ * The four invitation links S-023's page can be reached by, one per state it renders. No group had
+ * any, so every branch of that screen was unreachable.
+ *
+ * Matched by their note rather than by id, the same way `findSolutionByNote` does it: core-api
+ * gives an invitation no name, and re-running the seed must not mint a fifth link every time.
+ * `expireAt` in the past is a legitimate value core-api accepts on create -- it validates the
+ * timestamp, not its direction -- which is the only way to seed an expired link without waiting.
+ */
+async function ensureGroupInvitation(
+  adminToken: string,
+  group: GroupRecord,
+  note: string,
+  expireAtSeconds: number | null,
+): Promise<boolean> {
+  const existing = await api<{ id: string; note: string | null }[]>(
+    "GET",
+    `/groups/${group.id}/invitations`,
+    { token: adminToken },
+  );
+  if (existing.some((invitation) => invitation.note === note)) return false;
+
+  await api("POST", `/groups/${group.id}/invitations`, {
+    token: adminToken,
+    body: { expireAt: expireAtSeconds, note },
+  });
+  return true;
+}
+
 async function main() {
   log(`seeding against ${API_BASE}`);
+  const nowSeconds = Math.floor(Date.now() / 1000);
 
   const admin = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
   const instances = await api<{ id: string }[]>("GET", "/instances", { token: admin.token });
@@ -1198,6 +1228,27 @@ async function main() {
     (await ensureShadowAssignment(admin.token, g1, student1))
       ? "created a shadow assignment with awarded points"
       : "a shadow assignment with points already existed",
+  );
+
+  // One invitation link per state S-023's page renders (S-023). G3 is the group Alice can still
+  // join; G1 is one she already studies in; G4 is organizational and G2 archived, neither of which
+  // core-api will enrol anyone into. An archived group still accepts new *invitations* -- only
+  // accepting them is refused -- which is what makes that last fixture possible at all.
+  const invitations: [GroupRecord, string, number | null][] = [
+    [g3, `${SEED_PREFIX} open invitation`, nowSeconds + 30 * 24 * 3600],
+    [g3, `${SEED_PREFIX} expired invitation`, nowSeconds - 24 * 3600],
+    [g1, `${SEED_PREFIX} invitation to a group already joined`, null],
+    [g4, `${SEED_PREFIX} invitation to an organizational group`, nowSeconds + 30 * 24 * 3600],
+    [g2, `${SEED_PREFIX} invitation to an archived group`, nowSeconds + 30 * 24 * 3600],
+  ];
+  let mintedInvitations = 0;
+  for (const [group, note, expireAt] of invitations) {
+    if (await ensureGroupInvitation(admin.token, group, note, expireAt)) mintedInvitations++;
+  }
+  log(
+    mintedInvitations > 0
+      ? `created ${mintedInvitations} group invitation links`
+      : "the group invitation links already existed",
   );
 
   // A held exam, with the one lock record that makes it exist at all (S-008).
