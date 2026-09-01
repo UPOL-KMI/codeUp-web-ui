@@ -951,6 +951,7 @@
     "title": "Assignments",
     "backToGroup": "Group assignments",
     "allSolutions": "All submissions",
+    "editAssignment": "Edit assignment",
     "badges": {
       "bonus": "Bonus",
       "exam": "Exam",
@@ -1027,7 +1028,11 @@
         "hardwareGroups": "Hardware groups",
         "limits": "Limits",
         "mergeJudgeLogs": "Judge log merge flag"
-      }
+      },
+      "sync": "Bring it up to date",
+      "syncing": "Synchronising…",
+      "synced": "The assignment now matches the exercise.",
+      "syncFailed": "The assignment could not be re-synchronised."
     },
     "solvers": {
       "heading": "The group's progress",
@@ -1064,6 +1069,70 @@
         "title": "Nothing submitted yet",
         "description": "{name} has not submitted a solution to this assignment."
       }
+    }
+  },
+  "AssignmentEdit": {
+    "title": "Assignment settings",
+    "backToAssignment": "Back to the assignment",
+    "save": "Save the settings",
+    "saving": "Saving…",
+    "saved": "The assignment was updated.",
+    "visibility": {
+      "title": "Visibility",
+      "isPublic": "Students can see this assignment",
+      "isPublicHint": "While this is off, the assignment exists but nobody in the group can open it.",
+      "visibleFrom": "Visible from",
+      "visibleFromHint": "Leave empty to make it visible as soon as it is public.",
+      "isBonus": "Bonus assignment",
+      "isBonusHint": "Points from a bonus assignment are not counted towards the group's maximum.",
+      "isExam": "For an exam",
+      "isExamHint": "Meant to be solved in exam mode, in a group locked for the exam.",
+      "sendNotification": "Email the group that it is available",
+      "sendNotificationHint": "Offered only because this save is what makes the assignment public."
+    },
+    "deadlines": {
+      "title": "Deadlines and points",
+      "first": "First deadline",
+      "maxPointsFirst": "Points available before it",
+      "allowSecond": "Allow a second deadline",
+      "allowSecondHint": "Submissions after the first deadline are still accepted, usually for fewer points.",
+      "second": "Second deadline",
+      "maxPointsSecond": "Points available before the second one",
+      "interpolate": "Slide the maximum between the two deadlines",
+      "interpolateHint": "Instead of dropping at the first deadline, the maximum falls gradually until the second."
+    },
+    "limits": {
+      "title": "What a student may submit",
+      "attempts": "Attempts allowed",
+      "attemptsHint": "How many times one student may submit.",
+      "threshold": "Points threshold (%)",
+      "thresholdHint": "How much of the test suite must pass before any points are awarded. Zero means no threshold.",
+      "files": "Files per solution",
+      "size": "Total size per solution (bytes)",
+      "unlimitedHint": "Leave empty for no limit.",
+      "environments": "Runtime environments",
+      "environmentsHint": "Unchecking one stops students submitting in it. The exercise decides which exist."
+    },
+    "disclosure": {
+      "title": "What a student sees of the evaluation",
+      "explain": "Each of these is shown to the solution's own author. Whoever can see the whole group's work sees them regardless.",
+      "limitRatios": "How close their solution came to the time and memory limits",
+      "measuredValues": "The measured time and memory, in absolute numbers",
+      "judgeStdout": "The judge's primary log",
+      "judgeStderr": "The judge's secondary log"
+    },
+    "hints": {
+      "title": "Hint for students",
+      "explain": "Shown on the assignment, under its text. This belongs to the assignment, not to the exercise, so a re-sync will not overwrite it.",
+      "locale": {
+        "en": "English",
+        "cs": "Czech"
+      }
+    },
+    "errors": {
+      "invalid": "Check the highlighted fields and try again.",
+      "updateFailed": "The assignment could not be saved.",
+      "syncFailed": "The assignment could not be re-synchronised."
     }
   },
   "AssignmentSolutions": {

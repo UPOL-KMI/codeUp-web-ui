@@ -2,14 +2,17 @@ import { getTranslations } from "next-intl/server";
 
 import type { AssignmentDetail } from "@/lib/api/assignment";
 
+import { SyncWithExercise } from "./sync-with-exercise";
+
 /**
  * What a teacher needs to know about where this assignment came from (S-013).
  *
  * An assignment is a **snapshot** of an exercise, not a live view of one: editing the exercise
  * afterwards leaves every assignment made from it on the old copy, and core-api reports which
  * parts have drifted in `exerciseSynchronizationInfo`. Reading that is what turns "the tests I
- * fixed yesterday are not running" into a visible state. Performing the re-sync is an edit, and
- * belongs with the rest of them (T-002).
+ * fixed yesterday are not running" into a visible state. The button that acts on it arrived with
+ * the rest of the edits (T-002), and is offered only where core-api says a re-sync is possible --
+ * a drifted assignment whose exercise has since been deleted has nothing to sync *from*.
  *
  * The deleted-exercise case is the same field saying something else: `exerciseId` is null, no
  * further synchronisation is possible, and no new assignment can be made from it.
@@ -64,6 +67,7 @@ export async function ExerciseSyncNotice({ assignment }: { assignment: Assignmen
           <li key={part}>{isKnownPart(part) ? t(`parts.${part}`) : part}</li>
         ))}
       </ul>
+      {assignment.syncPossible && <SyncWithExercise assignmentId={assignment.id} />}
     </div>
   );
 }

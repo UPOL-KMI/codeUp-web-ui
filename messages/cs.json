@@ -951,6 +951,7 @@
     "title": "Zadání",
     "backToGroup": "Zadání skupiny",
     "allSolutions": "Všechna odevzdání",
+    "editAssignment": "Upravit zadání",
     "badges": {
       "bonus": "Bonus",
       "exam": "Zkouška",
@@ -1027,7 +1028,11 @@
         "hardwareGroups": "Hardwarové skupiny",
         "limits": "Limity",
         "mergeJudgeLogs": "Slučování logů posuzovače"
-      }
+      },
+      "sync": "Sesynchronizovat s cvičením",
+      "syncing": "Synchronizujeme…",
+      "synced": "Zadání teď odpovídá cvičení.",
+      "syncFailed": "Zadání se nepodařilo sesynchronizovat."
     },
     "solvers": {
       "heading": "Jak si vede skupina",
@@ -1064,6 +1069,70 @@
         "title": "Zatím nic neodevzdáno",
         "description": "{name} zatím k tomuto zadání neodevzdal(a) žádné řešení."
       }
+    }
+  },
+  "AssignmentEdit": {
+    "title": "Nastavení zadání",
+    "backToAssignment": "Zpět na zadání",
+    "save": "Uložit nastavení",
+    "saving": "Ukládáme…",
+    "saved": "Zadání bylo upraveno.",
+    "visibility": {
+      "title": "Viditelnost",
+      "isPublic": "Studenti toto zadání vidí",
+      "isPublicHint": "Dokud je vypnuto, zadání existuje, ale nikdo ve skupině ho neotevře.",
+      "visibleFrom": "Viditelné od",
+      "visibleFromHint": "Nechte prázdné, aby bylo vidět hned, jakmile je zveřejněno.",
+      "isBonus": "Bonusové zadání",
+      "isBonusHint": "Body z bonusového zadání se nepočítají do maxima skupiny.",
+      "isExam": "Ke zkoušce",
+      "isExamHint": "Určeno k řešení ve zkouškovém režimu, ve skupině uzamčené pro zkoušku.",
+      "sendNotification": "Poslat skupině e-mail, že je zadání k dispozici",
+      "sendNotificationHint": "Nabízí se jen proto, že tímto uložením se zadání zveřejňuje."
+    },
+    "deadlines": {
+      "title": "Termíny a body",
+      "first": "První termín",
+      "maxPointsFirst": "Body k dispozici před ním",
+      "allowSecond": "Povolit druhý termín",
+      "allowSecondHint": "Odevzdání po prvním termínu se dál přijímají, obvykle za méně bodů.",
+      "second": "Druhý termín",
+      "maxPointsSecond": "Body k dispozici před druhým termínem",
+      "interpolate": "Snižovat maximum plynule mezi termíny",
+      "interpolateHint": "Místo skoku na prvním termínu klesá maximum postupně až k druhému."
+    },
+    "limits": {
+      "title": "Co může student odevzdat",
+      "attempts": "Povolený počet pokusů",
+      "attemptsHint": "Kolikrát smí jeden student odevzdat.",
+      "threshold": "Bodová hranice (%)",
+      "thresholdHint": "Jaká část testů musí projít, než se přidělí jakékoli body. Nula znamená bez hranice.",
+      "files": "Souborů na řešení",
+      "size": "Celková velikost řešení (bajty)",
+      "unlimitedHint": "Nechte prázdné pro neomezeno.",
+      "environments": "Běhová prostředí",
+      "environmentsHint": "Odškrtnutím zakážete odevzdávání v daném prostředí. Která existují, určuje cvičení."
+    },
+    "disclosure": {
+      "title": "Co student vidí z vyhodnocení",
+      "explain": "Každou z těchto věcí uvidí autor daného řešení. Kdo vidí práci celé skupiny, vidí je tak jako tak.",
+      "limitRatios": "Jak blízko bylo řešení časovému a paměťovému limitu",
+      "measuredValues": "Naměřený čas a paměť v absolutních číslech",
+      "judgeStdout": "Primární log rozhodčího",
+      "judgeStderr": "Sekundární log rozhodčího"
+    },
+    "hints": {
+      "title": "Nápověda pro studenty",
+      "explain": "Zobrazuje se u zadání pod jeho textem. Patří zadání, ne cvičení, takže ji sesynchronizování nepřepíše.",
+      "locale": {
+        "en": "Anglicky",
+        "cs": "Česky"
+      }
+    },
+    "errors": {
+      "invalid": "Zkontrolujte zvýrazněná pole a zkuste to znovu.",
+      "updateFailed": "Zadání se nepodařilo uložit.",
+      "syncFailed": "Zadání se nepodařilo sesynchronizovat."
     }
   },
   "AssignmentSolutions": {

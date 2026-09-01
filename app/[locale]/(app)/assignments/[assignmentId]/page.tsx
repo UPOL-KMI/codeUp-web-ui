@@ -18,9 +18,8 @@ import { Badge } from "@/components/status/badge";
  * The two audiences share one page, as `docs/IA.md` §4.3 lays it out ("same as student, plus"),
  * and each addition is gated on core-api's own hint rather than on a role: `viewAssignmentSolutions`
  * for the class progress, `update` for the terms only its author needs. Of the **links** §4.3 also
- * lists, "all submissions" is here as of T-003, on the same hint the class progress uses; "edit
- * assignment" is still absent because T-002 has not built that screen, and a button to a 404 is
- * worse than no button.
+ * lists are both here now: "all submissions" (T-003) on the same hint the class progress uses, and
+ * "edit assignment" (T-002) on `update`.
  */
 export default async function AssignmentPage({
   params,
@@ -52,6 +51,14 @@ export default async function AssignmentPage({
           {assignment.isBonus && <Badge tone="info">{t("badges.bonus")}</Badge>}
           {assignment.isExam && <Badge tone="warning">{t("badges.exam")}</Badge>}
           {!assignment.isPublic && <Badge>{t("badges.hidden")}</Badge>}
+          {assignment.can.update && (
+            <Link
+              href={`/assignments/${assignmentId}/edit`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("editAssignment")}
+            </Link>
+          )}
           {assignment.can.viewAssignmentSolutions && (
             <Link
               href={`/assignments/${assignmentId}/solutions`}

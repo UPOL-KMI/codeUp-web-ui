@@ -2428,6 +2428,44 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     beside it already did.
   - _Observations:_ **150 e2e tests pass** (146 before), 55 unit tests.
 
+- **[2026-09-01 12:10] T-002:** Everything about an assignment its author decides.
+  `app/[locale]/(app)/assignments/[assignmentId]/edit/page.tsx`,
+  `components/assignments/assignment-form.tsx`, `components/assignments/sync-with-exercise.tsx`,
+  `lib/api/assignment-edit.ts`, `lib/actions/assignment.ts`.
+  - _Visibility, deadlines and points, submission limits, what a student sees of the evaluation, and
+    the per-locale hint._ Not the exercise: the text, the tests and the resource limits belong to
+    the exercise this was copied from, and changing those is T-008/T-010's screen.
+  - **_One form and one save, because core-api replaces the assignment with what it is sent
+    (DEC-092)._** There is no partial update, so every save carries every field it reads -- a field
+    omitted is a field reset. S-022's four-forms split would hide that rather than help, since each
+    would still POST the whole thing. `version` rides along as the optimistic lock, and its
+    `400-010` is surfaced verbatim rather than retried: the honest answer to "someone else saved
+    first" is to reload and look at what changed.
+  - **_A real gap the spec found: a student could open the settings form._** `apiRead`'s 403 does
+    not fire here, because _reading_ an assignment is something a student may legitimately do -- it
+    is their assignment -- and only the save would have been refused. The page now asks `update`
+    itself and calls `forbidden()`. Nothing was ever writable, but being handed a filled-in form for
+    something you may not change is its own defect.
+  - **_The re-sync button S-013's notice had only been reporting._** Everything at once, not a
+    selection of parts: core-api accepts a list, and offering one would ask a teacher to choose
+    between "score config" and "exercise config". Offered only where `isSynchronizationPossible` --
+    a drifted assignment whose exercise has since been deleted has nothing to sync _from_.
+  - _A second a11y wart fixed on the way._ The form's first draft put each field's hint **inside**
+    its `<label>`, which makes a screen reader announce "Attempts allowed How many times one student
+    may submit" as the field's name. Found because the spec could not match a label exactly. The
+    hint is now `aria-describedby`, the way `components/form/text-field.tsx` already did it.
+    `components/users/account-forms.tsx` still has the older shape; noted rather than swept in.
+  - _Verified live, both locales:_ a setting changed and put back through the form (the value
+    round-trips through core-api, so this is a real save, not a re-render), the second-deadline
+    fields appearing and disappearing with their toggle, a second deadline before the first refused
+    by the form without a round trip, and a student refused both the link and the URL.
+  - **_The re-sync is verified by hand, not by the spec._** Making an assignment drift means editing
+    the exercise it came from, and no screen in this app does that until T-008 -- so the spec has no
+    way to create the state. Done manually instead: the exercise's text was changed, the notice
+    named `localizedTexts` as stale, the button synced it, and the exercise and assignment were both
+    put back exactly as seeded.
+  - _Observations:_ **153 e2e tests pass** (150 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2438,12 +2476,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   account settings (S-022), both invitation-acceptance pages (S-023, S-024) and the dashboard's
   shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one) and F-031 (a dead
   session signs the reader out instead of looping), S-026 (joining and leaving a group) and T-018
-  (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has begun with T-003 (every attempt
-  at an assignment). Foundation and Design
-  System complete.
-- **Next ticket:** T-002 (edit an assignment), which also owns the re-sync action S-013's notice
-  only reports, and then T-001 (create one from an exercise). T-004's stats and T-006's points
-  matrix both read data these screens already fetch.
+  (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has
+  begun with T-003 (every attempt at an assignment) and T-002 (its settings, and the re-sync).
+  Foundation and Design System complete.
+- **Next ticket:** T-001 (create an assignment from an exercise), which shares this ticket's form and
+  most of its fields, then T-004's stats and T-006's points matrix -- both of which read data the
+  screens already fetch.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.
