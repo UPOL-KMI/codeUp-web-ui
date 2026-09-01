@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { formatBytes } from "@/lib/format/bytes";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload/limits";
 import { useFileUpload } from "@/lib/upload/use-file-upload";
 import type { UploadedFile } from "@/lib/upload/chunked-upload";
@@ -20,21 +21,6 @@ export interface FileUploadProps {
    * for the deployment ceiling, and in core-api for the assignment's own.
    */
   maxBytes?: number;
-}
-
-function formatBytes(bytes: number): string {
-  const units = ["B", "KiB", "MiB", "GiB"];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  // Deliberately locale-independent: this renders in a client component, but the same component
-  // can be server-rendered inside a form, and a locale-formatted number is exactly the hydration
-  // mismatch AGENTS.md §6.6 warns about. One decimal place, ASCII separator, identical everywhere.
-  const rounded = unit === 0 ? String(value) : value.toFixed(1).replace(/\.0$/, "");
-  return `${rounded} ${units[unit]}`;
 }
 
 /**

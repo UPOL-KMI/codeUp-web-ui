@@ -806,6 +806,69 @@
       "noMatch": "Danému filtru nic neodpovídá."
     }
   },
+  "Exercise": {
+    "title": "Úloha",
+    "untitled": "Nepojmenovaná úloha",
+    "backToCatalog": "Zpět do katalogu",
+    "text": "Co má student udělat",
+    "noText": "Tato úloha zatím nemá zadání v žádném jazyce.",
+    "otherLocales": "Napsáno také v: {locales}.",
+    "externalText": "Celé zadání je mimo ReCodEx",
+    "details": "Podrobnosti",
+    "files": "Přiložené soubory",
+    "filesExplain": "Soubory, které používá vyhodnocení — očekávané výstupy, testovací data, hlavičky. Studenti je nevidí.",
+    "noFiles": "Nejsou přiloženy žádné soubory.",
+    "author": "Autor",
+    "admins": "Správci",
+    "difficulty": "Obtížnost",
+    "difficulties": {
+      "easy": "Lehká",
+      "medium": "Střední",
+      "hard": "Těžká"
+    },
+    "environments": "Jazyky",
+    "noEnvironments": "Žádný nevybrán",
+    "tags": "Štítky",
+    "groups": "Skupiny",
+    "undisclosedGroups": "a {count, plural, one {# skupina} few {# skupiny} other {# skupin}}, které nevidíte",
+    "visibility": "Viditelnost",
+    "public": "Veřejná",
+    "private": "Neveřejná",
+    "assignments": "Zadáno",
+    "assignmentCount": "{count, plural, =0 {Nikde nezadáno} one {# zadání} few {# zadání} other {# zadání}}",
+    "solutionLimits": "Řešení smí mít",
+    "solutionLimitsValue": "{files, plural, one {# soubor} few {# soubory} other {# souborů}}, celkem {size}",
+    "created": "Vytvořeno",
+    "updated": "Změněno",
+    "version": "verze {version}",
+    "forkedFrom": "Odvozeno z",
+    "theOriginal": "Původní úloha",
+    "noReferenceSolution": "Zatím nebylo odevzdáno vzorové řešení, takže úlohu nelze zadat. Vzorové řešení je důkaz, že testy vůbec jdou projít.",
+    "flags": {
+      "archived": "Archivovaná",
+      "private": "Neveřejná",
+      "locked": "Zamčená",
+      "broken": "Rozbitá"
+    },
+    "archived": {
+      "explain": "Tato úloha je archivovaná. Zůstává čitelná i navázaná na zadání, která z ní už vznikla, ale nepřekáží při hledání něčeho, co jde zadat."
+    },
+    "broken": {
+      "title": "Tuto úlohu zatím nelze zadat",
+      "explain": "ReCodEx úlohu před zadáním kontroluje. Tyto části mu chybí:"
+    },
+    "validation": {
+      "no-texts": "Nemá zadání v žádném jazyce.",
+      "no-tests": "Nemá žádné testy.",
+      "score": "Není nastaven způsob výpočtu správnosti řešení.",
+      "no-runtimes": "Nebyl pro ni vybrán žádný jazyk.",
+      "runtimes": "Vybrané jazyky nemají konfiguraci.",
+      "no-configs": "Některé testy jsou nastaveny špatně, nebo vůbec.",
+      "no-hwgroups": "Nebyla pro ni vybrána hardwarová skupina.",
+      "config": "Některé testy mají neúplnou konfiguraci — typicky poté, co byl odebrán test nebo soubor.",
+      "limits": "Paměťové nebo časové limity nejsou správně nastavené."
+    }
+  },
   "Pipelines": {
     "title": "Pipeline"
   },

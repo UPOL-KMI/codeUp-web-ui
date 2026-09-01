@@ -29,7 +29,7 @@
 | `app/shadow-assignment/:shadowId`                                          | ShadowAssignment           | true  | SHADOW_ASSIGNMENT_DETAIL_URI_FACTORY        | `/shadow-assignments/[id]`             | done   |
 | `app/shadow-assignment/:shadowId/edit`                                     | EditShadowAssignment       | true  | SHADOW_ASSIGNMENT_EDIT_URI_FACTORY          | `/shadow-assignments/[id]/edit`        | todo   |
 | `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | done   |
-| `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | todo   |
+| `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | done   |
 | `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | todo   |
 | `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | todo   |
 | `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
@@ -65,61 +65,61 @@
 
 ## Redux Modules (Capabilities)
 
-| Module                         | Purpose                                       | New IA Destination                   | Status |
-| ------------------------------ | --------------------------------------------- | ------------------------------------ | ------ |
-| `app`                          | Global app state (locale, title)              | Server Components + `params.lang`    | todo   |
-| `assignments`                  | Assignment CRUD, detail, edit                 | `assignments/[id]`                   | todo   |
-| `asyncJobs`                    | Async job polling (evaluation progress)       | Server Actions + WebSocket/polling   | todo   |
-| `auth`                         | Login, logout, token refresh, takeover        | BFF + httpOnly cookies               | todo   |
-| `boxes`                        | Box component (UI primitive)                  | shadcn/ui Card                       | todo   |
-| `broker`                       | Broker communication (evaluation)             | Server Actions                       | todo   |
-| `canSubmit`                    | Permission: can user submit to assignment     | Server Component data fetching       | todo   |
-| `comments`                     | Threaded comments on solutions                | `SOLUTION_REVIEW` capability         | todo   |
-| `emailVerification`            | Email verification flow                       | `/email-verification`                | todo   |
-| `evaluationProgress`           | Live evaluation progress (WebSocket/polling)  | `solutions/[id]` live updates        | todo   |
-| `exerciseAuthors`              | Exercise author management                    | `exercises/[id]`                     | todo   |
-| `exerciseConfigs`              | Exercise configuration (pipelines, variables) | `exercises/[id]/edit-config`         | todo   |
-| `exerciseEnvironmentConfigs`   | Per-environment config                        | `exercises/[id]/edit-config`         | todo   |
-| `exerciseFiles`                | Exercise supplementary files                  | `exercises/[id]`                     | todo   |
-| `exerciseFilesLinks`           | File links                                    | `exercises/[id]`                     | todo   |
-| `exercisePipelinesVariables`   | Pipeline variables                            | `exercises/[id]/edit-config`         | todo   |
-| `exerciseScoreConfig`          | Score configuration                           | `exercises/[id]`                     | todo   |
-| `exerciseTests`                | Exercise tests                                | `exercises/[id]`                     | todo   |
-| `exercises`                    | Exercise catalog, detail, edit                | `exercises`                          | todo   |
-| `files`                        | Uploaded files                                | `upload` component                   | todo   |
-| `filesContent`                 | File content preview                          | `solutions/[id]`                     | todo   |
-| `groupExamLocks`               | Exam mode locks                               | `groups/[id]?tab=exams`              | done   |
-| `groupExercises`               | Group-specific exercises                      | `groups/[id]/assignments`            | todo   |
-| `groupInvitations`             | Group invitations                             | `accept-group-invitation`            | done   |
-| `groupResults`                 | Group results overview                        | `groups/[id]?tab=students`           | done   |
-| `groups`                       | Group CRUD, hierarchy, membership             | `groups`                             | todo   |
-| `hwGroups`                     | Hardware groups                               | `admin/server`                       | todo   |
-| `instances`                    | Instance management                           | `admin/instances`                    | todo   |
-| `licences`                     | Licence management                            | `admin`                              | todo   |
-| `limits`                       | Assignment/exercise limits                    | `assignments/[id]/edit`              | todo   |
-| `notifications`                | In-app notifications                          | Header + dashboard                   | todo   |
-| `pagination`                   | Pagination state                              | `searchParams` in Server Components  | todo   |
-| `pipelineFiles`                | Pipeline files                                | `pipelines/[id]`                     | todo   |
-| `pipelines`                    | Pipeline CRUD, structure                      | `pipelines`                          | todo   |
-| `plagiarisms`                  | Plagiarism detection                          | `solutions/[id]/plagiarisms`         | done   |
-| `referenceSolutionEvaluations` | Reference solution evaluations                | `reference-solutions/[id]`           | todo   |
-| `referenceSolutions`           | Reference solutions                           | `exercises/[id]/reference-solutions` | todo   |
-| `registration`                 | User registration                             | `/register`                          | todo   |
-| `runtimeEnvironments`          | Runtime environments                          | `admin/server`                       | todo   |
-| `shadowAssignments`            | Shadow assignments (bonus)                    | `shadow-assignments/[id]`            | done   |
-| `solutionFiles`                | Solution source files                         | `solutions/[id]/sources`             | todo   |
-| `solutionReviews`              | Review comments on solutions                  | `solutions/[id]`                     | todo   |
-| `solutions`                    | Solution CRUD, evaluation                     | `solutions/[id]`                     | todo   |
-| `stats`                        | Group/assignment statistics                   | `groups/[id]`                        | todo   |
-| `submission`                   | Active submission state                       | `assignments/[id]`                   | todo   |
-| `submissionEvaluations`        | Evaluation results                            | `solutions/[id]`                     | todo   |
-| `submissionFailures`           | Submission failure log                        | `submission-failures`                | done   |
-| `systemMessages`               | System messages                               | `system-messages`                    | todo   |
-| `upload`                       | File upload state                             | `lib/upload/use-file-upload.ts`      | done   |
-| `userCalendars`                | User deadlines calendar                       | `/profile/edit`                      | done   |
-| `userSwitching`                | User switching (superadmin)                   | `admin/users`                        | todo   |
-| `users`                        | User management                               | `users`, `admin/users`               | todo   |
-| `usersGroups`                  | User-group membership                         | `groups/[id]/students`               | todo   |
+| Module                         | Purpose                                                    | New IA Destination                             | Status |
+| ------------------------------ | ---------------------------------------------------------- | ---------------------------------------------- | ------ |
+| `app`                          | Global app state (locale, title)                           | Server Components + `params.lang`              | todo   |
+| `assignments`                  | Assignment CRUD, detail, edit                              | `assignments/[id]`                             | todo   |
+| `asyncJobs`                    | Async job polling (evaluation progress)                    | Server Actions + WebSocket/polling             | todo   |
+| `auth`                         | Login, logout, token refresh, takeover                     | BFF + httpOnly cookies                         | todo   |
+| `boxes`                        | Box component (UI primitive)                               | shadcn/ui Card                                 | todo   |
+| `broker`                       | Broker communication (evaluation)                          | Server Actions                                 | todo   |
+| `canSubmit`                    | Permission: can user submit to assignment                  | Server Component data fetching                 | todo   |
+| `comments`                     | Discussion threads on exercises, assignments and solutions | T-022 (**not** S-018's inline review comments) | todo   |
+| `emailVerification`            | Email verification flow                                    | `/email-verification`                          | todo   |
+| `evaluationProgress`           | Live evaluation progress (WebSocket/polling)               | `solutions/[id]` live updates                  | todo   |
+| `exerciseAuthors`              | Exercise author management                                 | `exercises/[id]`                               | todo   |
+| `exerciseConfigs`              | Exercise configuration (pipelines, variables)              | `exercises/[id]/edit-config`                   | todo   |
+| `exerciseEnvironmentConfigs`   | Per-environment config                                     | `exercises/[id]/edit-config`                   | todo   |
+| `exerciseFiles`                | Exercise supplementary files                               | `exercises/[id]`                               | todo   |
+| `exerciseFilesLinks`           | File links                                                 | `exercises/[id]`                               | todo   |
+| `exercisePipelinesVariables`   | Pipeline variables                                         | `exercises/[id]/edit-config`                   | todo   |
+| `exerciseScoreConfig`          | Score configuration                                        | `exercises/[id]`                               | todo   |
+| `exerciseTests`                | Exercise tests                                             | `exercises/[id]`                               | todo   |
+| `exercises`                    | Exercise catalog, detail, edit                             | `exercises`                                    | todo   |
+| `files`                        | Uploaded files                                             | `upload` component                             | todo   |
+| `filesContent`                 | File content preview                                       | `solutions/[id]`                               | todo   |
+| `groupExamLocks`               | Exam mode locks                                            | `groups/[id]?tab=exams`                        | done   |
+| `groupExercises`               | Group-specific exercises                                   | `groups/[id]/assignments`                      | todo   |
+| `groupInvitations`             | Group invitations                                          | `accept-group-invitation`                      | done   |
+| `groupResults`                 | Group results overview                                     | `groups/[id]?tab=students`                     | done   |
+| `groups`                       | Group CRUD, hierarchy, membership                          | `groups`                                       | todo   |
+| `hwGroups`                     | Hardware groups                                            | `admin/server`                                 | todo   |
+| `instances`                    | Instance management                                        | `admin/instances`                              | todo   |
+| `licences`                     | Licence management                                         | `admin`                                        | todo   |
+| `limits`                       | Assignment/exercise limits                                 | `assignments/[id]/edit`                        | todo   |
+| `notifications`                | In-app notifications                                       | Header + dashboard                             | todo   |
+| `pagination`                   | Pagination state                                           | `searchParams` in Server Components            | todo   |
+| `pipelineFiles`                | Pipeline files                                             | `pipelines/[id]`                               | todo   |
+| `pipelines`                    | Pipeline CRUD, structure                                   | `pipelines`                                    | todo   |
+| `plagiarisms`                  | Plagiarism detection                                       | `solutions/[id]/plagiarisms`                   | done   |
+| `referenceSolutionEvaluations` | Reference solution evaluations                             | `reference-solutions/[id]`                     | todo   |
+| `referenceSolutions`           | Reference solutions                                        | `exercises/[id]/reference-solutions`           | todo   |
+| `registration`                 | User registration                                          | `/register`                                    | todo   |
+| `runtimeEnvironments`          | Runtime environments                                       | `admin/server`                                 | todo   |
+| `shadowAssignments`            | Shadow assignments (bonus)                                 | `shadow-assignments/[id]`                      | done   |
+| `solutionFiles`                | Solution source files                                      | `solutions/[id]/sources`                       | todo   |
+| `solutionReviews`              | Review comments on solutions                               | `solutions/[id]`                               | todo   |
+| `solutions`                    | Solution CRUD, evaluation                                  | `solutions/[id]`                               | todo   |
+| `stats`                        | Group/assignment statistics                                | `groups/[id]`                                  | todo   |
+| `submission`                   | Active submission state                                    | `assignments/[id]`                             | todo   |
+| `submissionEvaluations`        | Evaluation results                                         | `solutions/[id]`                               | todo   |
+| `submissionFailures`           | Submission failure log                                     | `submission-failures`                          | done   |
+| `systemMessages`               | System messages                                            | `system-messages`                              | todo   |
+| `upload`                       | File upload state                                          | `lib/upload/use-file-upload.ts`                | done   |
+| `userCalendars`                | User deadlines calendar                                    | `/profile/edit`                                | done   |
+| `userSwitching`                | User switching (superadmin)                                | `admin/users`                                  | todo   |
+| `users`                        | User management                                            | `users`, `admin/users`                         | todo   |
+| `usersGroups`                  | User-group membership                                      | `groups/[id]/students`                         | todo   |
 
 ---
 

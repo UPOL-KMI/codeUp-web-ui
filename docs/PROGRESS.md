@@ -166,6 +166,41 @@
     catalog, and the picker's search actually narrowing.
   - _Observations:_ **171 e2e tests pass** (167 before), 64 unit tests.
 
+- **[2026-09-01 17:40] T-021:** One exercise, read -- and what "broken" actually means.
+  `app/[locale]/(app)/exercises/[exerciseId]/page.tsx`, `lib/api/exercise-detail.ts`,
+  `components/exercises/exercise-detail.tsx`, `lib/format/bytes.ts`.
+  - _Where the catalog's rows lead, and where T-008's editor will return to._ The screen answers
+    "should I assign this" in the order the question is actually asked: what state the exercise is
+    in, what it asks a student to do, and what it is made of.
+  - **_When core-api says an exercise is broken, it also says why._** `validationError` is a string
+    of `@key message` lines (`@no-runtimes`, `@no-hwgroups`, `@no-tests`, ... -- nine keys the
+    legacy app translates), and each one is a specific missing piece somebody can act on. Rendering
+    that list is the most useful thing on the page; a red badge alone leaves the reader guessing.
+    An unknown key keeps core-api's own English rather than being dropped.
+  - _Read-only, deliberately._ Tests (T-009), limits (T-010), reference solutions (T-011) and the
+    assignments made from this exercise (T-012) are **named and not linked** -- none of those
+    screens exists, and Next prefetches every visible link (DEC-066). The assignment _count_ is
+    here, because it is what says the exercise is in use, and core-api counts only the assignments
+    this reader may see.
+  - _Reference solutions are stated as a fact, not counted._ `/v1/reference-solutions/exercise/{id}`
+    answers **8 for the administrator and 0 for a supervisor of the same exercise** -- they are
+    private until promoted -- so a count would say different things to different readers about the
+    same exercise. `hasReferenceSolutions` is the exercise's own truth and the condition that
+    matters: without one it cannot be assigned.
+  - _A group this reader cannot see is said out loud_ ("and 1 group you cannot see") rather than
+    silently dropped from the list -- DEC-080's shape, applied to a count.
+  - **_`formatBytes` moved into `lib/format/bytes.ts`_** with tests, from where it was hiding
+    inside the upload component: the attachment list and the solution-size limit render the same
+    number, and two copies of a rounding rule is how two screens end up disagreeing about how big
+    a file is.
+  - **_A parity gap found and filed as T-022:_** the legacy app puts a discussion thread on four
+    screens (exercise, assignment, assignment solutions, solution sources) and nothing here has
+    built any of them. `INVENTORY.md`'s `comments` row pointed at S-018's inline review comments,
+    which is a different feature; the row is corrected.
+  - _Verified live in both locales_ -- a finished exercise, a broken one (three reasons in words),
+    and an archived one.
+  - _Observations:_ **174 e2e tests pass** (171 before), 68 unit tests (64 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2667,12 +2702,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
   deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
   T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
-  matrix as a downloadable file), T-019 (the submission-failure queue) and T-020 (the exercise
-  catalog, a ticket this session filed).
+  matrix as a downloadable file), T-019 (the submission-failure queue), and T-020 + T-021 (the
+  exercise catalog and one exercise read, two tickets this session filed).
   Foundation and Design System complete.
-- **Next ticket:** T-021 (the exercise detail screen, filed alongside T-020), then T-008
-  (create/edit an exercise) and the rest of the authoring block T-009..T-016, with T-016's Graphviz
-  question still open. The anonymous flows (A-001..A-008)
+- **Next ticket:** T-008 (create/edit an exercise), now that the catalog (T-020) and the detail
+  screen (T-021) exist for it to return to -- then the rest of the authoring block, T-009..T-016,
+  with T-016's Graphviz question still open. **T-022 is new and is a parity gap, not a plan item:**
+  the legacy discussion threads on exercises, assignments and solutions were never built here, and
+  `INVENTORY.md` had mistaken them for S-018's inline review comments. The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group

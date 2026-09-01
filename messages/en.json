@@ -806,6 +806,69 @@
       "noMatch": "Nothing matches those filters."
     }
   },
+  "Exercise": {
+    "title": "Exercise",
+    "untitled": "Unnamed exercise",
+    "backToCatalog": "Back to the catalog",
+    "text": "What the student is asked to do",
+    "noText": "This exercise has no text in any language yet.",
+    "otherLocales": "Also written in: {locales}.",
+    "externalText": "The full text is kept outside ReCodEx",
+    "details": "Details",
+    "files": "Attached files",
+    "filesExplain": "Files the evaluation uses — expected outputs, test data, headers. Students do not see them.",
+    "noFiles": "No files are attached.",
+    "author": "Author",
+    "admins": "Administrators",
+    "difficulty": "Difficulty",
+    "difficulties": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "environments": "Languages",
+    "noEnvironments": "None selected",
+    "tags": "Tags",
+    "groups": "Groups",
+    "undisclosedGroups": "and {count, plural, one {# group} other {# groups}} you cannot see",
+    "visibility": "Visibility",
+    "public": "Public",
+    "private": "Private",
+    "assignments": "Assigned",
+    "assignmentCount": "{count, plural, =0 {Not assigned anywhere} one {# assignment} other {# assignments}}",
+    "solutionLimits": "A solution may have",
+    "solutionLimitsValue": "{files, plural, one {# file} other {# files}}, {size} in total",
+    "created": "Created",
+    "updated": "Updated",
+    "version": "version {version}",
+    "forkedFrom": "Forked from",
+    "theOriginal": "The exercise it came from",
+    "noReferenceSolution": "No reference solution has been submitted yet, so this exercise cannot be assigned. A reference solution is what proves the tests can be passed at all.",
+    "flags": {
+      "archived": "Archived",
+      "private": "Private",
+      "locked": "Locked",
+      "broken": "Broken"
+    },
+    "archived": {
+      "explain": "This exercise is archived. It stays readable and stays attached to the assignments already made from it, but it is out of the way of anybody looking for something to assign."
+    },
+    "broken": {
+      "title": "This exercise cannot be assigned yet",
+      "explain": "ReCodEx checks an exercise before letting anyone assign it. These are the parts it found missing:"
+    },
+    "validation": {
+      "no-texts": "It has no text in any language.",
+      "no-tests": "It has no tests.",
+      "score": "The way a solution's correctness is calculated is not set up.",
+      "no-runtimes": "No language has been selected for it.",
+      "runtimes": "The selected languages have no configuration.",
+      "no-configs": "Some tests are configured incorrectly, or not at all.",
+      "no-hwgroups": "No hardware group has been selected for it.",
+      "config": "Some tests are incompletely configured — this usually happens after a test or a file is removed.",
+      "limits": "Memory or time limits are not set properly."
+    }
+  },
   "Pipelines": {
     "title": "Pipelines"
   },
