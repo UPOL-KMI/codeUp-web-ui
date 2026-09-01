@@ -764,7 +764,81 @@
     "title": "Users"
   },
   "SubmissionFailures": {
-    "title": "Submission failures"
+    "title": "Submission failures",
+    "subtitle": "Submissions that never became a result — the machine failed, not the student.",
+    "summary": "{count, plural, one {# failure} other {# failures}}.",
+    "filterPlaceholder": "Filter by description or kind",
+    "resolve": "Resolve",
+    "resolved": "The failure was marked as resolved.",
+    "scopes": {
+      "unresolved": "Unresolved",
+      "all": "Everything"
+    },
+    "columns": {
+      "type": "Kind",
+      "description": "What happened",
+      "what": "Where",
+      "created": "When",
+      "state": "State"
+    },
+    "what": {
+      "solution": "The solution",
+      "referenceSolution": "A reference solution"
+    },
+    "state": {
+      "unresolved": "Open",
+      "resolved": "Resolved"
+    },
+    "types": {
+      "broker_reject": {
+        "label": "Rejected",
+        "description": "The broker took no job: no worker can evaluate this submission."
+      },
+      "evaluation_failure": {
+        "label": "Evaluation failed",
+        "description": "The job was accepted and then failed while running."
+      },
+      "loading_failure": {
+        "label": "Results unreadable",
+        "description": "The evaluation finished, but its results could not be loaded."
+      },
+      "config_error": {
+        "label": "Configuration error",
+        "description": "The exercise configuration is invalid and cannot be compiled."
+      },
+      "soft_config_error": {
+        "label": "Configuration error (author's)",
+        "description": "The exercise configuration is invalid because of how it was written."
+      },
+      "other": {
+        "label": "Other",
+        "description": "A kind of failure this app does not know about."
+      }
+    },
+    "empty": {
+      "unresolved": {
+        "title": "Nothing is waiting",
+        "description": "Every recorded failure has been dealt with. Ask for everything to see the history."
+      },
+      "all": {
+        "title": "No failures recorded",
+        "description": "Nothing has ever failed on its way through evaluation here."
+      }
+    },
+    "resolveDialog": {
+      "title": "Resolve this failure?",
+      "explain": "It leaves the queue for good — ReCodEx has no way to mark a failure open again.",
+      "note": "What was done about it",
+      "notePlaceholder": "Restarted the worker, resubmitted…",
+      "sendEmail": "Tell the author it was looked at",
+      "sendEmailHint": "Sends an email to whoever submitted it.",
+      "cancel": "Cancel",
+      "confirm": "Resolve"
+    },
+    "errors": {
+      "invalid": "That note is too long.",
+      "resolveFailed": "The failure could not be resolved."
+    }
   },
   "SystemMessages": {
     "title": "System messages"

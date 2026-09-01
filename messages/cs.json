@@ -764,7 +764,81 @@
     "title": "Uživatelé"
   },
   "SubmissionFailures": {
-    "title": "Neúspěšná odevzdání"
+    "title": "Selhaná odevzdání",
+    "subtitle": "Odevzdání, ze kterých nikdy nevznikl výsledek — selhal stroj, ne student.",
+    "summary": "{count, plural, one {# selhání} few {# selhání} other {# selhání}}.",
+    "filterPlaceholder": "Filtrovat podle popisu nebo druhu",
+    "resolve": "Vyřešit",
+    "resolved": "Selhání bylo označeno za vyřešené.",
+    "scopes": {
+      "unresolved": "Nevyřešená",
+      "all": "Vše"
+    },
+    "columns": {
+      "type": "Druh",
+      "description": "Co se stalo",
+      "what": "Kde",
+      "created": "Kdy",
+      "state": "Stav"
+    },
+    "what": {
+      "solution": "Řešení",
+      "referenceSolution": "Vzorové řešení"
+    },
+    "state": {
+      "unresolved": "Otevřené",
+      "resolved": "Vyřešeno"
+    },
+    "types": {
+      "broker_reject": {
+        "label": "Odmítnuto",
+        "description": "Broker úlohu nepřijal: není worker, který by ji vyhodnotil."
+      },
+      "evaluation_failure": {
+        "label": "Vyhodnocení selhalo",
+        "description": "Úloha byla přijata a pak při běhu selhala."
+      },
+      "loading_failure": {
+        "label": "Výsledky nečitelné",
+        "description": "Vyhodnocení doběhlo, ale výsledky se nepodařilo načíst."
+      },
+      "config_error": {
+        "label": "Chyba konfigurace",
+        "description": "Konfigurace úlohy je neplatná a nelze ji přeložit."
+      },
+      "soft_config_error": {
+        "label": "Chyba konfigurace (autorská)",
+        "description": "Konfigurace úlohy je neplatná kvůli tomu, jak byla napsána."
+      },
+      "other": {
+        "label": "Jiné",
+        "description": "Druh selhání, který tato aplikace nezná."
+      }
+    },
+    "empty": {
+      "unresolved": {
+        "title": "Nic nečeká",
+        "description": "Všechna zaznamenaná selhání jsou vyřešená. Historii zobrazíte volbou Vše."
+      },
+      "all": {
+        "title": "Žádná selhání",
+        "description": "Při vyhodnocování tu zatím nic neselhalo."
+      }
+    },
+    "resolveDialog": {
+      "title": "Vyřešit toto selhání?",
+      "explain": "Zmizí z fronty natrvalo — ReCodEx neumí selhání znovu otevřít.",
+      "note": "Co se s tím udělalo",
+      "notePlaceholder": "Restartován worker, odevzdáno znovu…",
+      "sendEmail": "Dát vědět autorovi, že se to řešilo",
+      "sendEmailHint": "Odešle e-mail tomu, kdo řešení odevzdal.",
+      "cancel": "Zrušit",
+      "confirm": "Vyřešit"
+    },
+    "errors": {
+      "invalid": "Poznámka je příliš dlouhá.",
+      "resolveFailed": "Selhání se nepodařilo vyřešit."
+    }
   },
   "SystemMessages": {
     "title": "Systémové zprávy"

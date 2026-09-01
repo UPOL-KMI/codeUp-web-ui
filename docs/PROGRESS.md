@@ -100,6 +100,36 @@
     a student's download is core-api's own narrowed answer rather than this app's.
   - _Observations:_ **164 e2e tests pass**, 64 unit tests.
 
+- **[2026-09-01 15:40] T-019:** Submissions that never became a result.
+  `app/[locale]/(app)/submission-failures/page.tsx`, `lib/api/submission-failures.ts`,
+  `components/failures/failure-table.tsx`, `resolveSubmissionFailure()`.
+  - _The one screen in this app that is about the machine rather than about anybody's work._ A job
+    the broker refused, an evaluation that died, results that could not be read back, an exercise
+    configuration that will not compile -- core-api keeps each one until somebody says it has been
+    dealt with.
+  - **_Not a teacher's view, whatever the ticket said._** The failure ACL is the instance's, not a
+    group's: a supervisor who administers a group is refused, verified live. No role check here --
+    `apiRead` turns core-api's 403 into the refusal page, and the sidebar already only shows the
+    link inside its Administration section.
+  - **_It opens on the unresolved queue (DEC-096)._** core-api serves that list itself; the full
+    history is unbounded and unpaginated, and this instance is already at fifty-odd because its
+    sandbox cannot run at all. "Everything" is one click away, so no parity is lost.
+  - **_Resolving is permanent -- core-api has no un-resolve_** -- so it is a dialog with a typed
+    note rather than a button that fires on one click, and it says so in the dialog. The
+    notification email to the author is offered (the legacy screen offers it, and a student whose
+    solution vanished into an infrastructure error is exactly who should hear back) but defaults to
+    **off**: an email is the irreversible half of an already irreversible action.
+  - _A reference solution's failure names itself and does not link._ Eight of the fifty-two here are
+    the seed's own reference submissions, and T-011 has not built that screen -- a link to a route
+    that does not exist would be prefetched and 404 from this page on every render (DEC-066).
+  - _The kinds are words, not an icon with a tooltip._ core-api has five and they are five
+    different people's problems; both locales carry the label and core-api's own one-line meaning.
+  - _Verified live in both locales,_ including a real resolve: the row left the queue, appeared in
+    the history with its note, and the count dropped by one.
+  - _Its spec resolves one failure and cannot put it back,_ which is affordable here only because
+    this instance mints a new one every time the submit spec runs -- noted in the spec itself.
+  - _Observations:_ **167 e2e tests pass** (164 before), 64 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2600,12 +2630,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
   deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
-  T-004 turned out to have shipped with S-013, T-005 (one student's whole course) and T-007 (the
-  matrix as a downloadable file).
+  T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
+  matrix as a downloadable file) and T-019 (the submission-failure queue).
   Foundation and Design System complete.
 - **Next ticket:** T-008 (create/edit an exercise), which opens the largest block left --
-  exercise authoring, T-008..T-016, with T-016's Graphviz question still open. T-019 (the submission
-  failures log) is the other unblocked teacher ticket and is small. The anonymous flows (A-001..A-008)
+  exercise authoring, T-008..T-016, with T-016's Graphviz question still open. **The exercise
+  _catalog_ and _detail_ screens have no ticket of their own** (`INVENTORY.md` lists both as todo
+  rows; the backlog jumps straight to editing), and both are still `PlaceholderPage`s that the
+  sidebar links to -- worth filing before T-008, since an edit screen reachable only by URL is not
+  reachable. The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
