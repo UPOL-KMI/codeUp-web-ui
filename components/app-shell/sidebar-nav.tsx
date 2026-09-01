@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
+import { LocaleSwitch } from "./locale-switch";
 
 /**
  * The interactive half of the app shell (D-014): collapse, the mobile drawer, and the active-link
@@ -62,6 +63,11 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
           )}
         </div>
       ))}
+      {/* A-008. At the foot of the sidebar rather than in the page header: it is a preference,
+          not an action on whatever is on screen. */}
+      <div className="mt-2 border-t border-border pt-3">
+        <LocaleSwitch />
+      </div>
     </nav>
   );
 

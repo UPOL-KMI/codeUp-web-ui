@@ -1285,7 +1285,14 @@
     "server": "Server",
     "systemMessages": "Systémové zprávy",
     "archive": "Archiv",
-    "submissionFailures": "Chyby odevzdání"
+    "submissionFailures": "Chyby odevzdání",
+    "locale": {
+      "label": "Jazyk rozhraní",
+      "switchTo": {
+        "en": "Read in English",
+        "cs": "Číst česky"
+      }
+    }
   },
   "Palette": {
     "label": "Hledání",

@@ -338,6 +338,24 @@
     worked.
   - _Observations:_ **189 e2e tests pass** (186 before), 76 unit tests.
 
+- **[2026-09-01 21:25] A-008:** Reading the app in the other language.
+  `components/app-shell/locale-switch.tsx`, in the sidebar and in the `(anon)` layout.
+  - _Two links rather than a control,_ because `localePrefix: "always"` already gives every page
+    one address per language -- so the choice is a URL somebody can send or bookmark, and
+    next-intl's own `NEXT_LOCALE` cookie (which its `Link` sets on the way) is what makes it stick
+    for `/` and for the next visit.
+  - _The path **and the query** are kept,_ so switching language translates the page you are on
+    rather than sending you home -- which matters in an app that keeps its filters, tabs and pages
+    in the URL, as most of these screens do.
+  - _It is in the `(anon)` layout too:_ a visitor has no sidebar, and the sign-in page is exactly
+    where somebody who reads Czech should be able to say so.
+  - **_Its landmark is called "interface language", and that is a fix, not a flourish._** Labelled
+    "language" it made `getByLabel("Language")` match two things -- this nav and the submit form's
+    own runtime field -- which broke two shipped specs. Playwright matches labels by substring, so
+    those two now ask for the field exactly; a screen-reader user would have met the same
+    ambiguity, and the rename is what removes it.
+  - _Observations:_ **191 e2e tests pass** (189 before), 76 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2844,14 +2862,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   its basic settings). **Exercise authoring has begun**; the configuration, limits, reference
   solutions and pipeline screens (T-009..T-016) are what remains of it.
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
-  A-004 + A-005 (the password reset it links to) and A-006 (confirming an address, and the
-  dashboard's nudge to do it).
+  A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
+  nudge to do it) and A-008 (the language switch).
   Foundation and Design System complete.
-- **Next ticket:** A-008 (the locale switch) and A-003 (registration) -- the latter with a caveat
-  found while building A-004: this deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api
-  refuses to create an account and the screen can only be verified as far as that refusal. Then
-  back to T-009 (the exercise configuration editor, the hardest screen in the product by the
-  brief's own reckoning). **Two parity gaps are filed and open:** T-022 (the
+- **Next ticket:** A-003 (registration) -- with a caveat found while building A-004: this
+  deployment sets `LOCAL_REGISTRATION_ENABLED=false`, so core-api refuses to create an account and
+  the screen can only be verified as far as that refusal. A-001 (the public landing page) and
+  A-007 (CAS finalisation, which needs an authenticator this deployment does not configure) are
+  what would then remain of the anonymous block. After that, T-009 -- the exercise configuration
+  editor, the hardest screen in the product by the brief's own reckoning. **Two parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
   mistaken for S-018's inline review comments) and T-023 (exercise files and their link keys,
   administrators, and forking). The anonymous flows (A-001..A-008)

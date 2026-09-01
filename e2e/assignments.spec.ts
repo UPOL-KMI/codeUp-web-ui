@@ -141,8 +141,10 @@ test.describe("submitting a solution", () => {
     });
 
     // core-api derives the offered environments from the file names, so the select only fills in
-    // once the upload has finished and pre-submit has answered.
-    const environment = page.getByLabel("Language");
+    // once the upload has finished and pre-submit has answered. `exact`, because A-008 added an
+    // "Interface language" landmark and `getByLabel` matches by substring: two things on this page
+    // are about a language, and only one of them is this field.
+    const environment = page.getByLabel("Language", { exact: true });
     await expect(environment).toBeEnabled({ timeout: 30_000 });
     await expect(environment).toHaveValue("python3");
 
@@ -166,6 +168,6 @@ test.describe("submitting a solution", () => {
     await page.getByRole("link", { name: "Submit a solution" }).click();
 
     await expect(page.getByRole("button", { name: "Submit", exact: true })).toBeDisabled();
-    await expect(page.getByLabel("Language")).toBeDisabled();
+    await expect(page.getByLabel("Language", { exact: true })).toBeDisabled();
   });
 });

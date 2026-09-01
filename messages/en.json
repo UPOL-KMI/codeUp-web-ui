@@ -1285,7 +1285,14 @@
     "server": "Server",
     "systemMessages": "System messages",
     "archive": "Archive",
-    "submissionFailures": "Submission failures"
+    "submissionFailures": "Submission failures",
+    "locale": {
+      "label": "Interface language",
+      "switchTo": {
+        "en": "Read in English",
+        "cs": "Číst česky"
+      }
+    }
   },
   "Palette": {
     "label": "Search",
