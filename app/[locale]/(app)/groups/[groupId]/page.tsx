@@ -333,6 +333,16 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 
   return (
     <div className="flex flex-col gap-4">
+      {group.can.assignExercise === true && !group.archived && (
+        <div>
+          <Link
+            href={`/groups/${groupId}/assign`}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("assignExercise")}
+          </Link>
+        </div>
+      )}
       <AssignmentFilterNav
         groupId={groupId}
         current={current}

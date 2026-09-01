@@ -7,6 +7,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { AssignmentForm } from "@/components/assignments/assignment-form";
+import { DeleteAssignment } from "@/components/assignments/delete-assignment";
 import { PageShell } from "@/components/page-shell";
 
 /**
@@ -51,8 +52,11 @@ export default async function EditAssignmentPage({
         </Link>
       }
     >
-      <div className="max-w-3xl">
+      <div className="flex max-w-3xl flex-col gap-10">
         <AssignmentForm assignment={assignment} />
+        {assignment.can.remove === true && (
+          <DeleteAssignment assignmentId={assignment.id} groupId={assignment.groupId} />
+        )}
       </div>
     </PageShell>
   );

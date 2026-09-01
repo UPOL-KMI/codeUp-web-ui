@@ -280,7 +280,8 @@
         "hidden": "Skrytá",
         "myPoints": "{points}/{max} bodů",
         "maxPoints": "až {max} bodů"
-      }
+      },
+      "assignExercise": "Zadat cvičení"
     },
     "students": {
       "filterPlaceholder": "Filtrovat studenty",
@@ -1129,10 +1130,54 @@
         "cs": "Česky"
       }
     },
+    "delete": {
+      "title": "Smazat zadání",
+      "explain": "Zmizí i všechno, co k němu bylo odevzdáno — každé řešení, jeho vyhodnocení i napsané revize. Cvičení, ze kterého vzniklo, zůstává.",
+      "action": "Smazat toto zadání",
+      "deleted": "Zadání bylo smazáno.",
+      "failed": "Zadání se nepodařilo smazat.",
+      "confirm": {
+        "title": "Smazat toto zadání?",
+        "description": "Spolu s ním se smaže každé odevzdané řešení a nelze to vzít zpět."
+      }
+    },
     "errors": {
       "invalid": "Zkontrolujte zvýrazněná pole a zkuste to znovu.",
       "updateFailed": "Zadání se nepodařilo uložit.",
-      "syncFailed": "Zadání se nepodařilo sesynchronizovat."
+      "syncFailed": "Zadání se nepodařilo sesynchronizovat.",
+      "deleteFailed": "Zadání se nepodařilo smazat."
+    }
+  },
+  "AssignExercise": {
+    "title": "Zadat cvičení",
+    "backToGroup": "Zpět do skupiny",
+    "explain": "Zadáním se úloha rovnou vytvoří, s výchozím termínem a body ReCodExu — ty nastavíte na další obrazovce. Než ji zviditelníte, nikdo ji neuvidí.",
+    "searchLabel": "Hledat v katalogu cvičení",
+    "searchPlaceholder": "Hledat podle názvu",
+    "search": "Hledat",
+    "assign": "Zadat",
+    "assigning": "Zadáváme…",
+    "untitled": "Nepojmenované cvičení",
+    "locked": "Uzamčeno",
+    "broken": "Rozbité",
+    "more": "Zobrazeno {shown} z {total} cvičení. Zúžením hledání zobrazíte zbytek.",
+    "difficulty": {
+      "easy": "Snadné",
+      "medium": "Střední",
+      "hard": "Těžké"
+    },
+    "cannot": {
+      "locked": "Uzamčeno autorem",
+      "broken": "Nemá dokončenou konfiguraci",
+      "notYours": "Nemůžete ho zadat"
+    },
+    "empty": {
+      "title": "Není co zadat",
+      "description": "Katalog je prázdný, nebo v něm není nic, co byste mohli zadat.",
+      "noMatch": "Hledání v katalogu nic nenašlo."
+    },
+    "errors": {
+      "createFailed": "Cvičení se nepodařilo zadat."
     }
   },
   "AssignmentSolutions": {

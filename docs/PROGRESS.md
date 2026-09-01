@@ -2466,6 +2466,35 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     put back exactly as seeded.
   - _Observations:_ **153 e2e tests pass** (150 before), 55 unit tests.
 
+- **[2026-09-01 12:55] T-001:** Assigning an exercise, and the undo it needed.
+  `app/[locale]/(app)/groups/[groupId]/assign/page.tsx`,
+  `components/assignments/exercise-picker.tsx`, `components/assignments/delete-assignment.tsx`,
+  `lib/api/exercises.ts`.
+  - **_Create first, configure second (DEC-093)._** core-api has no call that creates an assignment
+    _and_ configures it, so the choice was a wizard holding settings in the browser until the end,
+    or creating with core-api's defaults and going straight to T-002's form. The second is the
+    legacy flow and the one that fails better: nothing is lost if the tab closes halfway, and the
+    assignment is created **invisible**, so it harms nobody while it is half-configured. It also
+    means one settings screen rather than a create-shaped copy of it.
+  - **_The catalog is searched server-side_** -- the one list in this app that is not fetched whole.
+    `/v1/exercises` is genuinely paginated and an instance can hold thousands, so Q-015's
+    fetch-everything trade does not carry over; the page says how many matched in total rather than
+    quietly showing the first twenty-five as if that were all of them.
+  - _Five things can refuse an assignment and the picker can see three._ The exercise's `assign`
+    hint, locked and broken are in the payload and are named on the row; the group's
+    `assignExercise` gates the page; the fifth -- **an exercise with no reference solution** -- is in
+    no list payload at all, so core-api's own message is what the reader gets on the attempt.
+    Predicting it would cost a request per row.
+  - **_Writing the spec turned up the same shape S-026 was filed for: a one-way door._** Nothing in
+    this app could delete an assignment, so assigning the wrong exercise would have been permanent.
+    Deletion now sits at the bottom of T-002's settings screen, on core-api's `remove` hint, and it
+    confirms -- every solution submitted to the assignment goes with it. The spec creates a real
+    assignment, lands on its settings, and deletes it again, so it leaves nothing behind and can run
+    twice; the group's assignment count is the same before and after.
+  - _Verified live in both locales_, and the group was left with exactly its three seeded
+    assignments.
+  - _Observations:_ **155 e2e tests pass** (153 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2477,11 +2506,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one) and F-031 (a dead
   session signs the reader out instead of looping), S-026 (joining and leaving a group) and T-018
   (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has
-  begun with T-003 (every attempt at an assignment) and T-002 (its settings, and the re-sync).
+  begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
+  deletion) and T-001 (assigning an exercise in the first place).
   Foundation and Design System complete.
-- **Next ticket:** T-001 (create an assignment from an exercise), which shares this ticket's form and
-  most of its fields, then T-004's stats and T-006's points matrix -- both of which read data the
-  screens already fetch.
+- **Next ticket:** T-004 (assignment stats) and T-006 (the points matrix), both of which read data
+  the screens already fetch, then T-005's per-student drill-down, which owes the user profile
+  (S-021) its per-group solutions link.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.

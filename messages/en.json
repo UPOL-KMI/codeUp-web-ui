@@ -280,7 +280,8 @@
         "hidden": "Hidden",
         "myPoints": "{points}/{max} points",
         "maxPoints": "up to {max} points"
-      }
+      },
+      "assignExercise": "Assign an exercise"
     },
     "students": {
       "filterPlaceholder": "Filter students",
@@ -1129,10 +1130,54 @@
         "cs": "Czech"
       }
     },
+    "delete": {
+      "title": "Delete the assignment",
+      "explain": "Everything submitted to it goes too — every solution, its evaluations and any reviews written on them. The exercise it was made from is untouched.",
+      "action": "Delete this assignment",
+      "deleted": "The assignment was deleted.",
+      "failed": "The assignment could not be deleted.",
+      "confirm": {
+        "title": "Delete this assignment?",
+        "description": "Every solution submitted to it is deleted with it, and this cannot be undone."
+      }
+    },
     "errors": {
       "invalid": "Check the highlighted fields and try again.",
       "updateFailed": "The assignment could not be saved.",
-      "syncFailed": "The assignment could not be re-synchronised."
+      "syncFailed": "The assignment could not be re-synchronised.",
+      "deleteFailed": "The assignment could not be deleted."
+    }
+  },
+  "AssignExercise": {
+    "title": "Assign an exercise",
+    "backToGroup": "Back to the group",
+    "explain": "Assigning creates the assignment straight away, with ReCodEx's default deadline and points — you set those on the next screen. Nobody sees it until you make it visible.",
+    "searchLabel": "Search the exercise catalog",
+    "searchPlaceholder": "Search by name",
+    "search": "Search",
+    "assign": "Assign",
+    "assigning": "Assigning…",
+    "untitled": "Unnamed exercise",
+    "locked": "Locked",
+    "broken": "Broken",
+    "more": "Showing {shown} of {total} exercises. Narrow the search to see the rest.",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "cannot": {
+      "locked": "Locked by its author",
+      "broken": "Its configuration is incomplete",
+      "notYours": "Not yours to assign"
+    },
+    "empty": {
+      "title": "No exercises to assign",
+      "description": "The catalog is empty, or nothing in it is yours to assign.",
+      "noMatch": "Nothing in the catalog matches that search."
+    },
+    "errors": {
+      "createFailed": "The exercise could not be assigned."
     }
   },
   "AssignmentSolutions": {

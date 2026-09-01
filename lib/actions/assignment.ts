@@ -2,7 +2,7 @@
 
 import { getTranslations } from "next-intl/server";
 
-import { ApiError, apiPost } from "@/lib/api/client";
+import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { assignmentSettingsSchema, type AssignmentSettingsValues } from "./assignment.schema";
@@ -100,5 +100,55 @@ export async function syncAssignmentWithExercise(
     return { success: true, data: { assignmentId } };
   } catch (error) {
     return failure(error, "syncFailed");
+  }
+}
+
+/**
+ * Assign an exercise to a group (T-001).
+ *
+ * core-api creates the assignment with **its own defaults** -- a deadline a fortnight out, the
+ * exercise's own point value -- and there is no way to hand it settings on the same call. So the
+ * caller lands on T-002's form with the new assignment already real, which is also what the legacy
+ * app does. An assignment that exists but is not yet public harms nobody in the meantime.
+ *
+ * Five things can refuse this, and only three are visible to the picker: the exercise's `assign`
+ * hint and the group's `assignExercise`, plus organizational/locked/broken. The fifth -- an
+ * exercise with no reference solution -- is not in any list payload, so core-api's own message is
+ * what the reader gets, which is why this returns it rather than a generic failure.
+ */
+export async function createAssignmentFromExercise(
+  exerciseId: string,
+  groupId: string,
+): Promise<ActionResult<{ assignmentId: string }>> {
+  try {
+    const created = await apiPost<{ id: string }>("/v1/exercise-assignments", {
+      exerciseId,
+      groupId,
+    });
+    return { success: true, data: { assignmentId: created.id } };
+  } catch (error) {
+    return failure(error, "createFailed");
+  }
+}
+
+/**
+ * Delete an assignment (T-002's screen, T-001's undo).
+ *
+ * Lives beside the settings because that is where the legacy app puts it and because it is the
+ * same authority (`canRemove`, granted alongside `update`). It exists at all because T-001 made
+ * creating one a click: without this, assigning an exercise by mistake would be permanent, which
+ * is the shape S-026 was filed to fix for groups.
+ *
+ * **Everything submitted to it goes too** -- core-api removes the assignment and unschedules its
+ * pending jobs -- which is why the caller confirms first.
+ */
+export async function deleteAssignment(
+  assignmentId: string,
+): Promise<ActionResult<{ assignmentId: string }>> {
+  try {
+    await apiDelete("/v1/exercise-assignments/{id}", { pathParams: { id: assignmentId } });
+    return { success: true, data: { assignmentId } };
+  } catch (error) {
+    return failure(error, "deleteFailed");
   }
 }
