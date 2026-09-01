@@ -17,6 +17,13 @@ export interface StatusStateProps {
   /** A button or link: the retry, or "the action that fills it" for an empty list (brief §9). */
   action?: React.ReactNode;
   tone?: "neutral" | "danger";
+  /**
+   * Where this state's title sits in the document outline. `2` is right for the full-page states
+   * (`not-found.tsx` and friends render nothing above it), and wrong for a panel nested inside a
+   * section that already has an `h3` -- which is a heading-level jump, and put a phantom section
+   * into the dashboard's outline until S-025 noticed it.
+   */
+  headingLevel?: 2 | 3 | 4;
 }
 
 export function StatusState({
@@ -25,7 +32,10 @@ export function StatusState({
   icon,
   action,
   tone = "neutral",
+  headingLevel = 2,
 }: StatusStateProps) {
+  const Heading = `h${headingLevel}` as const;
+
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-12 text-center">
       {icon && (
@@ -36,11 +46,11 @@ export function StatusState({
           {icon}
         </span>
       )}
-      <h2
+      <Heading
         className={`text-base font-semibold ${tone === "danger" ? "text-destructive" : "text-foreground"}`}
       >
         {title}
-      </h2>
+      </Heading>
       {description && <p className="max-w-prose text-sm text-muted-foreground">{description}</p>}
       {action}
     </div>

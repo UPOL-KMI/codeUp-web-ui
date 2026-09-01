@@ -110,6 +110,22 @@
         "status": "Status"
       }
     },
+    "shadow": {
+      "heading": "Graded without a submission",
+      "explain": "Work ReCodEx does not evaluate — an oral exam, a presentation, attendance. The points are awarded by hand, and the deadline is informative: whether it was missed is the teacher's call, not the system's.",
+      "untitled": "Unnamed shadow assignment",
+      "bonus": "Bonus",
+      "noDeadline": "No deadline",
+      "notAwarded": "— / {max}",
+      "more": "{count, plural, one {# more row} other {# more rows}} not shown.",
+      "columns": {
+        "assignment": "Assignment",
+        "group": "Group",
+        "deadline": "Deadline (informative)",
+        "points": "My points",
+        "note": "Note"
+      }
+    },
     "progress": {
       "heading": "My progress",
       "points": "points",

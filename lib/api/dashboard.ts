@@ -9,6 +9,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import { ApiError, apiGet, apiPost } from "./client";
 import { apiRead } from "./read";
 import { getMyGroups, getMyGroupStats, type GroupAssignmentStats } from "./groups";
+import { getGroupShadowAssignments } from "./shadow-assignment";
 
 /**
  * The student half of the dashboard (S-001), assembled server-side so the browser makes no
@@ -53,11 +54,43 @@ export interface GroupProgress {
   solvedCount: number;
 }
 
+/**
+ * A shadow assignment the reader is a student of (S-025).
+ *
+ * Their **points** were already on this page before this existed -- `points.total`/`gained` in the
+ * group progress cards include shadow assignments, because core-api folds them in
+ * (`GroupViewFactory::getStudentStatsInternal`). What was missing is which ones they are, and the
+ * only place to learn that is `/v1/groups/{id}/shadow-assignments`, one call per group.
+ */
+export interface MyShadowAssignment {
+  id: string;
+  name: string;
+  groupId: string;
+  groupName: string;
+  maxPoints: number;
+  isBonus: boolean;
+  /** null when nothing has been awarded to this reader yet. */
+  myPoints: number | null;
+  myNote: string;
+  /** Informative only -- nothing is submitted, so nothing is enforced against it (S-020). */
+  deadline: number | null;
+}
+
 export interface StudentDashboard {
   /** Still open for submission, nearest deadline first. */
   upcoming: UpcomingAssignment[];
   /** One entry per group the user studies in, in the order the sidebar lists them. */
   progress: GroupProgress[];
+  /**
+   * Work with nothing to submit, across every group the reader studies in (S-025).
+   *
+   * A list of its own, never rows in `upcoming` -- every column of that table is about a
+   * submission, and none of them can be filled in for a shadow assignment (DEC-079, which decided
+   * the same question for the group screen). Deliberately **not** in the calendar either: a shadow
+   * deadline is the teacher's note to themselves, and putting it beside enforced ones would state
+   * something about it that is not true.
+   */
+  shadow: MyShadowAssignment[];
 }
 
 interface AssignmentPayload {
@@ -136,16 +169,18 @@ const byUrgency =
 
 export async function getStudentDashboard(locale: string): Promise<StudentDashboard> {
   const { member } = await getMyGroups(locale);
-  if (member.length === 0) return { upcoming: [], progress: [] };
+  if (member.length === 0) return { upcoming: [], progress: [], shadow: [] };
 
-  const [statsByGroup, assignmentsPerGroup] = await Promise.all([
+  const [statsByGroup, assignmentsPerGroup, shadowPerGroup] = await Promise.all([
     getMyGroupStats(),
     Promise.all(member.map((group) => fetchGroupAssignments(group.id))),
+    Promise.all(member.map((group) => getGroupShadowAssignments(group.id, locale))),
   ]);
 
   const now = Date.now() / 1000;
   const upcoming: UpcomingAssignment[] = [];
   const progress: GroupProgress[] = [];
+  const shadow: MyShadowAssignment[] = [];
 
   member.forEach((group, index) => {
     const assignments = assignmentsPerGroup[index]!;
@@ -174,6 +209,20 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
       });
     }
 
+    for (const entry of shadowPerGroup[index]!) {
+      shadow.push({
+        id: entry.id,
+        name: entry.name,
+        groupId: group.id,
+        groupName: group.name,
+        maxPoints: entry.maxPoints,
+        isBonus: entry.isBonus,
+        myPoints: entry.myPoints,
+        myNote: entry.myNote,
+        deadline: entry.deadline,
+      });
+    }
+
     if (groupStats) {
       progress.push({
         id: group.id,
@@ -192,8 +241,16 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
   upcoming.sort(
     (a, b) => a.effectiveDeadline - b.effectiveDeadline || a.name.localeCompare(b.name, locale),
   );
+  // Awaiting points first: those are the rows the reader can still do something about. Then by
+  // group, so several from one course stay together, and by name within it.
+  shadow.sort(
+    (a, b) =>
+      Number(a.myPoints !== null) - Number(b.myPoints !== null) ||
+      a.groupName.localeCompare(b.groupName, locale) ||
+      a.name.localeCompare(b.name, locale),
+  );
 
-  return { upcoming, progress };
+  return { upcoming, progress, shadow };
 }
 
 /**

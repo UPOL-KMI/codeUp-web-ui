@@ -2284,6 +2284,39 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     FAQ and this page had none. Fixed in `(anon)/layout.tsx`.
   - _Observations:_ **136 e2e tests pass** (125 before these two tickets), 55 unit tests.
 
+- **[2026-09-01 09:05] S-025:** The dashboard rows for work with nothing to submit.
+  `components/dashboard/shadow-assignments.tsx`, `getStudentDashboard()`.
+  - _The points were already here; the names were not._ core-api folds shadow points into the group
+    totals the progress cards read, so "8/40" had been counting them all along -- what a student
+    could not see was **which** ones. That is one call per group,
+    `/v1/groups/{id}/shadow-assignments`, fanned out the same way the deadline table already fans
+    out over assignments; `getGroupShadowAssignments` is now memoized so the group screen asking for
+    one of them on the same render costs nothing.
+  - **_A table of its own, and deliberately not a calendar entry (DEC-087)._** DEC-079 already
+    decided the first half for the group screen: every column of a deadline table is about a
+    submission, and none of them can be filled in here. The calendar is the same argument one step
+    further -- a shadow deadline is the supervisor's note about when the work should happen, and
+    core-api's own documentation says the supervisor decides whether it was breached, so drawing it
+    beside enforced deadlines would claim a countdown that does not exist. The column says
+    "Deadline (informative)" and carries no urgency badge and no relative time.
+  - _Rows awaiting points come first_, then by group, then by name -- the ones a reader might still
+    act on, ahead of the ones already settled. The teacher's note is shown where there is one, which
+    is the column the legacy dashboard's own shadow table has.
+  - _Seeded a second shadow assignment with nothing awarded._ The seed made exactly one, always
+    awarded, so the "nothing yet" row -- the state most students are in most of the time -- had
+    never been rendered. Same reasoning as F-029.
+  - **_One real defect found on the way (DEC-088)._** `StatusState` hardcoded `<h2>` for its title.
+    That is right for `not-found.tsx` and friends, which render nothing above it, and wrong inside a
+    dashboard panel headed by an `<h3>`: "Nothing is due" read as a peer of "My studies", and the
+    dashboard spec that enumerates `h2`s **had been failing intermittently at HEAD** for exactly the
+    persona with no open deadlines -- confirmed by running it against a stashed tree, so it was not
+    this ticket's. `headingLevel` defaults to `2`, so nothing else moved.
+  - _Verified live as the seeded student, in both locales:_ both rows, the group total moving from
+    8/40 to 8/60 as the second assignment's maximum joined it (which is the fold this ticket is
+    about, seen from the other side), and the whole dashboard's heading outline now h1 → h2 → h3 →
+    h4 with no jump.
+  - _Observations:_ **138 e2e tests pass** (136 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2291,13 +2324,13 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
   detected-similarities report (S-019), shadow assignments (S-020), the user profile (S-021),
-  account settings (S-022) and both invitation-acceptance pages (S-023, S-024), plus F-030 (a
-  core-api refusal renders as one). Foundation and Design System complete.
-- **Next ticket:** S-025 (the dashboard's shadow-assignment rows, unblocked since S-020 seeded a
-  fixture), then F-031 (an expired session still reads as an error page). **T-018 is unblocked** now
-  that invitation links lead somewhere, and it owes `e2e/helpers/core-api.ts` its retirement. The
-  teacher phase's first two tickets (T-002 edit, T-003 solutions list) each owe the assignment
-  screen a link, recorded on their backlog rows.
+  account settings (S-022), both invitation-acceptance pages (S-023, S-024) and the dashboard's
+  shadow-assignment rows (S-025), plus F-030 (a core-api refusal renders as one). Foundation and
+  Design System complete.
+- **Next ticket:** F-031 (an expired session still reads as an error page), then the student phase
+  has only S-026 left. **T-018 is unblocked** now that invitation links lead somewhere, and it owes
+  `e2e/helpers/core-api.ts` its retirement. The teacher phase's first two tickets (T-002 edit, T-003
+  solutions list) each owe the assignment screen a link, recorded on their backlog rows.
 - **New ticket from this session:** **S-026** -- joining a public group and leaving a group are both
   legacy capabilities nothing here has built. Accepting an invitation is a one-way door in this app
   today, which is why `e2e/group-invitations.spec.ts` asserts every state except the accept.

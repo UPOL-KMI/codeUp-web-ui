@@ -5,6 +5,7 @@ import { getStudentDashboard } from "@/lib/api/dashboard";
 import { EmptyState } from "@/components/state/empty-state";
 
 import { GroupProgressCards } from "./group-progress";
+import { ShadowAssignments } from "./shadow-assignments";
 import { UpcomingDeadlines } from "./upcoming-deadlines";
 
 /**
@@ -36,10 +37,20 @@ export async function StudentSection() {
             <EmptyState
               title={t("upcoming.emptyTitle")}
               description={t("upcoming.emptyDescription")}
+              headingLevel={4}
             />
           }
         />
       </section>
+
+      {dashboard.shadow.length > 0 && (
+        <section aria-labelledby="dashboard-shadow">
+          <h3 id="dashboard-shadow" className="mb-3 text-base font-semibold tracking-tight">
+            {t("shadow.heading")}
+          </h3>
+          <ShadowAssignments assignments={dashboard.shadow} />
+        </section>
+      )}
 
       {dashboard.progress.length > 0 && (
         <section aria-labelledby="dashboard-progress">

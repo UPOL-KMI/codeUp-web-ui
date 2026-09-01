@@ -110,6 +110,22 @@
         "status": "Stav"
       }
     },
+    "shadow": {
+      "heading": "Hodnoceno bez odevzdání",
+      "explain": "Práce, kterou ReCodEx nevyhodnocuje — ústní zkouška, prezentace, docházka. Body uděluje vyučující ručně a termín je pouze informativní: jestli byl zmeškán, rozhoduje vyučující, ne systém.",
+      "untitled": "Nepojmenované stínové zadání",
+      "bonus": "Bonus",
+      "noDeadline": "Bez termínu",
+      "notAwarded": "— / {max}",
+      "more": "{count, plural, one {Další # řádek} few {Další # řádky} other {Dalších # řádků}} se nezobrazuje.",
+      "columns": {
+        "assignment": "Zadání",
+        "group": "Skupina",
+        "deadline": "Termín (informativní)",
+        "points": "Moje body",
+        "note": "Poznámka"
+      }
+    },
     "progress": {
       "heading": "Můj postup",
       "points": "bodů",

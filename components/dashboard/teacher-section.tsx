@@ -76,6 +76,7 @@ export async function TeacherSection() {
             <EmptyState
               title={t("teaching.emptyTitle")}
               description={t("teaching.emptyDescription")}
+              headingLevel={4}
             />
           }
         />

@@ -917,22 +917,32 @@ async function ensureDetectedSimilarity(
  * Idempotent on the group already having a shadow assignment, and on the student already having
  * points in it.
  */
+/**
+ * A shadow assignment, matched by its own name so a second one can exist beside the first --
+ * S-025's dashboard section has an "awarded" row and a "nothing yet" row, and only one of those
+ * was reachable while the seed produced a single, always-awarded assignment.
+ *
+ * `awardee` omitted means exactly that: create it and award nobody.
+ */
 async function ensureShadowAssignment(
   adminToken: string,
   group: GroupRecord,
-  awardee: { userId: string },
+  spec: { name: string; text: string; maxPoints: number; note?: string },
+  awardee?: { userId: string },
 ): Promise<boolean> {
-  const existing = await api<{ id: string; points?: { awardeeId: string }[] }[]>(
-    "GET",
-    `/groups/${group.id}/shadow-assignments`,
-    { token: adminToken },
+  const existing = await api<
+    { id: string; localizedTexts: { name: string }[]; points?: { awardeeId: string }[] }[]
+  >("GET", `/groups/${group.id}/shadow-assignments`, { token: adminToken });
+  const match = existing.find((assignment) =>
+    assignment.localizedTexts.some((text) => text.name === spec.name),
   );
-  if (existing.length > 0) {
-    const awarded = existing[0]!.points?.some((record) => record.awardeeId === awardee.userId);
-    if (awarded) return false;
-    await api("POST", `/shadow-assignments/${existing[0]!.id}/create-points`, {
+
+  if (match) {
+    if (!awardee) return false;
+    if (match.points?.some((record) => record.awardeeId === awardee.userId)) return false;
+    await api("POST", `/shadow-assignments/${match.id}/create-points`, {
       token: adminToken,
-      body: { userId: awardee.userId, points: 8, note: `${SEED_PREFIX} oral exam` },
+      body: { userId: awardee.userId, points: 8, note: spec.note ?? "" },
     });
     return true;
   }
@@ -947,22 +957,18 @@ async function ensureShadowAssignment(
       version: created.version,
       isPublic: true,
       isBonus: false,
-      maxPoints: 10,
+      maxPoints: spec.maxPoints,
       sendNotification: false,
       deadline: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
-      localizedTexts: [
-        {
-          locale: "en",
-          name: `${SEED_PREFIX} Oral Exam`,
-          text: "Points for the oral exam. Nothing is submitted here — the examiner awards the points.",
-        },
-      ],
+      localizedTexts: [{ locale: "en", name: spec.name, text: spec.text }],
     },
   });
-  await api("POST", `/shadow-assignments/${created.id}/create-points`, {
-    token: adminToken,
-    body: { userId: awardee.userId, points: 8, note: `${SEED_PREFIX} oral exam` },
-  });
+  if (awardee) {
+    await api("POST", `/shadow-assignments/${created.id}/create-points`, {
+      token: adminToken,
+      body: { userId: awardee.userId, points: 8, note: spec.note ?? "" },
+    });
+  }
   return true;
 }
 
@@ -1223,11 +1229,30 @@ async function main() {
     );
   }
 
-  // A shadow assignment with points awarded to Alice (S-020) -- work with nothing to submit.
+  // Two shadow assignments (S-020, S-025): one with points awarded to Alice, one with none, so the
+  // dashboard's "awarded" and "nothing yet" rows are both reachable.
+  const shadowSeeded = [
+    await ensureShadowAssignment(
+      admin.token,
+      g1,
+      {
+        name: `${SEED_PREFIX} Oral Exam`,
+        text: "Points for the oral exam. Nothing is submitted here — the examiner awards the points.",
+        maxPoints: 10,
+        note: `${SEED_PREFIX} oral exam`,
+      },
+      student1,
+    ),
+    await ensureShadowAssignment(admin.token, g1, {
+      name: `${SEED_PREFIX} Term Presentation`,
+      text: "Points for the end-of-term presentation. Nothing has been awarded yet.",
+      maxPoints: 20,
+    }),
+  ].filter(Boolean).length;
   log(
-    (await ensureShadowAssignment(admin.token, g1, student1))
-      ? "created a shadow assignment with awarded points"
-      : "a shadow assignment with points already existed",
+    shadowSeeded > 0
+      ? `created or awarded ${shadowSeeded} shadow assignments`
+      : "both shadow assignments already existed",
   );
 
   // One invitation link per state S-023's page renders (S-023). G3 is the group Alice can still

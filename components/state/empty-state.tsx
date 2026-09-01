@@ -11,10 +11,20 @@ export function EmptyState({
   title,
   description,
   action,
+  headingLevel,
 }: {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  /** See `StatusState` -- pass it wherever this panel sits under a heading deeper than the page's. */
+  headingLevel?: 2 | 3 | 4;
 }) {
-  return <StatusState title={title} description={description} action={action} />;
+  return (
+    <StatusState
+      title={title}
+      description={description}
+      action={action}
+      headingLevel={headingLevel}
+    />
+  );
 }

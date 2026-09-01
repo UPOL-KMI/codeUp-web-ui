@@ -16,6 +16,11 @@ import type { SeedAccount } from "./helpers/accounts";
  * ascend -- which is the actual product requirement (IA §4.1: "sorted by urgency"), stated
  * without depending on what the dates are.
  */
+/** The deadline table specifically -- S-025 added a second table to the same student section. */
+function upcoming(page: Page) {
+  return page.getByRole("region", { name: "Upcoming deadlines" }).getByRole("table");
+}
+
 async function signIn(page: Page, account: SeedAccount): Promise<void> {
   const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
@@ -30,7 +35,7 @@ test.describe("as a student", () => {
   test("lists open assignments with their group, deadline and status", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "Upcoming deadlines" })).toBeVisible();
 
-    const rows = page.getByRole("table").locator("tbody tr");
+    const rows = upcoming(page).locator("tbody tr");
     await expect(rows).not.toHaveCount(0);
 
     const firstRow = rows.first();
@@ -42,8 +47,7 @@ test.describe("as a student", () => {
   });
 
   test("orders the deadlines by urgency, nearest first", async ({ page }) => {
-    const timestamps = await page
-      .getByRole("table")
+    const timestamps = await upcoming(page)
       .locator("tbody tr td:nth-child(3) time:first-child")
       .evaluateAll((nodes) => nodes.map((node) => Date.parse(node.getAttribute("datetime") ?? "")));
 
@@ -66,8 +70,38 @@ test.describe("as a student", () => {
     expect(gained).toBeLessThanOrEqual(max);
   });
 
+  test("lists work that is graded without anything being submitted", async ({ page }) => {
+    // S-025. A table of its own, never rows in the deadline table above: every column there is
+    // about a submission, and a shadow assignment has none (DEC-079).
+    const shadow = page.getByRole("region", { name: "Graded without a submission" });
+    await expect(shadow.getByText("the deadline is informative")).toBeVisible();
+
+    const awarded = shadow.getByRole("row").filter({ hasText: "[seed] Oral Exam" });
+    await expect(awarded.getByRole("cell", { name: "8/10" })).toBeVisible();
+    await expect(
+      awarded.getByRole("cell", { name: "[seed] oral exam", exact: true }),
+    ).toBeVisible();
+
+    // Nothing awarded yet sorts first: it is the row the reader might still act on.
+    const rows = shadow.locator("tbody tr");
+    await expect(rows.first()).toContainText("[seed] Term Presentation");
+    await expect(rows.first()).toContainText("— / 20");
+
+    // The deadline is stated without any of the urgency the real ones carry.
+    await expect(shadow.getByText(/Open|Second deadline|Closed/)).toHaveCount(0);
+  });
+
+  test("opens the shadow assignment behind one of those rows", async ({ page }) => {
+    await page
+      .getByRole("region", { name: "Graded without a submission" })
+      .getByRole("link", { name: "[seed] Oral Exam" })
+      .click();
+
+    await expect(page).toHaveURL(/\/en\/shadow-assignments\/[0-9a-f-]+$/);
+  });
+
   test("opens the assignment behind a deadline row", async ({ page }) => {
-    await page.getByRole("table").locator("tbody tr").first().getByRole("link").first().click();
+    await upcoming(page).locator("tbody tr").first().getByRole("link").first().click();
 
     await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
     // The section crumb has no page of its own, so it is text rather than a dead link.

@@ -165,13 +165,19 @@ export interface ShadowAssignmentSummary {
   deadline: number | null;
   /** The reader's own awarded points, when they have any. */
   myPoints: number | null;
+  /** What the teacher wrote alongside those points. Empty when there are none, or none was left. */
+  myNote: string;
 }
 
 /**
  * The group's shadow assignments (S-020), for the same tab that lists the real ones -- the legacy
  * group screen puts both tables there, and a screen nobody can navigate to is not shipped.
+ *
+ * Memoized per request for the same reason `fetchGroupAssignments` is: S-025 fans this out over
+ * every group the reader studies in, and the group screen asks for one of them again on the very
+ * same render. Per-render only, never across users -- DEC-021 still stands.
  */
-export async function getGroupShadowAssignments(
+export const getGroupShadowAssignments = cache(async function getGroupShadowAssignments(
   groupId: string,
   locale: string,
 ): Promise<ShadowAssignmentSummary[]> {
@@ -190,9 +196,12 @@ export async function getGroupShadowAssignments(
       isBonus: assignment.isBonus,
       isPublic: assignment.isPublic,
       deadline: assignment.deadline ?? null,
-      myPoints:
-        (assignment.points ?? []).find((record) => record.awardeeId === session.userId)?.points ??
-        null,
+      myPoints: mine(assignment, session.userId)?.points ?? null,
+      myNote: mine(assignment, session.userId)?.note ?? "",
     }))
     .sort((a, b) => a.name.localeCompare(b.name, locale));
+});
+
+function mine(assignment: ShadowAssignmentPayload, userId: string): PointsPayload | undefined {
+  return (assignment.points ?? []).find((record) => record.awardeeId === userId);
 }
