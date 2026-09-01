@@ -2495,6 +2495,34 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     assignments.
   - _Observations:_ **155 e2e tests pass** (153 before), 55 unit tests.
 
+- **[2026-09-01 13:30] T-006 (and T-004 found already shipped):** Points, assignment by assignment.
+  `components/groups/points-matrix.tsx`, `getGroupPointsMatrix()`.
+  - _S-007's roster answers the row question -- how is this person doing -- and stopped there._ This
+    is the column question: who has not done which piece of work. It sits under the roster on the
+    Students tab, which is where S-007's note said it belonged.
+  - _Both tables come out of the same response._ `/v1/groups/{id}/students/stats` already carries a
+    row per student with an entry per assignment, so the matrix costs one call for the assignment
+    **names** and nothing for the data.
+  - **_A cell tells "never submitted" from "every attempt failed" -- the first thing to close any
+    part of Q-012._** Both look identical in the stats (`status: null`, no best solution), and
+    calling them the same thing is exactly the complaint that question records about the dashboard.
+    `/v1/assignment-solvers?groupId=` answers it for the whole group in **one** call, which is the
+    only reason the distinction is affordable: a dash means nothing was sent, an exclamation mark
+    means attempts were made and none produced a result.
+  - _Not a `DataTable`._ Its columns are data rather than a schema, so a sort control would sort by
+    a column that may not exist tomorrow, and a filter box over a matrix hides the shape that makes
+    it readable. It scrolls sideways with the name column pinned.
+  - _Shadow assignments have no column._ Their points are inside the row totals -- core-api folds
+    them in, which is what S-025 found from the other side -- but nothing is submitted for them, so
+    a column would be blank by construction. DEC-079's reasoning for the third time.
+  - **_T-004 was already done._** "Submitted count, average score" is precisely what S-013's four
+    tiles on the assignment screen show, down to the average being taken over students whose best
+    solution was _scored_. Marked done with that note rather than left as a ticket someone would
+    open and find finished -- the same correction S-020 made for T-017.
+  - _Two existing specs needed scoping, not fixing:_ the roster test and the profile test both
+    reached for "Alice Student" on the Students tab, which is now named in two tables.
+  - _Observations:_ **156 e2e tests pass** (155 before), 55 unit tests.
+
 ### Current Status
 
 - **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
@@ -2507,11 +2535,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   session signs the reader out instead of looping), S-026 (joining and leaving a group) and T-018
   (the invitation links themselves). **The Student phase is complete**, and the Teacher phase has
   begun with T-003 (every attempt at an assignment), T-002 (its settings, the re-sync and its
-  deletion) and T-001 (assigning an exercise in the first place).
+  deletion), T-001 (assigning an exercise in the first place) and T-006 (the points matrix);
+  T-004 turned out to have shipped with S-013.
   Foundation and Design System complete.
-- **Next ticket:** T-004 (assignment stats) and T-006 (the points matrix), both of which read data
-  the screens already fetch, then T-005's per-student drill-down, which owes the user profile
-  (S-021) its per-group solutions link.
+- **Next ticket:** T-005 (the per-student drill-down, which owes the user profile its per-group
+  solutions link) and T-007 (exporting the matrix T-006 just built). The exercise-authoring tickets
+  (T-008..T-012) are the largest block left, and T-016's Graphviz question is still open.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group
   and leaving one were legacy capabilities nothing here had built, found while S-023 was making
   invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.

@@ -22,7 +22,8 @@ test("shows a teacher who a student is and where they belong", async ({ page }) 
   await page.goto(`${page.url().split("?")[0]}?tab=students`);
 
   const main = page.getByRole("main");
-  await main.getByRole("link", { name: "Alice Student" }).click();
+  // The roster, not T-006's points matrix below it -- every student is named in both.
+  await main.getByRole("table").first().getByRole("link", { name: "Alice Student" }).click();
   await expect(page).toHaveURL(/\/en\/users\/[0-9a-f-]+$/);
 
   await expect(main.getByRole("heading", { name: "Alice Student" })).toBeVisible();

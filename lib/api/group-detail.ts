@@ -393,3 +393,100 @@ export async function getGroupStudents(groupId: string): Promise<GroupStudent[]>
     }))
     .sort((a, b) => a.fullName.localeCompare(b.fullName));
 }
+
+/**
+ * The points matrix (T-006): every student against every assignment, one cell each.
+ *
+ * S-007's roster answers "how is this person doing overall" and deliberately stopped there; this
+ * answers "who has not done which piece of work", which a teacher reads down the columns rather
+ * than across the rows. **Both come out of the same response** --
+ * `/v1/groups/{id}/students/stats` already carries a row per student with a nested entry per
+ * assignment -- so the matrix costs one extra call for the assignment *names*, not for the data.
+ *
+ * Shadow assignments are **not** columns here. Their points are inside `points.gained` (core-api
+ * folds them in, as S-025 found from the other side), so the row totals already count them, but
+ * they have no per-assignment cell to show and inventing one would mean four blank columns --
+ * DEC-079's reasoning, once more.
+ *
+ * **A cell distinguishes "never submitted" from "everything failed", which the stats alone cannot.**
+ * A student whose every attempt died in the pipeline has `status: null` and no `bestSolutionId`,
+ * exactly like a student who never started -- and a matrix that calls those the same thing is the
+ * complaint Q-012 records about the dashboard. `/v1/assignment-solvers?groupId=` answers it for the
+ * whole group in **one** call (`assignmentId` takes precedence when both are given, so the group
+ * form is the batched one), which is the only reason this distinction is affordable here.
+ */
+export interface PointsMatrixCell {
+  gained: number | null;
+  total: number;
+  /** core-api's four-value job state, or null when there is no valid best solution. */
+  status: string | null;
+  bestSolutionId: string | null;
+  /** Attempts core-api counted, which is what tells "never started" from "every attempt failed". */
+  attempts: number;
+}
+
+export interface PointsMatrixRow {
+  userId: string;
+  fullName: string;
+  gained: number;
+  total: number;
+  cells: Record<string, PointsMatrixCell>;
+}
+
+export interface PointsMatrix {
+  columns: { id: string; name: string; maxPoints: number; isBonus: boolean }[];
+  rows: PointsMatrixRow[];
+}
+
+export async function getGroupPointsMatrix(groupId: string, locale: string): Promise<PointsMatrix> {
+  const [stats, assignments, solvers] = await Promise.all([
+    apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
+    apiRead<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
+    apiRead<{ assignmentId: string; solverId: string; lastAttemptIndex: number }[]>(
+      "/v1/assignment-solvers",
+      { query: { groupId } },
+    ),
+  ]);
+  if (stats.length === 0) return { columns: [], rows: [] };
+
+  const attempts = new Map(
+    solvers.map((solver) => [`${solver.solverId}:${solver.assignmentId}`, solver.lastAttemptIndex]),
+  );
+
+  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
+    ids: [...new Set(stats.map((row) => row.userId))],
+  });
+  const names = new Map(people.map((person) => [person.id, person.fullName]));
+
+  const columns = assignments
+    .map((assignment) => ({
+      id: assignment.id,
+      name: localizedName(assignment.localizedTexts, locale),
+      maxPoints: assignment.maxPointsBeforeFirstDeadline,
+      isBonus: assignment.isBonus,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+
+  const rows = stats
+    .map((row) => ({
+      userId: row.userId,
+      fullName: names.get(row.userId) ?? "",
+      gained: row.points.gained,
+      total: row.points.total,
+      cells: Object.fromEntries(
+        row.assignments.map((entry) => [
+          entry.id,
+          {
+            gained: entry.points.gained,
+            total: entry.points.total,
+            status: entry.status,
+            bestSolutionId: entry.bestSolutionId,
+            attempts: attempts.get(`${row.userId}:${entry.id}`) ?? 0,
+          },
+        ]),
+      ),
+    }))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName, locale));
+
+  return { columns, rows };
+}

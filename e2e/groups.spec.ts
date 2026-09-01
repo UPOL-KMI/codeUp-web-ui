@@ -184,8 +184,56 @@ test.describe("the group's students tab", () => {
     await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
     await page.getByRole("link", { name: "Students", exact: true }).click();
 
-    const main = page.getByRole("main");
-    await expect(main.getByRole("link", { name: "Alice Student" })).toBeVisible();
-    await expect(main.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    // Scoped to the roster: T-006 put a second table on this tab, and every student appears in
+    // both.
+    const roster = page.getByRole("main").getByRole("table").first();
+    await expect(roster.getByRole("link", { name: "Alice Student" })).toBeVisible();
+    await expect(roster.getByRole("columnheader", { name: "Points" })).toBeVisible();
   });
+});
+
+/**
+ * The points matrix on the Students tab (T-006): every student against every assignment, which
+ * S-007's roster deliberately left out.
+ *
+ * Read-only, so it leaves nothing behind. What it asserts is the distinction the matrix exists to
+ * make -- a cell that was never submitted reads differently from one where every attempt failed,
+ * which is the complaint Q-012 records about the dashboard and the reason the extra
+ * `/v1/assignment-solvers` call is worth making.
+ */
+test("shows points per student and per assignment, and says which cells were never attempted", async ({
+  page,
+}) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+
+  await page.goto("/en/groups");
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: "[seed] Intro to Programming", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "[seed] Intro to Programming", level: 1 }),
+  ).toBeVisible();
+  await page.goto(`${page.url().split("?")[0]}?tab=students`);
+
+  const section = page.getByRole("region", { name: "Points, assignment by assignment" });
+  await expect(section).toBeVisible();
+
+  // A column per assignment plus the student and total columns, and a row per student.
+  const matrix = section.getByRole("table");
+  await expect(matrix.locator("thead th")).toHaveCount(5);
+  const alice = matrix.getByRole("row").filter({ hasText: "Alice Student" });
+  await expect(alice).toHaveCount(1);
+
+  // Every column header links to its assignment, and the row header to the person.
+  await expect(matrix.getByRole("link", { name: /Echo Greeting/ }).first()).toBeVisible();
+  await expect(alice.getByRole("link", { name: "Alice Student" })).toBeVisible();
+
+  // The distinction the table exists for. On this machine no evaluation can succeed (DEC-031), so
+  // every attempted cell is the "everything failed" state and the rest are "nothing submitted" --
+  // the assertion is that both appear and are not the same mark.
+  const marks = await matrix.locator("tbody td").allInnerTexts();
+  expect(marks.some((mark) => mark.trim() === "!")).toBe(true);
+  expect(marks.some((mark) => mark.trim() === "—")).toBe(true);
 });

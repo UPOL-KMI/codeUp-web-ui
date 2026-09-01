@@ -298,6 +298,19 @@
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
       }
     },
+    "points": {
+      "title": "Body po jednotlivých zadáních",
+      "explain": "Jedna buňka na studenta a zadání. Pomlčka znamená, že nic nebylo odevzdáno — což není totéž jako nula bodů — a vykřičník znamená, že každý pokus selhal dřív, než mohl být obodován. Stínová zadání se do součtů počítají, ale vlastní sloupec nemají; nic se k nim neodevzdává.",
+      "caption": "Body, které každý student získal v jednotlivých zadáních této skupiny.",
+      "untitled": "Nepojmenované zadání",
+      "notSubmitted": "Nic neodevzdáno",
+      "allFailed": "{attempts, plural, one {# pokus} few {# pokusy} other {# pokusů}}, žádný nedal výsledek",
+      "bonusOf": "{max} bonusově",
+      "columns": {
+        "student": "Student",
+        "total": "Celkem"
+      }
+    },
     "exams": {
       "table": {
         "title": "Předchozí zkoušky",

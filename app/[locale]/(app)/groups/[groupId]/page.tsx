@@ -4,6 +4,7 @@ import { getCurrentUser, type CurrentUser } from "@/lib/api/current-user";
 import {
   getGroupAssignments,
   getGroupDetail,
+  getGroupPointsMatrix,
   getGroupStudents,
   getRelocationTargets,
   type AssignmentFilter,
@@ -30,6 +31,7 @@ import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
 import { InvitationManager } from "@/components/groups/invitation-manager";
 import { MemberManager } from "@/components/groups/member-manager";
 import { MembershipButton } from "@/components/groups/membership-button";
+import { PointsMatrixTable } from "@/components/groups/points-matrix";
 import { GroupSettingsControls } from "@/components/groups/settings-controls";
 import { GroupSettingsForm } from "@/components/groups/settings-form";
 import { StudentTable } from "@/components/groups/student-table";
@@ -395,14 +397,33 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 }
 
 async function StudentsTab({ groupId }: { groupId: string }) {
-  const [t, students] = await Promise.all([
+  const locale = await getLocale();
+  const [t, tPoints, students, matrix] = await Promise.all([
     getTranslations("Group.students"),
+    getTranslations("Group.points"),
     getGroupStudents(groupId),
+    getGroupPointsMatrix(groupId, locale),
   ]);
 
-  return students.length === 0 ? (
-    <EmptyState title={t("empty.title")} description={t("empty.description")} />
-  ) : (
-    <StudentTable students={students} groupId={groupId} />
+  if (students.length === 0) {
+    return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
+  }
+
+  return (
+    <div className="flex flex-col gap-8">
+      <StudentTable students={students} groupId={groupId} />
+
+      {/* T-006. Both tables come out of the same `/students/stats` response, so the matrix costs
+          one call for the assignment names and nothing for the data. */}
+      {matrix.columns.length > 0 && (
+        <section aria-labelledby="group-points" className="flex flex-col gap-2">
+          <h3 id="group-points" className="text-sm font-medium">
+            {tPoints("title")}
+          </h3>
+          <p className="text-xs text-muted-foreground">{tPoints("explain")}</p>
+          <PointsMatrixTable matrix={matrix} />
+        </section>
+      )}
+    </div>
   );
 }

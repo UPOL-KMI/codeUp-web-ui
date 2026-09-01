@@ -298,6 +298,19 @@
         "description": "Nobody has joined this group as a student yet."
       }
     },
+    "points": {
+      "title": "Points, assignment by assignment",
+      "explain": "One cell per student and assignment. A dash means nothing has been submitted — which is not the same as scoring zero — and an exclamation mark means every attempt failed before it could be scored. Shadow assignments are counted in the totals but have no column of their own; nothing is submitted for them.",
+      "caption": "Points scored by each student in each assignment of this group.",
+      "untitled": "Unnamed assignment",
+      "notSubmitted": "Nothing submitted",
+      "allFailed": "{attempts, plural, one {# attempt} other {# attempts}}, none of which produced a result",
+      "bonusOf": "{max} bonus",
+      "columns": {
+        "student": "Student",
+        "total": "Total"
+      }
+    },
     "exams": {
       "table": {
         "title": "Previous exams",
