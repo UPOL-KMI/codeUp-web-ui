@@ -3527,6 +3527,53 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   - _Observations:_ **no code changed**, so the tree is untouched: 156 e2e tests, 55 unit tests,
     `typecheck`/`lint`/`build` clean before and after.
 
+- **[2026-09-02 22:10] P-006:** Where every old link goes, and the fact that none of them go there
+  yet. `docs/ROUTES.md`, rewritten.
+  - _The file was the recon plan, and the plan lost._ It promised `/groups/[id]/info`,
+    `/reference-solutions/[id]`, `/admin/server` and `/[...not-found]`; **none of those four
+    exist.** Rewritten against `next build`'s own route listing rather than against the intention.
+  - **_And it had missed the change that actually breaks every old link._** `localePrefix: "always"`
+    means there is no `/dashboard` -- there is `/en/dashboard` and `/cs/dashboard`. A redirect table
+    that ignores that sends every bookmark to a 404, so it is now the first thing the file says.
+  - _The second-order version of the same problem is the tabs._ Six legacy group routes are one
+    route and a `?tab=`, so those redirects need a **query string**, not a path rewrite -- and they
+    have to be ordered before the generic `/app/:path*` rule or it swallows them.
+  - **_Nothing redirects today, and that is currently harmless._** `next.config.ts` has no
+    `redirects()` and `proxy.ts` rewrites nothing but the locale; nginx still serves the **legacy**
+    app at `/` and this one answers only on its own host port. So the table is what has to exist
+    **before** cutover -- a deployment task rather than a code one. R-004 is open because of it: if
+    both apps stay reachable, the `/app/:path*` catch-all must not be added at all, or the legacy
+    app becomes unreachable through its own URLs.
+  - _Two redirects lose information on purpose_ and the file says which and why: `/login/:redirect*`
+    drops its target (the legacy segment carries no locale, and landing someone on the
+    wrong-language version of the page they asked for is worse than the dashboard), and both
+    instance routes land on the merged screen (DEC-113).
+  - _Two rows have nowhere to point:_ the solution diff (G-005) and the shadow-assignment editor
+    (G-009). A redirect to an unbuilt route is a 404 with an extra hop, so they wait for the tickets.
+
+- **[2026-09-02 22:25] P-007:** Telling a drop apart from a hole. `docs/DROPPED.md`, rewritten.
+  - **_The recon draft invited exactly the wrong inference._** Twenty items, **nineteen of them
+    libraries** -- swapping `moment.js` for `date-fns` drops nothing a person can do. A reader
+    arriving at a file called DROPPED.md reasonably concludes it enumerates what the new app cannot
+    do, and it never did. The rewrite says so in its second paragraph and splits the three kinds of
+    absence: a deliberate drop, unbuilt work (the G block), and a replaced library.
+  - _Only **four** capabilities are genuinely dropped_, each with a decision behind it: returning to
+    your own account after a takeover (DEC-112), assignment settings during a bulk assign (DEC-093),
+    the seven view preferences (**provisional** -- G-022 is the ticket that decides), and
+    `URL_PATH_PREFIX` as a _runtime_ setting, which Next resolves at build time.
+  - **_Two rows were taken off the drop list, because a deferral with no ticket behind it is not a
+    drop._** DEC-043 left the effective-role switch and the application-token form to "a future
+    ticket" that was never filed, which is precisely how an oversight comes to read as a decision.
+    They are G-023 and G-020 now.
+  - _PEND-001, PEND-002 and DROP-020 are closed or restated._ The monitor WebSocket was kept and is
+    both mechanisms (DEC-065, closing DEF-004); viz.js is dropped **and its capability kept**, laid
+    out and drawn server-side with no Graphviz at all (DEC-107, closing DEF-003); the extension
+    token handoff stays genuinely open (DEF-005), and G-020 is the conservative thing brief §7 asks
+    for.
+  - **_Two library rows are left deliberately untidy._** `react-ace` and `react-diff-viewer` were
+    filed as swaps, and for those two "we replaced the library" quietly meant "we did not replace
+    the capability". They stay visible, pointing at G-028 and G-005, rather than being cleaned away.
+
 ### Current Status
 
 - **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is
