@@ -17,7 +17,7 @@
       "title": "Jak to do sebe zapadá",
       "groups": {
         "title": "Skupiny",
-        "body": "Všechno se děje ve skupině — v předmětu, na cvičení, v soutěži. Skupiny tvoří strom, díky čemuž může předmět obsahovat vlastní cvičební skupiny a správce předmětu spravuje i je. Skupina má členy, zadání a vlastní pravidla pro body."
+        "body": "Všechno se děje ve skupině — v předmětu, na cvičení, v soutěži. Skupiny tvoří strom, díky čemuž může předmět obsahovat vlastní skupiny na cvičení a správce předmětu spravuje i je. Skupina má členy, zadání a vlastní pravidla pro body."
       },
       "exercises": {
         "title": "Úlohy",
@@ -25,7 +25,7 @@
       },
       "assignments": {
         "title": "Zadání",
-        "body": "Zadáním se úloha zkopíruje do skupiny a přibude termín a počet bodů. Protože jde o kopii, pozdější úpravy úlohy se zadání nedotknou, dokud je někdo vědomě nesesynchronizuje — oprava uprostřed semestru tak tiše nezmění to, za co byla třída hodnocena."
+        "body": "Zadáním se úloha zkopíruje do skupiny a přibude termín a počet bodů. Protože jde o kopii, pozdější úpravy úlohy se zadání nedotknou, dokud je někdo vědomě nesesynchronizuje — oprava uprostřed semestru tak tiše nezmění to, za co už byli studenti hodnoceni."
       },
       "solutions": {
         "title": "Řešení",
@@ -50,7 +50,7 @@
   },
   "Forbidden": {
     "title": "Přístup odepřen",
-    "description": "Nemáte oprávnění k přístupu k tomuto zdroji.",
+    "description": "Nemáte oprávnění přistupovat k tomuto zdroji.",
     "homeLink": "Zpět na hlavní stránku"
   },
   "Unauthorized": {
@@ -73,9 +73,9 @@
     "password": "Heslo",
     "signIn": "Přihlásit se",
     "signingIn": "Přihlašuji…",
-    "signInRequired": "Tato stránka je pro přihlášené. Po přihlášení se na ni dostanete.",
+    "signInRequired": "Stránka, kterou jste chtěli otevřít, je jen pro přihlášené. Po přihlášení se na ni dostanete.",
     "externalAuthFailed": "Přihlášení přes externí službu se nepovedlo. Zkuste to znovu, nebo použijte heslo k ReCodExu níže.",
-    "shortSession": "Krátká relace ({minutes} minut)",
+    "shortSession": "Krátká relace ({minutes, plural, one {# minuta} few {# minuty} many {# minuty} other {# minut}})",
     "shortSessionHint": "Pro veřejný počítač: relace skončí dřív, i když se zapomenete odhlásit.",
     "errors": {
       "failed": "Přihlášení se nepovedlo. Zkontrolujte adresu a heslo."
@@ -131,7 +131,7 @@
   },
   "ForgotPasswordChange": {
     "title": "Zvolte nové heslo",
-    "explain": "Tento odkaz přišel na vaši adresu a funguje jednou.",
+    "explain": "Tento odkaz přišel na vaši adresu a funguje jen jednou.",
     "password": "Nové heslo",
     "confirmation": "Nové heslo znovu",
     "save": "Změnit heslo",
@@ -147,7 +147,7 @@
     },
     "errors": {
       "mismatch": "Hesla se neshodují.",
-      "failed": "Heslo se nezměnilo. Odkaz mohl vypršet."
+      "failed": "Heslo se nepodařilo změnit. Odkaz mohl vypršet."
     }
   },
   "EmailVerification": {
@@ -184,12 +184,12 @@
     "password": "Heslo",
     "passwordConfirm": "Heslo znovu",
     "submit": "Vytvořit účet a přihlásit se",
-    "submitting": "Vytváříme účet…",
+    "submitting": "Vytvářím účet…",
     "expired": "Platnost této pozvánky vypršela. Požádejte o novou toho, kdo vás pozval.",
     "unreadableToken": "Tento odkaz na pozvánku nelze přečíst. Nejspíš se cestou poškodil — zkuste ho otevřít znovu z původního e-mailu, nebo si vyžádejte nový.",
     "errors": {
       "mismatch": "Zadaná hesla se neshodují.",
-      "failed": "Účet se nepodařilo vytvořit. Platnost pozvánky mohla vypršet, nebo už byla použita."
+      "failed": "Účet se nepodařilo vytvořit. Pozvánka mohla vypršet, nebo už byla použita."
     }
   },
   "GroupInvitation": {
@@ -213,7 +213,7 @@
     "expired": "Platnost tohoto odkazu vypršela. Požádejte o nový toho, kdo vám ho poslal.",
     "organizational": "Tato skupina je organizační — sdružuje další skupiny, nikoli studenty, takže do ní nelze nikoho zapsat.",
     "archived": "Tato skupina je archivovaná a archivované skupiny nepřijímají nové studenty.",
-    "notAllowed": "Do této skupiny se tímto odkazem přihlásit nelze. Může patřit do jiné instance ReCodExu, nebo jste uzamčeni ve zkoušce jinde.",
+    "notAllowed": "Do této skupiny se tímto odkazem přihlásit nelze. Může patřit do jiné instance ReCodExu, nebo jste zamčeni ve zkoušce jinde.",
     "errors": {
       "acceptFailed": "Vstup do skupiny se nezdařil. Zkontrolujte odkaz na pozvánku a zkuste to znovu."
     }
@@ -226,9 +226,9 @@
     "upcoming": {
       "heading": "Blížící se termíny",
       "emptyTitle": "Nic vás netlačí",
-      "emptyDescription": "Žádná z vašich úloh není momentálně otevřená k odevzdání.",
+      "emptyDescription": "Žádné z vašich zadání není momentálně otevřené k odevzdání.",
       "bonus": "Bonus",
-      "more": "{count, plural, one {Nezobrazuje se # další otevřená úloha.} few {Nezobrazují se # další otevřené úlohy.} many {Nezobrazuje se # dalších otevřených úloh.} other {Nezobrazuje se # dalších otevřených úloh.}}",
+      "more": "{count, plural, one {Nezobrazuje se # další otevřené zadání.} few {Nezobrazují se # další otevřená zadání.} other {Nezobrazuje se # dalších otevřených zadání.}}",
       "columns": {
         "assignment": "Zadání",
         "group": "Skupina",
@@ -244,7 +244,7 @@
       "bonus": "Bonus",
       "noDeadline": "Bez termínu",
       "notAwarded": "— / {max}",
-      "more": "{count, plural, one {Další # řádek} few {Další # řádky} other {Dalších # řádků}} se nezobrazuje.",
+      "more": "{count, plural, one {Další # řádek se nezobrazuje.} few {Další # řádky se nezobrazují.} other {Dalších # řádků se nezobrazuje.}}",
       "columns": {
         "assignment": "Zadání",
         "group": "Skupina",
@@ -257,11 +257,11 @@
       "heading": "Můj postup",
       "points": "bodů",
       "barLabel": "Získané body ve skupině {group}",
-      "solved": "{solved} z {total} {total, plural, one {úlohy} other {úloh}} vyřešeno",
+      "solved": "{solved} z {total} zadání vyřešeno",
       "limit": "hranice {limit} bodů",
       "limitMet": "Hranice splněna",
       "limitNotMet": "Pod hranicí",
-      "nothingAssigned": "Zatím žádné úlohy."
+      "nothingAssigned": "Zatím žádná zadání."
     },
     "teaching": {
       "heading": "Moje výuka",
@@ -305,7 +305,7 @@
       "membership": "Moje role",
       "kind": "Druh",
       "students": "Studentů",
-      "assignments": "Úloh"
+      "assignments": "Zadání"
     },
     "membership": {
       "student": "Student",
@@ -314,7 +314,7 @@
     "kind": {
       "organizational": "Organizační",
       "public": "Veřejná",
-      "exam": "Zkouška"
+      "exam": "Zkoušková"
     },
     "empty": {
       "title": "Žádné skupiny",
@@ -332,8 +332,8 @@
       "label": "Sekce skupiny"
     },
     "badges": {
-      "archived": "Archivováno",
-      "exam": "Zkouška",
+      "archived": "Archivovaná",
+      "exam": "Zkoušková",
       "public": "Veřejná"
     },
     "info": {
@@ -358,7 +358,7 @@
       "people": "Lidé",
       "roles": {
         "admin": "Správci",
-        "supervisor": "Vyučující",
+        "supervisor": "Cvičící",
         "observer": "Pozorovatelé"
       },
       "subgroups": "Podskupiny"
@@ -402,15 +402,15 @@
         "submitted": "Zatím jste zde nic neodevzdali."
       },
       "shadow": {
-        "title": "Stínové úlohy",
+        "title": "Stínová zadání",
         "explain": "Práce, která se tu neodevzdává — body se udělují ručně.",
-        "untitled": "Nepojmenovaná stínová úloha",
+        "untitled": "Nepojmenované stínové zadání",
         "bonus": "Bonus",
-        "hidden": "Skrytá",
+        "hidden": "Skryté",
         "myPoints": "{points}/{max} bodů",
         "maxPoints": "až {max} bodů"
       },
-      "assignExercise": "Zadat cvičení",
+      "assignExercise": "Zadat úlohu",
       "caption": "Všechna zadání této skupiny, jejich termíny a počet bodů."
     },
     "students": {
@@ -459,7 +459,7 @@
           "lockType": "Omezení přístupu"
         },
         "unknownLockType": "neznámé",
-        "select": "Záznamy zamčení",
+        "select": "Zobrazit záznamy",
         "unselect": "Skrýt záznamy",
         "empty": {
           "title": "Žádné zaznamenané zkoušky",
@@ -500,7 +500,7 @@
       },
       "student": {
         "locked": "Jste zamčeni pro tuto zkoušku.",
-        "lockedInfo": "Můžete číst a odevzdávat řešení zkouškových úloh v této skupině.",
+        "lockedInfo": "Můžete číst a odevzdávat řešení zkouškových zadání v této skupině.",
         "lockPrompt": "Zamkněte se do zkoušky. Než skončí, bude tato skupina jediná, kde můžete odevzdávat.",
         "lockButton": "Zamknout mě",
         "lockInfo": {
@@ -519,11 +519,11 @@
         "waiting": {
           "title": "Zatím nezamčení",
           "empty": "Zamkli se všichni.",
-          "lastSeen": "Naposledy přihlášen {when}",
-          "neverSeen": "Nikdy nepřihlášen"
+          "lastSeen": "Naposledy přihlášen(a) {when}",
+          "neverSeen": "Nikdy nepřihlášen(a)"
         },
         "toast": {
-          "unlocked": "{name} byl odemčen."
+          "unlocked": "{name} byl(a) odemčen(a)."
         },
         "errors": {
           "unlockFailed": "Studenta se nepodařilo odemknout."
@@ -630,13 +630,13 @@
           "makeOrganizational": "Změnit na organizační",
           "makeRegular": "Změnit na běžnou",
           "markExam": "Označit jako zkouškovou",
-          "unmarkExam": "Zrušit označení zkouškové",
+          "unmarkExam": "Zrušit označení zkouškové skupiny",
           "changed": "Druh skupiny byl změněn.",
-          "explain": "Organizační skupiny obsahují jen další skupiny — žádné studenty ani úlohy. Příznak zkouškové skupiny mění, jak se skupina vypisuje a archivuje; samotné termíny zkoušek jsou na záložce Zkoušky."
+          "explain": "Organizační skupiny obsahují jen další skupiny — žádné studenty ani zadání. Příznak zkouškové skupiny mění, jak se skupina vypisuje a archivuje; samotné termíny zkoušek jsou na záložce Zkoušky."
         },
         "archive": {
           "title": "Archiv",
-          "explain": "Archivovaná skupina je zmrazená: zůstávají v ní studenti, úlohy i výsledky a čte se z Archivu místo ze seznamu skupin.",
+          "explain": "Archivovaná skupina je zmrazená: zůstávají v ní studenti, zadání i výsledky a čte se z Archivu místo ze seznamu skupin.",
           "archive": "Archivovat skupinu",
           "unarchive": "Vrátit z archivu",
           "archived": "Skupina byla archivována.",
@@ -659,7 +659,7 @@
         "confirm": {
           "archive": {
             "title": "Archivovat tuto skupinu?",
-            "description": "Stane se pouze ke čtení a přesune se do Archivu. Odsud ji můžete vrátit zpět."
+            "description": "Bude jen ke čtení a přesune se do Archivu. Odsud ji můžete vrátit zpět."
           },
           "unarchive": {
             "title": "Vrátit skupinu z archivu?",
@@ -667,7 +667,7 @@
           },
           "delete": {
             "title": "Smazat tuto skupinu?",
-            "description": "Zmizí i její úlohy, řešení a výsledky. Tohle nelze vzít zpět."
+            "description": "Zmizí i její zadání, řešení a výsledky. Tohle nelze vzít zpět."
           }
         }
       },
@@ -677,7 +677,7 @@
         "remove": "Odebrat",
         "searchPlaceholder": "Hledat podle jména",
         "searching": "Hledám…",
-        "noMatches": "Nikdo neodpovídá.",
+        "noMatches": "Hledanému jménu nikdo neodpovídá.",
         "staff": {
           "title": "Vyučující a pozorovatelé",
           "empty": "Skupinu nikdo neučí ani nepozoruje.",
@@ -691,7 +691,7 @@
           "removed": "Do skupiny už nepatří.",
           "add": "Přidat vyučujícího nebo pozorovatele",
           "addAsSupervisor": "Přidat jako cvičícího",
-          "added": "Byl přidán jako cvičící.",
+          "added": "Byl(a) přidán(a) jako cvičící.",
           "removeMember": "Odebrat uživatele {name}"
         },
         "students": {
@@ -741,7 +741,7 @@
         "description": "Komu odkaz zůstal, uvidí stránku „nenalezeno“. Kdo už s ním do skupiny vstoupil, zůstává členem."
       },
       "errors": {
-        "invalid": "Zkontrolujte data a zkuste to znovu.",
+        "invalid": "Zkontrolujte zadané datum a zkuste to znovu.",
         "createFailed": "Odkaz se nepodařilo vytvořit.",
         "updateFailed": "Odkaz se nepodařilo změnit.",
         "deleteFailed": "Odkaz se nepodařilo smazat.",
@@ -767,7 +767,7 @@
     "submitted": "Odevzdáno",
     "environment": "Jazyk",
     "group": "Skupina",
-    "submissions": "Vyhodnocení",
+    "submissions": "Počet vyhodnocení",
     "note": "Poznámka",
     "flags": {
       "best": "Nejlepší řešení",
@@ -788,7 +788,7 @@
       "pending": "Řešení bylo odevzdáno a čeká na vyhodnocení.",
       "summary": "Prošlo {passed} z {total} testů",
       "evaluatedAt": "Vyhodnoceno {when}",
-      "judgeLog": "Výstup hodnotitele",
+      "judgeLog": "Výstup soudce",
       "seconds": "{value} s",
       "kibibytes": "{value} KiB",
       "ofLimit": "{percent} limitu",
@@ -838,7 +838,7 @@
     "fileListLabel": "Soubory tohoto řešení",
     "contentUnavailable": "Obsah tohoto souboru se nepodařilo načíst.",
     "malformed": "Tento soubor není platné UTF-8. Některé znaky nemusí být zobrazeny tak, jak byly zapsány.",
-    "truncated": "Tento soubor je příliš velký na zobrazení celý — vidíte jen jeho začátek. Celý soubor je ve staženém archivu.",
+    "truncated": "Tento soubor je příliš velký na zobrazení celý — vidíte jen jeho začátek. Celý soubor je v archivu ke stažení.",
     "empty": {
       "title": "Žádné soubory",
       "description": "K tomuto řešení nebyly odevzdány žádné soubory."
@@ -847,28 +847,28 @@
       "title": "Příliš mnoho souborů",
       "description": "Toto řešení má {count} souborů, zde se jich zobrazuje nejvýše {max}. Chcete-li si přečíst všechny, stáhněte si archiv."
     },
-    "reviewOpenNote": "Recenze je otevřená. Vaše komentáře autor neuvidí, dokud ji neuzavřete; uzavřením mu odejde e-mail.",
-    "reviewClosedNote": "Recenze je uzavřená a autor si ji může přečíst. Každá další změna mu pošle další e-mail — pro rozsáhlejší úpravy recenzi nejprve znovu otevřete.",
-    "reviewedWithIssues": "Vaše řešení bylo zrecenzováno. Máte {issues, plural, one {# připomínku} few {# připomínky} many {# připomínek} other {# připomínek}} k vyřešení.",
-    "reviewedNoIssues": "Vaše řešení bylo zrecenzováno a nebyly nalezeny žádné připomínky."
+    "reviewOpenNote": "Revize je otevřená. Vaše komentáře autor neuvidí, dokud ji neuzavřete; uzavřením mu odejde e-mail.",
+    "reviewClosedNote": "Revize je uzavřená a autor si ji může přečíst. Každá další změna mu pošle další e-mail — pro rozsáhlejší úpravy revizi nejprve znovu otevřete.",
+    "reviewedWithIssues": "Vaše řešení bylo zrevidováno. Máte {issues, plural, one {# připomínku} few {# připomínky} many {# připomínek} other {# připomínek}} k vyřešení.",
+    "reviewedNoIssues": "Vaše řešení bylo zrevidováno a nebyly nalezeny žádné připomínky."
   },
   "Review": {
     "actions": {
-      "start": "Zahájit recenzi",
-      "markReviewed": "Označit za zrecenzované",
-      "close": "Uzavřít recenzi",
-      "reopen": "Znovu otevřít recenzi",
-      "erase": "Smazat recenzi"
+      "start": "Zahájit revizi",
+      "markReviewed": "Označit za zrevidované",
+      "close": "Uzavřít revizi",
+      "reopen": "Znovu otevřít revizi",
+      "erase": "Smazat revizi"
     },
     "toast": {
-      "opened": "Recenze je otevřená.",
-      "closed": "Recenze je uzavřená a autor ji vidí.",
-      "reopened": "Recenze je znovu otevřená.",
-      "erased": "Recenze byla smazána.",
+      "opened": "Revize je otevřená.",
+      "closed": "Revize je uzavřená a autor ji vidí.",
+      "reopened": "Revize je znovu otevřená.",
+      "erased": "Revize byla smazána.",
       "commentDeleted": "Komentář byl smazán."
     },
     "erase": {
-      "title": "Smazat celou recenzi?",
+      "title": "Smazat celou revizi?",
       "description": "Smažou se i všechny její komentáře. Tuto akci nelze vrátit zpět."
     },
     "comment": {
@@ -885,11 +885,11 @@
       "edit": "Upravit",
       "delete": "Smazat",
       "deleteTitle": "Smazat tento komentář?",
-      "deleteDescription": "Komentář bude z recenze nenávratně odstraněn.",
+      "deleteDescription": "Komentář bude z revize nenávratně odstraněn.",
       "unknownAuthor": "Neznámý autor"
     },
     "summary": {
-      "heading": "Souhrn recenze",
+      "heading": "Souhrn revize",
       "empty": "K řešení jako celku zatím nejsou žádné komentáře.",
       "add": "Přidat komentář k řešení"
     },
@@ -898,8 +898,8 @@
       "addFailed": "Komentář se nepodařilo uložit.",
       "updateFailed": "Změnu komentáře se nepodařilo uložit.",
       "deleteFailed": "Komentář se nepodařilo smazat.",
-      "stateFailed": "Stav recenze se nepodařilo změnit.",
-      "deleteReviewFailed": "Recenzi se nepodařilo smazat."
+      "stateFailed": "Stav revize se nepodařilo změnit.",
+      "deleteReviewFailed": "Revizi se nepodařilo smazat."
     }
   },
   "Exercises": {
@@ -975,9 +975,9 @@
     "otherLocales": "Napsáno také v: {locales}.",
     "externalText": "Celé zadání je mimo ReCodEx",
     "details": "Podrobnosti",
-    "files": "Přiložené soubory",
+    "files": "Připojené soubory",
     "filesExplain": "Soubory, které používá vyhodnocení — očekávané výstupy, testovací data, hlavičky. Studenti je nevidí.",
-    "noFiles": "Nejsou přiloženy žádné soubory.",
+    "noFiles": "Nejsou připojené žádné soubory.",
     "author": "Autor",
     "admins": "Správci",
     "difficulty": "Obtížnost",
@@ -990,7 +990,7 @@
     "noEnvironments": "Žádný nevybrán",
     "tags": "Štítky",
     "groups": "Skupiny",
-    "undisclosedGroups": "a {count, plural, one {# skupina} few {# skupiny} other {# skupin}}, které nevidíte",
+    "undisclosedGroups": "a {count, plural, one {# skupina, kterou nevidíte} few {# skupiny, které nevidíte} other {# skupin, které nevidíte}}",
     "visibility": "Viditelnost",
     "public": "Veřejná",
     "private": "Neveřejná",
@@ -1015,12 +1015,12 @@
     },
     "broken": {
       "title": "Tuto úlohu zatím nelze zadat",
-      "explain": "ReCodEx úlohu před zadáním kontroluje. Tyto části mu chybí:"
+      "explain": "ReCodEx úlohu před zadáním kontroluje. Toto v ní chybí:"
     },
     "validation": {
       "no-texts": "Nemá zadání v žádném jazyce.",
       "no-tests": "Nemá žádné testy.",
-      "score": "Není nastaven způsob výpočtu správnosti řešení.",
+      "score": "Není nastaven způsob výpočtu úspěšnosti řešení.",
       "no-runtimes": "Nebyl pro ni vybrán žádný jazyk.",
       "runtimes": "Vybrané jazyky nemají konfiguraci.",
       "no-configs": "Některé testy jsou nastaveny špatně, nebo vůbec.",
@@ -1052,7 +1052,7 @@
         "hard": "Těžká"
       },
       "isPublic": "Ostatní učitelé smí úlohu vidět a zadávat",
-      "isLocked": "Zamčeno — zadat ji nesmí nikdo, ani tak",
+      "isLocked": "Zamčeno — i tak ji nesmí nikdo zadat",
       "mergeJudgeLogs": "Sloučit chybový výstup soudce do běžného",
       "solutionFilesLimit": "Souborů na řešení",
       "solutionSizeLimit": "Celková velikost (v bajtech)",
@@ -1083,7 +1083,7 @@
       "choose": "Vyberte skupinu",
       "detach": "Odebrat",
       "detached": "Úloha byla ze skupiny odebrána.",
-      "undisclosed": "a {count, plural, one {# skupina} few {# skupiny} other {# skupin}}, které nevidíte"
+      "undisclosed": "a {count, plural, one {# skupina, kterou nevidíte} few {# skupiny, které nevidíte} other {# skupin, které nevidíte}}"
     },
     "archive": {
       "title": "Archivace",
@@ -1141,7 +1141,7 @@
         "roles": {
           "student": "Přihlášení studenti a výš",
           "supervisor": "Učitelé a výš",
-          "empowered-supervisor": "Starší učitelé a výš",
+          "empowered-supervisor": "Učitelé s rozšířenými právy a výš",
           "superadmin": "Jen administrátoři"
         },
         "requiresRole": "vyžaduje roli {role}",
@@ -1175,7 +1175,7 @@
       "search": "Jméno nebo e-mail",
       "searchButton": "Hledat",
       "searching": "Hledám…",
-      "noPeople": "Nikdo neodpovídá — nebo na této instanci nesmíte prohledávat uživatele.",
+      "noPeople": "Nikdo nebyl nalezen — nebo na této instanci nesmíte vyhledávat uživatele.",
       "addAdmin": "Udělat správcem",
       "adminAdded": "Nyní může tuto úlohu měnit.",
       "removeAdmin": "Odebrat",
@@ -1195,7 +1195,7 @@
       "forked": "Kopie byla vytvořena.",
       "errors": {
         "generic": "Nepovedlo se.",
-        "searchFailed": "Uživatele se nepodařilo prohledat.",
+        "searchFailed": "Uživatele se nepodařilo vyhledat.",
         "adminsFailed": "Správce se nepodařilo uložit.",
         "authorFailed": "Autora se nepodařilo změnit.",
         "noPersonChosen": "Nejdřív někoho vyberte.",
@@ -1216,7 +1216,7 @@
     },
     "advanced": {
       "environments": "Tato úloha používá vlastní konfiguraci, jejíž běhové prostředí se volí spolu s pipelinami. Její úprava tu zatím není.",
-      "config": "Tato úloha je poskládaná z ručně vybraných pipeline, ne ze standardních. Uložení přes tento formulář by je nahradilo a konfiguraci na nich postavenou ztratilo, proto zůstává, jak je. Než vznikne editor vlastních konfigurací, použijte původní rozhraní."
+      "config": "Tato úloha je poskládaná z ručně vybraných pipelin, ne ze standardních. Uložení přes tento formulář by je nahradilo a konfiguraci na nich postavenou ztratilo, proto zůstává, jak je. Než vznikne editor vlastních konfigurací, použijte původní rozhraní."
     },
     "tests": {
       "title": "Testy",
@@ -1248,7 +1248,7 @@
     },
     "environments": {
       "title": "Jazyky",
-      "explain": "V čem smí být řešení napsané. Každý jazyk se staví a spouští po svém, a právě proto se část nastavení testu níže ptá zvlášť za každý z nich.",
+      "explain": "V čem smí být řešení napsané. V každém jazyce se řešení staví a spouští jinak, a právě proto se část nastavení testu níže zadává zvlášť pro každý z nich.",
       "exclusive": "(nelze kombinovat)",
       "exclusiveConflict": "{environments} nemůže být v úloze spolu s jiným jazykem. Zvolte jej samostatně, nebo jej odeberte.",
       "noneSelected": "Není zvolen žádný jazyk, takže do této úlohy nejde nic odevzdat.",
@@ -1264,7 +1264,7 @@
       "unavailable": "Zatím není co nastavovat:",
       "noTests": "úloha nemá žádné testy",
       "noEnvironments": "není zvolen žádný jazyk",
-      "noPipelines": "Tato instalace nemá pro {environments} žádnou pipeline, takže pro něj nelze nic nastavit. Je zvolený jako jazyk, ale řešení v něm by nešlo vyhodnotit.",
+      "noPipelines": "Tato instalace nemá pro {environments} žádnou pipelinu, takže pro něj nelze nic nastavit. Je zvolený jako jazyk, ale řešení v něm by nešlo vyhodnotit.",
       "noFiles": "K této úloze nejsou připojené žádné soubory, takže není na co ukázat u vstupů, očekávaných výstupů ani vlastního soudce. Soubory se připojují u samotné úlohy.",
       "save": "Uložit konfiguraci",
       "saving": "Ukládám…",
@@ -1286,14 +1286,14 @@
       "runArgsExplain": "Předají se řešení na příkazové řádce.",
       "output": "Výstup",
       "useOutFile": "Porovnávat soubor, který zapíše",
-      "useOutFileExplain": "Vypnuto se porovnává standardní výstup řešení.",
+      "useOutFileExplain": "Pokud je vypnuto, porovnává se standardní výstup řešení.",
       "actualOutput": "Soubor, který zapíše",
       "actualOutputExplain": "Jméno, pod kterým má řešení výstup zapsat.",
       "expectedOutput": "Očekávaný výstup",
       "expectedOutputExplain": "S čím se výstup porovná.",
       "judge": "Posouzení",
       "useCustomJudge": "Použít vlastního soudce",
-      "useCustomJudgeExplain": "Vypnuto se použije jedno z vestavěných porovnání.",
+      "useCustomJudgeExplain": "Pokud je vypnuto, použije se jedno z vestavěných porovnání.",
       "customJudge": "Program soudce",
       "judgeType": "Porovnání",
       "judgeArgs": "Argumenty soudce",
@@ -1310,7 +1310,7 @@
         "diff": "Bajt po bajtu"
       },
       "entryPoint": "Vstupní bod",
-      "entryPointExplain": "Soubor, který se spustí. Nenastavený spustí odevzdaný soubor.",
+      "entryPointExplain": "Soubor, který se spustí. Pokud není nastaven, spustí se odevzdaný soubor.",
       "successExitCodes": "Návratové kódy znamenající úspěch",
       "successExitCodesExplain": "Jednotlivé hodnoty nebo rozsahy oddělené čárkami — třeba 0, 2-4.",
       "extraFiles": "Doplňkové soubory",
@@ -1328,7 +1328,7 @@
       "environmentsFailed": "Jazyky se nepodařilo uložit.",
       "configFailed": "Konfiguraci se nepodařilo uložit.",
       "noEnvironments": "Nejdřív zvolte alespoň jeden jazyk.",
-      "advancedRefused": "Tato úloha je poskládaná z ručně vybraných pipeline, což tento formulář neumí vyjádřit. Zůstala, jak byla."
+      "advancedRefused": "Tato úloha je poskládaná z ručně vybraných pipelin, což tento formulář neumí vyjádřit. Zůstala, jak byla."
     }
   },
   "ExerciseAdvanced": {
@@ -1410,7 +1410,7 @@
     "saved": "Výraz uložen.",
     "switchIn": {
       "explain": "Přepnutí vyjde z toho, co úloha dělá teď — stejné váhy se stanou průměrem, různé součtem přes celek — takže hodnotí přesně jako předtím, jen ve tvaru, který jde měnit.",
-      "action": "Napsat si úspěšnost sám",
+      "action": "Napsat si vlastní úspěšnost",
       "done": "Úloha má teď vlastní úspěšnost.",
       "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, ReCodEx neuloží."
     },
@@ -1467,13 +1467,13 @@
       "noEnvironments": "není zvolen žádný jazyk",
       "noHardwareGroups": "není zvolen žádný stroj",
       "preciseTime": "Měřit procesorový čas",
-      "preciseTimeExplain": "Vypnuto se čas testu měří na hodinách, včetně čekání. Procesorový čas je mezi běhy stabilnější, reálný čas je to, co zažije student. Přepnutí přepíše všechny limity níže na druhou míru.",
+      "preciseTimeExplain": "Pokud je vypnuto, měří se čas testu na hodinách, včetně čekání. Procesorový čas je mezi běhy stabilnější, reálný čas je to, co zažije student. Přepnutí přepíše všechny limity níže na druhou míru.",
       "ceilings": "Tento stroj dovolí nejvýš {memory, number} KiB na test, {time, number} s na test a {total, number} s na celou úlohu v jednom jazyce.",
       "test": "Test",
       "memory": "Paměť",
       "time": "Čas",
-      "memoryOf": "Paměť pro {test} v {environment}, v KiB",
-      "timeOf": "Čas pro {test} v {environment}, v sekundách",
+      "memoryOf": "Paměť pro {test}, jazyk {environment}, v KiB",
+      "timeOf": "Čas pro {test}, jazyk {environment}, v sekundách",
       "copyRow": "Zkopírovat tuto buňku do všech jazyků tohoto testu",
       "copyRowShort": "→ všechny jazyky",
       "copyColumn": "Zkopírovat tuto buňku do všech testů v tomto jazyce",
@@ -1487,9 +1487,9 @@
       "saving": "Ukládám…",
       "saved": "Limity uloženy.",
       "saveFailed": "Limity se nepodařilo uložit.",
-      "copyRowOf": "→ všechny jazyky, z buňky {test} v {environment}",
-      "copyColumnOf": "↓ všechny testy, z buňky {test} v {environment}",
-      "copyAllOf": "všude, z buňky {test} v {environment}"
+      "copyRowOf": "→ všechny jazyky, z buňky {test}, jazyk {environment}",
+      "copyColumnOf": "↓ všechny testy, z buňky {test}, jazyk {environment}",
+      "copyAllOf": "všude, z buňky {test}, jazyk {environment}"
     },
     "errors": {
       "invalid": "Tyto limity ReCodEx uložit neumí.",
@@ -1539,7 +1539,7 @@
     "backToExercise": "Zpět na úlohu",
     "list": {
       "title": "Odpovědi",
-      "explain": "Vzorové řešení je vaše vlastní odpověď, prohnaná přesně tou pipeline jako řešení studenta. Právě ono dokazuje, že úloha je řešitelná — úlohu bez jediného nelze zadat.",
+      "explain": "Vzorové řešení je vaše vlastní odpověď, prohnaná přesně toutéž pipelinou jako řešení studenta. Právě ono dokazuje, že úloha je řešitelná — úlohu bez jediného nelze zadat.",
       "none": "Tato úloha nemá žádné vzorové řešení, takže ji nelze zadat. Odevzdejte jedno níže.",
       "allHidden": "Tato úloha vzorová řešení má, ale žádné z nich není vaše — soukromé odpovědi patří jen svému autorovi. Odevzdejte níže vlastní.",
       "untitled": "Řešení bez popisu",
@@ -1705,7 +1705,7 @@
     "exercises": "Úlohy, které ji používají",
     "exercisesExplain": "Pipeline je sdílená mašinérie. Její změna změní vyhodnocení každé úlohy, která je na ni nastavená.",
     "noExercises": "Tuto pipelinu nepoužívá žádná úloha.",
-    "pageTitle": "Pipelina"
+    "pageTitle": "Pipeline"
   },
   "PipelineEdit": {
     "title": "Úprava pipeliny",
@@ -1713,7 +1713,7 @@
     "inUse": "Na této pipelině {count, plural, one {je nastavená # úloha} few {jsou nastavené # úlohy} other {je nastaveno # úloh}}. Její změna změní, jak se vyhodnocují — pokud si nejste jistí, udělejte raději kopii.",
     "settings": {
       "title": "Co to je",
-      "name": "Jméno",
+      "name": "Název",
       "description": "Popis",
       "descriptionHint": "Co pipeline dělá a jaké proměnné očekává. Tohle si přečte ten, kdo ji vybírá.",
       "parameters": "Co dělá",
@@ -1742,7 +1742,7 @@
       "deleted": "Pipeline byla smazána.",
       "confirmDelete": {
         "title": "Smazat tuto pipelinu?",
-        "description": "Zmizí nadobro. ReCodEx odmítne smazat tu, kterou ještě používá nějaká úloha, takže pokud ano, dozvíte se to hned a ne později.",
+        "description": "Zmizí nadobro. Pipelinu, kterou ještě používá nějaká úloha, ReCodEx smazat odmítne, takže se to dozvíte hned a nepřekvapí vás to později.",
         "confirm": "Smazat"
       }
     },
@@ -1779,14 +1779,14 @@
       "remove": "Odebrat",
       "broken": {
         "title": "ReCodEx to odmítne",
-        "writtenTwice": "{name} zapisuje víc než jeden port: {ports}",
+        "writtenTwice": "Do proměnné {name} zapisuje víc než jeden port: {ports}",
         "unread": "Tyto proměnné nikdo nečte: {variables}",
         "explain": "Drát může mít jen jeden zdroj a hodnota, kterou nikdo nespotřebuje, není drát. Proměnná, která se jen čte, je v pořádku — přesně tak vypadá díra, kterou vyplní úloha."
       },
       "dangling": {
         "title": "Některé porty nejsou zapojené",
         "ports": "Nespojené s ničím: {ports}",
-        "explain": "ReCodEx to přijme. Jen to neudělá to, co by udělaly chybějící dráty."
+        "explain": "ReCodEx to přijme. Jen neudělá to, co by udělaly chybějící dráty."
       },
       "save": "Uložit strukturu",
       "saving": "Ukládám…",
@@ -1836,7 +1836,7 @@
     },
     "flags": {
       "you": "Vy",
-      "disabled": "Zablokován"
+      "disabled": "Zablokovaný účet"
     },
     "filters": {
       "search": "Hledání",
@@ -1853,18 +1853,18 @@
       "label": "Stránky seznamu uživatelů",
       "previous": "Předchozí",
       "next": "Další",
-      "page": "Strana {page} z {total}"
+      "page": "Stránka {page} z {total}"
     },
     "actions": {
       "enable": "Odblokovat",
       "disable": "Zablokovat",
       "delete": "Smazat",
       "confirmEnable": "{name} se bude moci znovu přihlásit a používat ReCodEx. Účet mohl být zablokován z dobrého důvodu.",
-      "confirmDisable": "{name} bude odmítnut při jakékoli operaci, dokud účet někdo znovu neodblokuje. Skupiny a řešení zůstávají.",
+      "confirmDisable": "{name} nebude moci provést žádnou operaci, dokud účet někdo znovu neodblokuje. Skupiny a řešení zůstávají.",
       "confirmDelete": "Účet uživatele {name} bude anonymizován: jméno, e-mailová adresa i případné externí identity zmizí navždy. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
       "confirmDeleteSelf": "Tohle je váš vlastní účet. Bude anonymizován: vaše jméno, e-mailová adresa i případné externí identity zmizí navždy a budete odhlášeni. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
       "enabled": "{name} může ReCodEx opět používat.",
-      "disabled": "{name} je zablokován.",
+      "disabled": "{name} má zablokovaný účet.",
       "deleted": "Účet uživatele {name} je pryč.",
       "enableFailed": "Účet se nepodařilo odblokovat.",
       "disableFailed": "Účet se nepodařilo zablokovat.",
@@ -1873,7 +1873,7 @@
     "create": {
       "action": "Vytvořit uživatele",
       "title": "Vytvořit uživatele",
-      "explain": "Účet vznikne jako studentský, ve vaší vlastní instanci, s heslem, které zde nastavíte. Heslo mu sdělte sami — tato instalace neposlá žádný e-mail.",
+      "explain": "Účet vznikne jako studentský, ve vaší vlastní instanci, s heslem, které zde nastavíte. Heslo sdělte novému uživateli sami — tato instalace žádný e-mail neposílá.",
       "firstName": "Křestní jméno",
       "lastName": "Příjmení",
       "email": "E-mail",
@@ -1888,7 +1888,7 @@
         "tooShort": "Alespoň dva znaky.",
         "invalidEmail": "Tohle není e-mailová adresa.",
         "required": "Povinné.",
-        "mismatch": "Hesla se liší."
+        "mismatch": "Hesla se neshodují."
       }
     },
     "errors": {
@@ -1904,7 +1904,7 @@
     }
   },
   "SubmissionFailures": {
-    "title": "Selhaná odevzdání",
+    "title": "Chyby odevzdání",
     "subtitle": "Odevzdání, ze kterých nikdy nevznikl výsledek — selhal stroj, ne student.",
     "summary": "{count, plural, one {# selhání} few {# selhání} other {# selhání}}.",
     "filterPlaceholder": "Filtrovat podle popisu nebo druhu",
@@ -2022,7 +2022,7 @@
     "editor": {
       "createTitle": "Napsat zprávu",
       "editTitle": "Upravit zprávu",
-      "explain": "Uvidí ji každý ve zvolené roli a výš, dokud je její okno otevřené. Jazyk, ve kterém zpráva napsaná není, nechte prázdný.",
+      "explain": "Uvidí ji každý ve zvolené roli a výš po celou dobu, kdy se má zobrazovat. Jazyk, ve kterém zpráva není napsaná, nechte prázdný.",
       "text": "Text ({locale})",
       "type": "Druh",
       "types": {
@@ -2073,7 +2073,7 @@
     }
   },
   "Admin": {
-    "title": "Administrátor"
+    "title": "Administrace"
   },
   "Profile": {
     "title": "Profil",
@@ -2091,7 +2091,7 @@
       "superadmin": "Správce"
     },
     "createdAt": "Účet vytvořen",
-    "lastAuthenticationAt": "Naposledy přihlášen",
+    "lastAuthenticationAt": "Poslední přihlášení",
     "externalId": "Identita {service}",
     "verified": "E-mail ověřen",
     "unverified": "E-mail neověřen",
@@ -2110,8 +2110,8 @@
     "editTheirs": "Upravit tento účet",
     "takeover": {
       "action": "Přihlásit se jako tento člověk",
-      "confirm": "Stanete se uživatelem {name} — jde o přihlášení, ne o náhled. Vaše vlastní přihlášení tím končí a zpět se dostanete jedině odhlášením a novým přihlášením za sebe.",
-      "failed": "Přihlásit se jako tento člověk se nepodařilo."
+      "confirm": "Přihlásíte se jako {name} — je to opravdové přihlášení, ne náhled. Vaše vlastní přihlášení tím končí a zpět se dostanete jedině odhlášením a novým přihlášením za sebe.",
+      "failed": "Nepodařilo se přihlásit jako tento člověk."
     }
   },
   "Upload": {
@@ -2131,7 +2131,7 @@
   },
   "Comments": {
     "title": "Diskuse",
-    "explain": "Poznámky a otázky k tomuhle, uložené u toho.",
+    "explain": "Poznámky a otázky, které zůstávají uložené přímo tady.",
     "empty": "Tady zatím nikdo nic neřekl.",
     "unknownAuthor": "Někdo, koho nevidíte",
     "you": "(vy)",
@@ -2141,7 +2141,7 @@
     "posting": "Odesílám…",
     "posted": "Odesláno.",
     "keepPrivate": "Nechat si to pro sebe",
-    "privateMeans": "Nikdo jiný to neuvidí — ReCodEx soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tiché slovo personálu.",
+    "privateMeans": "Nikdo jiný to neuvidí — ReCodEx soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tichá domluva s vyučujícími.",
     "publicMeans": "Uvidí to {audience} a přijde jim o tom e-mail.",
     "makePrivate": "Skrýt ostatním",
     "madePrivate": "Teď to vidíte jen vy.",
@@ -2162,10 +2162,10 @@
       "deleteFailed": "Komentář se nepodařilo smazat."
     },
     "audience": {
-      "exercise": "všichni, kdo smí vidět tuhle úlohu",
-      "assignment": "studenti, kterým je to zadané, a učitelé skupiny",
-      "solution": "autor řešení a učitelé skupiny",
-      "referenceSolution": "učitelé, kteří smí vidět tohle vzorové řešení"
+      "exercise": "všichni, kdo smí vidět tuto úlohu",
+      "assignment": "studenti, kterým je to zadané, a vyučující skupiny",
+      "solution": "autor řešení a vyučující skupiny",
+      "referenceSolution": "vyučující, kteří smí vidět toto vzorové řešení"
     }
   },
   "Toast": {
@@ -2194,7 +2194,7 @@
     "openConfirm": "Otevřít potvrzení",
     "confirmTitle": "Smazat tuto ukázku?",
     "confirmDescription": "Nic se doopravdy nemaže — jde jen o ukázku potvrzovacího dialogu.",
-    "confirmedTimes": "Potvrzeno {count, plural, one {# krát} few {# krát} other {# krát}}.",
+    "confirmedTimes": "Potvrzeno {count}×.",
     "upload": "Nahrávání souborů",
     "uploadNote": "Nahrávání jde na skutečné API, takže tato část funguje jen po přihlášení.",
     "toasts": "Oznámení",
@@ -2205,15 +2205,15 @@
     "toastErrorTitle": "Skupinu se nepodařilo uložit",
     "toastErrorBody": "Server požadavek odmítl. Nic se nezměnilo.",
     "states": "Stavy",
-    "stateEmptyTitle": "Zatím žádné úlohy",
-    "stateEmptyBody": "Úlohy, které v této skupině vytvoříte, se objeví zde.",
-    "stateEmptyAction": "Vytvořit úlohu",
+    "stateEmptyTitle": "Zatím žádná zadání",
+    "stateEmptyBody": "Zadání, která v této skupině vytvoříte, se objeví zde.",
+    "stateEmptyAction": "Vytvořit zadání",
     "stateBreakIt": "Rozbít panel níže",
     "stateLoading": "Načítání",
     "stateEmpty": "Prázdný stav",
     "stateError": "Chyba (s opakováním)",
     "stateBoom": "Tento panel měl selhat.",
-    "stateFixIt": "Opravit, pak použijte tlačítko pro opakování",
+    "stateFixIt": "Opravte panel a pak použijte tlačítko pro opakování",
     "code": "Prohlížeč kódu",
     "codeNote": "Zvýrazněno na serveru. Kliknutím na číslo řádku na něj získáte odkaz.",
     "markdown": "Markdown",
@@ -2255,11 +2255,11 @@
       },
       "not-scored": {
         "label": "Vyhodnoceno",
-        "description": "Za tuto úlohu se neudělují body."
+        "description": "Za toto zadání se neudělují body."
       },
       "not-submitted": {
         "label": "Neodevzdáno",
-        "description": "K této úloze zatím nemáte žádné vyhodnocené řešení."
+        "description": "K tomuto zadání zatím nemáte žádné vyhodnocené řešení."
       }
     },
     "deadline": {
@@ -2280,7 +2280,7 @@
     "myTeaching": "Moje výuka",
     "exercises": "Úlohy",
     "exerciseCatalog": "Katalog úloh",
-    "pipelines": "Pipeline",
+    "pipelines": "Pipeliny",
     "people": "Lidé",
     "profile": "Můj profil",
     "users": "Uživatelé",
@@ -2349,7 +2349,7 @@
     "terms": "Podmínky",
     "firstDeadline": "Termín odevzdání",
     "secondDeadline": "Druhý termín",
-    "upToPoints": "až {points} bodů",
+    "upToPoints": "až {points, plural, one {# bod} few {# body} many {# bodu} other {# bodů}}",
     "threshold": "Minimum pro body",
     "thresholdNote": "Aby se udělily body, musí projít alespoň {percent} testů.",
     "attempts": "Limit pokusů",
@@ -2385,30 +2385,30 @@
     "assignedAt": "Zadáno",
     "sync": {
       "stale": {
-        "title": "Neodpovídá cvičení, ze kterého vzniklo",
-        "description": "{parts, plural, one {# část tohoto zadání se} few {# části tohoto zadání se} many {# částí tohoto zadání se} other {# částí tohoto zadání se}} od změny cvičení neaktualizovala. Řešení studentů se vyhodnocují proti starší kopii."
+        "title": "Neodpovídá úloze, ze které vzniklo",
+        "description": "{parts, plural, one {# část tohoto zadání se od změny úlohy neaktualizovala} few {# části tohoto zadání se od změny úlohy neaktualizovaly} many {# části tohoto zadání se od změny úlohy neaktualizovalo} other {# částí tohoto zadání se od změny úlohy neaktualizovalo}}. Řešení studentů se vyhodnocují proti starší kopii."
       },
       "deleted": {
-        "title": "Cvičení, ze kterého zadání vzniklo, bylo smazáno",
-        "description": "Zadání dál funguje, ale už ho nelze synchronizovat a z toho cvičení nelze vytvořit další zadání."
+        "title": "Úloha, ze které zadání vzniklo, byla smazána",
+        "description": "Zadání dál funguje, ale už ho nelze synchronizovat a z té úlohy nelze vytvořit další zadání."
       },
       "parts": {
-        "files": "Soubory cvičení",
+        "files": "Soubory úlohy",
         "fileLinks": "Odkazy na soubory",
-        "exerciseTests": "Testy cvičení",
+        "exerciseTests": "Testy úlohy",
         "localizedTexts": "Texty zadání",
         "configurationType": "Režim konfigurace",
         "scoreConfig": "Konfigurace bodování",
-        "exerciseConfig": "Konfigurace cvičení",
+        "exerciseConfig": "Konfigurace úlohy",
         "runtimeEnvironments": "Výběr běhových prostředí",
         "exerciseEnvironmentConfigs": "Konfigurace prostředí",
         "hardwareGroups": "Hardwarové skupiny",
         "limits": "Limity",
-        "mergeJudgeLogs": "Slučování logů posuzovače"
+        "mergeJudgeLogs": "Slučování logů soudce"
       },
-      "sync": "Sesynchronizovat s cvičením",
-      "syncing": "Synchronizujeme…",
-      "synced": "Zadání teď odpovídá cvičení.",
+      "sync": "Sesynchronizovat s úlohou",
+      "syncing": "Synchronizuji…",
+      "synced": "Zadání teď odpovídá úloze.",
       "syncFailed": "Zadání se nepodařilo sesynchronizovat."
     },
     "solvers": {
@@ -2441,7 +2441,7 @@
       "caption": "Všichni studenti skupiny, jejich pokusy, body a výsledek u tohoto zadání."
     },
     "userSolutions": {
-      "title": "Řešení studenta {name}",
+      "title": "Řešení: {name}",
       "backToAssignment": "Zpět na zadání",
       "empty": {
         "title": "Zatím nic neodevzdáno",
@@ -2453,7 +2453,7 @@
     "title": "Nastavení zadání",
     "backToAssignment": "Zpět na zadání",
     "save": "Uložit nastavení",
-    "saving": "Ukládáme…",
+    "saving": "Ukládám…",
     "saved": "Zadání bylo upraveno.",
     "visibility": {
       "title": "Viditelnost",
@@ -2487,21 +2487,21 @@
       "thresholdHint": "Jaká část testů musí projít, než se přidělí jakékoli body. Nula znamená bez hranice.",
       "files": "Souborů na řešení",
       "size": "Celková velikost řešení (bajty)",
-      "unlimitedHint": "Nechte prázdné pro neomezeno.",
+      "unlimitedHint": "Nechte prázdné, pokud nemá platit žádný limit.",
       "environments": "Běhová prostředí",
-      "environmentsHint": "Odškrtnutím zakážete odevzdávání v daném prostředí. Která existují, určuje cvičení."
+      "environmentsHint": "Odškrtnutím zakážete odevzdávání v daném prostředí. Která existují, určuje úloha."
     },
     "disclosure": {
       "title": "Co student vidí z vyhodnocení",
       "explain": "Každou z těchto věcí uvidí autor daného řešení. Kdo vidí práci celé skupiny, vidí je tak jako tak.",
       "limitRatios": "Jak blízko bylo řešení časovému a paměťovému limitu",
       "measuredValues": "Naměřený čas a paměť v absolutních číslech",
-      "judgeStdout": "Primární log rozhodčího",
-      "judgeStderr": "Sekundární log rozhodčího"
+      "judgeStdout": "Primární log soudce",
+      "judgeStderr": "Sekundární log soudce"
     },
     "hints": {
       "title": "Nápověda pro studenty",
-      "explain": "Zobrazuje se u zadání pod jeho textem. Patří zadání, ne cvičení, takže ji sesynchronizování nepřepíše.",
+      "explain": "Zobrazuje se u zadání pod jeho textem. Patří zadání, ne úloze, takže ji synchronizace nepřepíše.",
       "locale": {
         "en": "Anglicky",
         "cs": "Česky"
@@ -2509,7 +2509,7 @@
     },
     "delete": {
       "title": "Smazat zadání",
-      "explain": "Zmizí i všechno, co k němu bylo odevzdáno — každé řešení, jeho vyhodnocení i napsané revize. Cvičení, ze kterého vzniklo, zůstává.",
+      "explain": "Zmizí i všechno, co k němu bylo odevzdáno — každé řešení, jeho vyhodnocení i napsané revize. Úloha, ze které vzniklo, zůstává.",
       "action": "Smazat toto zadání",
       "deleted": "Zadání bylo smazáno.",
       "failed": "Zadání se nepodařilo smazat.",
@@ -2526,27 +2526,27 @@
     }
   },
   "AssignExercise": {
-    "title": "Zadat cvičení",
+    "title": "Zadat úlohu",
     "backToGroup": "Zpět do skupiny",
-    "explain": "Zadáním se úloha rovnou vytvoří, s výchozím termínem a body ReCodExu — ty nastavíte na další obrazovce. Než ji zviditelníte, nikdo ji neuvidí.",
-    "searchLabel": "Hledat v katalogu cvičení",
+    "explain": "Zadáním se úloha rovnou zkopíruje do skupiny, s výchozím termínem a body ReCodExu — ty nastavíte na další obrazovce. Než nové zadání zviditelníte, nikdo ho neuvidí.",
+    "searchLabel": "Hledat v katalogu úloh",
     "searchPlaceholder": "Hledat podle názvu",
     "search": "Hledat",
     "assign": "Zadat",
-    "assigning": "Zadáváme…",
-    "untitled": "Nepojmenované cvičení",
-    "locked": "Uzamčeno",
-    "broken": "Rozbité",
-    "more": "Zobrazeno {shown} z {total} cvičení. Zúžením hledání zobrazíte zbytek.",
+    "assigning": "Zadávám…",
+    "untitled": "Nepojmenovaná úloha",
+    "locked": "Zamčená",
+    "broken": "Rozbitá",
+    "more": "Zobrazeno {shown} z {total} úloh. Zúžením hledání zobrazíte zbytek.",
     "difficulty": {
-      "easy": "Snadné",
+      "easy": "Lehká",
       "medium": "Střední",
-      "hard": "Těžké"
+      "hard": "Těžká"
     },
     "cannot": {
-      "locked": "Uzamčeno autorem",
+      "locked": "Zamčená autorem",
       "broken": "Nemá dokončenou konfiguraci",
-      "notYours": "Nemůžete ho zadat",
+      "notYours": "Nemůžete ji zadat",
       "noReferenceSolution": "Zatím nemá vzorové řešení"
     },
     "empty": {
@@ -2555,7 +2555,7 @@
       "noMatch": "Hledání v katalogu nic nenašlo."
     },
     "errors": {
-      "createFailed": "Cvičení se nepodařilo zadat."
+      "createFailed": "Úlohu se nepodařilo zadat."
     },
     "noReferenceSolution": "Bez vzorového řešení"
   },
@@ -2581,7 +2581,7 @@
     },
     "flags": {
       "best": "Nejlepší",
-      "accepted": "Přijato",
+      "accepted": "Uznáno",
       "late": "Po termínu",
       "similarities": "Nalezeny"
     },
@@ -2589,7 +2589,7 @@
       "requested": "Vyžádána",
       "open": "Probíhá",
       "closed": "Hotova",
-      "closedWithIssues": "{count, plural, one {# výhrada} few {# výhrady} other {# výhrad}}"
+      "closedWithIssues": "{count, plural, one {# připomínka} few {# připomínky} other {# připomínek}}"
     },
     "untitledAssignment": "Nepojmenované zadání",
     "filterByAssignment": "Filtrovat podle zadání nebo poznámky",
@@ -2599,7 +2599,7 @@
   "GroupUserSolutions": {
     "title": "Odevzdání v této skupině",
     "viewProfile": "Profil",
-    "backToGroup": "Zpět na skupinu",
+    "backToGroup": "Zpět do skupiny",
     "summary": "{solutions, plural, one {# odevzdání} few {# odevzdání} other {# odevzdání}} napříč {assignments, plural, one {# zadáním} few {# zadáními} other {# zadáními}}.",
     "similarities": "U {count, plural, one {jednoho řešení} few {# řešení} other {# řešení}} byla nahlášena podobnost s cizí prací.",
     "filters": {
@@ -2608,7 +2608,7 @@
     },
     "empty": {
       "title": "Tady zatím nic není",
-      "description": "V této skupině zatím od {name} nedorazilo žádné řešení."
+      "description": "V této skupině zatím nedorazilo žádné řešení od uživatele {name}."
     },
     "noBest": {
       "title": "Zatím žádné nejlepší řešení",
@@ -2658,7 +2658,7 @@
     "title": "Nalezené podobnosti",
     "attempt": "Pokus {attempt}",
     "backToSolution": "Zpět na řešení",
-    "batch": "Nahlásil nástroj {tool}. ReCodEx podobnosti sám nehledá — externí nástroj nahraje, co našel.",
+    "batch": "Podobnosti nahlásil {tool}. ReCodEx je sám nehledá — externí nástroj nahraje, co našel.",
     "unknownTool": "nepojmenovaný nástroj",
     "checkedAt": "Nahrávání dokončeno",
     "matches": "S kým se řešení shoduje",
@@ -2666,7 +2666,7 @@
     "unknownAuthor": "Autor, kterého nevidíte",
     "show": "Porovnat",
     "showing": "Zobrazeno níže",
-    "comparison": "Toto řešení vedle řešení uživatele {name}, soubor {file}",
+    "comparison": "Toto řešení vedle řešení, jehož autorem je {name} — soubor {file}",
     "thisSolution": "Toto řešení — {file}",
     "otherSolution": "Druhé řešení — {file}",
     "unknownFile": "nepojmenovaný soubor",
@@ -2680,11 +2680,11 @@
     }
   },
   "Shadow": {
-    "title": "Stínová úloha",
-    "untitled": "Nepojmenovaná stínová úloha",
+    "title": "Stínové zadání",
+    "untitled": "Nepojmenované stínové zadání",
     "backToGroup": "Zpět do skupiny",
     "description": "Popis",
-    "noDescription": "Tato stínová úloha nemá popis.",
+    "noDescription": "Toto stínové zadání nemá popis.",
     "terms": "Podmínky",
     "maxPoints": "Dostupné body",
     "deadline": "Termín",
@@ -2693,14 +2693,14 @@
     "bonus": "Bonus",
     "yes": "Ano",
     "no": "Ne",
-    "visibility": "Viditelná studentům",
+    "visibility": "Viditelné studentům",
     "visible": "Ano",
-    "hiddenFromStudents": "Ne — studenti ji zatím nevidí",
+    "hiddenFromStudents": "Ne — studenti ho zatím nevidí",
     "myPoints": "Moje body",
     "noPointsYet": "Zatím vám tu nebyly uděleny žádné body.",
     "flags": {
       "bonus": "Bonus",
-      "hidden": "Skrytá"
+      "hidden": "Skryté"
     },
     "points": {
       "title": "Udělené body",
@@ -2782,18 +2782,18 @@
       },
       "emails": "Poslat e-mail, když…",
       "flags": {
-        "newAssignmentEmails": "se objeví nová úloha",
-        "assignmentDeadlineEmails": "se blíží termín úlohy",
+        "newAssignmentEmails": "se objeví nové zadání",
+        "assignmentDeadlineEmails": "se blíží termín některého zadání",
         "submissionEvaluatedEmails": "se vyhodnotí některé z mých řešení",
         "solutionAcceptedEmails": "je moje řešení označeno jako uznané",
-        "pointsChangedEmails": "se změní moje body za úlohu",
+        "pointsChangedEmails": "se změní moje body za některé zadání",
         "solutionCommentsEmails": "někdo okomentuje řešení",
-        "assignmentCommentsEmails": "někdo okomentuje úlohu",
+        "assignmentCommentsEmails": "někdo okomentuje zadání",
         "solutionReviewsEmails": "je zveřejněna revize mého řešení",
         "solutionReviewRequestedEmails": "mě student požádá o revizi",
         "assignmentSubmitAfterAcceptedEmails": "student odevzdá znovu po uznání řešení",
         "assignmentSubmitAfterReviewedEmails": "student odevzdá znovu po revizi",
-        "exerciseNotificationEmails": "autor cvičení něco oznámí"
+        "exerciseNotificationEmails": "autor úlohy něco oznámí"
       },
       "save": "Uložit nastavení",
       "saved": "Nastavení bylo uloženo.",
@@ -2801,7 +2801,7 @@
     },
     "calendars": {
       "title": "Odběr kalendáře",
-      "explain": "Odkaz na kalendář umožní jakékoli kalendářové aplikaci číst vaše termíny. Přečte je i kdokoli jiný, kdo odkaz získá, takže s ním zacházejte opatrně — zrušit ho lze jen vypršením.",
+      "explain": "Odkaz na kalendář umožní jakékoli kalendářové aplikaci číst vaše termíny. Přečte je i kdokoli jiný, kdo odkaz získá, takže s ním zacházejte opatrně — zastavit to jde jedině zneplatněním odkazu.",
       "empty": "Nemáte žádné odkazy na kalendář.",
       "create": "Vytvořit odkaz na kalendář",
       "createAnother": "Vytvořit další odkaz",
@@ -2839,7 +2839,7 @@
       "save": "Změnit roli",
       "changed": "Role je nyní {role}.",
       "failed": "Roli se nepodařilo změnit.",
-      "confirm": "Z role {from} se stane {to}, naráz a v celém ReCodExu.",
+      "confirm": "Z role „{from}“ se stane „{to}“, naráz a v celém ReCodExu.",
       "names": {
         "student": "Student",
         "supervisor-student": "Cvičící a student",
@@ -2850,8 +2850,8 @@
       "descriptions": {
         "student": "Vidí jen skupiny, do kterých patří, a řeší, co je tam zadáno.",
         "supervisor-student": "Obojí zároveň — v některých skupinách učí, v jiných studuje.",
-        "supervisor": "Vede vlastní skupiny, zadává příklady a vytváří nové.",
-        "empowered-supervisor": "Cvičící, který navíc smí psát pipeline a konfigurovat jimi příklady.",
+        "supervisor": "Vede vlastní skupiny, zadává úlohy a vytváří nové.",
+        "empowered-supervisor": "Cvičící, který navíc smí psát pipeline a konfigurovat jimi úlohy.",
         "superadmin": "Smí cokoli, ve všech instancích, do kterých patří."
       }
     },
@@ -2864,7 +2864,7 @@
       "changed": "Heslo bylo nastaveno.",
       "errors": {
         "required": "Zadejte nové heslo.",
-        "mismatch": "Hesla se liší."
+        "mismatch": "Hesla se neshodují."
       },
       "saving": "Měním…"
     },
@@ -2946,7 +2946,7 @@
       "closed": "Instance je zavřená.",
       "updateFailed": "Instanci se nepodařilo změnit.",
       "delete": "Smazat instanci",
-      "confirmDelete": "{name} bude odstraněna. Její kořenová skupina ne — core-api ji nechá stát, osiřelou a dál vypsanou mezi skupinami. Pokud ji chcete pryč, smažte ji potom tam.",
+      "confirmDelete": "Instance {name} bude odstraněna. Její kořenová skupina ne — core-api ji nechá stát, osiřelou a dál vypsanou mezi skupinami. Pokud ji chcete pryč, smažte ji potom tam.",
       "deleted": "{name} je pryč.",
       "deleteFailed": "Instanci se nepodařilo smazat.",
       "cannotDeleteOwn": "Do této instance patří váš vlastní účet, takže tu není nabízena ke smazání."
@@ -2996,7 +2996,7 @@
   },
   "Server": {
     "title": "Server",
-    "subtitle": "Služby na pozadí, na kterých tato instalace stojí.",
+    "subtitle": "Backendové služby, na kterých tato instalace stojí.",
     "broker": {
       "title": "Vyhodnocovací broker",
       "stateRunning": "Běží",
@@ -3015,8 +3015,8 @@
     },
     "jobs": {
       "title": "Úlohy na pozadí",
-      "window": "Vše, co čeká, a vše, co doběhlo za posledních {minutes} minut.",
-      "none": "Nic nečeká a nic nedávno neběželo — což vypadá stejně, ať už je zpracování nečinné, nebo mrtvé. Zjistíte to pingem.",
+      "window": "Vše, co čeká, a vše, co doběhlo za {minutes, plural, one {poslední minutu} few {poslední # minuty} many {posledních # minuty} other {posledních # minut}}.",
+      "none": "Nic nečeká a nic nedávno neběželo — což vypadá stejně, ať už obsluha úloh nemá co dělat, nebo je mrtvá. Zjistíte to pingem.",
       "columns": {
         "command": "Příkaz",
         "created": "Vytvořeno",
@@ -3033,9 +3033,9 @@
       },
       "assignment": "Zadání, ke kterému patří",
       "refresh": "Načíst znovu",
-      "ping": "Pingnout zpracování",
+      "ping": "Pingnout obsluhu úloh",
       "pinged": "Ping byl zařazen do fronty. Načtěte znovu a uvidíte, jestli se vrátil.",
-      "pingFailed": "Zpracování se nepodařilo pingnout.",
+      "pingFailed": "Obsluhu úloh se nepodařilo pingnout.",
       "abort": "Přerušit",
       "confirmAbort": "Úloha „{command}“ se zastaví a už nepokračuje. Co rozdělala, zůstane rozdělané.",
       "aborted": "Úloha byla přerušena.",
@@ -3044,7 +3044,7 @@
     "errors": {
       "freezeFailed": "Broker se nepodařilo zmrazit.",
       "unfreezeFailed": "Broker se nepodařilo rozmrazit.",
-      "pingFailed": "Zpracování se nepodařilo pingnout.",
+      "pingFailed": "Obsluhu úloh se nepodařilo pingnout.",
       "abortFailed": "Úlohu se nepodařilo přerušit."
     }
   }
