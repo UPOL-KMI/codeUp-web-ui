@@ -286,3 +286,37 @@ variables and their meanings. That is an API change, which this repo may not mak
 **What is unverified because of it.** The `data-linux` and `haskell` descriptor variants, and the
 five exclusive environments, are ported from the legacy table and have **never been rendered**:
 this deployment installs none of them. Re-verify on an instance that has them.
+
+---
+
+## Q-021: A deleted address can never be deleted a second time (AD-001)
+
+Deleting a user is a **soft delete with anonymisation**: core-api's `AnonymizationHelper::
+prepareUserForSoftDelete` rewrites the account's address to `<address>@deleted.recodex` -- one
+fixed suffix, from `config.neon`'s `anonymization.deletedEmailSuffix` -- drops the login rows, and
+marks the user deleted. The `email` column's unique index still covers soft-deleted rows.
+
+So an address can go through that transformation exactly once. Create `a@b.c`, delete it, create
+`a@b.c` again (which core-api allows -- its own free-address check reads the soft-delete-filtered
+repository, so the address genuinely is free), and the second delete tries to write
+`a@b.c@deleted.recodex` a second time and dies:
+
+```
+HTTP 500  {"code":500,"error":{"message":"Unexpected Error Doctrine\\DBAL\\Exception\\UniqueConstraintViolationException","code":"500-000"}}
+```
+
+Reproduced straight against core-api with `curl`, not only through this app. The account stays,
+fully usable, and the administrator is shown a Doctrine class name.
+
+**Found by** `e2e/users.spec.ts` on its second run -- the first run had already consumed the fixed
+probe address. The spec now mints a per-run address instead, which is a workaround for the test and
+not for the product.
+
+**Workaround for an operator who hits it:** change the account's address (`POST /v1/users/{id}`)
+to something not yet deleted, then delete. That is what this session used to clear the account its
+first run left behind.
+
+**What would close it.** A suffix that cannot collide -- the user's uuid rather than a constant --
+or catching the violation and answering something an administrator can act on. Both are API
+changes, which this repo may not make (constraint 1). Nothing here is blocked on it: the
+overwhelmingly common case is deleting an address once.

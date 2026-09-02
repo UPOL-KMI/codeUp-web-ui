@@ -23,6 +23,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
+import { Field } from "@/components/form/field";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -368,30 +369,5 @@ export function CalendarTokens({
         }}
       />
     </div>
-  );
-}
-
-function Field({
-  label,
-  description,
-  error,
-  children,
-}: {
-  label: string;
-  description?: string;
-  error?: string | false;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
-      {children}
-      {error && (
-        <span role="alert" className="text-sm text-destructive">
-          {error}
-        </span>
-      )}
-    </label>
   );
 }

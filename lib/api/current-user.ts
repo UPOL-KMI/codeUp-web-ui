@@ -20,6 +20,9 @@ export interface CurrentUser {
   role: string;
   /** False until the address on the account has been confirmed (A-006). */
   isVerified: boolean;
+  /** The instances this account belongs to. The first is the one an administrator creating an
+   *  account here puts it in (AD-001), which is the legacy app's `selectedInstanceId` restated. */
+  instanceIds: string[];
   /** The group this user is locked into for an exam, if any (S-008). */
   groupLock: string | null;
   groupLockType: string | null;
@@ -34,6 +37,7 @@ interface UserPayload {
   isVerified?: boolean;
   privateData?: {
     role?: string;
+    instancesIds?: string[];
     groupLock?: string | null;
     groupLockType?: string | null;
     ipLock?: string | null;
@@ -56,6 +60,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     id: user.id,
     fullName: user.fullName,
     isVerified: user.isVerified ?? true,
+    instanceIds: user.privateData?.instancesIds ?? [],
     avatarUrl: user.avatarUrl,
     role: user.privateData?.role ?? "student",
     groupLock: user.privateData?.groupLock ?? null,

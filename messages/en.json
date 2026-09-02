@@ -1740,7 +1740,95 @@
     }
   },
   "Users": {
-    "title": "Users"
+    "title": "Users",
+    "subtitle": "Everybody this instance knows.",
+    "unnamed": "Unnamed user",
+    "summary": "Showing {from}–{to} of {total}.",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "createdAt": "Account created",
+      "actions": "Actions"
+    },
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Supervisor and student",
+      "supervisor": "Supervisor",
+      "empowered-supervisor": "Empowered supervisor",
+      "superadmin": "Administrator"
+    },
+    "rolesPlural": {
+      "student": "Students",
+      "supervisor-student": "Supervisors and students",
+      "supervisor": "Supervisors",
+      "empowered-supervisor": "Empowered supervisors",
+      "superadmin": "Administrators"
+    },
+    "flags": {
+      "you": "You",
+      "disabled": "Disabled"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Name or email",
+      "roles": "Roles",
+      "apply": "Search"
+    },
+    "empty": {
+      "title": "No users",
+      "description": "This instance has no accounts to show.",
+      "noMatch": "Nobody matches those filters."
+    },
+    "pagination": {
+      "label": "User list pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {total}"
+    },
+    "actions": {
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "confirmEnable": "{name} will be able to sign in and use ReCodEx again. The account may have been disabled for a reason.",
+      "confirmDisable": "{name} will be refused every operation until somebody enables the account again. Their groups and solutions are kept.",
+      "confirmDelete": "The account of {name} will be anonymised: the name, the email address and any external identities go for good. Submitted solutions and the points they earned stay, attached to nobody.",
+      "confirmDeleteSelf": "This is your own account. It will be anonymised: your name, your email address and any external identities go for good, and you will be signed out. Submitted solutions and the points they earned stay, attached to nobody.",
+      "enabled": "{name} can use ReCodEx again.",
+      "disabled": "{name} is disabled.",
+      "deleted": "The account of {name} is gone.",
+      "enableFailed": "The account could not be enabled.",
+      "disableFailed": "The account could not be disabled.",
+      "deleteFailed": "The account could not be deleted."
+    },
+    "create": {
+      "action": "Create a user",
+      "title": "Create a user",
+      "explain": "The account is created as a student, in your own instance, with the password you set here. Tell them the password yourself — this deployment sends no email.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "passwordConfirm": "Password again",
+      "submit": "Create",
+      "createAnyway": "Create anyway",
+      "cancel": "Cancel",
+      "created": "The account was created.",
+      "collision": "Somebody with that name is already here: {names}. Create the account anyway if this is a different person.",
+      "errors": {
+        "tooShort": "At least two characters.",
+        "invalidEmail": "That is not an email address.",
+        "required": "Required.",
+        "mismatch": "The two passwords differ."
+      }
+    },
+    "errors": {
+      "invalid": "Some of what was typed is not valid.",
+      "noInstance": "Your own account belongs to no instance, so it cannot create one here.",
+      "allowedFailed": "The account could not be changed.",
+      "deleteFailed": "The account could not be deleted.",
+      "createFailed": "The account could not be created."
+    }
   },
   "SubmissionFailures": {
     "title": "Submission failures",

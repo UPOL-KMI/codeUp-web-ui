@@ -1740,7 +1740,95 @@
     }
   },
   "Users": {
-    "title": "Uživatelé"
+    "title": "Uživatelé",
+    "subtitle": "Všichni, koho tato instance zná.",
+    "unnamed": "Uživatel bez jména",
+    "summary": "Zobrazeno {from}–{to} z {total}.",
+    "columns": {
+      "name": "Jméno",
+      "email": "E-mail",
+      "role": "Role",
+      "createdAt": "Účet vytvořen",
+      "actions": "Akce"
+    },
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Cvičící a student",
+      "supervisor": "Cvičící",
+      "empowered-supervisor": "Cvičící s rozšířenými právy",
+      "superadmin": "Správce"
+    },
+    "rolesPlural": {
+      "student": "Studenti",
+      "supervisor-student": "Cvičící a studenti",
+      "supervisor": "Cvičící",
+      "empowered-supervisor": "Cvičící s rozšířenými právy",
+      "superadmin": "Správci"
+    },
+    "flags": {
+      "you": "Vy",
+      "disabled": "Zablokován"
+    },
+    "filters": {
+      "search": "Hledání",
+      "searchPlaceholder": "Jméno nebo e-mail",
+      "roles": "Role",
+      "apply": "Hledat"
+    },
+    "empty": {
+      "title": "Žádní uživatelé",
+      "description": "Tato instance nemá žádné účty k zobrazení.",
+      "noMatch": "Zadaným filtrům nikdo neodpovídá."
+    },
+    "pagination": {
+      "label": "Stránky seznamu uživatelů",
+      "previous": "Předchozí",
+      "next": "Další",
+      "page": "Strana {page} z {total}"
+    },
+    "actions": {
+      "enable": "Odblokovat",
+      "disable": "Zablokovat",
+      "delete": "Smazat",
+      "confirmEnable": "{name} se bude moci znovu přihlásit a používat ReCodEx. Účet mohl být zablokován z dobrého důvodu.",
+      "confirmDisable": "{name} bude odmítnut při jakékoli operaci, dokud účet někdo znovu neodblokuje. Skupiny a řešení zůstávají.",
+      "confirmDelete": "Účet uživatele {name} bude anonymizován: jméno, e-mailová adresa i případné externí identity zmizí navždy. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
+      "confirmDeleteSelf": "Tohle je váš vlastní účet. Bude anonymizován: vaše jméno, e-mailová adresa i případné externí identity zmizí navždy a budete odhlášeni. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
+      "enabled": "{name} může ReCodEx opět používat.",
+      "disabled": "{name} je zablokován.",
+      "deleted": "Účet uživatele {name} je pryč.",
+      "enableFailed": "Účet se nepodařilo odblokovat.",
+      "disableFailed": "Účet se nepodařilo zablokovat.",
+      "deleteFailed": "Účet se nepodařilo smazat."
+    },
+    "create": {
+      "action": "Vytvořit uživatele",
+      "title": "Vytvořit uživatele",
+      "explain": "Účet vznikne jako studentský, ve vaší vlastní instanci, s heslem, které zde nastavíte. Heslo mu sdělte sami — tato instalace neposlá žádný e-mail.",
+      "firstName": "Křestní jméno",
+      "lastName": "Příjmení",
+      "email": "E-mail",
+      "password": "Heslo",
+      "passwordConfirm": "Heslo znovu",
+      "submit": "Vytvořit",
+      "createAnyway": "Přesto vytvořit",
+      "cancel": "Zrušit",
+      "created": "Účet byl vytvořen.",
+      "collision": "Někdo s tímto jménem tu už je: {names}. Pokud jde o jinou osobu, vytvořte účet přesto.",
+      "errors": {
+        "tooShort": "Alespoň dva znaky.",
+        "invalidEmail": "Tohle není e-mailová adresa.",
+        "required": "Povinné.",
+        "mismatch": "Hesla se liší."
+      }
+    },
+    "errors": {
+      "invalid": "Něco ze zadaných údajů není platné.",
+      "noInstance": "Váš vlastní účet nepatří do žádné instance, takže zde nemůže žádný vytvořit.",
+      "allowedFailed": "Účet se nepodařilo změnit.",
+      "deleteFailed": "Účet se nepodařilo smazat.",
+      "createFailed": "Účet se nepodařilo vytvořit."
+    }
   },
   "SubmissionFailures": {
     "title": "Selhaná odevzdání",

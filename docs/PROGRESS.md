@@ -692,6 +692,64 @@
     an `afterEach`, like T-015's.
   - _Observations:_ **221 e2e tests pass** (219 before), 170 unit tests.
 
+- **[2026-09-02 11:50] AD-001:** Everybody the instance knows, and what can be done about an
+  account. `app/[locale]/(app)/users/page.tsx`, `lib/api/users.ts`, `lib/actions/users.ts`,
+  `components/users/{user-table,user-row-actions,create-user}.tsx`. **The Admin phase opens.**
+  - **_Who may read this screen and who may act on it are two different audiences, and the split is
+    core-api's own._** `user.viewAll` is granted from the `supervisor` role upwards, so a plain
+    supervisor reads the whole directory; `setIsAllowed`, `delete` and `create` fall under
+    `permissions.neon`'s blanket `role: superadmin` allow. **A `supervisor-student` is refused the
+    screen outright** -- that role inherits only `viewList` from student and never gains `viewAll`
+    -- which is not what "teachers see the user list" would have predicted. Verified live in all
+    four directions rather than read off the config.
+  - **_A user carries no `permissionHints` at all, so the actions are offered on the reader's role_**
+    (DEC-110). DEC-080 found the field `null` on `/v1/users/{id}` for S-021; the list payload is the
+    same, and `permissionHints` turns out to be emitted for exactly one entity in the entire API
+    (`GroupFormat`). What keeps this honest is that the Server Actions call core-api on the
+    **caller's own token** -- the button and the forged call meet the identical check -- so the role
+    decides what is _offered_ and core-api still decides what _happens_.
+  - _Everything that narrows or reorders the list is a URL and a round trip_, T-020's trade again
+    (DEC-097): search, five role checkboxes, three sortable columns and paging are all core-api's,
+    so the filters are a plain `GET` form, the sort controls are links, and no part of the screen
+    needs JavaScript. **The `orderBy` whitelist fails silently the way the `filters` one does** --
+    `orderBy=bogus` answers HTTP 200 with the rows in arbitrary order, not an error -- so this app
+    sends only the three columns `Users::getPaginated` actually knows.
+  - _One search box, because core-api searches both halves:_ `firstName`, `lastName` **and**
+    `email`, which is what an administrator arrives holding.
+  - _The two per-account rules core-api adds on top are restated where they are visible._
+    `checkSetAllowed` refuses the flag on one's own account, so the reader's own row has no Disable
+    button at all; `checkDelete` has no such exemption, and the legacy app offers deletion there
+    too, so it stays -- with a confirmation that names the person, which is what makes one's own row
+    look different at the moment it matters.
+  - **_Deleting anonymises rather than erases, and the confirmation says so._** core-api runs
+    `prepareUserForSoftDelete` first: the name, the address and the external identities go, the
+    solutions and the points they earned stay, attached to nobody. "Delete" on its own would promise
+    both more and less than that.
+  - **_Creating a user works here precisely because registration is closed._**
+    `checkCreateAccount` demands `user.create` only when local registration is disabled, which is
+    this deployment (A-003) -- so the same endpoint that serves nobody anonymously serves the
+    administrator. The new account is always a **student** (core-api hardcodes it; changing that is
+    AD-002's `setRole`), lands in the administrator's own first instance (the legacy
+    `selectedInstanceId`, restated), and the access token core-api hands back is **dropped** --
+    signing the administrator in as the person they just created is the accident to avoid.
+  - _A name collision is a question, not a failure_ -- `{user: null, usersWithSameName}` with a 200
+    -- so the dialog names who it found and offers to go on, which is A-003's handling of the same
+    answer from the other side of the desk.
+  - **_Found and filed as Q-021: an address that has been deleted once can never be deleted again._**
+    Anonymisation appends one fixed `@deleted.recodex` suffix to a column whose unique index still
+    covers soft-deleted rows, so the second delete of a re-created address dies as
+    `UniqueConstraintViolationException` and shows the administrator a Doctrine class name. Found by
+    this ticket's own spec on its **second** run, reproduced straight against core-api with `curl`,
+    and cleared by renaming the account before deleting it. The spec now mints a per-run address --
+    a workaround for the test, not for the product, which is why it is a question and not a note.
+  - _Dropped a badge after seeing it render._ An "Email not verified" flag was on the first version
+    of every row and, on an instance that has never had working mail, on all thirty-one of them --
+    two lines per row to say nothing. It is on the profile screen, where it means something.
+  - _Small cleanup rather than a third copy:_ S-022's local `Field` moved into the form kit
+    (`components/form/field.tsx`), where the errors whose message is a translation key belong; it is
+    now shared instead of duplicated.
+  - _Observations:_ **229 e2e tests pass** (221 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3207,22 +3265,19 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** AD-001 -- the user list, and the Admin phase with it (AD-001..AD-008). **Every
+  **The Admin phase has begun** with AD-001 (the user list, its search and role filter, and
+  enabling, disabling, deleting and creating an account).
+- **Next ticket:** AD-002 -- one person's account as an administrator edits it, which is the other
+  half of the `users` module and the only reason that row in `INVENTORY.md` is still open. **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
-  is open.**
+  is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
+  T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
-  configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
-  legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
-  mistaken for S-018's inline review comments) and, filed by T-009, T-024 (the advanced
-  configuration and the switch between the two kinds) and T-025 (the custom score expression
-  editor). **T-023 closed**, and with it the last thing standing between a newly created exercise
-  and an assignable one. The anonymous flows (A-001..A-008)
-  are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
-  every e2e spec signs in through that route rather than through a form.
-- **Closed this session:** **S-026**, which this session also created -- joining a public group
-  and leaving one were legacy capabilities nothing here had built, found while S-023 was making
-  invitation acceptance a one-way door. **T-018** closed too, so the group screens are finished.
+  configure -- Q-004).
+- **Closed this session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
+  address only once, because anonymisation appends one fixed suffix to a column whose unique index
+  covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
@@ -3234,7 +3289,10 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   address rather than the student's. **Q-018 is new and is genuinely an operator's too:** this app
   cannot tell a real invitation token from a forged one before submitting it, because core-api
   exposes no way to ask — the same gap the legacy frontend has, and one validation endpoint would
-  close it.
+  close it. **Q-021 is new and is a core-api defect rather than a question:** deleting an account
+  whose address was deleted once before answers HTTP 500 with a raw Doctrine exception. Nothing is
+  blocked on it — deleting an address twice is a rare thing to want — and the workaround is to
+  change the address first.
 
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the
