@@ -1168,7 +1168,7 @@
         "uniform": "Úspěšnost je prostý průměr výsledků jednotlivých testů.",
         "weighted": "Úspěšnost je vážený průměr výsledků jednotlivých testů. Nulová váha znamená, že se test spustí, ale nezapočítá."
       },
-      "universalNotice": "Úspěšnost této úlohy počítá vlastní výraz napsaný jinde. Úprava testů by změnila, na co se ten výraz odkazuje, takže je tato část jen ke čtení, dokud editor výrazů nevznikne.",
+      "universalNotice": "Úspěšnost této úlohy počítá vlastní výraz, který se upravuje níže. Testy jde přejmenovat i tam — tenhle seznam je to, na co se výraz odkazuje.",
       "name": "Jméno",
       "weight": "Váha",
       "share": "Podíl na úspěšnosti",
@@ -1332,6 +1332,52 @@
       "configFailed": "Hodnoty se nepodařilo uložit.",
       "noEnvironment": "Nejdřív vyberte jazyk.",
       "noPipelines": "Vyberte alespoň jednu pipelinu."
+    }
+  },
+  "ExerciseScore": {
+    "title": "Vlastní úspěšnost",
+    "explain": "Místo průměru může být úspěšnost řešení libovolný výraz nad výsledky testů — test, který musí projít, než se ostatní počítají, omezený bonus, část úlohy s nulovou vahou.",
+    "expression": "Výraz",
+    "syntax": "Výsledek testu je jeho jméno v uvozovkách a je to číslo od 0 do 1. Používejte + - * / a závorky a funkce avg, min, max, sum, mul a clamp (která hodnotu vtáhne do 0…1).",
+    "tests": "Testy této úlohy: {tests}",
+    "unknownTests": "Takový test není: {tests}. Překlep ve jménu není syntaktická chyba — je to úloha hodnocená podle něčeho, co neexistuje.",
+    "unusedTests": "Výraz je nepoužívá, takže se nepočítají: {tests}",
+    "isAnAverage": "Tenhle výraz je průměr, takže se dá beze ztráty převést zpět na váhy.",
+    "save": "Uložit výraz",
+    "saving": "Ukládám…",
+    "saved": "Výraz uložen.",
+    "switchIn": {
+      "explain": "Přepnutí vyjde z toho, co úloha dělá teď — stejné váhy se stanou průměrem, různé součtem přes celek — takže hodnotí přesně jako předtím, jen ve tvaru, který jde měnit.",
+      "action": "Napsat si úspěšnost sám",
+      "done": "Úloha má teď vlastní úspěšnost.",
+      "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, ReCodEx neuloží."
+    },
+    "switchOut": {
+      "action": "Zpět na průměr",
+      "done": "Úspěšnost je zase průměr.",
+      "confirm": {
+        "title": "Vrátit se k průměru?",
+        "becomesWeights": "Tenhle výraz je průměr, takže se nic neztratí — stane se z něj tyto váhy: {weights}",
+        "lost": "Tenhle výraz není průměr, takže na váhy převést nejde. Nahradí ho prostý průměr všech testů a odtud už ho nevrátíte — jestli ho možná budete chtít, zkopírujte si ho napřed jinam.",
+        "action": "Použít průměr"
+      }
+    },
+    "errors": {
+      "invalid": "Tohle není výraz, který ReCodEx umí uložit.",
+      "unknownTests": "Takový test není: {tests}",
+      "noTests": "Tato úloha nemá testy, takže výraz nemá na co odkazovat.",
+      "saveFailed": "Úspěšnost se nepodařilo uložit.",
+      "syntax": {
+        "unterminated-test": "Jméno testu je otevřené uvozovkou a nikdy neuzavřené (znak {at}).",
+        "unexpected-character": "Tenhle znak do výrazu nepatří (znak {at}).",
+        "unexpected-end": "Výraz končí uprostřed něčeho (znak {at}).",
+        "unexpected-token": "Tímhle výraz začínat nemůže (znak {at}).",
+        "expected": "Chybí závorka nebo čárka (znak {at}).",
+        "trailing": "Za koncem výrazu něco zbylo (znak {at}).",
+        "unknown-function": "Taková funkce není (znak {at}). Existují: avg, min, max, sum, mul a clamp.",
+        "clamp-arity": "clamp bere přesně jednu věc (znak {at}).",
+        "empty-call": "Tahle funkce potřebuje, na čem pracovat (znak {at})."
+      }
     }
   },
   "ExerciseLimits": {

@@ -1168,7 +1168,7 @@
         "uniform": "The correctness is the plain average of the test results.",
         "weighted": "The correctness is the weighted average of the test results. A weight of zero means the test is run but does not count."
       },
-      "universalNotice": "The score of this exercise is worked out by a custom expression written elsewhere. Editing tests here would change what that expression refers to, so this section is read-only until the expression editor exists.",
+      "universalNotice": "The score of this exercise is worked out by a custom expression, which is edited below. Tests can still be renamed there — this list is what the expression refers to.",
       "name": "Name",
       "weight": "Weight",
       "share": "Share of the score",
@@ -1332,6 +1332,52 @@
       "configFailed": "The values could not be saved.",
       "noEnvironment": "Choose a language first.",
       "noPipelines": "Choose at least one pipeline."
+    }
+  },
+  "ExerciseScore": {
+    "title": "A score of your own",
+    "explain": "Instead of an average, the correctness of a solution can be any expression over the test results — a test that must pass before the others count, a bonus that is capped, a part of the exercise weighted to nothing.",
+    "expression": "Expression",
+    "syntax": "A test result is its name in quotes and is a number from 0 to 1. Use + - * / and brackets, and the functions avg, min, max, sum, mul and clamp (which pulls a value into 0…1).",
+    "tests": "This exercise's tests: {tests}",
+    "unknownTests": "No such test: {tests}. A misspelt name is not a syntax error — it is an exercise graded on something that does not exist.",
+    "unusedTests": "Not used by the expression, so it counts for nothing: {tests}",
+    "isAnAverage": "This expression is an average, so it can be turned back into weights without losing anything.",
+    "save": "Save the expression",
+    "saving": "Saving…",
+    "saved": "The expression was saved.",
+    "switchIn": {
+      "explain": "Switching starts from what this exercise already does — equal weights become an average, unequal ones the sum over the total — so it grades exactly as before, in a form you can then change.",
+      "action": "Write the score myself",
+      "done": "This exercise now has a score of its own.",
+      "noTests": "Add a test first: an expression with nothing to refer to is not one ReCodEx will store."
+    },
+    "switchOut": {
+      "action": "Go back to an average",
+      "done": "The score is an average again.",
+      "confirm": {
+        "title": "Go back to an average?",
+        "becomesWeights": "This expression is an average, so nothing is lost — it becomes these weights: {weights}",
+        "lost": "This expression is not an average, so it cannot be turned into weights. It will be replaced by a plain average of every test and cannot be recovered from here — copy it somewhere first if you might want it back.",
+        "action": "Use an average"
+      }
+    },
+    "errors": {
+      "invalid": "That is not an expression ReCodEx can store.",
+      "unknownTests": "No such test: {tests}",
+      "noTests": "This exercise has no tests, so there is nothing for an expression to refer to.",
+      "saveFailed": "The score could not be saved.",
+      "syntax": {
+        "unterminated-test": "A test name is opened with a quote and never closed (character {at}).",
+        "unexpected-character": "That character does not belong in an expression (character {at}).",
+        "unexpected-end": "The expression stops in the middle of something (character {at}).",
+        "unexpected-token": "That is not something an expression can start with (character {at}).",
+        "expected": "A bracket or a comma is missing (character {at}).",
+        "trailing": "There is something left over after the expression ends (character {at}).",
+        "unknown-function": "No such function (character {at}). The ones there are: avg, min, max, sum, mul and clamp.",
+        "clamp-arity": "clamp takes exactly one thing (character {at}).",
+        "empty-call": "That function needs something to work on (character {at})."
+      }
     }
   },
   "ExerciseLimits": {

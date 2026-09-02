@@ -635,6 +635,35 @@
     `judge-type` is one variable both vocabularies know.
   - _Observations:_ **217 e2e tests pass** (215 before), **152 unit tests** (138 before).
 
+- **[2026-09-02 08:50] T-025:** A score of one's own, written as an expression.
+  `lib/exercise-config/score-expression.ts`, `lib/actions/exercise-score.ts`,
+  `components/exercises/config/score-expression.tsx`.
+  - **_Edited as text, not as a tree_** (DEC-109). core-api's `universal` calculator stores an
+    expression tree of eleven node types; the legacy app edits that tree _with_ a tree, in about
+    three thousand lines of node forms and drag targets. This ships a grammar instead -- infix
+    arithmetic, six functions, and a test result written as its name in quotes -- whose parser and
+    printer are two pure functions with a round-trip test. An expression can also be read at a
+    glance and pasted between exercises, which a tree cannot.
+  - **_Two failures, checked separately, because they are different things._** The syntax is the
+    parser's, and it says which character it gave up at. A test name is checked against the
+    exercise's own tests: a misspelt one is not a syntax error, it is an exercise graded on
+    something that does not exist, and core-api's refusal names the calculator rather than the
+    word. The save is not offered until both are clean.
+  - _Switching in is lossless and switching out says what it costs._ Coming to the expression seeds
+    it from what the exercise already does -- equal weights an average, unequal ones the sum over
+    the total -- so it grades exactly as before. Going back **names the weights the expression
+    becomes** where it is one of those two shapes, and says it will be lost where it is not;
+    guessing at a general expression would be re-deriving algebra, and a wrong guess silently
+    rewrites how a live exercise is graded. **This supersedes DEC-103**, which was right only for
+    as long as this app could not write an expression back.
+  - **_Two latent bugs found on the way._** The configuration page **crashed** when a weighted
+    score's `{testWeights}` reached the expression printer -- a `useState` initialiser runs before
+    the component's early return, so "only render this when universal" was not enough. And the
+    tests form kept the ids it mounted with across a save, which for renamed tests means sending
+    `id: null` for tests that exist; it is keyed by what core-api holds now, like the other three
+    editors this session added.
+  - _Observations:_ **219 e2e tests pass** (217 before), **170 unit tests** (152 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3150,8 +3179,8 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-025 -- the custom score expression, the last thing an exercise can hold that
-  this app can show but not edit. Then T-022 (the legacy discussion threads).
+- **Next ticket:** T-022 -- the legacy discussion threads on exercises, assignments and solutions,
+  the last open parity gap before the Admin phase (AD-001..AD-008).
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the

@@ -13,9 +13,11 @@ import {
   readAdvancedConfig,
 } from "@/lib/exercise-config/advanced-config";
 import { askPipelineVariables } from "@/lib/actions/exercise-advanced";
+import type { ScoreNode } from "@/lib/exercise-config/score-expression";
 
 import { Link } from "@/i18n/navigation";
 import { AdvancedConfigEditor } from "@/components/exercises/config/advanced-config";
+import { ScoreExpressionEditor } from "@/components/exercises/config/score-expression";
 import { EnvironmentsForm } from "@/components/exercises/config/environments-form";
 import { TestConfigForm } from "@/components/exercises/config/test-config-form";
 import { TestsForm } from "@/components/exercises/config/tests-form";
@@ -52,10 +54,11 @@ export default async function EditExerciseConfigPage({
   params: Promise<{ exerciseId: string }>;
 }) {
   const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tExercise, tAdvanced, exercise] = await Promise.all([
+  const [t, tExercise, tAdvanced, tScore, exercise] = await Promise.all([
     getTranslations("ExerciseConfig"),
     getTranslations("Exercise"),
     getTranslations("ExerciseAdvanced"),
+    getTranslations("ExerciseScore"),
     getExerciseDetail(exerciseId, locale),
   ]);
 
@@ -160,11 +163,43 @@ export default async function EditExerciseConfigPage({
             </h2>
             <p className="text-sm text-muted-foreground">{t("tests.explain")}</p>
           </div>
+          {/* Keyed by what core-api holds. Saving tests **changes their ids** -- core-api copies a
+              renamed test rather than updating it -- and a form still bound to the ids it mounted
+              with would send `id: null` for tests that exist, which core-api refuses as a name
+              already taken. Found by T-025's spec saving this form twice in a row. */}
           <TestsForm
+            key={`${data.score?.calculator ?? "uniform"}:${data.tests.map((test) => test.id).join(",")}`}
             exerciseId={exerciseId}
             tests={data.tests}
             calculator={data.score?.calculator ?? "uniform"}
             weights={weights}
+            readOnly={readOnly}
+          />
+        </section>
+
+        <section aria-labelledby="config-score" className="flex flex-col gap-3">
+          <div>
+            <h2 id="config-score" className="text-base font-semibold tracking-tight">
+              {tScore("title")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{tScore("explain")}</p>
+          </div>
+          {/* Keyed by what core-api holds, so switching onto the expression -- or saving one --
+              re-seeds the field from the tree that was actually stored, rather than leaving the
+              editor showing the state it mounted with. Same reason T-016's and T-024's editors are
+              keyed; a text field seeded once from a prop is otherwise a stale copy after any save. */}
+          <ScoreExpressionEditor
+            key={`${data.score?.calculator ?? "uniform"}:${JSON.stringify(data.score?.config ?? null)}`}
+            exerciseId={exerciseId}
+            isUniversal={data.score?.calculator === "universal"}
+            /* Only the universal calculator's `config` is an expression tree; the weighted one's
+               is `{testWeights}`, and handing that to the printer is how this page crashed once. */
+            expression={
+              data.score?.calculator === "universal"
+                ? ((data.score.config as ScoreNode | null) ?? null)
+                : null
+            }
+            testNames={data.tests.map((test) => test.name)}
             readOnly={readOnly}
           />
         </section>

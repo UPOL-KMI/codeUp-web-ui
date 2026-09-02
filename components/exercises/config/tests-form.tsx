@@ -25,10 +25,11 @@ import { useToast } from "@/components/toast/toast-provider";
  * rewrites the configuration and the limits to point at the copy, so this form's save is followed
  * by a router refresh: the per-test configuration below is bound to ids that no longer exist.
  *
- * **The custom-expression calculator is shown but not edited.** An exercise whose score is a
- * custom expression keeps it -- switching to an average would throw the expression away, and this
- * app has no editor to write one back with (T-025). So the choice is offered only between the two
- * averages, and an exercise already using an expression is told what it has and left alone.
+ * **The custom-expression calculator is not one of the choices here.** An exercise whose score is
+ * a custom expression is edited by T-025's own section below -- including the way back to an
+ * average, which that section can offer because it knows what the expression would become. This
+ * form stays about the two averages, and an exercise using an expression sees its tests listed and
+ * is pointed at the section that owns them.
  */
 export function TestsForm({
   exerciseId,
