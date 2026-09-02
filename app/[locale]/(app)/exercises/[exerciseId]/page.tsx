@@ -22,9 +22,9 @@ import { Badge } from "@/components/status/badge";
  * this app states in words rather than showing a red badge and leaving the reader to guess.
  *
  * Nothing here writes. Editing is T-008's and the tests and their configuration are T-009's, and
- * both are linked from here now that those screens exist. The limits are T-010's and are linked too. The
- * reference solutions (T-011) and the assignments made from this exercise (T-012) have no screen
- * yet, so this page names what it knows of them and links to neither (DEC-066).
+ * both are linked from here now that those screens exist. The limits are T-010's and the assignments made
+ * from it are T-012's; all three are linked. Only the reference solutions (T-011) have no screen
+ * yet, so this page names how many there are and links to none (DEC-066).
  */
 export default async function ExercisePage({
   params,
@@ -75,6 +75,14 @@ export default async function ExercisePage({
               className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {t("limits")}
+            </Link>
+          )}
+          {exercise.can.viewAssignments === true && (
+            <Link
+              href={`/exercises/${exerciseId}/assignments`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("assignmentsLink")}
             </Link>
           )}
           <Link

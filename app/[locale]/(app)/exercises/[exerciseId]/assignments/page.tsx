@@ -1,0 +1,162 @@
+import { forbidden } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
+
+import { getExerciseAssignments } from "@/lib/api/exercise-assignments";
+import { getExerciseDetail } from "@/lib/api/exercise-detail";
+import { getMyGroups } from "@/lib/api/groups";
+import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+
+import { Link } from "@/i18n/navigation";
+import { AssignToGroups } from "@/components/exercises/exercise-assignments";
+import { DateTime } from "@/components/format/date-time";
+import { PageShell } from "@/components/page-shell";
+import { Badge } from "@/components/status/badge";
+
+/**
+ * The assignments made from one exercise (T-012) -- the legacy
+ * `/app/exercises/:id/assignments` route.
+ *
+ * T-021 counts them, which is what says the exercise is in use; this is the list behind that
+ * number, and it exists because **an assignment is a snapshot**. Editing an exercise does not
+ * change anything already assigned from it, so after a round of edits the question a teacher has
+ * is "who is now out of date" -- and answering it otherwise means opening every assignment in
+ * turn. Each row says which parts have drifted, read through the same rule S-013's notice uses;
+ * re-synchronising stays on the assignment's own settings screen (T-002), where the button that
+ * does it already lives.
+ *
+ * **Assigning to several groups at once** is the legacy screen's other half. core-api has no bulk
+ * call, so it is one request per group and each one succeeds or fails on its own -- a reader who
+ * may create in four of five groups they picked gets four assignments and one named refusal.
+ *
+ * `viewAssignments` gates the reading; creating is the destination group's rule, which no hint on
+ * the exercise expresses (DEC-090's shape), so the offer is the groups the reader teaches and
+ * core-api decides for real.
+ */
+export default async function ExerciseAssignmentsPage({
+  params,
+}: {
+  params: Promise<{ exerciseId: string }>;
+}) {
+  const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
+  const [t, exercise] = await Promise.all([
+    getTranslations("ExerciseAssignments"),
+    getExerciseDetail(exerciseId, locale),
+  ]);
+
+  if (exercise.can.viewAssignments !== true) forbidden();
+
+  const [assignments, mine, breadcrumbs] = await Promise.all([
+    getExerciseAssignments(exerciseId, locale),
+    getMyGroups(locale),
+    resolveBreadcrumbs(`/exercises/${exerciseId}/assignments`, locale),
+  ]);
+
+  const alreadyAssigned = new Set(assignments.map((assignment) => assignment.groupId));
+
+  return (
+    <PageShell
+      title={t("title")}
+      subtitle={exercise.name}
+      breadcrumbs={breadcrumbs}
+      actions={
+        <Link
+          href={`/exercises/${exerciseId}`}
+          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {t("backToExercise")}
+        </Link>
+      }
+    >
+      <div className="flex flex-col gap-10">
+        <section aria-labelledby="exercise-assignment-list" className="flex flex-col gap-3">
+          <div>
+            <h2 id="exercise-assignment-list" className="text-base font-semibold tracking-tight">
+              {t("list.title")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{t("list.explain")}</p>
+          </div>
+
+          {assignments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("list.none")}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-muted-foreground">
+                    <th scope="col" className="py-1 pr-3 font-medium">
+                      {t("list.group")}
+                    </th>
+                    <th scope="col" className="py-1 pr-3 font-medium">
+                      {t("list.deadline")}
+                    </th>
+                    <th scope="col" className="py-1 pr-3 font-medium">
+                      {t("list.points")}
+                    </th>
+                    <th scope="col" className="py-1 font-medium">
+                      {t("list.state")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignments.map((assignment) => (
+                    <tr key={assignment.id} className="border-b border-border/50">
+                      <td className="py-2 pr-3">
+                        <Link
+                          href={`/assignments/${assignment.id}`}
+                          className="text-primary underline underline-offset-2"
+                        >
+                          {assignment.groupName ?? t("list.hiddenGroup")}
+                        </Link>
+                        <span className="block text-xs text-muted-foreground">
+                          {assignment.name}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <DateTime unixSeconds={assignment.firstDeadline} />
+                      </td>
+                      <td className="py-2 pr-3">{assignment.maxPoints}</td>
+                      <td className="py-2">
+                        <span className="flex flex-wrap gap-1">
+                          {!assignment.isPublic && (
+                            <Badge tone="neutral">{t("list.invisible")}</Badge>
+                          )}
+                          {assignment.staleParts.length > 0 && (
+                            <Badge tone="warning">
+                              {t("list.stale", { count: assignment.staleParts.length })}
+                            </Badge>
+                          )}
+                          {assignment.staleParts.length === 0 && assignment.isPublic && (
+                            <Badge tone="success">{t("list.current")}</Badge>
+                          )}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section aria-labelledby="exercise-assign" className="flex flex-col gap-3">
+          <div>
+            <h2 id="exercise-assign" className="text-base font-semibold tracking-tight">
+              {t("assign.title")}
+            </h2>
+          </div>
+          {exercise.isBroken ? (
+            <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
+              {t("assign.broken")}
+            </p>
+          ) : (
+            <AssignToGroups
+              exerciseId={exerciseId}
+              groups={mine.teaching}
+              alreadyAssigned={alreadyAssigned}
+            />
+          )}
+        </section>
+      </div>
+    </PageShell>
+  );
+}

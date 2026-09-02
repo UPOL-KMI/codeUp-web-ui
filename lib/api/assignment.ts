@@ -110,7 +110,7 @@ interface AssignmentPayload {
  * the object rather than by listing the parts here, which would go out of date the first time
  * core-api grows another one.
  */
-type SynchronizationInfo = Record<string, unknown> & {
+export type SynchronizationInfo = Record<string, unknown> & {
   isSynchronizationPossible?: boolean;
 };
 
@@ -150,7 +150,7 @@ function localizedText(
   };
 }
 
-function stalePartsOf(info: SynchronizationInfo | undefined): string[] {
+export function stalePartsOf(info: SynchronizationInfo | undefined): string[] {
   if (!info) return [];
   return Object.entries(info)
     .filter(

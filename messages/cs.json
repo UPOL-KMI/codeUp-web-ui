@@ -907,6 +907,7 @@
     "backToCatalog": "Zpět do katalogu",
     "configure": "Testy a vyhodnocení",
     "limits": "Limity spuštění",
+    "assignmentsLink": "Kde je zadaná",
     "text": "Co má student udělat",
     "noText": "Tato úloha zatím nemá zadání v žádném jazyce.",
     "otherLocales": "Napsáno také v: {locales}.",
@@ -1319,6 +1320,41 @@
       "unknownHardwareGroup": "Tato úloha už na tom stroji neběží. Načtěte stránku znovu.",
       "hardwareGroupsFailed": "Stroje se nepodařilo uložit.",
       "limitsFailed": "Limity se nepodařilo uložit."
+    }
+  },
+  "ExerciseAssignments": {
+    "title": "Zadání z této úlohy",
+    "backToExercise": "Zpět na úlohu",
+    "list": {
+      "title": "Kde je zadaná",
+      "explain": "Zadání je otisk: úpravou úlohy se nic už zadaného nezmění. Řádek označený jako pozadu se od úlohy rozešel — synchronizovat jde v nastavení toho zadání.",
+      "none": "Tato úloha není zadaná nikde, kam vidíte.",
+      "group": "Skupina",
+      "hiddenGroup": "Skupina, kam nevidíte",
+      "deadline": "První termín",
+      "points": "Body",
+      "state": "Stav",
+      "invisible": "Studenti nevidí",
+      "current": "Aktuální",
+      "stale": "{count, plural, one {# část pozadu} few {# části pozadu} other {# částí pozadu}}"
+    },
+    "assign": {
+      "title": "Zadat ji někam",
+      "explain": "Vyberte skupiny. Každá se zadává zvlášť, takže skupina, kam zadávat nesmíte, nezastaví ostatní.",
+      "broken": "Tuto úlohu zatím nelze zadat — co jí chybí, je vidět na obrazovce úlohy.",
+      "noGroups": "Neučíte žádnou skupinu, kam by šlo zadat.",
+      "already": "tady už zadaná je",
+      "assign": "{count, plural, =0 {Zadat} one {Zadat do # skupiny} few {Zadat do # skupin} other {Zadat do # skupin}}",
+      "assigning": "Zadávám…",
+      "assigned": "{count, plural, one {Vzniklo # zadání} few {Vznikla # zadání} other {Vzniklo # zadání}}.",
+      "noneAssigned": "Nezadalo se nic.",
+      "invisible": "Nová zadání jsou pro studenty neviditelná, takže nenastavené nikomu neublíží. Termíny a body se doplní v každém zvlášť.",
+      "failed": "Nepovedlo se.",
+      "refused": "{group}: {reason}"
+    },
+    "errors": {
+      "noGroups": "Vyberte alespoň jednu skupinu.",
+      "assignFailed": "Úlohu se tam nepodařilo zadat."
     }
   },
   "Pipelines": {

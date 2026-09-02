@@ -31,7 +31,7 @@
 | `app/exercises`                                                            | Exercises                  | true  | EXERCISES_URI                               | `/exercises`                           | done   |
 | `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | done   |
 | `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | done   |
-| `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | todo   |
+| `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | done   |
 | `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
 | `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | done   |
 | `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`          | done   |

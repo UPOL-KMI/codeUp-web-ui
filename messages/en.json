@@ -907,6 +907,7 @@
     "backToCatalog": "Back to the catalog",
     "configure": "Tests and evaluation",
     "limits": "Execution limits",
+    "assignmentsLink": "Where it is assigned",
     "text": "What the student is asked to do",
     "noText": "This exercise has no text in any language yet.",
     "otherLocales": "Also written in: {locales}.",
@@ -1319,6 +1320,41 @@
       "unknownHardwareGroup": "This exercise no longer runs on that machine. Reload the page.",
       "hardwareGroupsFailed": "The machines could not be saved.",
       "limitsFailed": "The limits could not be saved."
+    }
+  },
+  "ExerciseAssignments": {
+    "title": "Assignments from this exercise",
+    "backToExercise": "Back to the exercise",
+    "list": {
+      "title": "Where it is assigned",
+      "explain": "An assignment is a snapshot: editing the exercise does not change anything already assigned from it. A row marked as behind has drifted from the exercise since it was made — re-synchronising is on that assignment's own settings.",
+      "none": "This exercise has not been assigned anywhere you can see.",
+      "group": "Group",
+      "hiddenGroup": "A group you cannot see",
+      "deadline": "First deadline",
+      "points": "Points",
+      "state": "State",
+      "invisible": "Not visible to students",
+      "current": "Up to date",
+      "stale": "{count, plural, one {# part behind} other {# parts behind}}"
+    },
+    "assign": {
+      "title": "Assign it somewhere",
+      "explain": "Pick the groups. Each one is assigned on its own, so a group you may not assign in does not stop the others.",
+      "broken": "This exercise cannot be assigned yet — see what it is missing on the exercise screen.",
+      "noGroups": "You do not teach any group to assign this in.",
+      "already": "already assigned here",
+      "assign": "{count, plural, =0 {Assign} one {Assign to # group} other {Assign to # groups}}",
+      "assigning": "Assigning…",
+      "assigned": "{count, plural, one {# assignment was created} other {# assignments were created}}.",
+      "noneAssigned": "Nothing was assigned.",
+      "invisible": "New assignments start invisible to students, so an unconfigured one harms nobody. Open each to set its deadlines and points.",
+      "failed": "That did not work.",
+      "refused": "{group}: {reason}"
+    },
+    "errors": {
+      "noGroups": "Pick at least one group.",
+      "assignFailed": "The exercise could not be assigned there."
     }
   },
   "Pipelines": {

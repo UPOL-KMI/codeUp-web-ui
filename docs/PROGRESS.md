@@ -487,6 +487,23 @@
     "Copy into" select now also lists.
   - _Observations:_ **203 e2e tests pass** (200 before), **120 unit tests** (116 before).
 
+- **[2026-09-02 06:35] T-012:** Where an exercise is assigned, and assigning it several places at
+  once. `app/[locale]/(app)/exercises/[exerciseId]/assignments/page.tsx`,
+  `lib/api/exercise-assignments.ts`, `lib/actions/exercise-assign.ts`,
+  `components/exercises/exercise-assignments.tsx`.
+  - _T-021 counts them; this is the list behind the number._ It earns its own screen because **an
+    assignment is a snapshot**: editing an exercise changes nothing already assigned from it. So
+    the useful question after a round of edits is not "what did I write" but "who is now out of
+    date", and each row answers it -- through the same `stalePartsOf` rule S-013's notice uses,
+    exported rather than reimplemented. Re-synchronising stays on T-002's screen, where the button
+    that does it already is.
+  - **_Assigning to several groups at once, with each one standing on its own._** core-api has no
+    bulk call, so this is one request per group; a reader who may create in four of the five they
+    picked gets four assignments and one named refusal, rather than an error that hides what
+    worked. Groups that already have an assignment from this exercise are still offered and marked,
+    because assigning one twice in a group is legitimate and core-api allows it.
+  - _Observations:_ **206 e2e tests pass** (203 before), 120 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2994,14 +3011,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   configuration and limits editors between them -- **every reason core-api gives for a new exercise
   being broken can now be answered from this app** -- leaving the reference solutions and the
   pipeline screens (T-011..T-016), plus the two tickets T-009 filed for the parts of its own screen
-  it does not own (T-024, T-025).
+  it does not own (T-024, T-025). T-023 and T-012 closed with them: an exercise's files (which
+  T-009 needed), its people, forking it, and the list of where it is assigned.
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
   A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-012 -- the assignments made from an exercise, which T-021 counts but does not
-  list. Then T-011, the reference solutions.
+- **Next ticket:** T-011 -- an exercise's reference solutions: the list, one solution's evaluation,
+  and submitting a new one. The last screen of the exercise-authoring block that is not a pipeline.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
