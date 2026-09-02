@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { getPublicInstances } from "@/lib/api/instances";
 import { localRegistrationEnabled } from "@/lib/auth/registration";
 
 import { Link } from "@/i18n/navigation";
@@ -30,7 +31,7 @@ export default async function RegisterPage() {
   const t = await getTranslations("Register");
   const enabled = localRegistrationEnabled();
 
-  const instances = enabled ? await fetchInstances() : [];
+  const instances = enabled ? await getPublicInstances() : [];
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-16">
@@ -55,21 +56,4 @@ export default async function RegisterPage() {
       </p>
     </div>
   );
-}
-
-/**
- * Read without `lib/api/client.ts`: there is no session here, and that client requires one. This
- * is the only anonymous read in the app, and a failure is not a reason to refuse the page -- a
- * deployment with one instance and an unreachable list is still a deployment somebody can
- * register on, they just cannot be asked to choose.
- */
-async function fetchInstances(): Promise<{ id: string; name: string }[]> {
-  const apiBase = process.env.API_BASE_INTERNAL;
-  if (!apiBase) return [];
-
-  const response = await fetch(`${apiBase}/instances`, { cache: "no-store" }).catch(() => null);
-  if (!response?.ok) return [];
-
-  const { payload } = (await response.json()) as { payload?: { id: string; name: string }[] };
-  return (payload ?? []).map((instance) => ({ id: instance.id, name: instance.name }));
 }

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { externalAuthProvider } from "@/lib/auth/external-auth";
 import { localRegistrationEnabled } from "@/lib/auth/registration";
 import { shortSessionSeconds } from "@/lib/auth/short-session";
 
@@ -18,10 +19,10 @@ import { LoginForm } from "@/components/auth/login-form";
  * **A visitor who already has a session never sees this**: `proxy.ts` sends them to the dashboard,
  * which is why there is no "you are already signed in" branch here, unlike the legacy page.
  *
- * External sign-in is **not offered**, because this deployment configures none -- no
- * authenticator name, no shared secret (Q-004). The callback route exists and its error is
- * rendered; the button that would start such a flow belongs with A-007, when there is a provider
- * to point it at.
+ * External sign-in is offered where a provider is configured (A-007) and is **absent here**,
+ * because this deployment configures none -- no authenticator name, no URL, no shared secret
+ * (Q-004). It is an ordinary link rather than the legacy app's popup: F-019 built the callback as
+ * a redirect target, so there is no second window to hand a token back from (DEC-117).
  */
 export default async function LoginPage({
   searchParams,
@@ -30,6 +31,7 @@ export default async function LoginPage({
 }) {
   const [query, t] = await Promise.all([searchParams, getTranslations("Login")]);
   const shortSession = shortSessionSeconds();
+  const external = externalAuthProvider();
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
@@ -63,6 +65,21 @@ export default async function LoginPage({
         from={query.from}
         shortSessionMinutes={shortSession === null ? null : Math.round(shortSession / 60)}
       />
+
+      {/* A plain link, and a plain full navigation: the provider sends the browser back to
+          `/api/auth/external/{service}/callback`, which establishes the session itself. Nothing is
+          appended to the URL -- where it returns to is the provider's own configuration. */}
+      {external && (
+        <div className="flex flex-col gap-2 border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">{t("externalIntro")}</p>
+          <a
+            href={external.url}
+            className="rounded-md border border-input px-3 py-2 text-center text-sm font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("externalSignIn", { name: external.name })}
+          </a>
+        </div>
+      )}
 
       <p className="flex flex-wrap gap-4 text-sm">
         <Link

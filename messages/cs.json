@@ -3,7 +3,45 @@
     "title": "ReCodEx"
   },
   "HomePage": {
-    "title": "ReCodEx"
+    "title": "ReCodEx",
+    "tagline": "Procvičujte programování a hned se dozvíte, jestli to funguje.",
+    "what": "ReCodEx odevzdaný kód přeloží a spustí v izolovaném prostředí a řekne, co prošlo a co ne. Studenti mají odpověď během vteřin místo za týden; vyučující tráví čas tím, jak je řešení napsané, a ne tím, jestli vůbec běží.",
+    "signIn": "Přihlásit se",
+    "faq": "Časté otázky",
+    "instance": {
+      "title": "Tato instance",
+      "noDescription": "Tato instance se nijak nepopsala.",
+      "support": "Technická podpora"
+    },
+    "quickStart": {
+      "title": "Jak to do sebe zapadá",
+      "groups": {
+        "title": "Skupiny",
+        "body": "Všechno se děje ve skupině — v předmětu, na cvičení, v soutěži. Skupiny tvoří strom, díky čemuž může předmět obsahovat vlastní cvičební skupiny a správce předmětu spravuje i je. Skupina má členy, zadání a vlastní pravidla pro body."
+      },
+      "exercises": {
+        "title": "Úlohy",
+        "body": "Úloha je šablona: text, který studenti čtou, testy, proti kterým se jejich kód pouští, a čas a paměť, které smí spotřebovat. Dokud úloha není zadaná, studenti ji nevidí; napsat se dá jednou a sdílet mezi předměty. Zadat ji nejde, dokud alespoň jedno referenční řešení nedoloží, že funguje."
+      },
+      "assignments": {
+        "title": "Zadání",
+        "body": "Zadáním se úloha zkopíruje do skupiny a přibude termín a počet bodů. Protože jde o kopii, pozdější úpravy úlohy se zadání nedotknou, dokud je někdo vědomě nesesynchronizuje — oprava uprostřed semestru tak tiše nezmění to, za co byla třída hodnocena."
+      },
+      "solutions": {
+        "title": "Řešení",
+        "body": "Student odevzdá zdrojové soubory nebo archiv; ReCodEx je přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům to běželo. Vyučující vidí každý pokus, může kód okomentovat řádek po řádku a body přepsat."
+      },
+      "shadow": {
+        "title": "Práce, kterou ReCodEx nevyhodnotí",
+        "body": "Ústní zkoušky, prezentace, docházka — stínové zadání nese body, které vyučující udělí ručně, takže součet ve skupině odpovídá celému předmětu, ne jen té části, kterou umí ohodnotit stroj."
+      }
+    },
+    "acknowledgement": "ReCodEx vznikl s podporou Studentského grantového programu Matematicko-fyzikální fakulty Univerzity Karlovy a spravuje jej její Informatická sekce.",
+    "links": {
+      "source": "Zdrojový kód",
+      "docs": "Dokumentace"
+    },
+    "license": "ReCodEx je open source, vydaný pod licencí MIT."
   },
   "NotFound": {
     "title": "Stránka nenalezena",
@@ -44,7 +82,9 @@
     },
     "forgotPassword": "Nepamatuji si heslo",
     "passwordChanged": "Heslo bylo změněno. Přihlaste se novým.",
-    "createAccount": "Vytvořit účet"
+    "createAccount": "Vytvořit účet",
+    "externalIntro": "Přihlásit vás může i vaše instituce.",
+    "externalSignIn": "Přihlásit se přes {name}"
   },
   "Register": {
     "title": "Vytvoření účtu",

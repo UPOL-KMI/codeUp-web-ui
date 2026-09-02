@@ -10,7 +10,7 @@
 
 | Route (basePath)                                                           | Component                  | Auth  | Link Name                                   | Destination in New IA                                      | Status |
 | -------------------------------------------------------------------------- | -------------------------- | ----- | ------------------------------------------- | ---------------------------------------------------------- | ------ |
-| `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                                       | todo   |
+| `''`                                                                       | Home                       | —     | HOME_URI                                    | `/` (public landing)                                       | done   |
 | `faq`                                                                      | FAQ                        | —     | FAQ_URL                                     | `/faq`                                                     | todo   |
 | `login/:redirect?`                                                         | Login                      | —     | LOGIN_URI_FACTORY                           | `/login`                                                   | done   |
 | `registration`                                                             | Registration               | false | REGISTRATION_URI                            | `/register`                                                | done   |
@@ -129,7 +129,7 @@
 | ----------------------- | ------------------------------------------------------- | -------------------------------------------- | ------ |
 | **Auth token storage**  | `localStorage` JWT                                      | httpOnly cookie + BFF (F-016)                | done   |
 | **Token refresh**       | `redux` middleware auto-refresh                         | `proxy.ts` + Route Handler (F-018)           | done   |
-| **External auth (CAS)** | Popup window + redirect callback                        | Route Handler callback (F-019)               | done   |
+| **External auth (CAS)** | Popup window + `postMessage` back to opener             | Redirect to callback, no popup (F-019/A-007) | done   |
 | **User takeover**       | `POST /login/takeover/:userId`                          | Route Handler (F-020)                        | done   |
 | **Restricted tokens**   | `POST /login/issue-restricted-token`                    | Route Handler (F-021)                        | done   |
 | **File upload**         | Per-partes chunked upload via `apiMiddleware`           | Route Handler streaming (§6.7), D-005        | done   |

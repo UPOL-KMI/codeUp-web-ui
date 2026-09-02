@@ -3,7 +3,45 @@
     "title": "ReCodEx"
   },
   "HomePage": {
-    "title": "ReCodEx"
+    "title": "ReCodEx",
+    "tagline": "Practise programming, and find out straight away whether it works.",
+    "what": "ReCodEx compiles and runs submitted code in a sandbox and reports back what passed and what did not. Students get an answer in seconds instead of waiting a week; teachers spend their time on how a solution is written rather than on whether it runs.",
+    "signIn": "Sign in",
+    "faq": "Frequently asked questions",
+    "instance": {
+      "title": "This instance",
+      "noDescription": "This instance has not described itself.",
+      "support": "Technical support"
+    },
+    "quickStart": {
+      "title": "How it fits together",
+      "groups": {
+        "title": "Groups",
+        "body": "Everything happens in a group — a course, a lab, a competition. Groups form a tree, which is how a course can hold its own lab groups, and how somebody who administers a course administers those too. A group has members and assignments, and its own rules for points."
+      },
+      "exercises": {
+        "title": "Exercises",
+        "body": "An exercise is the template: the text students read, the tests their code is run against, and the time and memory it is allowed. Exercises are invisible to students until they are assigned, and they can be written once and shared between courses. An exercise cannot be assigned until at least one reference solution has proved it works."
+      },
+      "assignments": {
+        "title": "Assignments",
+        "body": "Assigning copies the exercise into a group and adds a deadline and a number of points. Because it is a copy, editing the exercise afterwards leaves the assignment alone until somebody deliberately re-synchronises it — so a correction mid-term does not silently change what a class was graded on."
+      },
+      "solutions": {
+        "title": "Solutions",
+        "body": "A student submits source files or an archive; ReCodEx compiles it, runs it against every test, and shows which passed, what the compiler said, and how close to the limits it ran. Teachers see every attempt, can review the code line by line, and can override the points."
+      },
+      "shadow": {
+        "title": "Work ReCodEx cannot evaluate",
+        "body": "Oral exams, presentations, attendance — a shadow assignment carries points a teacher awards by hand, so a group's total is the whole course rather than only the part a machine can mark."
+      }
+    },
+    "acknowledgement": "ReCodEx was created with the support of the Student Grant Program of the Faculty of Mathematics and Physics, Charles University, and is maintained by its School of Computer Science.",
+    "links": {
+      "source": "Source code",
+      "docs": "Documentation"
+    },
+    "license": "ReCodEx is open source, released under the MIT licence."
   },
   "NotFound": {
     "title": "Page not found",
@@ -44,7 +82,9 @@
     },
     "forgotPassword": "I cannot remember my password",
     "passwordChanged": "Your password was changed. Sign in with the new one.",
-    "createAccount": "Create an account"
+    "createAccount": "Create an account",
+    "externalIntro": "Your institution can sign you in instead.",
+    "externalSignIn": "Sign in with {name}"
   },
   "Register": {
     "title": "Create account",

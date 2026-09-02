@@ -124,3 +124,34 @@ export async function getInstanceLicences(instanceId: string): Promise<Licence[]
     }))
     .sort((a, b) => b.validUntil - a.validUntil);
 }
+
+/**
+ * The instances, read **without a session** (A-001, A-003).
+ *
+ * The only anonymous read in this app, and it is anonymous because core-api says so: `viewAll` is
+ * granted to the `unauthenticated` role, which is what lets the registration form offer a choice
+ * of instance and the landing page name the one a visitor has arrived at. Deliberately not
+ * `./client`, which requires a session by construction.
+ *
+ * A failure is not a reason to refuse the page: a deployment with one instance and an unreachable
+ * list is still a deployment somebody can register on or read about -- they just cannot be told
+ * which one. Returns an empty list instead of throwing.
+ */
+export async function getPublicInstances(): Promise<
+  { id: string; name: string; description: string }[]
+> {
+  const apiBase = process.env.API_BASE_INTERNAL;
+  if (!apiBase) return [];
+
+  const response = await fetch(`${apiBase}/instances`, { cache: "no-store" }).catch(() => null);
+  if (!response?.ok) return [];
+
+  const { payload } = (await response.json().catch(() => ({}))) as {
+    payload?: { id: string; name?: string; description?: string }[];
+  };
+  return (payload ?? []).map((one) => ({
+    id: one.id,
+    name: one.name ?? "",
+    description: one.description ?? "",
+  }));
+}

@@ -208,6 +208,15 @@ Re-check `typescript-eslint`'s TS 7 support (tracked at
 github.com/typescript-eslint/typescript-eslint/issues/10940) and `eslint-plugin-react`'s ESLint 10
 support periodically; upgrade both together when they land, don't upgrade one without the other.
 
+**Re-checked 2026-09-02 (F-028), both pins stay.** `typescript@7.0.2` and `eslint@10.9.1` are
+released, but `typescript-eslint@8.69.0` — latest, and its canary — still declares
+`typescript: >=4.8.4 <6.1.0`, so TS 7 is excluded outright and that half is unchanged. The ESLint
+side has moved, though: `typescript-eslint` now peers at `^8.57.0 || ^9.0.0 || ^10.0.0`, so the
+only thing still capping ESLint at 9 is **`eslint-plugin-react@7.37.5`**, pulled in transitively by
+`eslint-config-next` and peering at `^9.7`. Its `next` dist-tag is `7.8.0-rc.0`, an _older_ release
+than latest, so there is nothing to move to. When re-checking, look at that plugin first — it is
+now the whole of the ESLint blocker.
+
 ---
 
 <!-- Next.js writes a version-matched documentation block below this line when `next dev` runs

@@ -951,6 +951,44 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     between "not finished" and "not loaded" is the whole of what went wrong.
   - _Observations:_ **253 e2e tests pass** (249 before), 170 unit tests.
 
+- **[2026-09-02 19:40] F-028 + A-001 + A-007:** The last three before the parity sweep.
+  - **_F-028: both pins stay, and one of the two reasons has changed._** `typescript@7.0.2` and
+    `eslint@10.9.1` are released, so the ticket's premise ("the blocking condition may be gone")
+    was worth checking -- but `typescript-eslint@8.69.0`, latest and canary alike, still declares
+    `typescript: >=4.8.4 <6.1.0`. TS 7 is excluded outright and that half is untouched. **The
+    ESLint blocker has moved**, though: `typescript-eslint` now accepts `^10.0.0`, and the only
+    thing still holding ESLint at 9 is `eslint-plugin-react@7.37.5` -- **transitive**, via
+    `eslint-config-next`, peering at `^9.7`, and with a `next` dist-tag (`7.8.0-rc.0`) that is an
+    _older_ release than latest. `AGENTS.md` now says to look at that plugin first next time.
+  - **_A-001: the landing page reads no session, and that is a deliberate split._** The legacy
+    `Home` is one screen branching on the reader's role; this app's IA already separates `/` from
+    `/dashboard`, so the front door reads the same for everybody (DEC-116). `readSessionToken`
+    carries an explicit note that it is **not** a general "is the reader signed in" helper, and a
+    marketing page is the wrong place to introduce one. It costs nothing: `proxy.ts` already sends
+    a visitor who has a session from `/login` to `/dashboard`, so the sign-in link needs no branch.
+  - _Moving it into `(anon)` was a bug fix, not tidying._ At `app/[locale]/page.tsx` the root page
+    had **no `<main>` landmark and no language switch** -- the same gap S-024 found on the other
+    anonymous pages, still open on the one page a visitor sees first.
+  - _The public instance read is now shared._ A-003's registration page had its own inline
+    `fetchInstances()`; the landing page needs the same anonymous call, so it moved to
+    `getPublicInstances()` and the copy went.
+  - **_A-007: the page it names has nothing to port, and that is the finding._**
+    `LoginExternFinalization` exists **only** to serve the legacy app's popup -- it reads the token
+    out of its own URL, `postMessage`s it to `window.opener`, waits to be told it arrived, and
+    closes itself. F-019 built this app's side as a plain redirect target, so there is no second
+    window and no opener to talk to. Porting the page would be porting the _mechanism_ rather than
+    the capability (DEC-117).
+  - **_What was actually missing was the way in._** F-019 built the callback and its failure state;
+    **nothing ever sent anybody to the provider**, so external sign-in was unreachable rather than
+    unconfigured. That link is this ticket, reading the same three variables the legacy does and
+    offered on the same condition -- both the URL and the service id set. The URL is used exactly
+    as configured with nothing appended, because where the provider returns to is its own business.
+  - _Unconfigured here, so verified from the other side by hand:_ the three variables were set in
+    `.env.local`, the app rebuilt, and the button confirmed to render with exactly the configured
+    URL; then removed and rebuilt again. The spec asserts the absent case, which is the one this
+    deployment can actually be in (Q-004).
+  - _Observations:_ **257 e2e tests pass** (253 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3478,9 +3516,16 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   with it every phase but the last.** The `users`, `userSwitching`, `instances`, `licences`,
   `broker`, `asyncJobs` and `systemMessages` rows in `INVENTORY.md` are all closed, and **no
   placeholder page remains behind the session**.
+  **A-001 and A-007 close the anonymous block**, and with it every feature ticket in the plan: the
+  public landing page, and the way in through an external identity provider. **F-028 was re-checked
+  and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
+  work.
 - **Next ticket:** P-001 -- the parity sweep, walking `INVENTORY.md` top to bottom, and the rest of
   Phase 7 (P-002 accessibility, P-003 performance, P-004 a native-speaker cs/en review, P-005 the
-  README, P-006 the old-to-new route map, P-007 `DROPPED.md`, P-008 the retrospective). **Every
+  README, P-006 the old-to-new route map, P-007 `DROPPED.md`, P-008 the retrospective).
+  **Filed and not started: X-001**, a GitHub Classroom importer the operator asked about -- feasible
+  narrowly (`autograding.json`'s stdin/stdout tests map onto ReCodEx tests; framework-based tests do
+  not), needs no API change, and deliberately waits until the sweep says what is finished. **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3500,7 +3545,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   **Q-023**: deleting an instance orphans its root group, which is how eight stray groups had got
   into the superadmin's sidebar without anybody noticing. And **AD-007**, which found a capability
   with nowhere to reach it -- a supervisor may write a system message and has no screen on which to
-  see it again, because `create` is granted from `supervisor` up and `viewAll` is not.
+  see it again, because `create` is granted from `supervisor` up and `viewAll` is not. And
+  **F-028 + A-001 + A-007**, which between them found that the root page had been missing its
+  `<main>` landmark since F-001, and that external sign-in had a callback but no way to start it.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
