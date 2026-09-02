@@ -1529,6 +1529,105 @@
     "exercisesExplain": "A pipeline is shared machinery. Changing it changes the evaluation of every exercise configured against it.",
     "noExercises": "No exercise uses this pipeline."
   },
+  "PipelineEdit": {
+    "title": "Edit pipeline",
+    "backToPipeline": "Back to the pipeline",
+    "inUse": "{count, plural, one {# exercise is} other {# exercises are}} configured against this pipeline. Changing it changes how they are evaluated — make a copy instead if you are not sure.",
+    "settings": {
+      "title": "What it is",
+      "name": "Name",
+      "description": "Description",
+      "descriptionHint": "What the pipeline does and which variables it expects. This is what somebody reads before choosing it.",
+      "parameters": "What it does",
+      "parametersExplain": "These are not description. The exercise configuration editor reads them to decide where each variable goes and which fields a test offers — and it picks between two execution pipelines purely on whether they compare standard output or a written file.",
+      "parameterNames": {
+        "isCompilationPipeline": "It compiles",
+        "isExecutionPipeline": "It executes the solution",
+        "judgeOnlyPipeline": "It only judges",
+        "producesStdout": "It compares standard output",
+        "producesFiles": "It compares a written file",
+        "hasEntryPoint": "It takes an entry point",
+        "hasExtraFiles": "It takes extra files",
+        "hasSuccessExitCodes": "It takes accepted exit codes"
+      },
+      "environments": "Languages",
+      "environmentsExplain": "Which languages this pipeline can evaluate. An exercise may only choose it for a language listed here.",
+      "saveEnvironments": "Save languages",
+      "environmentsSaved": "Languages saved.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "saveFailed": "That could not be saved.",
+      "fork": "Make a copy",
+      "forked": "The copy was made.",
+      "delete": "Delete this pipeline",
+      "deleted": "The pipeline was deleted.",
+      "confirmDelete": {
+        "title": "Delete this pipeline?",
+        "description": "It goes for good. ReCodEx refuses to delete one an exercise still uses, so if any do you will be told rather than surprised later.",
+        "confirm": "Delete it"
+      }
+    },
+    "structure": {
+      "title": "How it is wired",
+      "explain": "Boxes are operations; a variable is the wire between them. A box reads or writes a variable by naming it, so a port left unconnected is not an error ReCodEx will report — it is simply a wire that is not there.",
+      "preview": "The pipeline as you are editing it",
+      "variables": "Variables",
+      "variablesExplain": "A wire, or a value the pipeline supplies itself. A value starting with $ is a hole an exercise fills in.",
+      "variable": {
+        "name": "Name",
+        "type": "Type",
+        "value": "Value",
+        "nameOf": "Name of variable {index}",
+        "typeOf": "Type of {name}",
+        "valueOf": "Value of {name}",
+        "listHint": "comma separated"
+      },
+      "addVariable": "Add a variable",
+      "boxes": "Boxes",
+      "boxesExplain": "Each port is wired by choosing a variable of its own type — never by typing a name, because a typo would look like a deliberate disconnection.",
+      "box": {
+        "name": "Name",
+        "type": "Type",
+        "reads": "Reads",
+        "writes": "Writes",
+        "unconnected": "— not wired —",
+        "portOf": "{box}, port {port}",
+        "missingVariable": "{name} (no such variable)",
+        "addType": "Kind of box",
+        "chooseType": "— choose —"
+      },
+      "addBox": "Add the box",
+      "remove": "Remove",
+      "broken": {
+        "title": "ReCodEx will refuse this",
+        "writtenTwice": "{name} is written by more than one port: {ports}",
+        "unread": "Nothing reads these variables: {variables}",
+        "explain": "A wire can have one source, and a value nothing consumes is not a wire at all. A variable that is only read is fine — that is what a hole the exercise fills in looks like."
+      },
+      "dangling": {
+        "title": "Some ports are not wired up",
+        "ports": "Connected to nothing: {ports}",
+        "explain": "ReCodEx will accept this. It will simply not do what the missing wires would have done."
+      },
+      "save": "Save the structure",
+      "saving": "Saving…",
+      "saved": "The structure was saved.",
+      "saveNote": "The whole structure is saved at once — ReCodEx has no call that changes one box.",
+      "saveFailed": "The structure could not be saved."
+    },
+    "errors": {
+      "invalid": "That is not something ReCodEx can store.",
+      "duplicateBox": "Two boxes cannot have the same name.",
+      "duplicateVariable": "Two variables cannot have the same name.",
+      "settingsFailed": "The settings could not be saved.",
+      "structureFailed": "The structure could not be saved.",
+      "environmentsFailed": "The languages could not be saved.",
+      "createFailed": "The pipeline could not be created.",
+      "forkFailed": "The copy could not be made.",
+      "deleteFailed": "The pipeline could not be deleted."
+    }
+  },
   "Users": {
     "title": "Users"
   },

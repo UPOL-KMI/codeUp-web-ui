@@ -20,6 +20,23 @@ async function coreApi<T>(path: string, token: string): Promise<T> {
   return body.payload;
 }
 
+/**
+ * Delete a pipeline directly, for a spec's own cleanup (T-015/T-016).
+ *
+ * **The only write in this helper, and it exists because a failing spec left forks behind.** A
+ * pipeline the suite created is the suite's to remove, and a test that dies before its own
+ * teardown must not leave the instance's list growing -- the next run then finds two pipelines of
+ * one name and its `.first()` picks whichever. Returns quietly if the pipeline is already gone,
+ * which is the ordinary case when the test's own deletion succeeded.
+ */
+export async function deletePipelineIfPresent(pipelineId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/pipelines/${pipelineId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 async function coreApiToken(): Promise<string> {
   const response = await fetch(`${coreApiBase}/login`, {
     method: "POST",

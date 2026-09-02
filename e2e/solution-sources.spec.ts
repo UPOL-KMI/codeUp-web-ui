@@ -105,6 +105,11 @@ test("the solution screen links to its own source code", async ({ page }) => {
 });
 
 test("a solution submitted as an archive reads as the files inside it", async ({ page }) => {
+  // The one genuinely slow test in the suite: it seeds a real ZIP submission through the chunked
+  // upload path and waits for core-api to unpack it. It takes ~17s alone and began timing out at
+  // the default 30s once the suite grew past two hundred tests sharing this machine's core-api --
+  // slow work, not a hang, so it gets more room rather than a retry.
+  test.slow();
   await signIn(page, STUDENT, "/en/dashboard");
   await openSourcesContaining(page, "solution.zip#main.py");
 

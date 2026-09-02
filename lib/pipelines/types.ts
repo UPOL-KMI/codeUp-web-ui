@@ -52,13 +52,26 @@ export interface PipelineDetail {
   can: Record<string, boolean>;
 }
 
-/** A box *type* the instance offers, as `/v1/pipelines/boxes` describes it. */
+/**
+ * A box *type* the instance offers, as `/v1/pipelines/boxes` describes it: `name` is the readable
+ * one ("Input File"), `type` is the identifier a box stores (`file-in`), and the ports are the
+ * shape a new box of that type starts with -- names and data types, values blank.
+ */
 export interface BoxType {
   name: string;
-  category: string;
+  type: string;
   portsIn: Record<string, PipelinePort> | never[];
   portsOut: Record<string, PipelinePort> | never[];
 }
+
+/** The data types a pipeline variable may have, and the arrays of each. */
+export const SCALAR_TYPES = ["file", "remote-file", "string"] as const;
+export const VARIABLE_TYPES = [
+  ...SCALAR_TYPES,
+  ...SCALAR_TYPES.map((type) => `${type}[]`),
+] as string[];
+
+export const isArrayType = (type: string) => type.endsWith("[]");
 
 export function ports(value: PipelineBox["portsIn"]): Record<string, PipelinePort> {
   return Array.isArray(value) ? {} : value;

@@ -1529,6 +1529,105 @@
     "exercisesExplain": "Pipeline je sdílená mašinérie. Její změna změní vyhodnocení každé úlohy, která je na ni nastavená.",
     "noExercises": "Tuto pipelinu nepoužívá žádná úloha."
   },
+  "PipelineEdit": {
+    "title": "Úprava pipeliny",
+    "backToPipeline": "Zpět na pipelinu",
+    "inUse": "Na této pipelině {count, plural, one {je nastavená # úloha} few {jsou nastavené # úlohy} other {je nastaveno # úloh}}. Její změna změní, jak se vyhodnocují — pokud si nejste jistí, udělejte raději kopii.",
+    "settings": {
+      "title": "Co to je",
+      "name": "Jméno",
+      "description": "Popis",
+      "descriptionHint": "Co pipeline dělá a jaké proměnné očekává. Tohle si přečte ten, kdo ji vybírá.",
+      "parameters": "Co dělá",
+      "parametersExplain": "Tohle není popis. Editor konfigurace úlohy z toho určuje, kam která proměnná patří a jaká pole test nabízí — a mezi dvěma spouštěcími pipelinami vybírá čistě podle toho, jestli porovnávají standardní výstup nebo zapsaný soubor.",
+      "parameterNames": {
+        "isCompilationPipeline": "Překládá",
+        "isExecutionPipeline": "Spouští řešení",
+        "judgeOnlyPipeline": "Jen posuzuje",
+        "producesStdout": "Porovnává standardní výstup",
+        "producesFiles": "Porovnává zapsaný soubor",
+        "hasEntryPoint": "Bere vstupní bod",
+        "hasExtraFiles": "Bere doplňkové soubory",
+        "hasSuccessExitCodes": "Bere přijímané návratové kódy"
+      },
+      "environments": "Jazyky",
+      "environmentsExplain": "Jaké jazyky tato pipeline umí vyhodnotit. Úloha ji smí zvolit jen pro jazyk uvedený zde.",
+      "saveEnvironments": "Uložit jazyky",
+      "environmentsSaved": "Jazyky uloženy.",
+      "save": "Uložit",
+      "saving": "Ukládám…",
+      "saved": "Uloženo.",
+      "saveFailed": "Nepodařilo se uložit.",
+      "fork": "Vytvořit kopii",
+      "forked": "Kopie byla vytvořena.",
+      "delete": "Smazat pipelinu",
+      "deleted": "Pipeline byla smazána.",
+      "confirmDelete": {
+        "title": "Smazat tuto pipelinu?",
+        "description": "Zmizí nadobro. ReCodEx odmítne smazat tu, kterou ještě používá nějaká úloha, takže pokud ano, dozvíte se to hned a ne později.",
+        "confirm": "Smazat"
+      }
+    },
+    "structure": {
+      "title": "Jak je zapojená",
+      "explain": "Boxy jsou operace, proměnná je drát mezi nimi. Box čte nebo zapisuje proměnnou tím, že ji pojmenuje — nezapojený port tedy není chyba, kterou by ReCodEx ohlásil, prostě tam ten drát není.",
+      "preview": "Pipeline tak, jak ji právě upravujete",
+      "variables": "Proměnné",
+      "variablesExplain": "Drát, nebo hodnota, kterou pipeline dodá sama. Hodnota začínající na $ je díra, kterou vyplní úloha.",
+      "variable": {
+        "name": "Jméno",
+        "type": "Typ",
+        "value": "Hodnota",
+        "nameOf": "Jméno proměnné {index}",
+        "typeOf": "Typ {name}",
+        "valueOf": "Hodnota {name}",
+        "listHint": "oddělené čárkami"
+      },
+      "addVariable": "Přidat proměnnou",
+      "boxes": "Boxy",
+      "boxesExplain": "Každý port se zapojí výběrem proměnné odpovídajícího typu — nikdy psaním jména, protože překlep by vypadal jako záměrné odpojení.",
+      "box": {
+        "name": "Jméno",
+        "type": "Typ",
+        "reads": "Čte",
+        "writes": "Zapisuje",
+        "unconnected": "— nezapojeno —",
+        "portOf": "{box}, port {port}",
+        "missingVariable": "{name} (taková proměnná neexistuje)",
+        "addType": "Druh boxu",
+        "chooseType": "— vyberte —"
+      },
+      "addBox": "Přidat box",
+      "remove": "Odebrat",
+      "broken": {
+        "title": "ReCodEx to odmítne",
+        "writtenTwice": "{name} zapisuje víc než jeden port: {ports}",
+        "unread": "Tyto proměnné nikdo nečte: {variables}",
+        "explain": "Drát může mít jen jeden zdroj a hodnota, kterou nikdo nespotřebuje, není drát. Proměnná, která se jen čte, je v pořádku — přesně tak vypadá díra, kterou vyplní úloha."
+      },
+      "dangling": {
+        "title": "Některé porty nejsou zapojené",
+        "ports": "Nespojené s ničím: {ports}",
+        "explain": "ReCodEx to přijme. Jen to neudělá to, co by udělaly chybějící dráty."
+      },
+      "save": "Uložit strukturu",
+      "saving": "Ukládám…",
+      "saved": "Struktura uložena.",
+      "saveNote": "Celá struktura se ukládá najednou — ReCodEx nemá volání, které by změnilo jeden box.",
+      "saveFailed": "Strukturu se nepodařilo uložit."
+    },
+    "errors": {
+      "invalid": "Tohle ReCodEx uložit neumí.",
+      "duplicateBox": "Dva boxy nemohou mít stejné jméno.",
+      "duplicateVariable": "Dvě proměnné nemohou mít stejné jméno.",
+      "settingsFailed": "Nastavení se nepodařilo uložit.",
+      "structureFailed": "Strukturu se nepodařilo uložit.",
+      "environmentsFailed": "Jazyky se nepodařilo uložit.",
+      "createFailed": "Pipelinu se nepodařilo vytvořit.",
+      "forkFailed": "Kopii se nepodařilo vytvořit.",
+      "deleteFailed": "Pipelinu se nepodařilo smazat."
+    }
+  },
   "Users": {
     "title": "Uživatelé"
   },

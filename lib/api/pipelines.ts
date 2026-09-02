@@ -161,9 +161,7 @@ export async function getPipeline(pipelineId: string): Promise<PipelineDetail> {
 /** The box types the instance offers -- the vocabulary a structure editor builds from. */
 export async function getBoxTypes(): Promise<BoxType[]> {
   const boxes = await apiGet<BoxType[]>("/v1/pipelines/boxes");
-  return [...boxes].sort(
-    (a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name),
-  );
+  return [...boxes].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** The exercises using a pipeline -- what would break if it changed. */

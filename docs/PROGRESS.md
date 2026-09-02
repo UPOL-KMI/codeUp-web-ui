@@ -566,6 +566,44 @@
     says so, rather than implying it narrowed the list.
   - _Observations:_ **212 e2e tests pass** (209 before), **138 unit tests** (120 before).
 
+- **[2026-09-02 07:50] T-015 + T-016:** Editing a pipeline, and editing how it is wired.
+  `app/[locale]/(app)/pipelines/[pipelineId]/edit/page.tsx`,
+  `components/pipelines/{pipeline-settings,structure-editor}.tsx`,
+  `lib/actions/pipeline{,.schema}.ts`.
+  - _One screen, not two, because core-api's `updatePipeline` replaces the whole entity_ -- the
+    legacy app's `EditPipeline` and `EditPipelineStructure` would each have to carry the other's
+    state through a round trip to avoid wiping it. Each save here re-reads the other half.
+  - **_The graph is redrawn as you edit_**, by the same pure functions the read-only screen renders
+    on the server (DEC-107). One implementation, no WebAssembly, and the preview is what makes a
+    wiring mistake visible before it is saved.
+  - **_A port is wired by choosing a variable, never by typing a name_** -- filtered to the port's
+    own data type. This is the single most useful thing on the screen: a pipeline connects boxes by
+    _name matching_, so a typo is not an error, it is a wire that quietly is not there. Renaming a
+    variable rewires every port that named it, for the same reason.
+  - **_Two of core-api's rules are about the graph, and both were found by breaking them:_** a
+    variable may be written by **at most one** port (`Multiple ports output variable ...`) and must
+    be read by **at least one** (`No port uses variable ...`). Neither is a property of a field, so
+    neither could be a field's validation; both now block the save with the offending names listed.
+    A variable that is only _read_ is fine and is the normal case -- that is what an external
+    reference is.
+  - _An unwired port is advice, not an error_: core-api stores one happily, and the editor says
+    what will simply not happen rather than refusing.
+  - **_This ticket damaged the deployment and the repair is the lesson._** The spec forked a
+    pipeline and typed into the next field before `router.push` had navigated, so two saves landed
+    on the **seeded** pipelines instead of the copies; cleaning up afterwards then deleted two of
+    them. Both were recovered -- core-api's delete is a soft one, so `deleted_at = NULL` in the
+    database brought them back with their original ids and their supplementary files intact, which
+    recreating them could not have done (`runner.py` is attached to the pipeline and a new one has
+    no way to adopt an existing upload). All fifteen pipelines are now byte-identical to the
+    snapshot taken before this session. The spec has an `openCopy` helper that will not touch a
+    field until the address has actually changed to a different pipeline, and an `afterEach` that
+    removes every copy even when a test dies first -- the suite's first write helper against
+    core-api, and worth it.
+  - _One pre-existing flake fixed on the way:_ the ZIP-submission spec (S-017) does ~17s of real
+    work and began timing out at the default 30s now that two hundred tests share this machine's
+    core-api. `test.slow()`, with the reason written down.
+  - _Observations:_ **215 e2e tests pass** (212 before), 138 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3081,8 +3119,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-015 and T-016 -- editing a pipeline, and editing its structure. The reading
-  half (T-013, T-014) is done and the graph it needs already exists.
+- **Next ticket:** T-024 -- the advanced exercise configuration and the switch between the two
+  kinds, which is the one place this app can still strand somebody. Then T-025 and T-022.
+  **The Teacher phase is complete**: every ticket T-001..T-023 is done.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
