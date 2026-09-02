@@ -1958,7 +1958,12 @@
       "description": "This person neither studies nor teaches in any group right now."
     },
     "editMine": "Edit my account",
-    "editTheirs": "Edit this account"
+    "editTheirs": "Edit this account",
+    "takeover": {
+      "action": "Sign in as this person",
+      "confirm": "You become {name} — this is a sign-in, not a preview. Your own session ends here, and the way back is to sign out and sign in again as yourself.",
+      "failed": "Could not sign in as this person."
+    }
   },
   "Upload": {
     "dropzone": "Choose files or drag them here",

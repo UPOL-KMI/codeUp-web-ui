@@ -11,6 +11,8 @@ import { PageShell, type BreadcrumbItem } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { Badge } from "@/components/status/badge";
 
+import { TakeoverButton } from "./takeover-button";
+
 /**
  * One person's profile (S-021): who they are, and where in ReCodEx they belong.
  *
@@ -30,8 +32,9 @@ import { Badge } from "@/components/status/badge";
  * that is the reader's to read: their own, or a group the reader teaches. `viewStudentStats` is a
  * two-subject rule with no hint of its own (DEC-090), so the offer is decided from the reader's own
  * group lists rather than from something core-api says about this page. Editing one's own account
- * is offered because S-022 built it, and editing somebody else's because AD-002 did; taking over
- * an account is AD-003's and adds its own control here when it lands.
+ * is offered because S-022 built it, editing somebody else's because AD-002 did, and signing in as
+ * them because AD-003 did -- the last of those is a login rather than a mode, so it leaves this
+ * page and does not come back (DEC-112).
  */
 export async function ProfileView({
   userId,
@@ -77,15 +80,22 @@ export async function ProfileView({
               {t("editMine")}
             </Link>
           )}
-          {/* AD-002's screen, offered on the reader's role because a user carries no permission
-              hints (DEC-110) -- and never on one's own row, where that screen would redirect. */}
+          {/* AD-002's screen and AD-003's takeover, both offered on the reader's role because a
+              user carries no permission hints (DEC-110), and neither on one's own profile.
+              Taking over an account core-api has disabled would produce a session refused at
+              every turn, which is why that one is narrower still. */}
           {!isMe && viewer.role === "superadmin" && (
-            <Link
-              href={`/users/${profile.id}/edit`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("editTheirs")}
-            </Link>
+            <>
+              <Link
+                href={`/users/${profile.id}/edit`}
+                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {t("editTheirs")}
+              </Link>
+              {profile.isAllowed !== false && (
+                <TakeoverButton userId={profile.id} fullName={profile.fullName || t("unnamed")} />
+              )}
+            </>
           )}
         </div>
       }

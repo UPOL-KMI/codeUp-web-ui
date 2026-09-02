@@ -1958,7 +1958,12 @@
       "description": "Tento člověk teď v žádné skupině nestuduje ani nevyučuje."
     },
     "editMine": "Upravit můj účet",
-    "editTheirs": "Upravit tento účet"
+    "editTheirs": "Upravit tento účet",
+    "takeover": {
+      "action": "Přihlásit se jako tento člověk",
+      "confirm": "Stanete se uživatelem {name} — jde o přihlášení, ne o náhled. Vaše vlastní přihlášení tím končí a zpět se dostanete jedině odhlášením a novým přihlášením za sebe.",
+      "failed": "Přihlásit se jako tento člověk se nepodařilo."
+    }
   },
   "Upload": {
     "dropzone": "Vyberte soubory nebo je sem přetáhněte",

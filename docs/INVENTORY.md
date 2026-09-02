@@ -117,7 +117,7 @@
 | `systemMessages`               | System messages                                            | `system-messages`                                              | todo   |
 | `upload`                       | File upload state                                          | `lib/upload/use-file-upload.ts`                                | done   |
 | `userCalendars`                | User deadlines calendar                                    | `/profile/edit`                                                | done   |
-| `userSwitching`                | User switching (superadmin)                                | `admin/users`                                                  | todo   |
+| `userSwitching`                | User switching (superadmin)                                | `users/[id]`                                                   | done   |
 | `users`                        | User management                                            | `users`, `admin/users`                                         | done   |
 | `usersGroups`                  | User-group membership                                      | `groups/[id]/students`                                         | todo   |
 

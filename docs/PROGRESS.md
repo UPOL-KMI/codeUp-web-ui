@@ -800,6 +800,39 @@ does not match"`, which is a confusing sentence for a request that contained no 
     there costs one red test rather than two.
   - _Observations:_ **235 e2e tests pass** (229 before), 170 unit tests.
 
+- **[2026-09-02 14:10] AD-003:** Signing in as somebody else. `components/users/takeover-button.tsx`,
+  on S-021's profile screen. The BFF route was already F-020's, so this ticket is the control and
+  the sentence next to it.
+  - **_There is no impersonation mode, because core-api does not make one._** `actionTakeOver`
+    calls the same `sendAccessTokenResponse` that login does -- an ordinary master+refresh token for
+    the target, carrying **nothing** that says whose doing it was. Read directly rather than
+    inferred. So there is no banner this app could honestly render and no token it could swap back;
+    what it has instead is a confirmation that says the true thing: "this is a sign-in, not a
+    preview... the way back is to sign out and sign in again as yourself" (DEC-112).
+  - **_It lands with a full page load, not `router.push`._** The session cookie now identifies a
+    different person while Next's client Router Cache still holds RSC payloads rendered for the
+    administrator. Every server read here is `no-store` precisely so one user's data cannot reach
+    another (DEC-021, brief §6.3's "a cross-user cache leak is a security incident"), and throwing
+    the client away is the one-line way to keep that true on the client too. It is also the one
+    place in this repo where `@next/next/no-location-assign-relative-destination` is deliberately
+    suppressed, with the reason written next to it.
+  - _Three conditions, and only two of them are core-api's._ A superadmin (its `takeOver` grant,
+    with an explicit `allow: false` underneath for everybody else), never oneself, and **never a
+    disabled account** -- that last one core-api would happily answer, but the token it issued
+    would be refused at every turn, so offering it is offering a dead end.
+  - _On the profile only, where legacy also puts it on the user list._ Every name in the app links
+    to the profile, and the profile is where the reader can see who they are about to become; a
+    one-click sign-in-as-somebody-else in a list of thirty rows is a misclick waiting to happen.
+  - **_A "return to my account" was considered and deliberately not built_** (DEC-112's alternatives).
+    It would need a second cookie holding the administrator's own token and a route to swap it back
+    -- a real improvement, and the security argument against it is weak, since the browser held that
+    token a moment earlier. But it is an auth-model change rather than "add the button", so it is
+    written down rather than smuggled in.
+  - _The proof is the sidebar._ A takeover is only real if the whole shell changes, so the spec
+    asserts the Administration section is gone and `/users` answers with a refusal -- not that a
+    button did something.
+  - _Observations:_ **239 e2e tests pass** (235 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3316,11 +3349,13 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
   **The Admin phase has begun** with AD-001 (the user list, its search and role filter, and
-  enabling, disabling, deleting and creating an account) and AD-002 (that account edited: its role,
-  its password, its sessions and its logins). **The `users` module is complete**, and
-  `INVENTORY.md`'s row for it is closed.
-- **Next ticket:** AD-003 -- taking over an account, whose BFF route F-020 already built; the button
-  goes on S-021's profile screen, where AD-001 and AD-002 deliberately left room for it. **Every
+  enabling, disabling, deleting and creating an account), AD-002 (that account edited: its role,
+  its password, its sessions and its logins) and AD-003 (signing in as its owner). **Everything
+  about a person is now built** -- the `users` and `userSwitching` rows in `INVENTORY.md` are both
+  closed, and what remains of the Admin phase is about the instance rather than about people.
+- **Next ticket:** AD-004 -- the instance list, and with it AD-005 (instance settings and limits),
+  AD-006 (runtime environments and hardware groups), AD-007 (system messages) and AD-008
+  (licences). **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3329,9 +3364,10 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   configure -- Q-004).
 - **Closed this session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
   address only once, because anonymisation appends one fixed suffix to a column whose unique index
-  covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading. And
+  covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.
   **AD-002**, half of which (the user detail screen) turned out to have shipped as S-021 already;
-  what it actually built was the administrator's side of `EditUser`.
+  what it actually built was the administrator's side of `EditUser`. And **AD-003**, which is one
+  button and one honest sentence on top of a route F-020 built long ago.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
