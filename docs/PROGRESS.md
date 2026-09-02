@@ -868,6 +868,11 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Deleting is never offered for the instance the reader's own account belongs to_, which is the
     only reason the e2e spec can exercise deletion at all: it creates its own instance, opens it,
     deletes it, and never touches the seeded one every other spec signs into.
+  - _Cleanup in a `finally`, for the second time this session._ The run that caught the revoke
+    button left the instance it had created behind. Unique names mean a leftover breaks no later
+    run, but an instance list that grows a row every time a test fails is a mess somebody clears by
+    hand -- so both mutating tests now delete their instance whatever their assertions do, the same
+    guard `account.spec.ts` grew a few hours earlier.
   - _Observations:_ **245 e2e tests pass** (239 before), 170 unit tests.
 
 ### Current Status

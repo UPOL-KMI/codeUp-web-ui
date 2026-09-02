@@ -17,6 +17,11 @@ import { baseURL } from "./helpers/base-url";
  *
  * Nothing asserts a count of instances: these tests run in parallel with each other, and one of
  * them has an instance of its own alive for part of that time.
+ *
+ * Both of those tests remove their instance in a `finally`. A failing assertion used to leave one
+ * behind -- it happened on the run that caught the revoke button -- and while a leftover breaks no
+ * later run (the names are unique per run), an instance list that grows a row every time a test
+ * fails is a mess somebody has to clean by hand.
  */
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
@@ -89,17 +94,21 @@ test("creates an instance, opens and closes it, and deletes it again", async ({ 
   const name = `e2e instance ${Date.now()}`;
 
   await createInstance(page, name);
-  // Created closed, since the dialog's checkbox was left alone.
-  await expect(main.getByText("This instance is closed")).toBeVisible();
+  try {
+    // Created closed, since the dialog's checkbox was left alone.
+    await expect(main.getByText("This instance is closed")).toBeVisible();
 
-  await main.getByRole("button", { name: "Open for registration" }).click();
-  await page
-    .getByRole("alertdialog")
-    .getByRole("button", { name: "Open for registration" })
-    .click();
-  await expect(main.getByText("People may register into this instance themselves.")).toBeVisible();
-
-  await deleteCurrentInstance(page);
+    await main.getByRole("button", { name: "Open for registration" }).click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Open for registration" })
+      .click();
+    await expect(
+      main.getByText("People may register into this instance themselves."),
+    ).toBeVisible();
+  } finally {
+    await deleteCurrentInstance(page);
+  }
   await expect(main.getByRole("row").filter({ hasText: name })).toHaveCount(0);
 });
 
@@ -109,7 +118,16 @@ test("adds a licence and removes it", async ({ page }) => {
   const name = `e2e licence ${Date.now()}`;
 
   await createInstance(page, name);
+  try {
+    await runLicenceChecks(page);
+  } finally {
+    await deleteCurrentInstance(page);
+  }
+});
 
+/** The licence table's own assertions, kept apart so the instance is removed whatever they do. */
+async function runLicenceChecks(page: Page): Promise<void> {
+  const main = page.getByRole("main");
   await main.getByLabel("Note").fill("e2e licence");
   await main.getByLabel("Valid until").fill("2099-12-31T23:59");
   await main.getByRole("button", { name: "Add licence" }).click();
@@ -125,9 +143,7 @@ test("adds a licence and removes it", async ({ page }) => {
   await row.getByRole("button", { name: "Delete", exact: true }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Delete", exact: true }).click();
   await expect(main.getByText("This instance has no licences at all.")).toBeVisible();
-
-  await deleteCurrentInstance(page);
-});
+}
 
 test("is an admin section route, whatever core-api lets anyone read", async ({ page }) => {
   await signIn(page, STUDENT, "/en/admin/instances");
