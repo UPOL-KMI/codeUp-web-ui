@@ -184,7 +184,7 @@
 | P-005 | README + deployment notes                 | —              | done   | `README.md`. Setup, the two-hostname trap that costs an hour, seeding, verification, a tour of the five things the file names do not tell you, the `docs/` map, deployment, cutover, and the three environment limits that make screens look wrong locally                                                                                                                                                                                                                                 |
 | P-006 | `docs/ROUTES.md` — old→new mapping        | All routes     | done   | Rewritten against `next build`'s own route listing. The recon draft named four routes that were never built and missed the change that actually breaks every old link -- the locale prefix. Carries a redirect table, and says plainly that none of it exists in code yet                                                                                                                                                                                                                  |
 | P-007 | `docs/DROPPED.md` — intentional omissions | Dropped items  | done   | Rewritten. The recon draft was nineteen library swaps and one capability, which invited the reading that it enumerated everything absent. It now separates a deliberate drop (four, each with a decision id) from unbuilt work (the G block) from a replaced library, and closes PEND-001, PEND-002 and DROP-020                                                                                                                                                                           |
-| P-008 | `docs/RETROSPECTIVE.md`                   | —              | todo   | §13 — cited from notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| P-008 | `docs/RETROSPECTIVE.md`                   | —              | done   | `docs/RETROSPECTIVE.md`. **113 items, every one citing the entry it came from** (brief §13's rule, and the reason the document is specific rather than generic). Six sections mined in parallel out of `PROGRESS.md`, `DECISIONS.md`, `QUESTIONS.md`, `DROPPED.md` and the corrected `INVENTORY.md`. Section 1 -- 24 API change requests, including three reproduced core-api defects -- is the part the ReCodEx team cannot get by reading the code                                       |
 
 ---
 
@@ -309,9 +309,16 @@ arbitrary YAML running arbitrary steps.
 
 ## Current Focus
 
-| ID    | Title                            | Status |
-| ----- | -------------------------------- | ------ |
-| G-008 | Creating a group, and a subgroup | todo   |
+| ID     | Title                                           | Status |
+| ------ | ----------------------------------------------- | ------ |
+| G-008  | Creating a group, and a subgroup                | todo   |
+| PF-001 | The whole message catalogue ships to every page | todo   |
+
+**Phase 7 is complete.** P-001..P-008 are all done, and between them they filed everything above:
+the 29 parity gaps, the five measured performance items, and the retrospective that ranks them. The
+two rows here are the top of that ranking -- G-008 because a course cannot be started in this app
+without it, PF-001 because it is the largest measured saving in the project and it does not compete
+with G-008 for the same files.
 
 ---
 

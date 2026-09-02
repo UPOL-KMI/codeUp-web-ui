@@ -3742,14 +3742,50 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     §5.4. What it is: a systematic pass that found 62 outright errors and 82 inconsistencies, with a
     terminology table now agreed across all six slices. A Czech reader will still find things.
 
+- **[2026-09-03 01:10] P-008:** The retrospective, and the end of the plan. `docs/RETROSPECTIVE.md`.
+  - _**113 items, each citing the entry it came from.**_ Brief §13 makes the citations compulsory
+    and says why: a retrospective written from a compacted context without them is generic and
+    worthless, and the requirement is what forces it to be specific. Six sections were mined in
+    parallel out of `PROGRESS.md`, `DECISIONS.md`, `QUESTIONS.md`, `DROPPED.md` and the freshly
+    corrected `INVENTORY.md` -- never from memory of what happened.
+  - **_Section 1 is the deliverable._** 24 API change requests, and the top of the list is not a
+    missing endpoint: **core-api's 7409-line `swagger.yaml` has zero response schemas** -- all ~250
+    are literally `description: 'Placeholder response'` -- and is not served over HTTP at all. Every
+    client of that API therefore maintains a private, unversioned guess at every payload, this app's
+    `lib/api/` included. Second is that **`permissionHints` is emitted for exactly one entity in the
+    whole API**, which is why five screens restate ACL rules the brief forbids them from restating.
+    Three outright defects are in there too, each reproduced with `curl` against the live instance.
+  - _Section 4 is the uncomfortable one_ and it opens with the sentence this session made true: every
+    feature ticket of Phases 1--6 is done and **parity is nevertheless not met**. The 29 gaps are
+    grouped by theme rather than restated as a table -- the teacher's whole grading verdict (6),
+    three core entities that cannot be created (3), authoring and reading what you authored (7).
+  - _Section 5 ranks what a person has to check_, and the top of it is not a bug: **no screen in the
+    evaluation half of this product has ever rendered a passing test**, because the development host
+    is cgroup v2. The result table, the live progress island, the class summary and "fully solved"
+    were built, reviewed and shipped without anyone seeing them succeed once.
+  - **_The document was drafted before P-002..P-004 landed and then corrected_**, because six of its
+    claims said those tickets were `todo`. Fixing them rather than leaving them was the point: a
+    retrospective that is wrong about its own project's state is exactly the generic artefact §13
+    warns about.
+  - _Observations:_ **it is 250 KB and that is deliberate.** Sections 1 and 4 are what the ReCodEx
+    team cannot get by reading the code, and thinning them to fit a page would remove the part that
+    makes them actionable. It opens with an eight-item summary for a reader who wants only that.
+
 ### Current Status
 
-- **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is
-  not the one this section had been reporting.** Every feature ticket of Phases 1--6 is done, and
-  parity is nevertheless **not** met: 29 capabilities reachable in the legacy app are not reachable
-  here, filed as G-001..G-029 in `BACKLOG.md`. Fourteen of them are a single control over an
-  endpoint this repo already types and never calls. Read that table before reading the phase history
-  below, which is accurate about what was built and silent about what was left off each screen.
+- **Phase:** **Parity Sweep & Polish (Phase 7) is complete, and with it every ticket of the original
+  plan.** P-001..P-008 all landed on 2026-09-02/03.
+  **What Phase 7 changed is the accuracy of this project's own records, not the size of its
+  remaining work**, and that is the single most important thing for the next session to understand:
+  every feature ticket of Phases 1--6 is done, and **parity is nevertheless not met.** P-001 read
+  all 138 `INVENTORY.md` rows against the code, found **65 status cells wrong in both directions**,
+  and filed **29 capabilities** the legacy app has and this one does not (G-001..G-029) -- fourteen
+  of them a single control over an endpoint this repo already types and never calls. P-003 filed
+  five more with their bytes measured (PF-001..PF-005).
+  So: feature-complete against the plan, not at parity against the product it replaces. Those are
+  different statements and Phase 7 is what made the difference visible.
+  Read `BACKLOG.md`'s G and PF tables and `RETROSPECTIVE.md` §6 before the phase history below, which
+  is accurate about what was built and silent about what was left off each screen.
 - **Phase history:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
@@ -3795,12 +3831,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
 - **Next ticket:** **G-008** -- creating a group, the first of the twenty-nine gaps P-001 filed, and
   the one without which a course cannot be started in this app at all. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
-  CRUD, the solution diff, then the smaller controls), and the rest of Phase 7 (P-002 accessibility,
-  P-003 performance, P-004 a native-speaker cs/en review, P-005 the README, P-006 the old-to-new
-  route map, P-007 `DROPPED.md`, P-008 the retrospective).
-  **P-002 has also been run as an audit** and returned 56 confirmed findings (14 serious) with 8
-  refuted; they are not yet in `BACKLOG.md` because the ticket is a pass over the code rather than a
-  set of capabilities, and it is being applied directly.
+  CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
+  largest measured saving in the project and touches none of the same files.
+  **Two things to carry into that work rather than rediscover.** First, each of Phase 7's passes is a
+  snapshot: a screen built for G-001 will not have been contrast-checked, will not have a `<title>`,
+  and will not have had its Czech read, so apply those rules while building instead of re-running the
+  passes. Every fix from P-002, P-003 and P-004 is in the tree as an example to copy. Second, the
+  reason the G block exists at all is a scoping habit -- "the X screen" was read as "render X" -- so
+  a ticket that names a screen should be read as including the actions on it.
   **Filed and not started: X-001**, a GitHub Classroom importer the operator asked about -- feasible
   narrowly (`autograding.json`'s stdin/stdout tests map onto ReCodEx tests; framework-based tests do
   not), needs no API change, and deliberately waits until the sweep says what is finished. **Every
