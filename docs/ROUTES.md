@@ -22,7 +22,7 @@ A bare path is redirected by `proxy.ts` to whichever locale it negotiates.
 Everything in the tables below is written **without** the prefix. Prepend `/{locale}/` to every New
 Route, or `/{URL_PATH_PREFIX}/{locale}/` when the app is deployed under a path prefix.
 
-**2. Several legacy screens are now tabs, not routes.** The group screen is the big one: five legacy
+**2. Several legacy screens are now tabs, not routes.** The group screen is the big one: six legacy
 routes became one route with a `?tab=` search parameter — `docs/IA.md` §2's shape, with DEC-071 and
 DEC-074 settling what each tab holds. The tab is in the URL, so a link to one still works, but a
 redirect for these has to add a query string rather than only rewrite a path.

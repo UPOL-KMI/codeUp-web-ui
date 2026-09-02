@@ -1,63 +1,89 @@
-# ReCodEx New Frontend — Intentionally Dropped Features
+# ReCodEx New Frontend — Intentionally Dropped
 
-**Status:** Draft
-**Date:** 2026-05-11
+**Status:** Rewritten against the built app, P-007, 2026-09-02
+**Date:** 2026-05-11 (recon draft), rewritten 2026-09-02
 
----
+Brief §3 constraint 3 is what this file exists for: _"Every capability reachable in the legacy app
+must be reachable here. Rearranged, renamed, merged — fine. Dropped — only if recorded and justified
+in `docs/DROPPED.md`."_
 
-## Dropped Items
+**Read this first, because the recon draft of this file invited exactly the wrong inference.** It
+listed twenty items, and nineteen of them were **libraries**, not capabilities — dropping `moment.js`
+for `date-fns` drops nothing a user can do. A reader could come away believing that this file
+enumerates everything absent from the new app. It does not, and never did.
 
-| #        | Item                         | Legacy Location                   | Reason for Dropping                                                                                                                                         | Replaced By                                                  |
-| -------- | ---------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| DROP-001 | **SKIN configuration**       | `etc/env.json` → `config.js`      | AdminLTE color skin. Tailwind + dark/light theme tokens provide proper theming.                                                                             | CSS custom properties, `data-theme` attribute                |
-| DROP-002 | **Redux state management**   | `src/redux/` entire directory     | Server Components, Server Actions, and React Hook Form replace client-side state management for most use cases. TanStack Query handles client-side caching. | Server Components, Server Actions, TanStack Query            |
-| DROP-003 | **redux-form**               | `src/redux/modules/`              | React Hook Form + Zod provides better TypeScript support and performance.                                                                                   | React Hook Form + Zod schemas                                |
-| DROP-004 | **immutable.js**             | `src/redux/reducer.js`, selectors | Plain JavaScript objects with TypeScript are simpler and sufficient.                                                                                        | Plain objects, TypeScript interfaces                         |
-| DROP-005 | **redux-storage**            | `src/redux/store.js`              | Client state is minimal; `localStorage` persistence replaced by httpOnly cookie for auth, URL searchParams for UI state.                                    | httpOnly cookie, `searchParams`, `localStorage` (theme only) |
-| DROP-006 | **redux-promise-middleware** | `src/redux/middleware/`           | Native `async/await` and Server Actions replace promise middleware.                                                                                         | `async`/`await`, Server Actions                              |
-| DROP-007 | **moment.js**                | `src/helpers/`                    | Deprecated, heavy. `date-fns` + native `Intl.DateTimeFormat` are sufficient.                                                                                | `date-fns`, `Intl` API                                       |
-| DROP-008 | **moment-timezone**          | `src/helpers/`                    | Server sends absolute ISO dates. Client formats relative times using `Intl.RelativeTimeFormat`.                                                             | Server-side absolute dates, client-side `Intl`               |
-| DROP-009 | **Webpack configuration**    | `webpack.config.js`, `.babelrc`   | Next.js built-in Turbopack handles bundling. No custom Webpack config needed.                                                                               | Next.js Turbopack                                            |
-| DROP-010 | **Babel configuration**      | `.babelrc`                        | Next.js built-in SWC compiler replaces Babel.                                                                                                               | Next.js SWC                                                  |
-| DROP-011 | **Express server**           | `src/server.js`, `bin/www`        | Next.js provides its own server (`output: 'standalone'`). No custom Express server needed.                                                                  | Next.js built-in server                                      |
-| DROP-012 | **mocha/chai test suite**    | `test/` directory                 | Legacy tests are for Redux modules and helpers. New tests use Vitest + Playwright.                                                                          | Vitest (unit), Playwright (E2E)                              |
-| DROP-013 | **react-bootstrap**          | `package.json` dependency         | AdminLTE/Bootstrap components replaced by shadcn/ui + Tailwind CSS.                                                                                         | shadcn/ui + Tailwind CSS                                     |
-| DROP-014 | **AdminLTE 4**               | `package.json` dependency         | Legacy admin dashboard template. Replaced by modern, custom design system.                                                                                  | shadcn/ui + Tailwind CSS + custom PageShell                  |
-| DROP-015 | **react-intl**               | `package.json` dependency         | `next-intl` is App Router-native and works in Server Components.                                                                                            | `next-intl`                                                  |
-| DROP-016 | **highlight.js**             | `package.json` dependency         | Shiki provides better server-side rendering and theme support.                                                                                              | Shiki (server-side)                                          |
-| DROP-017 | **prismjs**                  | `package.json` dependency         | Shiki replaces both highlight.js and Prism for code display.                                                                                                | Shiki (server-side)                                          |
-| DROP-018 | **react-syntax-highlighter** | `package.json` dependency         | Shiki + custom component replaces react-syntax-highlighter.                                                                                                 | Shiki + custom CodeViewer component                          |
-| DROP-019 | **react-ace**                | `package.json` dependency         | Ace Editor is heavyweight. CodeMirror 6 is more modern, accessible, and extensible.                                                                         | CodeMirror 6 (client-only via `next/dynamic`)                |
-| DROP-020 | **viz.js (Graphviz WASM)**   | `package.json` dependency         | Large client-only payload. Decision deferred: port initially, evaluate alternatives (server-side Graphviz, JS layout library).                              | Pending decision — see `DECISIONS.md` DEF-003                |
+What is absent divides in three, and only the first of them belongs here:
+
+| Kind                                            | Where it is recorded                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| A capability deliberately not carried across    | **This file, part 1.** Each row says who decided and why                             |
+| A capability simply not built yet               | **`BACKLOG.md`, G-001..G-029.** P-001 found 29 of them; they are work, not decisions |
+| A library, build tool or state pattern replaced | **This file, part 3.** No user-visible capability is involved                        |
+
+If you are looking for "what does the new app not do", the answer is the **second** row, not this
+file.
 
 ---
 
-## Pending Decision (Not Yet Dropped)
+## Part 1 — Capabilities deliberately not carried across
 
-| #        | Item                                  | Status        | Notes                                                                                                                                                                                                                                     |
-| -------- | ------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PEND-001 | **WebSocket for evaluation progress** | Deferred      | Legacy uses `monitor` service. Check if running in this deployment. Polling is simpler, WebSocket is real-time. Decision: `DEF-004` in `DECISIONS.md`.                                                                                    |
-| PEND-002 | **Extension token handoff**           | Investigating | Legacy `SIS-ext-webapp` repo receives a token. Conflicts with §5's "token never reaches client JS". Investigate mechanism, implement most conservative approach. See `QUESTIONS.md` Q-012.                                                |
-| PEND-003 | **Markdown rendering compatibility**  | Testing       | Legacy uses `markdown-it` + `@iktakahiro/markdown-it-katex`. `react-markdown` + `rehype-katex` may differ on raw HTML, KaTeX delimiters, table edge cases. Test with real data before dropping legacy renderer. See `QUESTIONS.md` Q-013. |
+Four, and each of them is a decision somebody wrote down at the time, with a reason and a named
+alternative. Every other legacy capability is either built or filed as a G-ticket.
+
+| #        | Capability                                                          | Legacy location                                       | Why it is not here                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Where it is decided     |
+| -------- | ------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| DROP-C01 | **Returning to your own account after a takeover**                  | `UserPanel`, the `userSwitching` module's second half | Legacy keeps every account you have taken over in a client-side list and lets you switch back. Here a takeover is **a sign-in, not a mode**: core-api issues an ordinary token for the target carrying nothing that names the administrator, so there is nothing to switch back to, and the confirmation says so. The way back is to sign out and sign in. Doing it properly means a second cookie holding the administrator's own token and a route to swap it — an auth-model change, not a button  | DEC-112                 |
+| DROP-C02 | **Assignment settings collected during a bulk assign**              | `ExerciseAssignments`' multi-group assign dialog      | The bulk assign itself ships (`/exercises/[id]/assignments`, one request per group with per-group outcomes). What is not carried is filling in deadlines and points **once** for all of them. Same reasoning as DEC-093 for the single-group path: core-api has no call that creates an assignment and configures it, so the wizard would hold settings in the browser until the end and lose them if the tab closed. Assignments are created invisible; each one's settings screen is one click away | DEC-093                 |
+| DROP-C03 | **Choosing which page you land on, and six other view preferences** | `EditUser`'s "Visual Settings" panel                  | **Provisional — this is the one row here that may move.** Five of the seven preferences (surnames first, open-row-on-double-click, sidebar folding, editor font size, Vim mode) describe interactions this IA does not have; two (`defaultPage`, `dateFormatOverride`) still mean something. Recorded here rather than silently, but **G-022 is the ticket that decides between building the two and dropping all seven properly**                                                                    | G-022 (open)            |
+| DROP-C04 | **`URL_PATH_PREFIX` as a runtime setting**                          | legacy `env.json`, read at runtime                    | Next resolves `basePath` at **build** time; there is no runtime equivalent. The value is a Docker build ARG here, so changing where the app is mounted needs a rebuild rather than a restart. The capability (mount under a path prefix) survives; the ability to change it without rebuilding does not                                                                                                                                                                                               | `next.config.ts`, F-003 |
+
+**Not in this table on purpose:** the effective-role switch ("view as a student") and the
+application-token form. Both were _deferred_ in DEC-043 to "a future ticket", and that ticket was
+never filed — which made them read as decisions when they were oversights. They are now G-023 and
+G-020. A deferral with no ticket behind it is not a drop.
 
 ---
 
-## Notes
+## Part 2 — Questions the recon draft left open, now answered
 
-- **URL_PATH_PREFIX runtime configurability:** Legacy reads `URL_PATH_PREFIX` from `etc/env.json` at runtime. Next.js `basePath` is resolved at build time. This is a **build-time limitation** that must be documented. Workaround: rebuild with different `basePath` for different deployments. Recorded here because it is a behavior change, not a missing feature.
-- **Login page redirect parameter:** Legacy login accepts `:redirect?` parameter in URL (`/login/:redirect?`). Next.js Route Handlers handle redirects via `searchParams`, not path parameters. This is a **structural change** that improves URL cleanliness (`/login?redirect=/dashboard` instead of `/login/dashboard`).
-- **Shadow assignment routes:** Legacy has `/app/shadow-assignment/:shadowId` and `/app/shadow-assignment/:shadowId/edit`. New IA moves these to `/shadow-assignments/[id]` and `/shadow-assignments/[id]/edit` for consistency with plural noun conventions (`/groups`, `/assignments`, `/exercises`).
-- **Instance admin routes:** Legacy splits between `/app/server` (ServerManagement) and `/admin/instances` (Instances). New IA consolidates under `/admin/server` and `/admin/instances` for clearer separation of admin vs. app functionality.
-- **Submission failures route:** Legacy has `/app/submission-failures`. New IA moves to `/submission-failures` (top-level) since it is an admin/teacher diagnostic view, not tied to a specific group or assignment context.
+| #        | Question                              | Answer                                                                                                                                                                                                                                                                           |
+| -------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PEND-001 | **WebSocket for evaluation progress** | **Kept, and it is both.** The solution page refreshes itself on a timer so the result renders once, on the server; the monitor socket is layered on top where a channel id exists, connecting directly to the monitor as the legacy app does. DEF-004 is closed                  |
+| PEND-002 | **Extension token handoff**           | **Still open** (DEF-005). This deployment has no external extension configured, so nothing can be observed. The legacy app's own general-purpose answer — a user minting a scoped token for themselves — is G-020, and building that is the conservative move the brief asks for |
+| DROP-020 | **viz.js (Graphviz WASM)**            | **Dropped, and the capability kept.** Pipeline graphs are laid out by a pure function and drawn as SVG **on the server** (`lib/pipelines/{layout,svg}.ts`), so nothing is added to the client bundle and the picture is in the HTML. DEF-003 is closed by DEC-107                |
 
 ---
 
-## Verification
+## Part 3 — Libraries and build tooling replaced
 
-Before marking a dropped item as `done`, verify:
+No user-visible capability is involved in any of these. They are here because the recon draft put
+them here and removing them would lose the record of what replaced what.
 
-1. The replacement is fully functional and tested.
-2. No legacy capability is lost (check `INVENTORY.md`).
-3. The reason for dropping is documented and justified.
-4. Any behavior changes are recorded in this document.
-5. The operator has been informed of significant drops (via `PROGRESS.md` observations).
+| #        | Legacy                                                           | Replaced by                                                                                                                              |
+| -------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| DROP-001 | AdminLTE SKIN configuration (`env.json` → `config.js`)           | CSS custom properties + `data-theme`                                                                                                     |
+| DROP-002 | Redux, `redux-form`, `redux-storage`, `redux-promise-middleware` | Server Components, Server Actions, React Hook Form + Zod, `searchParams` for view state                                                  |
+| DROP-003 | `immutable.js`                                                   | Plain objects and TypeScript types                                                                                                       |
+| DROP-004 | `moment.js`, `moment-timezone`                                   | `date-fns` + `Intl`; absolute dates from the server, relative formatting in the browser (hydration, AGENTS.md footgun 6)                 |
+| DROP-005 | Webpack + Babel                                                  | Turbopack + SWC, both built in                                                                                                           |
+| DROP-006 | Express server (`src/server.js`, `bin/www`)                      | Next's own server, `output: "standalone"`                                                                                                |
+| DROP-007 | mocha/chai suite over Redux modules and helpers                  | Vitest for pure logic, Playwright against a real API                                                                                     |
+| DROP-008 | `react-bootstrap`, AdminLTE 4                                    | Radix primitives + Tailwind, `PageShell`, `DataTable`                                                                                    |
+| DROP-009 | `react-intl`                                                     | `next-intl`, which works in Server Components                                                                                            |
+| DROP-010 | `highlight.js`, `prismjs`, `react-syntax-highlighter`            | Shiki, server-side                                                                                                                       |
+| DROP-011 | `react-ace`                                                      | Nothing yet — no in-browser code editor exists. This is why G-028 (a markdown preview) is the only thing left of the "CodeMirror 6" plan |
+| DROP-012 | `react-diff-viewer`                                              | **Nothing.** This one is not a library swap, and it is not a drop either — it is G-005, the one brief §7 landmine that was stepped on    |
+| DROP-013 | `viz.js` (Graphviz WASM)                                         | Server-side layout + SVG (see PEND/DROP-020 above)                                                                                       |
+
+The last two rows are in this table because the recon draft put the libraries here, and they are the
+two places where "we replaced the library" quietly meant "we did not replace the capability". Left
+visible rather than tidied away.
+
+---
+
+## What would go in this file next
+
+A row here needs three things: the capability in a sentence a user would recognise, the legacy file
+that proves it existed, and the decision id that carries the reasoning. A row without a decision id
+is a G-ticket wearing a disguise — that is how DROP-C03 got its "provisional" note, and it should
+either gain a decision or become work.
