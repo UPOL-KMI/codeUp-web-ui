@@ -2145,7 +2145,8 @@
         "en": "Read in English",
         "cs": "Číst česky"
       }
-    }
+    },
+    "instances": "Instance"
   },
   "Palette": {
     "label": "Hledání",
@@ -2724,6 +2725,110 @@
       "createLocalHint": "Tento účet se přihlašuje jen přes externí službu. Přidané místní přihlášení má prázdné heslo — nastavte je pak výše.",
       "localCreated": "Účet má nyní přihlášení heslem.",
       "localFailed": "Přihlášení heslem se nepodařilo přidat."
+    }
+  },
+  "Instances": {
+    "title": "Instance",
+    "subtitle": "Oddělené světy ReCodExu, které tato instalace provozuje.",
+    "detailSubtitle": "Co tato instance je, kdo do ní smí a co ji drží v chodu.",
+    "unnamed": "Instance bez názvu",
+    "columns": {
+      "name": "Název",
+      "admin": "Správce",
+      "licence": "Licence",
+      "created": "Vytvořeno"
+    },
+    "flags": {
+      "open": "Otevřená registrace",
+      "closed": "Zavřená",
+      "licensed": "Licencováno",
+      "unlicensed": "Žádná platná licence"
+    },
+    "empty": {
+      "title": "Žádné instance",
+      "description": "Tato instalace nemá žádnou instanci, což by nemělo být možné."
+    },
+    "about": {
+      "title": "O instanci",
+      "admin": "Správce",
+      "created": "Vytvořeno",
+      "rootGroup": "Kořenová skupina",
+      "openRootGroup": "Otevřít kořenovou skupinu",
+      "noDescription": "Tato instance nemá žádný popis.",
+      "nameLivesOnGroup": "Název a popis patří kořenové skupině a upravují se tam."
+    },
+    "create": {
+      "action": "Vytvořit instanci",
+      "title": "Vytvořit instanci",
+      "explain": "Název a popis se zadávají jen jednou, tady: potom patří kořenové skupině instance a mění se tam.",
+      "name": "Název",
+      "description": "Popis",
+      "descriptionHint": "Vidí ho každý, kdo si vybírá instanci k registraci. Markdown.",
+      "isOpen": "Rovnou otevřít registraci",
+      "submit": "Vytvořit",
+      "cancel": "Zrušit",
+      "created": "Instance byla vytvořena.",
+      "errors": {
+        "tooShort": "Alespoň dva znaky."
+      }
+    },
+    "settings": {
+      "title": "Nastavení",
+      "stateOpen": "Lidé se do této instance mohou registrovat sami.",
+      "stateClosed": "Tato instance je zavřená — účty v ní může zakládat jen správce.",
+      "open": "Otevřít registraci",
+      "close": "Zavřít registraci",
+      "confirmOpen": "Účet v této instanci si bude moci založit kdokoli.",
+      "confirmClose": "Nikdo se nebude moci registrovat sám. Existujících účtů se to nedotkne.",
+      "opened": "Instance má otevřenou registraci.",
+      "closed": "Instance je zavřená.",
+      "updateFailed": "Instanci se nepodařilo změnit.",
+      "delete": "Smazat instanci",
+      "confirmDelete": "{name} zmizí a s ní i její kořenová skupina — se všemi skupinami, zadáními a řešeními pod ní. Zpátky to nejde.",
+      "deleted": "{name} je pryč.",
+      "deleteFailed": "Instanci se nepodařilo smazat.",
+      "cannotDeleteOwn": "Do této instance patří váš vlastní účet, takže tu není nabízena ke smazání."
+    },
+    "licences": {
+      "title": "Licence",
+      "none": "Tato instance nemá žádné licence.",
+      "columns": {
+        "note": "Poznámka",
+        "validUntil": "Platí do",
+        "state": "Stav",
+        "actions": "Akce"
+      },
+      "state": {
+        "valid": "Platná",
+        "expired": "Vypršela",
+        "revoked": "Odvolána"
+      },
+      "note": "Poznámka",
+      "validUntil": "Platí do",
+      "add": "Přidat licenci",
+      "added": "Licence byla přidána.",
+      "delete": "Smazat",
+      "confirmDelete": "Licence bude nenávratně odstraněna. Odvolání záznam zachová.",
+      "deleted": "Licence je pryč.",
+      "deleteFailed": "Licenci se nepodařilo smazat.",
+      "errors": {
+        "tooShort": "Alespoň dva znaky.",
+        "required": "Vyberte datum."
+      },
+      "summary": {
+        "covered": "Tuto instanci pokrývá platná licence.",
+        "notNeeded": "Tato instance žádnou licenci nepotřebuje — core-api ji hlásí jako pokrytou i bez ní.",
+        "missing": "Tuto instanci teď nepokrývá žádná licence, takže přestala fungovat."
+      }
+    },
+    "errors": {
+      "invalid": "Něco ze zadaných údajů není platné.",
+      "badDate": "Tohle není datum, které core-api umí přečíst.",
+      "createFailed": "Instanci se nepodařilo vytvořit.",
+      "updateFailed": "Instanci se nepodařilo změnit.",
+      "deleteFailed": "Instanci se nepodařilo smazat.",
+      "licenceFailed": "Licenci se nepodařilo uložit.",
+      "licenceDeleteFailed": "Licenci se nepodařilo smazat."
     }
   }
 }

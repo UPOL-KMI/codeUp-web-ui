@@ -833,6 +833,43 @@ does not match"`, which is a confusing sentence for a request that contained no 
     button did something.
   - _Observations:_ **239 e2e tests pass** (235 before), 170 unit tests.
 
+- **[2026-09-02 15:30] AD-004 + AD-005 + AD-008:** The instances, and what keeps them running.
+  `app/[locale]/(app)/admin/instances/{page,[instanceId]/page}.tsx`, `lib/api/instances.ts`,
+  `lib/actions/instances.ts`, `components/instances/{create-instance,instance-settings,licence-manager}.tsx`.
+  **Three tickets, two screens** -- and that is not a shortcut, see below.
+  - **_"Instance edit -- settings, limits" was wrong, and core-api says so in one line._**
+    `POST /v1/instances/{id}`'s entire request body is `{isOpen}`. There are no limits and there is
+    one setting, which is why the legacy `EditInstance` page is a **single checkbox**. **The reason
+    is that an instance is mostly its root group wearing a hat**: the name and description shown
+    everywhere are the group's, typed once at creation and edited afterwards through the group. So
+    the legacy `Instance` and `EditInstance` pages merge into one screen that _links to_ that group
+    rather than offering fields the endpoint would silently drop (DEC-113).
+  - **_A revoke button was built, and then deleted when the spec caught it doing nothing_** (Q-022).
+    core-api publishes `isValid` on a licence as an "administrator switch to toggle license
+    validity"; `actionUpdateLicence` reads it as `$req->getPost("isValid") ? ... :
+$licence->isValid()`, so **`false` is falsy, takes the else branch, and writes back what was
+    already there** -- while `"false"` and `0` are rejected by the boolean validator first.
+    Reproduced all three ways with `curl`. A licence can be set valid by any client and invalid by
+    none. **This is why the legacy app renders a column called "Without revocation" and offers no
+    way to change it** -- a consequence, not an oversight, and it took building the button to
+    understand it.
+  - **_`hasValidLicence` is not "one of the rows below is valid"._** core-api computes it as
+    `needsLicence === false || validLicences > 0` and does **not** publish `needsLicence`, so the
+    seeded instance reports itself covered with an empty licence table -- which on its own reads as
+    a contradiction. The screen tells the two apart by inference (core-api says it is fine and
+    nothing here could be the reason, therefore it needs none) and says which in words. Found by
+    rendering it, not by reading the entity.
+  - _The list is gated on the Admin section's audience, and the comment says that is not an
+    authorisation claim._ `instance.viewAll` is granted to the **`unauthenticated`** role -- that is
+    how A-003's registration form offers a choice of instance before anybody signs in -- so nothing
+    here is secret. `/admin/*` simply has an audience (`IA.md` §3.1), and a student could open this
+    route until it did. Found by opening it as one, mid-verification, while still signed in from
+    AD-003's takeover.
+  - _Deleting is never offered for the instance the reader's own account belongs to_, which is the
+    only reason the e2e spec can exercise deletion at all: it creates its own instance, opens it,
+    deletes it, and never touches the seeded one every other spec signs into.
+  - _Observations:_ **245 e2e tests pass** (239 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3351,11 +3388,13 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   **The Admin phase has begun** with AD-001 (the user list, its search and role filter, and
   enabling, disabling, deleting and creating an account), AD-002 (that account edited: its role,
   its password, its sessions and its logins) and AD-003 (signing in as its owner). **Everything
-  about a person is now built** -- the `users` and `userSwitching` rows in `INVENTORY.md` are both
-  closed, and what remains of the Admin phase is about the instance rather than about people.
-- **Next ticket:** AD-004 -- the instance list, and with it AD-005 (instance settings and limits),
-  AD-006 (runtime environments and hardware groups), AD-007 (system messages) and AD-008
-  (licences). **Every
+  about a person is now built**, and so is everything about an **instance**: AD-004, AD-005 and
+  AD-008 closed together as two screens, because core-api's "edit instance" is one boolean and its
+  licences belong on the same page (DEC-113). The `users`, `userSwitching`, `instances` and
+  `licences` rows in `INVENTORY.md` are all closed.
+- **Next ticket:** AD-006 -- server management (runtime environments and hardware groups), which is
+  the `/admin` placeholder the sidebar has linked to since D-014, and then AD-007 (system
+  messages). **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3366,8 +3405,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   address only once, because anonymisation appends one fixed suffix to a column whose unique index
   covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.
   **AD-002**, half of which (the user detail screen) turned out to have shipped as S-021 already;
-  what it actually built was the administrator's side of `EditUser`. And **AD-003**, which is one
-  button and one honest sentence on top of a route F-020 built long ago.
+  what it actually built was the administrator's side of `EditUser`. **AD-003**, which is one
+  button and one honest sentence on top of a route F-020 built long ago. And **AD-004 + AD-005 +
+  AD-008**, which filed **Q-022** on the way: core-api's licence "validity switch" can be switched
+  one way only -- `isValid: false` is read as "not provided" and ignored. A revoke button was built
+  on the strength of the published field and deleted when the spec caught it doing nothing, which
+  is also the explanation for the legacy app's read-only column.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
@@ -3382,7 +3425,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   close it. **Q-021 is new and is a core-api defect rather than a question:** deleting an account
   whose address was deleted once before answers HTTP 500 with a raw Doctrine exception. Nothing is
   blocked on it — deleting an address twice is a rare thing to want — and the workaround is to
-  change the address first.
+  change the address first. **Q-022 is a second one of the same kind:** a licence's `isValid` flag
+  can be switched on and never off, because the presenter tests the posted value for truthiness.
+  Nothing is blocked on it either — an unwanted licence can be deleted.
 
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the

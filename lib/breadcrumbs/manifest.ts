@@ -58,6 +58,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "SystemMessages", pattern: "/system-messages" },
   { namespace: "Archive", pattern: "/archive" },
   { namespace: "Admin", pattern: "/admin" },
+  { namespace: "Instances", pattern: "/admin/instances" },
   { namespace: "Profile", pattern: "/profile" },
   { namespace: "Login", pattern: "/login" },
   { namespace: "Register", pattern: "/register" },
@@ -185,6 +186,15 @@ const MANIFEST: ManifestEntry[] = [
         getTranslations({ locale, namespace: "GroupInvitation" }),
       ]);
       return invitation.group.name || t("unnamedGroup");
+    },
+  },
+  {
+    pattern: "/admin/instances/:instanceId",
+    resolve: async (params) => {
+      const instance = await apiRead<{ name?: string }>("/v1/instances/{id}", {
+        pathParams: { id: params.instanceId! },
+      });
+      return instance.name ?? "";
     },
   },
   {

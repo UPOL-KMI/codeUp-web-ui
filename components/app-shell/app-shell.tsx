@@ -79,6 +79,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             title: t("admin"),
             items: [
               { href: "/admin", label: t("server") },
+              { href: "/admin/instances", label: t("instances") },
               { href: "/system-messages", label: t("systemMessages") },
               { href: "/archive", label: t("archive") },
               { href: "/submission-failures", label: t("submissionFailures") },

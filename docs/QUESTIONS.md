@@ -320,3 +320,40 @@ first run left behind.
 or catching the violation and answering something an administrator can act on. Both are API
 changes, which this repo may not make (constraint 1). Nothing here is blocked on it: the
 overwhelmingly common case is deleting an address once.
+
+---
+
+## Q-022: A licence can be set valid and never invalid (AD-008)
+
+`POST /v1/instances/licences/{licenceId}` publishes an `isValid` field described as an
+"Administrator switch to toggle license validity". It cannot toggle it. `InstancesPresenter::
+actionUpdateLicence` reads it as:
+
+```php
+$isValid = $req->getPost("isValid") ? filter_var($req->getPost("isValid"), FILTER_VALIDATE_BOOLEAN)
+                                    : $licence->isValid();
+```
+
+`false` is falsy in PHP, so it takes the else branch and writes back the value the licence already
+had. Sending anything else that would survive that test -- `"false"`, `0` -- is rejected first by
+the boolean validator. Reproduced all three ways with `curl` against the live instance:
+
+```
+{"isValid": false}    -> HTTP 200, isValid unchanged (true)
+{"isValid": "false"}  -> HTTP 400, "did not pass the validation of type 'boolean'"
+{"isValid": 0}        -> HTTP 400, same
+```
+
+So a licence can be marked valid by any client and marked invalid by none. The same falsy-test
+shape covers `note` and `validUntil` in that method (`?:`), where the consequence is milder: an
+empty note or date silently keeps the old one instead of clearing it.
+
+**What it cost.** AD-008 built a "Revoke" control on the strength of the published field, and this
+ticket's own e2e spec caught it doing nothing -- HTTP 200, row unchanged. The control was removed
+and the state column left read-only, which is exactly what the legacy frontend does: it renders a
+column titled "Without revocation" and offers no way to change it. That is now understood to be a
+consequence rather than an oversight.
+
+**What would close it.** `$req->getPost("isValid") !== null` instead of a truthiness test. That is
+an API change, which this repo may not make (constraint 1). Nothing is blocked on it: a licence
+that should stop counting can be deleted, and deleting works.

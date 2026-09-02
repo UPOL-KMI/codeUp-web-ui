@@ -2145,7 +2145,8 @@
         "en": "Read in English",
         "cs": "Číst česky"
       }
-    }
+    },
+    "instances": "Instances"
   },
   "Palette": {
     "label": "Search",
@@ -2724,6 +2725,110 @@
       "createLocalHint": "This account signs in only through an external service. Adding a local login leaves the password empty — set one above afterwards.",
       "localCreated": "The account now has a password login.",
       "localFailed": "The password login could not be added."
+    }
+  },
+  "Instances": {
+    "title": "Instances",
+    "subtitle": "The separate ReCodEx worlds this deployment runs.",
+    "detailSubtitle": "What this instance is, who may join it, and what keeps it running.",
+    "unnamed": "Unnamed instance",
+    "columns": {
+      "name": "Name",
+      "admin": "Administrator",
+      "licence": "Licence",
+      "created": "Created"
+    },
+    "flags": {
+      "open": "Open for registration",
+      "closed": "Closed",
+      "licensed": "Licensed",
+      "unlicensed": "No valid licence"
+    },
+    "empty": {
+      "title": "No instances",
+      "description": "This deployment has no instances, which should not be possible."
+    },
+    "about": {
+      "title": "About",
+      "admin": "Administrator",
+      "created": "Created",
+      "rootGroup": "Root group",
+      "openRootGroup": "Open the root group",
+      "noDescription": "This instance has no description.",
+      "nameLivesOnGroup": "The name and description belong to the root group and are edited there."
+    },
+    "create": {
+      "action": "Create an instance",
+      "title": "Create an instance",
+      "explain": "The name and description are set once, here: afterwards they belong to the instance's root group and are edited there.",
+      "name": "Name",
+      "description": "Description",
+      "descriptionHint": "Shown to anyone choosing an instance to register in. Markdown.",
+      "isOpen": "Open for registration straight away",
+      "submit": "Create",
+      "cancel": "Cancel",
+      "created": "The instance was created.",
+      "errors": {
+        "tooShort": "At least two characters."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "stateOpen": "People may register into this instance themselves.",
+      "stateClosed": "This instance is closed — only an administrator can create accounts in it.",
+      "open": "Open for registration",
+      "close": "Close registration",
+      "confirmOpen": "Anyone will be able to create an account in this instance.",
+      "confirmClose": "Nobody will be able to register themselves. Existing accounts are unaffected.",
+      "opened": "The instance is open for registration.",
+      "closed": "The instance is closed.",
+      "updateFailed": "The instance could not be changed.",
+      "delete": "Delete instance",
+      "confirmDelete": "{name} goes, and so does its root group — with every group, assignment and solution below it. There is no undo.",
+      "deleted": "{name} is gone.",
+      "deleteFailed": "The instance could not be deleted.",
+      "cannotDeleteOwn": "This is the instance your own account belongs to, so it is not offered for deletion here."
+    },
+    "licences": {
+      "title": "Licences",
+      "none": "This instance has no licences at all.",
+      "columns": {
+        "note": "Note",
+        "validUntil": "Valid until",
+        "state": "State",
+        "actions": "Actions"
+      },
+      "state": {
+        "valid": "Valid",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "note": "Note",
+      "validUntil": "Valid until",
+      "add": "Add licence",
+      "added": "The licence was added.",
+      "delete": "Delete",
+      "confirmDelete": "The licence is removed for good. Revoking instead keeps the record.",
+      "deleted": "The licence is gone.",
+      "deleteFailed": "The licence could not be deleted.",
+      "errors": {
+        "tooShort": "At least two characters.",
+        "required": "Pick a date."
+      },
+      "summary": {
+        "covered": "A valid licence covers this instance.",
+        "notNeeded": "This instance does not require a licence at all — core-api reports it as covered with none.",
+        "missing": "No licence covers this instance right now, so it has stopped working."
+      }
+    },
+    "errors": {
+      "invalid": "Some of what was typed is not valid.",
+      "badDate": "That is not a date core-api can read.",
+      "createFailed": "The instance could not be created.",
+      "updateFailed": "The instance could not be changed.",
+      "deleteFailed": "The instance could not be deleted.",
+      "licenceFailed": "The licence could not be saved.",
+      "licenceDeleteFailed": "The licence could not be deleted."
     }
   }
 }

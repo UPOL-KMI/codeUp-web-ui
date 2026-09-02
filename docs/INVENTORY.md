@@ -47,7 +47,7 @@
 | `app/group/:groupId/exams`                                                 | GroupExams                 | true  | GROUP_EXAMS_URI_FACTORY                     | `/groups/[id]?tab=exams`                                   | done   |
 | `app/group/:groupId/exams/:examId`                                         | GroupExams                 | true  | GROUP_EXAMS_SPECIFIC_EXAM_URI_FACTORY       | `/groups/[id]?tab=exams&exam=[examId]`                     | done   |
 | `app/group/:groupId/user/:userId`                                          | GroupUserSolutions         | true  | GROUP_USER_SOLUTIONS_URI_FACTORY            | `/groups/[id]/users/[userId]`                              | done   |
-| `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                                          | todo   |
+| `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | merged into `/admin/instances/[id]` (DEC-113)              | done   |
 | `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                                                   | done   |
 | `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                                              | done   |
 | `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/profile/edit` (self), `/users/[id]/edit` (admin)         | done   |
@@ -55,8 +55,8 @@
 | `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                                         | todo   |
 | `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                                                 | todo   |
 | `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin/server`                                            | todo   |
-| `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                                         | todo   |
-| `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | `/admin/instances/[id]/edit`                               | todo   |
+| `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                                         | done   |
+| `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | merged into `/admin/instances/[id]` (DEC-113)              | done   |
 | `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`                                  | done   |
 | `email-verification`                                                       | EmailVerification          | —     | —                                           | `/email-verification`                                      | done   |
 | `*`                                                                        | NotFound                   | —     | —                                           | `/[...not-found]`                                          | todo   |
@@ -94,8 +94,8 @@
 | `groupResults`                 | Group results overview                                     | `groups/[id]?tab=students`                                     | done   |
 | `groups`                       | Group CRUD, hierarchy, membership                          | `groups`                                                       | todo   |
 | `hwGroups`                     | Hardware groups                                            | `admin/server`                                                 | todo   |
-| `instances`                    | Instance management                                        | `admin/instances`                                              | todo   |
-| `licences`                     | Licence management                                         | `admin`                                                        | todo   |
+| `instances`                    | Instance management                                        | `admin/instances`                                              | done   |
+| `licences`                     | Licence management                                         | `admin/instances/[id]`                                         | done   |
 | `limits`                       | Exercise limits (per environment, per hardware group)      | `exercises/[id]/edit-limits`                                   | done   |
 | `notifications`                | In-app notifications                                       | Header + dashboard                                             | todo   |
 | `pagination`                   | Pagination state                                           | `searchParams` in Server Components                            | todo   |
