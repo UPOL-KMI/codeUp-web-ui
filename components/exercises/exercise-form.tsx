@@ -23,7 +23,9 @@ import { useToast } from "@/components/toast/toast-provider";
  *
  * The exercise **text is markdown** and is edited as plain text here, the way the legacy form does
  * it: the reader can see it rendered on the detail screen, and a preview pane is a bigger thing
- * than this ticket.
+ * than this ticket. It is bound to `rawTexts`, not `texts` -- T-023 resolves `%%key%%` file-link
+ * placeholders for *display*, and a form bound to the resolved copy would save the substituted
+ * URLs back over the author's own placeholders.
  *
  * `version` rides along as core-api's optimistic lock. When somebody else saved first, its
  * `400-010` message is shown as it came rather than retried -- the honest answer is to reload and
@@ -42,7 +44,7 @@ export function ExerciseForm({
 
   const editedLocales = [
     ...locales,
-    ...exercise.texts.map((text) => text.locale).filter((locale) => !locales.includes(locale)),
+    ...exercise.rawTexts.map((text) => text.locale).filter((locale) => !locales.includes(locale)),
   ];
 
   const { form, onSubmit, isPending } = useServerActionForm<ExerciseSettingsValues, { id: string }>(
@@ -51,7 +53,7 @@ export function ExerciseForm({
       defaultValues: {
         version: exercise.version,
         texts: editedLocales.map((locale) => {
-          const existing = exercise.texts.find((text) => text.locale === locale);
+          const existing = exercise.rawTexts.find((text) => text.locale === locale);
           return {
             locale,
             name: existing?.name ?? "",

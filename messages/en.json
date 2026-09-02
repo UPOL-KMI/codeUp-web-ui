@@ -1049,6 +1049,95 @@
       "groupFailed": "The group could not be changed.",
       "archiveFailed": "The exercise could not be archived.",
       "deleteFailed": "The exercise could not be deleted."
+    },
+    "files": {
+      "title": "Files",
+      "explain": "The files the evaluation uses — expected outputs, test data, headers, a custom judge. Students never see them; the tests-and-evaluation screen points at this list.",
+      "none": "No files are attached yet.",
+      "upload": "Add files",
+      "attach": "{count, plural, =0 {Attach} one {Attach # file} other {Attach # files}}",
+      "attached": "The files were attached.",
+      "remove": "Remove",
+      "removed": "The file was removed.",
+      "downloadAll": "Download all of them as a ZIP",
+      "confirmRemove": {
+        "title": "Remove this file?",
+        "description": "{name} goes for good. If the configuration names it — as an expected output, an input or a judge — that test will fail at evaluation time with nothing on screen to explain it, so check the tests-and-evaluation screen first.",
+        "confirm": "Remove the file"
+      },
+      "links": {
+        "title": "Links in the text",
+        "explain": "A link gives one file a short key. Writing %%key%% anywhere in the exercise text renders it as a working address — so a figure or a data file can be part of what the student reads.",
+        "none": "No links are defined.",
+        "file": "File",
+        "choose": "— choose —",
+        "key": "Key",
+        "role": "Who may fetch it",
+        "public": "Anybody",
+        "roles": {
+          "student": "Signed-in students and above",
+          "supervisor": "Teachers and above",
+          "empowered-supervisor": "Senior teachers and above",
+          "superadmin": "Administrators only"
+        },
+        "requiresRole": "needs the role {role}",
+        "saveName": "Downloaded as",
+        "create": "Create the link",
+        "created": "The link was created.",
+        "delete": "Delete",
+        "deleted": "The link was deleted.",
+        "missingFile": "the file it pointed at is gone"
+      },
+      "errors": {
+        "generic": "That did not work.",
+        "nothingToAttach": "Upload a file first.",
+        "attachFailed": "The files could not be attached.",
+        "deleteFailed": "The file could not be removed.",
+        "invalidKey": "A key is up to 16 characters of letters, digits, hyphens and underscores.",
+        "noFileChosen": "Choose which file the link points at.",
+        "linkFailed": "The link could not be created.",
+        "unlinkFailed": "The link could not be deleted."
+      }
+    },
+    "people": {
+      "title": "People and copies",
+      "author": "Author",
+      "unknownPerson": "Someone you cannot see",
+      "cannotHandOver": "Only somebody who may change this exercise's author can hand it over.",
+      "admins": "Administrators",
+      "adminsExplain": "Colleagues who may change this exercise as if it were theirs.",
+      "noAdmins": "Nobody besides the author.",
+      "findPeople": "Find somebody",
+      "search": "Name or email",
+      "searchButton": "Search",
+      "searching": "Searching…",
+      "noPeople": "Nobody matched — or you may not search people on this instance.",
+      "addAdmin": "Make administrator",
+      "adminAdded": "They can now change this exercise.",
+      "removeAdmin": "Remove",
+      "adminRemoved": "They can no longer change this exercise.",
+      "makeAuthor": "Hand over",
+      "authorChanged": "The exercise has a new author.",
+      "confirmAuthor": {
+        "title": "Hand this exercise over?",
+        "description": "{name} becomes the author. You keep only what your role in the exercise's groups gives you — if that is nothing, you will not be able to change this exercise again, and only the new author could hand it back.",
+        "confirm": "Hand it over"
+      },
+      "fork": "Make a copy",
+      "forkExplain": "A copy takes the texts, the configuration, the limits and the files into another group. The two are unrelated afterwards, so neither owner can break the other's.",
+      "forkInto": "Copy into",
+      "chooseGroup": "— choose a group —",
+      "forkButton": "Copy the exercise",
+      "forked": "The copy was made.",
+      "errors": {
+        "generic": "That did not work.",
+        "searchFailed": "People could not be searched.",
+        "adminsFailed": "The administrators could not be saved.",
+        "authorFailed": "The author could not be changed.",
+        "noPersonChosen": "Choose somebody first.",
+        "noGroupChosen": "Choose a group first.",
+        "forkFailed": "The copy could not be made."
+      }
     }
   },
   "ExerciseConfig": {

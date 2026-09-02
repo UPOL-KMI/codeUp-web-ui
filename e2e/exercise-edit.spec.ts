@@ -56,7 +56,11 @@ test("creates an exercise, configures it, and removes it again", async ({ page }
   await expect(
     page.getByText("The exercise was added to the group.", { exact: true }),
   ).toBeVisible();
-  await expect(main.getByText("[seed] Intro to Programming / Lab A")).toBeVisible();
+  // Scoped to the groups list: T-023 added a "Copy into" select that names every teaching group,
+  // so the bare text now matches two options as well as the row this is about.
+  await expect(
+    main.getByRole("region", { name: "Groups" }).getByText("[seed] Intro to Programming / Lab A"),
+  ).toBeVisible();
 
   // Archiving freezes it: the settings form is not rendered for an archived exercise at all.
   await main.getByRole("button", { name: "Archive this exercise" }).click();

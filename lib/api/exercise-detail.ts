@@ -5,8 +5,10 @@ import { cache } from "react";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
 import { ApiError, apiGet, apiPost } from "./client";
+import { getExerciseFiles, linkMap, type ExerciseFileLink } from "./exercise-files";
 import { getGroupList } from "./groups";
 import { pageRead } from "./read";
+import { replaceLinkKeys } from "@/lib/i18n-text/file-links";
 
 /**
  * One exercise, read rather than edited (T-021).
@@ -46,8 +48,10 @@ export interface ExerciseDetail {
   createdAt: number;
   updatedAt: number;
   archivedAt: number | null;
-  /** Every locale core-api holds for this exercise. */
+  /** Every locale core-api holds for this exercise, with `%%key%%` placeholders resolved. */
   texts: ExerciseText[];
+  /** The same texts exactly as stored -- what the settings form edits, placeholders and all. */
+  rawTexts: ExerciseText[];
   /** The reader's own locale, falling back to whatever exists (`localizedName`'s rule). */
   text: ExerciseText | null;
   environments: { id: string; name: string }[];
@@ -73,6 +77,9 @@ export interface ExerciseDetail {
    *  carried here so that saving the form cannot silently flip it. */
   mergeJudgeLogs: boolean;
   files: ExerciseFile[];
+  /** The named links into those files, whose keys the texts above have already been resolved
+   *  against (T-023). */
+  fileLinks: ExerciseFileLink[];
   /** Assignments made from this exercise **that this reader may see** -- core-api filters them. */
   assignmentCount: number;
   can: Record<string, boolean>;
@@ -136,12 +143,7 @@ export async function getExerciseDetail(
     getGroupList(locale),
     // Both of these are permitted for anyone who may read the exercise itself, and both are read
     // through the raw client so that a refusal on one does not take the page down with it.
-    apiGet<ExerciseFile[]>("/v1/exercises/{id}/files", { pathParams: { id: exerciseId } }).catch(
-      (error: unknown) => {
-        if (error instanceof ApiError && error.httpStatus === 403) return [] as ExerciseFile[];
-        throw error;
-      },
-    ),
+    getExerciseFiles(exerciseId),
     apiGet<{ id: string }[]>("/v1/exercises/{id}/assignments", {
       pathParams: { id: exerciseId },
     }).catch((error: unknown) => {
@@ -157,12 +159,21 @@ export async function getExerciseDetail(
     .filter((id) => groupNames.has(id))
     .map((id) => ({ id, name: groupNames.get(id)! }));
 
-  const texts = (exercise.localizedTexts ?? []).map((entry) => ({
+  // `%%key%%` placeholders are resolved here rather than at render time (T-023): a placeholder
+  // can stand inside a markdown link target, where no post-parse transform could reach it, and
+  // the *editor* has to see the raw text, which is why the settings form reads `texts` from a
+  // separate, unresolved copy.
+  const links = linkMap(files.links);
+  const rawTexts = (exercise.localizedTexts ?? []).map((entry) => ({
     locale: entry.locale,
     name: entry.name ?? "",
     text: entry.text ?? "",
     description: entry.description ?? "",
     link: entry.link ?? "",
+  }));
+  const texts = rawTexts.map((entry) => ({
+    ...entry,
+    text: replaceLinkKeys(entry.text, links),
   }));
 
   return {
@@ -194,7 +205,9 @@ export async function getExerciseDetail(
     solutionFilesLimit: exercise.solutionFilesLimit,
     solutionSizeLimit: exercise.solutionSizeLimit,
     mergeJudgeLogs: exercise.mergeJudgeLogs ?? true,
-    files: files.map((file) => ({ id: file.id, name: file.name, size: file.size })),
+    rawTexts,
+    files: files.files.map((file) => ({ id: file.id, name: file.name, size: file.size })),
+    fileLinks: files.links,
     assignmentCount: assignments.length,
     can: exercise.permissionHints ?? {},
   };

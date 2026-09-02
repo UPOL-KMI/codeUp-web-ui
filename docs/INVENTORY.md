@@ -77,11 +77,11 @@
 | `comments`                     | Discussion threads on exercises, assignments and solutions | T-022 (**not** S-018's inline review comments) | todo   |
 | `emailVerification`            | Email verification flow                                    | `/email-verification`                          | done   |
 | `evaluationProgress`           | Live evaluation progress (WebSocket/polling)               | `solutions/[id]` live updates                  | todo   |
-| `exerciseAuthors`              | Exercise author management                                 | `exercises/[id]`                               | todo   |
+| `exerciseAuthors`              | Exercise author and administrators                         | `exercises/[id]/edit`                          | done   |
 | `exerciseConfigs`              | Exercise configuration (pipelines, variables)              | `exercises/[id]/edit-config`                   | done   |
 | `exerciseEnvironmentConfigs`   | Per-environment config                                     | `exercises/[id]/edit-config`                   | done   |
-| `exerciseFiles`                | Exercise supplementary files                               | `exercises/[id]`                               | todo   |
-| `exerciseFilesLinks`           | File links                                                 | `exercises/[id]`                               | todo   |
+| `exerciseFiles`                | Exercise supplementary files                               | `exercises/[id]/edit`                          | done   |
+| `exerciseFilesLinks`           | File links, and `%%key%%` in authored texts                | `exercises/[id]/edit`                          | done   |
 | `exercisePipelinesVariables`   | Pipeline variables (advanced config only — T-024)          | `exercises/[id]/edit-config`                   | todo   |
 | `exerciseScoreConfig`          | Score configuration                                        | `exercises/[id]/edit-config`                   | done   |
 | `exerciseTests`                | Exercise tests                                             | `exercises/[id]/edit-config`                   | done   |

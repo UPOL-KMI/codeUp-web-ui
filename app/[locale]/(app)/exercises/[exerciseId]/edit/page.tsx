@@ -9,7 +9,9 @@ import { routing } from "@/i18n/routing";
 
 import { Link } from "@/i18n/navigation";
 import { ExerciseControls } from "@/components/exercises/exercise-controls";
+import { ExerciseFiles } from "@/components/exercises/exercise-files";
 import { ExerciseForm } from "@/components/exercises/exercise-form";
+import { ExercisePeople } from "@/components/exercises/exercise-people";
 import { PageShell } from "@/components/page-shell";
 
 /**
@@ -25,10 +27,11 @@ import { PageShell } from "@/components/page-shell";
  * for one at all rather than rendered and refused on submit (S-009's rule for an archived group).
  * Unarchiving is still offered, and is the way back.
  *
- * What is **not** here, and is recorded as T-023 rather than dropped: the exercise's own files and
- * their links, its administrators, and forking it into another group. The tests (T-009), the
- * limits (T-010) and the reference solutions (T-011) are their own screens by the backlog's own
- * plan.
+ * T-023 added the three things this screen deliberately stopped short of: the exercise's own
+ * files and the named links into them, its administrators and author, and forking it into another
+ * group. Each is its own call and its own section, for the reason the tags and groups above are --
+ * none of them is a field of the settings save. The tests (T-009), the limits (T-010) and the
+ * reference solutions (T-011) are their own screens by the backlog's own plan.
  */
 export default async function EditExercisePage({
   params,
@@ -88,6 +91,30 @@ export default async function EditExercisePage({
         )}
 
         <ExerciseControls exercise={exercise} teachingGroups={mine.teaching} />
+
+        <section aria-labelledby="exercise-files" className="flex flex-col gap-3">
+          <h2 id="exercise-files" className="text-base font-semibold tracking-tight">
+            {t("files.title")}
+          </h2>
+          <ExerciseFiles
+            exerciseId={exerciseId}
+            files={exercise.files}
+            links={exercise.fileLinks}
+            archiveUrl={`/api/exercises/${exerciseId}/files`}
+            readOnly={exercise.can.update !== true || exercise.archivedAt !== null}
+          />
+        </section>
+
+        <section aria-labelledby="exercise-people" className="flex flex-col gap-3">
+          <h2 id="exercise-people" className="text-base font-semibold tracking-tight">
+            {t("people.title")}
+          </h2>
+          <ExercisePeople
+            exercise={exercise}
+            teachingGroups={mine.teaching}
+            canFork={exercise.can.fork === true}
+          />
+        </section>
       </div>
     </PageShell>
   );

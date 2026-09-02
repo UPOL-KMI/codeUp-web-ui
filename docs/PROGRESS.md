@@ -456,6 +456,37 @@
   - _The exercise screen and the configuration screen link here_; the limits screen links back.
   - _Observations:_ **200 e2e tests pass** (197 before), **116 unit tests** (99 before).
 
+- **[2026-09-02 06:20] T-023:** An exercise's own files, the links into them, its people, and
+  copying it. `components/exercises/{exercise-files,exercise-people}.tsx`,
+  `lib/api/exercise-files.ts`, `lib/actions/{exercise-files,exercise-people}.ts`,
+  `lib/i18n-text/file-links.ts`, `app/api/exercises/[exerciseId]/files/route.ts`.
+  - **_The files were the load-bearing half._** T-009's configuration editor points every one of
+    its file fields at this list, so an exercise created in this app had nothing to select and the
+    screen said so. It can now be taken from created to configured to assignable without leaving
+    here. The upload is S-014's chunked Route Handler, not a Server Action (brief §6.7).
+  - _Attaching is additive and a name is an identity._ core-api keeps what is already attached and
+    replaces only a file of the same name, **carrying that file's links over to the replacement**
+    -- so uploading a corrected `expected.txt` fixes the exercise rather than breaking every link
+    into it. Nothing here sends the whole set, which is how one would delete a colleague's upload.
+  - **_`%%key%%` placeholders now resolve_** (DEC-105), which `INVENTORY.md` had listed as a gap
+    since T-008. The substitution is on the string, before parsing -- a placeholder can stand
+    inside a link target -- and the trap it creates is the reason it is a decision: the settings
+    form is bound to a separate **unresolved** copy of the texts, or saving would write the
+    substituted URLs over the author's own placeholders. A placeholder with no link stays visible.
+  - _Deleting a file confirms and says what it costs_: core-api lets the file go and the
+    configuration keeps the name, which is a test that fails at evaluation time with nothing on
+    screen to point at.
+  - **_Who may be an administrator is core-api's rule and is not guessed here._** It refuses a
+    plain student ("Given user is not allowed to be administrator of an exercise") and that
+    sentence is shown as it came -- pre-filtering the offer by role name is what constraint 4
+    forbids. Handing the exercise over is separate from adding administrators because core-api
+    grants the two separately, and it confirms: the outgoing author may not be able to undo it.
+  - _Forking is a copy, not a link_, and lands on the copy's own settings. The two exercises have
+    no relationship afterwards beyond the `forkedFrom` id T-021's screen already named.
+  - _One existing spec needed scoping, not fixing:_ T-008's reached for a group name that the new
+    "Copy into" select now also lists.
+  - _Observations:_ **203 e2e tests pass** (200 before), **120 unit tests** (116 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2969,18 +3000,16 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-023 -- the exercise's own files, its administrators and forking it. Filed with
-  T-008 and made **load-bearing** by T-009: the configuration editor points every file field at an
-  exercise's attached files, and nothing in this app can attach one yet.
+- **Next ticket:** T-012 -- the assignments made from an exercise, which T-021 counts but does not
+  list. Then T-011, the reference solutions.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
-  configure -- Q-004). **Four parity gaps are filed and open:** T-022 (the
+  configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
   legacy discussion threads on exercises, assignments and solutions, which `INVENTORY.md` had
-  mistaken for S-018's inline review comments), T-023 (exercise files and their link keys,
-  administrators, and forking) and, filed by T-009, T-024 (the advanced configuration and the
-  switch between the two kinds) and T-025 (the custom score expression editor). **T-023 is now
-  load-bearing**: the configuration editor points every file field at the exercise's attached
-  files, and nothing in this app can attach one yet. The anonymous flows (A-001..A-008)
+  mistaken for S-018's inline review comments) and, filed by T-009, T-024 (the advanced
+  configuration and the switch between the two kinds) and T-025 (the custom score expression
+  editor). **T-023 closed**, and with it the last thing standing between a newly created exercise
+  and an assignable one. The anonymous flows (A-001..A-008)
   are still untouched: `/login` is a placeholder page in front of a real BFF route, which is why
   every e2e spec signs in through that route rather than through a form.
 - **Closed this session:** **S-026**, which this session also created -- joining a public group

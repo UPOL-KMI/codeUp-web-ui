@@ -1049,6 +1049,95 @@
       "groupFailed": "Skupinu se nepodařilo změnit.",
       "archiveFailed": "Úlohu se nepodařilo archivovat.",
       "deleteFailed": "Úlohu se nepodařilo smazat."
+    },
+    "files": {
+      "title": "Soubory",
+      "explain": "Soubory, které používá vyhodnocení — očekávané výstupy, testovací data, hlavičky, vlastní soudce. Studenti je nevidí; obrazovka s testy a vyhodnocením míří právě na tento seznam.",
+      "none": "Zatím nejsou připojené žádné soubory.",
+      "upload": "Přidat soubory",
+      "attach": "{count, plural, =0 {Připojit} one {Připojit # soubor} few {Připojit # soubory} other {Připojit # souborů}}",
+      "attached": "Soubory byly připojeny.",
+      "remove": "Odebrat",
+      "removed": "Soubor byl odebrán.",
+      "downloadAll": "Stáhnout všechny jako ZIP",
+      "confirmRemove": {
+        "title": "Odebrat tento soubor?",
+        "description": "{name} zmizí nadobro. Pokud jej konfigurace jmenuje — jako očekávaný výstup, vstup nebo soudce — ten test při vyhodnocení selže a na obrazovce nebude nic, co by to vysvětlilo. Zkontrolujte nejdřív testy a vyhodnocení.",
+        "confirm": "Odebrat soubor"
+      },
+      "links": {
+        "title": "Odkazy v textu",
+        "explain": "Odkaz dá jednomu souboru krátký klíč. Napsání %%klíč%% kdekoli v textu úlohy se vykreslí jako funkční adresa — obrázek nebo datový soubor tak může být součástí toho, co student čte.",
+        "none": "Nejsou definované žádné odkazy.",
+        "file": "Soubor",
+        "choose": "— vyberte —",
+        "key": "Klíč",
+        "role": "Kdo jej smí stáhnout",
+        "public": "Kdokoli",
+        "roles": {
+          "student": "Přihlášení studenti a výš",
+          "supervisor": "Učitelé a výš",
+          "empowered-supervisor": "Starší učitelé a výš",
+          "superadmin": "Jen administrátoři"
+        },
+        "requiresRole": "vyžaduje roli {role}",
+        "saveName": "Stáhne se jako",
+        "create": "Vytvořit odkaz",
+        "created": "Odkaz byl vytvořen.",
+        "delete": "Smazat",
+        "deleted": "Odkaz byl smazán.",
+        "missingFile": "soubor, na který mířil, je pryč"
+      },
+      "errors": {
+        "generic": "Nepovedlo se.",
+        "nothingToAttach": "Nejdřív nahrajte soubor.",
+        "attachFailed": "Soubory se nepodařilo připojit.",
+        "deleteFailed": "Soubor se nepodařilo odebrat.",
+        "invalidKey": "Klíč má nejvýš 16 znaků z písmen, číslic, pomlček a podtržítek.",
+        "noFileChosen": "Vyberte, na který soubor odkaz míří.",
+        "linkFailed": "Odkaz se nepodařilo vytvořit.",
+        "unlinkFailed": "Odkaz se nepodařilo smazat."
+      }
+    },
+    "people": {
+      "title": "Lidé a kopie",
+      "author": "Autor",
+      "unknownPerson": "Někdo, koho nevidíte",
+      "cannotHandOver": "Předat úlohu může jen ten, kdo smí měnit jejího autora.",
+      "admins": "Správci",
+      "adminsExplain": "Kolegové, kteří smí tuto úlohu měnit, jako by byla jejich.",
+      "noAdmins": "Nikdo kromě autora.",
+      "findPeople": "Najít někoho",
+      "search": "Jméno nebo e-mail",
+      "searchButton": "Hledat",
+      "searching": "Hledám…",
+      "noPeople": "Nikdo neodpovídá — nebo na této instanci nesmíte prohledávat uživatele.",
+      "addAdmin": "Udělat správcem",
+      "adminAdded": "Nyní může tuto úlohu měnit.",
+      "removeAdmin": "Odebrat",
+      "adminRemoved": "Už tuto úlohu měnit nemůže.",
+      "makeAuthor": "Předat",
+      "authorChanged": "Úloha má nového autora.",
+      "confirmAuthor": {
+        "title": "Předat tuto úlohu?",
+        "description": "{name} se stane autorem. Vám zůstane jen to, co vám dává vaše role ve skupinách úlohy — pokud nic, už tuto úlohu měnit nebudete moci a vrátit ji zpět může jen nový autor.",
+        "confirm": "Předat"
+      },
+      "fork": "Vytvořit kopii",
+      "forkExplain": "Kopie přenese texty, konfiguraci, limity i soubory do jiné skupiny. Poté spolu nemají nic společného, takže ani jeden vlastník nemůže rozbít tu druhou.",
+      "forkInto": "Kopírovat do",
+      "chooseGroup": "— vyberte skupinu —",
+      "forkButton": "Zkopírovat úlohu",
+      "forked": "Kopie byla vytvořena.",
+      "errors": {
+        "generic": "Nepovedlo se.",
+        "searchFailed": "Uživatele se nepodařilo prohledat.",
+        "adminsFailed": "Správce se nepodařilo uložit.",
+        "authorFailed": "Autora se nepodařilo změnit.",
+        "noPersonChosen": "Nejdřív někoho vyberte.",
+        "noGroupChosen": "Nejdřív vyberte skupinu.",
+        "forkFailed": "Kopii se nepodařilo vytvořit."
+      }
     }
   },
   "ExerciseConfig": {
