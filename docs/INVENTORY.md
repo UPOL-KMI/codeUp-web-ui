@@ -52,7 +52,7 @@
 | `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                                              | done   |
 | `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/profile/edit` (self), `/users/[id]/edit` (admin)         | done   |
 | `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                                     | done   |
-| `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                                         | todo   |
+| `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                                         | done   |
 | `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                                                 | todo   |
 | `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin`                                                   | done   |
 | `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                                         | done   |
@@ -114,7 +114,7 @@
 | `submission`                   | Active submission state                                    | `assignments/[id]`                                             | todo   |
 | `submissionEvaluations`        | Evaluation results                                         | `solutions/[id]`                                               | todo   |
 | `submissionFailures`           | Submission failure log                                     | `submission-failures`                                          | done   |
-| `systemMessages`               | System messages                                            | `system-messages`                                              | todo   |
+| `systemMessages`               | System messages                                            | `system-messages` + the app shell                              | done   |
 | `upload`                       | File upload state                                          | `lib/upload/use-file-upload.ts`                                | done   |
 | `userCalendars`                | User deadlines calendar                                    | `/profile/edit`                                                | done   |
 | `userSwitching`                | User switching (superadmin)                                | `users/[id]`                                                   | done   |

@@ -51,17 +51,30 @@ test("offers only the freeze that applies, and says what it costs", async ({ pag
 });
 
 test("tells a quiet queue from a dead one by pinging it", async ({ page }) => {
+  // Longer than the default: the assertion below waits on a real background worker rather than on
+  // the browser.
+  test.setTimeout(90_000);
+
   await signIn(page, SUPERADMIN, "/en/admin");
   const main = page.getByRole("main");
 
   await main.getByRole("button", { name: "Ping the handler" }).click();
-  await main.getByRole("button", { name: "Refresh" }).last().click();
+  await expect(main.getByRole("row").filter({ hasText: "ping" }).first()).toBeVisible();
 
   // The ping is an ordinary async job and comes back finished on a live deployment, which is the
-  // whole of what it is for.
-  const row = main.getByRole("row").filter({ hasText: "ping" }).first();
-  await expect(row).toBeVisible();
-  await expect(row).toContainText("Done");
+  // whole of what it is for -- but "comes back" takes a few seconds, and under a full suite's load
+  // it was still `Waiting` when first looked at. The page is server-rendered, so watching it
+  // settle means fetching it again; each pass waits for the table before reading it, which the
+  // first version of this loop did not and which is why it kept reading an empty page.
+  const finished = main.getByRole("row").filter({ hasText: "ping" }).filter({ hasText: "Done" });
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await page.goto("/en/admin");
+    await expect(main.getByRole("heading", { name: "Background jobs" })).toBeVisible();
+    if ((await finished.count()) > 0) break;
+    await page.waitForTimeout(2000);
+  }
+
+  await expect(finished.first()).toContainText("Done");
 });
 
 test("is the superadmin's screen and nobody else's", async ({ page }) => {

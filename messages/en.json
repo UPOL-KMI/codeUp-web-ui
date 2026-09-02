@@ -1912,7 +1912,86 @@
     }
   },
   "SystemMessages": {
-    "title": "System messages"
+    "title": "System messages",
+    "subtitle": "Notices shown to everybody, for as long as you choose.",
+    "create": "Write a message",
+    "edit": "Edit",
+    "delete": "Delete",
+    "none": "No message has ever been written here.",
+    "deleted": "The message is gone.",
+    "confirmDelete": "The message disappears from every screen showing it right now. There is no undo.",
+    "columns": {
+      "text": "Message",
+      "audience": "Audience",
+      "window": "Shown between",
+      "actions": "Actions"
+    },
+    "state": {
+      "live": "Showing now",
+      "queued": "Not yet",
+      "past": "Finished"
+    },
+    "types": {
+      "success": "Success",
+      "info": "Information",
+      "warning": "Warning",
+      "danger": "Serious"
+    },
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Supervisor and student",
+      "supervisor": "Supervisor",
+      "empowered-supervisor": "Empowered supervisor",
+      "superadmin": "Administrator"
+    },
+    "audience": "{role} and above",
+    "active": {
+      "label": "System messages",
+      "dismiss": "Mark as read"
+    },
+    "editor": {
+      "createTitle": "Write a message",
+      "editTitle": "Edit the message",
+      "explain": "Everyone in the chosen role and above sees this while its window is open. Leave a language blank if the message is not written in it.",
+      "text": "Text ({locale})",
+      "type": "Kind",
+      "types": {
+        "success": "Success",
+        "info": "Information",
+        "warning": "Warning",
+        "danger": "Serious"
+      },
+      "role": "Lowest role that sees it",
+      "roleHint": "A floor, not a target — “Student” reaches everybody, “Administrator” reaches only administrators.",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Supervisor and student",
+        "supervisor": "Supervisor",
+        "empowered-supervisor": "Empowered supervisor",
+        "superadmin": "Administrator"
+      },
+      "visibleFrom": "Shown from",
+      "visibleTo": "Shown until",
+      "create": "Publish",
+      "save": "Save",
+      "cancel": "Cancel",
+      "created": "The message is published.",
+      "saved": "The message was saved.",
+      "errors": {
+        "textRequired": "Write the message in at least one language.",
+        "endsBeforeItStarts": "This is before the message starts."
+      }
+    },
+    "errors": {
+      "invalid": "Some of what was typed is not valid.",
+      "textRequired": "Write the message in at least one language.",
+      "endsBeforeItStarts": "The message would stop being shown before it started.",
+      "badDate": "That is not a date core-api can read.",
+      "createFailed": "The message could not be published.",
+      "updateFailed": "The message could not be saved.",
+      "deleteFailed": "The message could not be deleted.",
+      "readFailed": "Could not mark the messages as read."
+    }
   },
   "Archive": {
     "title": "Archived groups",

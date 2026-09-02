@@ -1912,7 +1912,86 @@
     }
   },
   "SystemMessages": {
-    "title": "Systémové zprávy"
+    "title": "Systémové zprávy",
+    "subtitle": "Oznámení pro všechny, na dobu, kterou určíte.",
+    "create": "Napsat zprávu",
+    "edit": "Upravit",
+    "delete": "Smazat",
+    "none": "Zatím tu nikdo žádnou zprávu nenapsal.",
+    "deleted": "Zpráva je pryč.",
+    "confirmDelete": "Zpráva zmizí ze všech obrazovek, kde se právě zobrazuje. Zpátky to nejde.",
+    "columns": {
+      "text": "Zpráva",
+      "audience": "Komu",
+      "window": "Zobrazeno mezi",
+      "actions": "Akce"
+    },
+    "state": {
+      "live": "Zobrazuje se",
+      "queued": "Zatím ne",
+      "past": "Skončila"
+    },
+    "types": {
+      "success": "Úspěch",
+      "info": "Informace",
+      "warning": "Varování",
+      "danger": "Vážné"
+    },
+    "roles": {
+      "student": "Student",
+      "supervisor-student": "Cvičící a student",
+      "supervisor": "Cvičící",
+      "empowered-supervisor": "Cvičící s rozšířenými právy",
+      "superadmin": "Správce"
+    },
+    "audience": "{role} a výš",
+    "active": {
+      "label": "Systémové zprávy",
+      "dismiss": "Označit jako přečtené"
+    },
+    "editor": {
+      "createTitle": "Napsat zprávu",
+      "editTitle": "Upravit zprávu",
+      "explain": "Uvidí ji každý ve zvolené roli a výš, dokud je její okno otevřené. Jazyk, ve kterém zpráva napsaná není, nechte prázdný.",
+      "text": "Text ({locale})",
+      "type": "Druh",
+      "types": {
+        "success": "Úspěch",
+        "info": "Informace",
+        "warning": "Varování",
+        "danger": "Vážné"
+      },
+      "role": "Nejnižší role, která ji uvidí",
+      "roleHint": "Spodní hranice, ne cíl — „Student“ znamená všichni, „Správce“ jen správci.",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Cvičící a student",
+        "supervisor": "Cvičící",
+        "empowered-supervisor": "Cvičící s rozšířenými právy",
+        "superadmin": "Správce"
+      },
+      "visibleFrom": "Zobrazit od",
+      "visibleTo": "Zobrazit do",
+      "create": "Zveřejnit",
+      "save": "Uložit",
+      "cancel": "Zrušit",
+      "created": "Zpráva je zveřejněná.",
+      "saved": "Zpráva byla uložena.",
+      "errors": {
+        "textRequired": "Napište zprávu alespoň v jednom jazyce.",
+        "endsBeforeItStarts": "Tohle je dřív, než zpráva začíná."
+      }
+    },
+    "errors": {
+      "invalid": "Něco ze zadaných údajů není platné.",
+      "textRequired": "Napište zprávu alespoň v jednom jazyce.",
+      "endsBeforeItStarts": "Zpráva by se přestala zobrazovat dřív, než by začala.",
+      "badDate": "Tohle není datum, které core-api umí přečíst.",
+      "createFailed": "Zprávu se nepodařilo zveřejnit.",
+      "updateFailed": "Zprávu se nepodařilo uložit.",
+      "deleteFailed": "Zprávu se nepodařilo smazat.",
+      "readFailed": "Zprávy se nepodařilo označit jako přečtené."
+    }
   },
   "Archive": {
     "title": "Archivované skupiny",

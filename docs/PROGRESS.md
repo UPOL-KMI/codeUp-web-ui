@@ -908,6 +908,49 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     the third reason of this kind. The eight strays were cleared from the deployment.
   - _Observations:_ **249 e2e tests pass** (245 before), 170 unit tests.
 
+- **[2026-09-02 18:10] AD-007:** Telling everybody something at once. **The Admin phase is
+  complete.** `app/[locale]/(app)/system-messages/page.tsx`, `lib/api/system-messages.ts`,
+  `lib/actions/system-messages.ts`, `components/messages/{message-manager,active-messages}.tsx`,
+  and a banner in the app shell.
+  - **_The endpoints are `/v1/notifications`._** Nothing in `openapi/core-api.yaml` matches "system
+    message" -- the module is called `systemMessages` and the paths are not, which is why finding
+    them meant reading the legacy redux module rather than the spec. Two of them, answering
+    different questions: `/all` is every message that exists (the management screen), `/` is the
+    ones active **for this reader right now** (what the shell shows).
+  - **_Both halves, because one without the other is nothing._** A screen that writes broadcasts
+    nobody sees is not a feature. The legacy app hides active messages behind a bell in its header
+    with an unread badge; **this shell has no header bar to hang one on**, and a broadcast is the
+    instance saying evaluation is down -- worth reading without opening a dropdown. So they render
+    across the top of every page (DEC-115).
+  - **_"Read" is one timestamp, and it has to be._** core-api stores no per-message flag: the
+    legacy app keeps a single `systemMessagesAccepted` in the reader's `uiData` and treats
+    everything older as seen. So dismissing covers whatever is on screen and a later message comes
+    back on its own -- inventing a per-message store would mean inventing storage core-api does not
+    have. `POST /ui-data` merges by default, so the one key is written and the rest left alone.
+  - **_`role` is a floor, not a target_**, which the label had to say: core-api's own words are
+    "users with this role and its children", so `student` reaches everybody. Verified by addressing
+    a message to `student` and finding it in the superadmin's own list.
+  - **_Recorded rather than papered over: a capability nobody can reach._** `notification.create`
+    is granted from the `supervisor` role up; `viewAll` -- the management list -- is the
+    superadmin's alone. A supervisor may write a broadcast and then has nowhere to see, edit or
+    withdraw it. Building them half a screen out of `/v1/notifications` was rejected: that endpoint
+    answers what is _active for the reader_, not _what they wrote_, so it could offer neither
+    editing nor withdrawal and would be a worse lie than its absence.
+  - _Third module split out of a `server-only` file this session._ `MESSAGE_TYPES` had to move to
+    `lib/api/message-types.ts` for the same reason `USER_ROLES` did: a client component and a
+    shared Zod schema both need the vocabulary, and a `server-only` import reaching `"use client"`
+    fails the build. It failed the build, which is the right failure.
+  - _A parallel-safety mistake caught by the suite._ The first spec asserted "no banner" after
+    removing its own message -- but three of these tests keep a live broadcast up for part of their
+    run and the banner is shared across all of them. Each test may only assert about **its own**
+    message; the file now says so.
+  - _And a flaky assertion of my own making, fixed properly rather than retried._ The ping test
+    asserted on one snapshot of a job a real worker had not finished yet; the first fix polled but
+    read the page **during** navigation and so kept seeing nothing, which looked like the same
+    failure and was not. The loop now waits for the table before reading it -- the distinction
+    between "not finished" and "not loaded" is the whole of what went wrong.
+  - _Observations:_ **253 e2e tests pass** (249 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3430,10 +3473,14 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   AD-008 closed together as two screens, because core-api's "edit instance" is one boolean and its
   licences belong on the same page (DEC-113). **AD-006** closed the `/admin` placeholder with what
   that page actually is -- the broker and the background jobs, not the runtime environments the
-  backlog promised (DEC-114). The `users`, `userSwitching`, `instances`, `licences`, `broker` and
-  `asyncJobs` rows in `INVENTORY.md` are all closed.
-- **Next ticket:** AD-007 -- system messages, the last ticket of the Admin phase and the last
-  placeholder page in the sidebar. **Every
+  backlog promised (DEC-114). **AD-007** closed the phase with system messages, in both halves: the
+  screen that writes a broadcast and the shell that shows it. **The Admin phase is complete, and
+  with it every phase but the last.** The `users`, `userSwitching`, `instances`, `licences`,
+  `broker`, `asyncJobs` and `systemMessages` rows in `INVENTORY.md` are all closed, and **no
+  placeholder page remains behind the session**.
+- **Next ticket:** P-001 -- the parity sweep, walking `INVENTORY.md` top to bottom, and the rest of
+  Phase 7 (P-002 accessibility, P-003 performance, P-004 a native-speaker cs/en review, P-005 the
+  README, P-006 the old-to-new route map, P-007 `DROPPED.md`, P-008 the retrospective). **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3451,7 +3498,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   on the strength of the published field and deleted when the spec caught it doing nothing, which
   is also the explanation for the legacy app's read-only column. And **AD-006**, which filed
   **Q-023**: deleting an instance orphans its root group, which is how eight stray groups had got
-  into the superadmin's sidebar without anybody noticing.
+  into the superadmin's sidebar without anybody noticing. And **AD-007**, which found a capability
+  with nowhere to reach it -- a supervisor may write a system message and has no screen on which to
+  see it again, because `create` is granted from `supervisor` up and `viewAll` is not.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will

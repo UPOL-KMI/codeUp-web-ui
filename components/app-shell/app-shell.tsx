@@ -2,8 +2,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
 import { getMyGroups } from "@/lib/api/groups";
+import { getActiveSystemMessages } from "@/lib/api/system-messages";
 
 import { CommandPalette } from "@/components/command-palette/command-palette";
+import { ActiveMessages } from "@/components/messages/active-messages";
 
 import { SidebarNav, type NavSection } from "./sidebar-nav";
 
@@ -28,7 +30,20 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     getTranslations("Nav"),
     getCurrentUser(),
   ]);
-  const groups = await getMyGroups(locale);
+  const [groups, broadcasts] = await Promise.all([getMyGroups(locale), getActiveSystemMessages()]);
+
+  // core-api keeps one "seen up to" timestamp rather than a flag per message (AD-007), so unread
+  // is everything published since. A message written in neither of this app's languages is
+  // dropped rather than rendered blank -- `localizedTexts` may hold any subset.
+  const unread = broadcasts
+    .filter((message) => message.visibleFrom > (user.messagesReadUpTo ?? 0))
+    .map((message) => ({
+      id: message.id,
+      type: message.type,
+      visibleFrom: message.visibleFrom,
+      text: (message.texts.find((text) => text.locale === locale) ?? message.texts[0])?.text ?? "",
+    }))
+    .filter((message) => message.text !== "");
 
   const sections: NavSection[] = [
     {
@@ -97,7 +112,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <SidebarNav sections={sections} />
       {/* The page's landmark, so assistive technology can jump past the sidebar -- and so a
           heading in the page cannot be confused with the identically-named sidebar section. */}
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1">
+        {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
+            worth reading without opening a dropdown, and this shell has no header to hang one on
+            (DEC-115). */}
+        <ActiveMessages messages={unread} userId={user.id} />
+        {children}
+      </main>
     </div>
   );
 }

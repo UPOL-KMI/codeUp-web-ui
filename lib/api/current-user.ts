@@ -28,6 +28,12 @@ export interface CurrentUser {
   groupLockType: string | null;
   /** The address they are pinned to for the duration of that lock. */
   ipLock: string | null;
+  /**
+   * The `visibleFrom` of the newest broadcast this reader has marked as seen (AD-007). core-api has
+   * no per-message read flag -- the legacy app keeps one timestamp in `uiData` and treats every
+   * message older than it as read, and this is that number.
+   */
+  messagesReadUpTo: number | null;
 }
 
 interface UserPayload {
@@ -41,6 +47,7 @@ interface UserPayload {
     groupLock?: string | null;
     groupLockType?: string | null;
     ipLock?: string | null;
+    uiData?: { systemMessagesAccepted?: number | null } | null;
   };
 }
 
@@ -66,6 +73,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     groupLock: user.privateData?.groupLock ?? null,
     groupLockType: user.privateData?.groupLockType ?? null,
     ipLock: user.privateData?.ipLock ?? null,
+    messagesReadUpTo: user.privateData?.uiData?.systemMessagesAccepted ?? null,
   };
 });
 
