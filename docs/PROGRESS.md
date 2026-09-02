@@ -3481,9 +3481,61 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     reached for "Alice Student" on the Students tab, which is now named in two tables.
   - _Observations:_ **156 e2e tests pass** (155 before), 55 unit tests.
 
+- **[2026-09-02 21:40] P-001:** The parity sweep, and what it found.
+  `docs/INVENTORY.md` (every status re-derived), `docs/BACKLOG.md` (G-001..G-029).
+  - _All 138 rows were read against the code rather than against the plan._ **65 status cells were
+    wrong**, and wrong in both directions: 40-odd rows still said `todo` for screens that shipped
+    months ago (`app/archive`, the solution screen, `*`, `evaluationProgress`, `i18n`,
+    `Breadcrumbs`, `Nested subgroups`, `Judge log display`), and a dozen said `done` for rows whose
+    write half was never built. The file had been consulted as the parity contract while saying
+    almost nothing true about it since May.
+  - **_The sweep's real finding is a shape, not a list: this app reads well and writes badly._**
+    Twenty-nine gaps came out of it, and **fourteen of them are one button against an endpoint
+    `lib/api/core-api.generated.ts` already types and no code calls** --
+    `assignment-solutions/{id}/set-flag/{flag}`, `/bonus-points`, `/resubmit`,
+    `/download-best-solutions`, `shadow-assignments` POST/DELETE, `POST /v1/groups`. The pattern is
+    consistent enough to be a lesson: a ticket that says "the X screen" got read as "render X", and
+    the actions on that screen went with the screen they were on rather than being tickets of their
+    own. `reviewRequested` is the sharpest instance -- **S-002 built the teacher's queue of
+    requested reviews, the field is read in four places, and nothing in this app can set it.**
+  - _Three of them are things a person simply cannot do._ **A group cannot be created** (G-008), so
+    a course cannot be started here at all; a shadow assignment cannot be created or edited (G-009),
+    which is why `scripts/seed.ts` makes them by raw API call; and a teacher cannot override the
+    points a solution scored (G-001), which the landing page A-001 shipped happens to advertise.
+  - **_Two brief §7 landmines were checked and one of them had been stepped on._** Pipeline
+    visualisation survived; **solution diffing did not** (G-005). It is named in three inventory
+    rows, its "Action Required" column says "Keep capability", and nothing was built -- no route, no
+    component, no dependency. That is the one gap here that is a whole screen rather than a control.
+  - _And the last `PlaceholderPage` in the product is linked from the front page._ `/faq` (G-024)
+    is reachable, public in `proxy.ts`, in the breadcrumb manifest, and pointed at by the landing
+    page's second call-to-action -- so the one page a visitor is invited to open says "This page
+    hasn't been built yet."
+  - **_Every claim was made twice, by readers with opposite jobs._** Six readers each took a slice
+    of the inventory; each slice's claimed gaps then went to a second reader whose instructions were
+    to refute them, with "default to refuted when in doubt". **Four died there** and are not in the
+    table: the effective-role switch (recorded in DEC-043 -- though as a deferral to a ticket nobody
+    ever filed, so it is G-023 for that reason instead), inviting a person who has no account
+    (moved to `create-user.tsx`, the auditor looked for the legacy endpoint rather than the
+    capability), bulk-assign settings (DEC-101), and the multi-account switcher (DEC-112 names it in
+    its rejected-alternatives column). A gap that survives that is worth a ticket.
+  - _Four rows are now `n/a` rather than `todo`._ `hwGroups` and `runtimeEnvironments` have no admin
+    screen in the legacy app either -- AD-006 found that out the hard way (DEC-114) and the
+    inventory was never told; the SIS integration has no legacy screen at all. The inventory's
+    status vocabulary is documented at the top of the file now, since it has four values.
+  - _Not verified against a running legacy instance._ Source is the primary reference (brief §10),
+    and every gap cites the legacy file and line that proves the capability exists there.
+  - _Observations:_ **no code changed**, so the tree is untouched: 156 e2e tests, 55 unit tests,
+    `typecheck`/`lint`/`build` clean before and after.
+
 ### Current Status
 
-- **Phase:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
+- **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is
+  not the one this section had been reporting.** Every feature ticket of Phases 1--6 is done, and
+  parity is nevertheless **not** met: 29 capabilities reachable in the legacy app are not reachable
+  here, filed as G-001..G-029 in `BACKLOG.md`. Fourteen of them are a single control over an
+  endpoint this repo already types and never calls. Read that table before reading the phase history
+  below, which is accurate about what was built and silent about what was left off each screen.
+- **Phase history:** Student Experience (Phase 3). Done: the dashboard (S-001..S-003), groups (S-004..S-007,
   S-010, S-011), the assignment screen for both audiences (S-012, S-013), submitting (S-014), the
   solution screen (S-015), its source viewer (S-017), the review written on top of it (S-018) and
   live evaluation progress (S-016), the group's exams (S-008) and its settings (S-009), the
@@ -3525,9 +3577,15 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** P-001 -- the parity sweep, walking `INVENTORY.md` top to bottom, and the rest of
-  Phase 7 (P-002 accessibility, P-003 performance, P-004 a native-speaker cs/en review, P-005 the
-  README, P-006 the old-to-new route map, P-007 `DROPPED.md`, P-008 the retrospective).
+- **Next ticket:** **G-008** -- creating a group, the first of the twenty-nine gaps P-001 filed, and
+  the one without which a course cannot be started in this app at all. Then the rest of the G block
+  in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
+  CRUD, the solution diff, then the smaller controls), and the rest of Phase 7 (P-002 accessibility,
+  P-003 performance, P-004 a native-speaker cs/en review, P-005 the README, P-006 the old-to-new
+  route map, P-007 `DROPPED.md`, P-008 the retrospective).
+  **P-002 has also been run as an audit** and returned 56 confirmed findings (14 serious) with 8
+  refuted; they are not yet in `BACKLOG.md` because the ticket is a pass over the code rather than a
+  set of capabilities, and it is being applied directly.
   **Filed and not started: X-001**, a GitHub Classroom importer the operator asked about -- feasible
   narrowly (`autograding.json`'s stdin/stdout tests map onto ReCodEx tests; framework-based tests do
   not), needs no API change, and deliberately waits until the sweep says what is finished. **Every
