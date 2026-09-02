@@ -19,8 +19,9 @@ import { useToast } from "@/components/toast/toast-provider";
  * instead of offering fields it could not save.
  *
  * Deleting is here rather than on the list, where a row-level delete among several instances is a
- * misclick with no undo -- and the confirmation names what actually goes, which is everything
- * below the root group.
+ * misclick with no undo -- and the confirmation names what actually goes, which is **less** than
+ * anybody would assume: core-api removes the instance row and leaves the root group standing
+ * (Q-023).
  */
 export function InstanceSettings({
   instance,

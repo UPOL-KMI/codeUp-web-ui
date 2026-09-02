@@ -4,6 +4,7 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
+import { deleteGroupIfPresent } from "./helpers/core-api";
 import { baseURL } from "./helpers/base-url";
 
 /**
@@ -22,6 +23,11 @@ import { baseURL } from "./helpers/base-url";
  * behind -- it happened on the run that caught the revoke button -- and while a leftover breaks no
  * later run (the names are unique per run), an instance list that grows a row every time a test
  * fails is a mess somebody has to clean by hand.
+ *
+ * Removing the instance is not enough on its own: core-api leaves its **root group** standing
+ * (Q-023), and that group lands in the sidebar of every superadmin page. So the teardown deletes
+ * that too, through core-api rather than through a screen -- it is cleanup, not behaviour under
+ * test.
  */
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
@@ -40,11 +46,24 @@ async function createInstance(page: Page, name: string): Promise<void> {
   await expect(main.getByRole("heading", { name, level: 1 })).toBeVisible();
 }
 
+/**
+ * Removes the instance through the screen, and then its root group through core-api.
+ *
+ * The second half is housekeeping, not behaviour: deleting an instance leaves its root group
+ * standing (Q-023), so a spec that only did the first half would add a group to every superadmin's
+ * sidebar on every run.
+ */
 async function deleteCurrentInstance(page: Page): Promise<void> {
   const main = page.getByRole("main");
+  const groupHref = await main
+    .getByRole("link", { name: "Open the root group" })
+    .getAttribute("href");
+
   await main.getByRole("button", { name: "Delete instance" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Delete instance" }).click();
   await expect(page).toHaveURL(/\/en\/admin\/instances$/);
+
+  if (groupHref) await deleteGroupIfPresent(groupHref.split("/").pop()!);
 }
 
 test("lists the instances with who runs them", async ({ page }) => {
@@ -114,7 +133,6 @@ test("creates an instance, opens and closes it, and deletes it again", async ({ 
 
 test("adds a licence and removes it", async ({ page }) => {
   await signIn(page, SUPERADMIN, "/en/admin/instances");
-  const main = page.getByRole("main");
   const name = `e2e licence ${Date.now()}`;
 
   await createInstance(page, name);

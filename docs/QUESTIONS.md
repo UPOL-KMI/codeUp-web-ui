@@ -357,3 +357,41 @@ consequence rather than an oversight.
 **What would close it.** `$req->getPost("isValid") !== null` instead of a truthiness test. That is
 an API change, which this repo may not make (constraint 1). Nothing is blocked on it: a licence
 that should stop counting can be deleted, and deleting works.
+
+---
+
+## Q-023: Deleting an instance orphans its root group (AD-004)
+
+`InstancesPresenter::actionDeleteInstance` removes the instance row and stops:
+
+```php
+$instance = $this->instances->findOrThrow($id);
+$this->instances->remove($instance);
+$this->instances->flush();
+```
+
+The instance's **root group** -- created by `actionCreateInstance` from the name and description,
+and the ancestor of everything in that instance -- is not touched. It survives with no instance to
+belong to, keeps appearing in `GET /v1/groups`, and keeps appearing in the sidebar of whoever
+administers it, which for an instance created through this app is the superadmin who created it.
+
+**Found by looking at a sidebar.** AD-004's e2e spec creates an instance, uses it and deletes it;
+after four runs the "My teaching" section listed eight groups named `e2e instance …` and
+`e2e licence …` while the instance list showed one row. All eight were removable through
+`DELETE /v1/groups/{id}`, so nothing was wedged -- they were simply garbage nobody had a reason to
+look for.
+
+**What this app does about it.** Two things, neither of them "delete the group as well". The
+confirmation on the delete control now says what actually happens -- the instance goes, the root
+group stays, remove it among the groups if you want it gone -- because the obvious reading is that
+an instance takes its world with it, and being wrong about that in a destructive dialog is worse
+than the wart itself. And the e2e spec removes the orphan through core-api in its teardown
+(`deleteGroupIfPresent`), the third helper of that shape for the third reason of this kind.
+
+Deleting the group from the app as an unannounced second call was rejected: removing a group tree
+is a far larger destructive act than the endpoint being invoked promises, and a two-call delete can
+half-succeed.
+
+**What would close it.** Cascading the root group's removal, or refusing to delete an instance
+whose root group still has children. Both are API changes, which this repo may not make
+(constraint 1).

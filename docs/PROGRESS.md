@@ -875,6 +875,39 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     guard `account.spec.ts` grew a few hours earlier.
   - _Observations:_ **245 e2e tests pass** (239 before), 170 unit tests.
 
+- **[2026-09-02 16:40] AD-006:** The services underneath, and the one switch that stops them.
+  `app/[locale]/(app)/admin/page.tsx`, `lib/api/server.ts`, `lib/actions/server.ts`,
+  `components/admin/{broker-panel,async-jobs}.tsx`. The `/admin` placeholder is gone.
+  - **_"Runtime environments, hardware groups" was wrong, and this time there is nothing behind
+    it._** The legacy `ServerManagement` page contains neither -- it is the **ZeroMQ broker** and
+    **core-api's background job queue**, two panels. And neither runtime environments nor hardware
+    groups have an administration screen anywhere in that app: grepped, not assumed. They are
+    read-only vocabularies that surface in the exercise configuration editor (T-009) and the limits
+    editor (T-010), both already built. So there is nothing to port and no gap to file (DEC-114).
+    Second backlog note this session that described a screen nobody had opened.
+  - _Two details the screen decides for itself._ **Only the freeze that applies is offered** --
+    `is-frozen` arrives in the statistics, so rendering both buttons would be offering an action
+    that cannot apply. And **the statistic names are core-api's, untranslated**: it answers a flat
+    map with no schema, and a table that renamed `idle-worker-count` into prose would go stale the
+    first time the broker grows a counter.
+  - _The freeze confirmation says what freezing costs_ rather than asking whether the reader is
+    sure: evaluation stops for the whole deployment, students can still submit, and nobody is told
+    why. **The e2e spec deliberately never confirms it** -- a test that died between freezing and
+    unfreezing would leave the deployment swallowing submissions for every spec after it. It
+    asserts the dialog and cancels.
+  - _An empty job table means two things, and Ping is how they are told apart._ An idle deployment
+    and a dead async handler look identical; a ping is an empty job whose only purpose is to come
+    back finished. That one **is** exercised end to end.
+  - **_Found by looking at a sidebar: deleting an instance orphans its root group_** (Q-023).
+    `actionDeleteInstance` removes the instance row and stops, so AD-004's spec had quietly left
+    eight groups named `e2e instance …` in the superadmin's "My teaching" list across four runs,
+    while the instance list showed one row. Two consequences, and neither is "delete the group
+    too": the delete confirmation now says what actually happens, because the obvious reading is
+    wrong and being wrong about that in a destructive dialog is worse than the wart; and the spec
+    removes the orphan through core-api in its teardown, the third `deleteXIfPresent` helper for
+    the third reason of this kind. The eight strays were cleared from the deployment.
+  - _Observations:_ **249 e2e tests pass** (245 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3395,11 +3428,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   its password, its sessions and its logins) and AD-003 (signing in as its owner). **Everything
   about a person is now built**, and so is everything about an **instance**: AD-004, AD-005 and
   AD-008 closed together as two screens, because core-api's "edit instance" is one boolean and its
-  licences belong on the same page (DEC-113). The `users`, `userSwitching`, `instances` and
-  `licences` rows in `INVENTORY.md` are all closed.
-- **Next ticket:** AD-006 -- server management (runtime environments and hardware groups), which is
-  the `/admin` placeholder the sidebar has linked to since D-014, and then AD-007 (system
-  messages). **Every
+  licences belong on the same page (DEC-113). **AD-006** closed the `/admin` placeholder with what
+  that page actually is -- the broker and the background jobs, not the runtime environments the
+  backlog promised (DEC-114). The `users`, `userSwitching`, `instances`, `licences`, `broker` and
+  `asyncJobs` rows in `INVENTORY.md` are all closed.
+- **Next ticket:** AD-007 -- system messages, the last ticket of the Admin phase and the last
+  placeholder page in the sidebar. **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3415,7 +3449,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   AD-008**, which filed **Q-022** on the way: core-api's licence "validity switch" can be switched
   one way only -- `isValid: false` is read as "not provided" and ignored. A revoke button was built
   on the strength of the published field and deleted when the spec caught it doing nothing, which
-  is also the explanation for the legacy app's read-only column.
+  is also the explanation for the legacy app's read-only column. And **AD-006**, which filed
+  **Q-023**: deleting an instance orphans its root group, which is how eight stray groups had got
+  into the superadmin's sidebar without anybody noticing.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will
@@ -3432,7 +3468,10 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   blocked on it — deleting an address twice is a rare thing to want — and the workaround is to
   change the address first. **Q-022 is a second one of the same kind:** a licence's `isValid` flag
   can be switched on and never off, because the presenter tests the posted value for truthiness.
-  Nothing is blocked on it either — an unwanted licence can be deleted.
+  Nothing is blocked on it either — an unwanted licence can be deleted. **Q-023 is a third:**
+  deleting an instance leaves its root group behind, orphaned and still listed. Nothing is blocked
+  on that one either — the group can be deleted where groups are deleted, and the app's own
+  confirmation now says so instead of promising a cascade that does not happen.
 
 - **Known environment limitation (not a code bug):** this dev machine cannot produce real pass/fail
   evaluation results (cgroup v2 only, DEC-031). As of S-015 this is no longer a footnote: the

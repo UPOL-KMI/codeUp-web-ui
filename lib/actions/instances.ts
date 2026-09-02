@@ -70,8 +70,16 @@ export async function setInstanceOpen(
 }
 
 /**
- * Deleting an instance takes its root group -- and therefore every group, assignment and solution
- * beneath it -- with it. The confirmation says so; there is nothing here that can soften it.
+ * **Deleting an instance does not delete anything under it.** `actionDeleteInstance` removes the
+ * instance row and stops -- the root group survives, orphaned, and goes on appearing in the group
+ * list and in the sidebar of whoever administers it (Q-023, found by deleting one and watching
+ * eight of them pile up). The confirmation says that, because the obvious reading -- that an
+ * instance takes its world with it -- is wrong and would be a bad thing to be wrong about.
+ *
+ * This action deliberately does **not** delete the group as well. Removing a group tree is a far
+ * larger destructive act than the endpoint being called promises, and doing it as an unannounced
+ * second call could half-succeed; the screen points at the group instead, so whoever wants it gone
+ * removes it where groups are removed.
  */
 export async function deleteInstance(instanceId: string): Promise<ActionResult<{ id: string }>> {
   try {

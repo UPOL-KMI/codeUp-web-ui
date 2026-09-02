@@ -2784,7 +2784,7 @@
       "closed": "Instance je zavřená.",
       "updateFailed": "Instanci se nepodařilo změnit.",
       "delete": "Smazat instanci",
-      "confirmDelete": "{name} zmizí a s ní i její kořenová skupina — se všemi skupinami, zadáními a řešeními pod ní. Zpátky to nejde.",
+      "confirmDelete": "{name} bude odstraněna. Její kořenová skupina ne — core-api ji nechá stát, osiřelou a dál vypsanou mezi skupinami. Pokud ji chcete pryč, smažte ji potom tam.",
       "deleted": "{name} je pryč.",
       "deleteFailed": "Instanci se nepodařilo smazat.",
       "cannotDeleteOwn": "Do této instance patří váš vlastní účet, takže tu není nabízena ke smazání."
@@ -2829,6 +2829,60 @@
       "deleteFailed": "Instanci se nepodařilo smazat.",
       "licenceFailed": "Licenci se nepodařilo uložit.",
       "licenceDeleteFailed": "Licenci se nepodařilo smazat."
+    }
+  },
+  "Server": {
+    "title": "Server",
+    "subtitle": "Služby na pozadí, na kterých tato instalace stojí.",
+    "broker": {
+      "title": "Vyhodnocovací broker",
+      "stateRunning": "Běží",
+      "stateFrozen": "Zmrazený",
+      "runningExplain": "Broker předává vyhodnocovací úlohy workerům, jak přicházejí.",
+      "frozenExplain": "Broker odmítá vyhodnocovací úlohy. Odevzdaná řešení se za ním hromadí a nikdo se nedozví proč.",
+      "refresh": "Načíst znovu",
+      "freeze": "Zmrazit broker",
+      "unfreeze": "Rozmrazit broker",
+      "confirmFreeze": "Vyhodnocování se zastaví pro celou instalaci, dokud broker někdo nerozmrazí. Studenti budou moci dál odevzdávat; nic se nevyhodnotí a nedozvědí se proč.",
+      "confirmUnfreeze": "Vyhodnocování se znovu rozběhne a projde i to, co se za zmrazeným brokerem nahromadilo.",
+      "frozen": "Broker je zmrazený.",
+      "unfrozen": "Broker zase běží.",
+      "freezeFailed": "Broker se nepodařilo zmrazit.",
+      "unfreezeFailed": "Broker se nepodařilo rozmrazit."
+    },
+    "jobs": {
+      "title": "Úlohy na pozadí",
+      "window": "Vše, co čeká, a vše, co doběhlo za posledních {minutes} minut.",
+      "none": "Nic nečeká a nic nedávno neběželo — což vypadá stejně, ať už je zpracování nečinné, nebo mrtvé. Zjistíte to pingem.",
+      "columns": {
+        "command": "Příkaz",
+        "created": "Vytvořeno",
+        "finished": "Dokončeno",
+        "state": "Stav",
+        "actions": "Akce"
+      },
+      "state": {
+        "waiting": "Čeká",
+        "scheduled": "Naplánováno",
+        "running": "Běží",
+        "done": "Hotovo",
+        "failed": "Selhalo"
+      },
+      "assignment": "Zadání, ke kterému patří",
+      "refresh": "Načíst znovu",
+      "ping": "Pingnout zpracování",
+      "pinged": "Ping byl zařazen do fronty. Načtěte znovu a uvidíte, jestli se vrátil.",
+      "pingFailed": "Zpracování se nepodařilo pingnout.",
+      "abort": "Přerušit",
+      "confirmAbort": "Úloha „{command}“ se zastaví a už nepokračuje. Co rozdělala, zůstane rozdělané.",
+      "aborted": "Úloha byla přerušena.",
+      "abortFailed": "Úlohu se nepodařilo přerušit."
+    },
+    "errors": {
+      "freezeFailed": "Broker se nepodařilo zmrazit.",
+      "unfreezeFailed": "Broker se nepodařilo rozmrazit.",
+      "pingFailed": "Zpracování se nepodařilo pingnout.",
+      "abortFailed": "Úlohu se nepodařilo přerušit."
     }
   }
 }

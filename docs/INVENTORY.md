@@ -54,7 +54,7 @@
 | `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                                     | done   |
 | `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                                         | todo   |
 | `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                                                 | todo   |
-| `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin/server`                                            | todo   |
+| `app/server`                                                               | ServerManagement           | true  | SERVER_MANAGEMENT_URI                       | `/admin`                                                   | done   |
 | `admin/instances`                                                          | Instances                  | true  | ADMIN_INSTANCES_URI                         | `/admin/instances`                                         | done   |
 | `admin/instances/:instanceId/edit`                                         | EditInstances              | true  | ADMIN_EDIT_INSTANCE_URI_FACTORY             | merged into `/admin/instances/[id]` (DEC-113)              | done   |
 | `forgotten-password/change`                                                | ChangePassword             | —     | —                                           | `/forgot-password/change`                                  | done   |
@@ -69,10 +69,10 @@
 | ------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------- | ------ |
 | `app`                          | Global app state (locale, title)                           | Server Components + `params.lang`                              | todo   |
 | `assignments`                  | Assignment CRUD, detail, edit                              | `assignments/[id]`                                             | todo   |
-| `asyncJobs`                    | Async job polling (evaluation progress)                    | Server Actions + WebSocket/polling                             | todo   |
+| `asyncJobs`                    | Async job polling (evaluation progress)                    | `admin` (list, ping, abort)                                    | done   |
 | `auth`                         | Login, logout, token refresh, takeover                     | BFF + httpOnly cookies                                         | done   |
 | `boxes`                        | Box component (UI primitive)                               | shadcn/ui Card                                                 | todo   |
-| `broker`                       | Broker communication (evaluation)                          | Server Actions                                                 | todo   |
+| `broker`                       | Broker communication (evaluation)                          | `admin` (stats, freeze/unfreeze)                               | done   |
 | `canSubmit`                    | Permission: can user submit to assignment                  | Server Component data fetching                                 | todo   |
 | `comments`                     | Discussion threads on exercises, assignments and solutions | `exercises/[id]`, `assignments/[id]`, `solutions/[id]` (T-022) | done   |
 | `emailVerification`            | Email verification flow                                    | `/email-verification`                                          | done   |

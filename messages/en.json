@@ -2784,7 +2784,7 @@
       "closed": "The instance is closed.",
       "updateFailed": "The instance could not be changed.",
       "delete": "Delete instance",
-      "confirmDelete": "{name} goes, and so does its root group — with every group, assignment and solution below it. There is no undo.",
+      "confirmDelete": "{name} is removed. Its root group is not — core-api leaves it behind, orphaned, still listed among the groups. Remove it there afterwards if you want it gone.",
       "deleted": "{name} is gone.",
       "deleteFailed": "The instance could not be deleted.",
       "cannotDeleteOwn": "This is the instance your own account belongs to, so it is not offered for deletion here."
@@ -2829,6 +2829,60 @@
       "deleteFailed": "The instance could not be deleted.",
       "licenceFailed": "The licence could not be saved.",
       "licenceDeleteFailed": "The licence could not be deleted."
+    }
+  },
+  "Server": {
+    "title": "Server",
+    "subtitle": "The backend services this deployment runs on.",
+    "broker": {
+      "title": "Evaluation broker",
+      "stateRunning": "Running",
+      "stateFrozen": "Frozen",
+      "runningExplain": "The broker is handing evaluation jobs to workers as they arrive.",
+      "frozenExplain": "The broker is refusing evaluation jobs. Submissions are piling up behind it and nobody is being told why.",
+      "refresh": "Refresh",
+      "freeze": "Freeze the broker",
+      "unfreeze": "Unfreeze the broker",
+      "confirmFreeze": "Evaluation stops for the whole deployment until somebody unfreezes it. Students can still submit; nothing will be evaluated, and they will not be told why.",
+      "confirmUnfreeze": "Evaluation starts again, and whatever queued up while the broker was frozen goes through.",
+      "frozen": "The broker is frozen.",
+      "unfrozen": "The broker is running again.",
+      "freezeFailed": "The broker could not be frozen.",
+      "unfreezeFailed": "The broker could not be unfrozen."
+    },
+    "jobs": {
+      "title": "Background jobs",
+      "window": "Everything still pending, and anything finished in the last {minutes} minutes.",
+      "none": "Nothing is queued and nothing has run recently — which looks the same whether the handler is idle or dead. Ping it to find out.",
+      "columns": {
+        "command": "Command",
+        "created": "Created",
+        "finished": "Finished",
+        "state": "State",
+        "actions": "Actions"
+      },
+      "state": {
+        "waiting": "Waiting",
+        "scheduled": "Scheduled",
+        "running": "Running",
+        "done": "Done",
+        "failed": "Failed"
+      },
+      "assignment": "The assignment it belongs to",
+      "refresh": "Refresh",
+      "ping": "Ping the handler",
+      "pinged": "A ping job was queued. Refresh to see whether it came back.",
+      "pingFailed": "The handler could not be pinged.",
+      "abort": "Abort",
+      "confirmAbort": "The job “{command}” stops and does not resume. Whatever it was part-way through stays part-way through.",
+      "aborted": "The job was aborted.",
+      "abortFailed": "The job could not be aborted."
+    },
+    "errors": {
+      "freezeFailed": "The broker could not be frozen.",
+      "unfreezeFailed": "The broker could not be unfrozen.",
+      "pingFailed": "The handler could not be pinged.",
+      "abortFailed": "The job could not be aborted."
     }
   }
 }

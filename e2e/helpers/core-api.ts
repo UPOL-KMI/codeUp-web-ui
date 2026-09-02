@@ -53,6 +53,23 @@ export async function deleteAssignmentIfPresent(assignmentId: string): Promise<v
   }).catch(() => undefined);
 }
 
+/**
+ * Delete a group directly, for a spec's own cleanup (AD-004).
+ *
+ * Third of its kind, and the reason is core-api's rather than a spec's carelessness: deleting an
+ * **instance** does not delete its root group (Q-023), so a spec that creates an instance and
+ * removes it again still leaves a group behind -- listed among the groups and, because the creator
+ * administers it, in the sidebar of every superadmin page. Eight of them had accumulated before
+ * anybody looked at a sidebar.
+ */
+export async function deleteGroupIfPresent(groupId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/groups/${groupId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 async function coreApiToken(): Promise<string> {
   const response = await fetch(`${coreApiBase}/login`, {
     method: "POST",
