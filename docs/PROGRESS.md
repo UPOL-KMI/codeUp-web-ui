@@ -430,6 +430,32 @@
   - _Observations:_ **197 e2e tests pass** (193 before), **99 unit tests** (76 before), both locales
     rendered and checked.
 
+- **[2026-09-02 06:05] T-010:** An exercise's resource limits -- which machines, and how much on
+  them. `app/[locale]/(app)/exercises/[exerciseId]/edit-limits/page.tsx`,
+  `lib/exercise-config/limits.ts`, `lib/api/exercise-limits.ts`, `lib/actions/exercise-limits.ts`,
+  `components/exercises/config/{limits-form,hardware-groups-form}.tsx`.
+  - _Two questions in order, and the first is the one that unblocks an exercise._ A hardware group
+    is core-api's description of a class of worker, and an exercise with none of them is
+    `@no-hwgroups` -- the last of the four reasons a freshly created exercise calls itself broken,
+    and now answerable from this app. T-009 answered the other three.
+  - **_Which of the two time measures an exercise uses is inferred, then offered as a switch._**
+    core-api stores either `wall-time` or `cpu-time` and never says which the exercise _means_, so
+    the legacy heuristic is reproduced -- whichever key more limits carry, processor time on a tie
+    -- and then made a visible control, because flipping it rewrites every cell into the other key.
+    Reading also falls back to the _other_ key when only it is set, so a limit written the other
+    way is shown rather than read as zero and lost on the next save.
+  - **_The one form in this app that is not React Hook Form_** (DEC-104). Its fields are a grid
+    whose shape is data, its three copy controls each write a whole row, column or grid, and the
+    thing that actually gets a save refused is not any single cell but the **sum of a column** -- a
+    machine caps the time of one test and of the whole exercise in one language. So validation is a
+    pure function over the whole grid, shown as marked fields plus a running total per language,
+    and re-run in the Server Action against ceilings read fresh rather than taken from the client.
+  - _The tightest ceiling wins_ where an exercise runs on several machines, because the limits have
+    to hold on all of them. This deployment has exactly one hardware group, so the combining is
+    unit-tested rather than seen.
+  - _The exercise screen and the configuration screen link here_; the limits screen links back.
+  - _Observations:_ **200 e2e tests pass** (197 before), **116 unit tests** (99 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -2933,17 +2959,19 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   T-004 turned out to have shipped with S-013, T-005 (one student's whole course), T-007 (the
   matrix as a downloadable file), T-019 (the submission-failure queue), T-020 + T-021 (the exercise
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
-  its basic settings). **Exercise authoring has begun**, and T-009 has now built its configuration
-  editor -- the gate the rest of that block sits behind -- leaving the limits, the reference
-  solutions and the pipeline screens (T-010..T-016), plus the two tickets T-009 filed for the parts
-  of its own screen it does not own (T-024, T-025).
+  its basic settings). **Exercise authoring has begun**, and T-009 and T-010 have now built the
+  configuration and limits editors between them -- **every reason core-api gives for a new exercise
+  being broken can now be answered from this app** -- leaving the reference solutions and the
+  pipeline screens (T-011..T-016), plus the two tickets T-009 filed for the parts of its own screen
+  it does not own (T-024, T-025).
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
   A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-010 -- the exercise limits editor, which is per-environment and per-hardware-
-  group, and is the `@no-hwgroups` half of what still keeps a freshly configured exercise broken.
+- **Next ticket:** T-023 -- the exercise's own files, its administrators and forking it. Filed with
+  T-008 and made **load-bearing** by T-009: the configuration editor points every file field at an
+  exercise's attached files, and nothing in this app can attach one yet.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Four parity gaps are filed and open:** T-022 (the

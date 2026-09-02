@@ -88,6 +88,12 @@ export default async function EditExerciseConfigPage({
             {t("settings")}
           </Link>
           <Link
+            href={`/exercises/${exerciseId}/edit-limits`}
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("limits")}
+          </Link>
+          <Link
             href={`/exercises/${exerciseId}`}
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >

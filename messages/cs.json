@@ -906,6 +906,7 @@
     "untitled": "Nepojmenovaná úloha",
     "backToCatalog": "Zpět do katalogu",
     "configure": "Testy a vyhodnocení",
+    "limits": "Limity spuštění",
     "text": "Co má student udělat",
     "noText": "Tato úloha zatím nemá zadání v žádném jazyce.",
     "otherLocales": "Napsáno také v: {locales}.",
@@ -1053,6 +1054,7 @@
   "ExerciseConfig": {
     "title": "Testy a vyhodnocení",
     "settings": "Základní nastavení",
+    "limits": "Limity spuštění",
     "backToExercise": "Zpět na úlohu",
     "archivedNotice": "Tato úloha je archivovaná, takže její konfigurace je jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
     "readOnlyNotice": "Tuto konfiguraci si můžete přečíst, ale nemůžete ji měnit.",
@@ -1174,6 +1176,60 @@
       "configFailed": "Konfiguraci se nepodařilo uložit.",
       "noEnvironments": "Nejdřív zvolte alespoň jeden jazyk.",
       "advancedRefused": "Tato úloha je poskládaná z ručně vybraných pipeline, což tento formulář neumí vyjádřit. Zůstala, jak byla."
+    }
+  },
+  "ExerciseLimits": {
+    "title": "Limity spuštění",
+    "configure": "Testy a vyhodnocení",
+    "backToExercise": "Zpět na úlohu",
+    "archivedNotice": "Tato úloha je archivovaná, takže její limity jsou jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
+    "readOnlyNotice": "Tyto limity si můžete přečíst, ale nemůžete je měnit.",
+    "hardwareGroups": {
+      "title": "Stroje",
+      "explain": "Na jaké třídě strojů má úloha běžet. Hardwarová skupina popisuje, co stroj má, a její stropy jsou to, vůči čemu se limity níže měří. Úlohu bez jediné skupiny nelze zadat.",
+      "ceilings": "Nejvýš {memory, number} KiB paměti, {cpu, number} s procesorového času nebo {wall, number} s reálného času na test.",
+      "noneSelected": "Není zvolen žádný stroj, takže tuto úlohu nelze zadat.",
+      "save": "Uložit stroje",
+      "saving": "Ukládám…",
+      "saved": "Stroje uloženy.",
+      "saveFailed": "Stroje se nepodařilo uložit.",
+      "saveWarning": "Odebrání stroje zahodí limity, které pro něj byly nastavené."
+    },
+    "form": {
+      "title": "Limity",
+      "explain": "Kolik smí každý test spotřebovat, za každý jazyk zvlášť. Řešení, které limit překročí, ten test neprojde.",
+      "unavailable": "Zatím není pro co limity nastavovat:",
+      "noTests": "úloha nemá žádné testy",
+      "noEnvironments": "není zvolen žádný jazyk",
+      "noHardwareGroups": "není zvolen žádný stroj",
+      "preciseTime": "Měřit procesorový čas",
+      "preciseTimeExplain": "Vypnuto se čas testu měří na hodinách, včetně čekání. Procesorový čas je mezi běhy stabilnější, reálný čas je to, co zažije student. Přepnutí přepíše všechny limity níže na druhou míru.",
+      "ceilings": "Tento stroj dovolí nejvýš {memory, number} KiB na test, {time, number} s na test a {total, number} s na celou úlohu v jednom jazyce.",
+      "test": "Test",
+      "memory": "Paměť",
+      "time": "Čas",
+      "memoryOf": "Paměť pro {test} v {environment}, v KiB",
+      "timeOf": "Čas pro {test} v {environment}, v sekundách",
+      "copyRow": "Zkopírovat tuto buňku do všech jazyků tohoto testu",
+      "copyRowShort": "→ všechny jazyky",
+      "copyColumn": "Zkopírovat tuto buňku do všech testů v tomto jazyce",
+      "copyColumnShort": "↓ všechny testy",
+      "copyAll": "Zkopírovat tuto buňku všude",
+      "copyAllShort": "všude",
+      "totalTime": "Celkový čas",
+      "totalTimeValue": "{total} s z {max} s",
+      "outOfRange": "Některé limity jsou mimo to, co stroj dovolí. Dotčená pole jsou označená.",
+      "save": "Uložit limity",
+      "saving": "Ukládám…",
+      "saved": "Limity uloženy.",
+      "saveFailed": "Limity se nepodařilo uložit."
+    },
+    "errors": {
+      "invalid": "Tyto limity ReCodEx uložit neumí.",
+      "outOfRange": "Některé limity jsou mimo to, co stroj dovolí.",
+      "unknownHardwareGroup": "Tato úloha už na tom stroji neběží. Načtěte stránku znovu.",
+      "hardwareGroupsFailed": "Stroje se nepodařilo uložit.",
+      "limitsFailed": "Limity se nepodařilo uložit."
     }
   },
   "Pipelines": {

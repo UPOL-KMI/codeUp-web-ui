@@ -906,6 +906,7 @@
     "untitled": "Unnamed exercise",
     "backToCatalog": "Back to the catalog",
     "configure": "Tests and evaluation",
+    "limits": "Execution limits",
     "text": "What the student is asked to do",
     "noText": "This exercise has no text in any language yet.",
     "otherLocales": "Also written in: {locales}.",
@@ -1053,6 +1054,7 @@
   "ExerciseConfig": {
     "title": "Tests and evaluation",
     "settings": "Basic settings",
+    "limits": "Execution limits",
     "backToExercise": "Back to the exercise",
     "archivedNotice": "This exercise is archived, so its configuration is read-only. Unarchive it on the settings screen to change anything.",
     "readOnlyNotice": "You may read this configuration but not change it.",
@@ -1174,6 +1176,60 @@
       "configFailed": "The configuration could not be saved.",
       "noEnvironments": "Select at least one language first.",
       "advancedRefused": "This exercise is configured from hand-picked pipelines, which this form cannot express. It was left as it is."
+    }
+  },
+  "ExerciseLimits": {
+    "title": "Execution limits",
+    "configure": "Tests and evaluation",
+    "backToExercise": "Back to the exercise",
+    "archivedNotice": "This exercise is archived, so its limits are read-only. Unarchive it on the settings screen to change them.",
+    "readOnlyNotice": "You may read these limits but not change them.",
+    "hardwareGroups": {
+      "title": "Machines",
+      "explain": "Which class of worker this exercise is meant to run on. A hardware group describes what a machine has, and its ceilings are what the limits below are measured against. An exercise with none cannot be assigned.",
+      "ceilings": "At most {memory, number} KiB of memory, {cpu, number} s of processor time or {wall, number} s of elapsed time per test.",
+      "noneSelected": "No machine is selected, so this exercise cannot be assigned.",
+      "save": "Save machines",
+      "saving": "Saving…",
+      "saved": "Machines saved.",
+      "saveFailed": "The machines could not be saved.",
+      "saveWarning": "Removing a machine discards the limits set for it."
+    },
+    "form": {
+      "title": "Limits",
+      "explain": "How much each test may use, per language. A solution that runs past either limit fails that test.",
+      "unavailable": "There is nothing to set limits for yet:",
+      "noTests": "the exercise has no tests",
+      "noEnvironments": "no language is selected",
+      "noHardwareGroups": "no machine is selected",
+      "preciseTime": "Measure processor time",
+      "preciseTimeExplain": "Off, the time a test takes is measured on the clock, waiting included. Processor time is steadier between runs; elapsed time is what a student experiences. Switching rewrites every limit below into the other measure.",
+      "ceilings": "This machine allows at most {memory, number} KiB per test, {time, number} s per test and {total, number} s for the whole exercise in one language.",
+      "test": "Test",
+      "memory": "Memory",
+      "time": "Time",
+      "memoryOf": "Memory for {test} in {environment}, in KiB",
+      "timeOf": "Time for {test} in {environment}, in seconds",
+      "copyRow": "Copy this cell to every language of this test",
+      "copyRowShort": "→ all languages",
+      "copyColumn": "Copy this cell to every test in this language",
+      "copyColumnShort": "↓ all tests",
+      "copyAll": "Copy this cell to every test and language",
+      "copyAllShort": "everywhere",
+      "totalTime": "Total time",
+      "totalTimeValue": "{total} s of {max} s",
+      "outOfRange": "Some limits are outside what this machine allows. The fields concerned are marked.",
+      "save": "Save limits",
+      "saving": "Saving…",
+      "saved": "Limits saved.",
+      "saveFailed": "The limits could not be saved."
+    },
+    "errors": {
+      "invalid": "These limits are not something ReCodEx can store.",
+      "outOfRange": "Some limits are outside what the machine allows.",
+      "unknownHardwareGroup": "This exercise no longer runs on that machine. Reload the page.",
+      "hardwareGroupsFailed": "The machines could not be saved.",
+      "limitsFailed": "The limits could not be saved."
     }
   },
   "Pipelines": {
