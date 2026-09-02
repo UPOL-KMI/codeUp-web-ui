@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -11,6 +12,8 @@ import { ClassProgress } from "@/components/assignments/class-progress";
 import { ExerciseSyncNotice } from "@/components/assignments/exercise-sync-notice";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
+import { ErrorBoundary } from "@/components/state/error-boundary";
+import { TableSkeleton } from "@/components/state/skeleton";
 import { Badge } from "@/components/status/badge";
 
 export async function generateMetadata({
@@ -39,21 +42,13 @@ export default async function AssignmentPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, assignment] = await Promise.all([
+  const [t, tComments, status, assignment] = await Promise.all([
     getTranslations("Assignment"),
     getTranslations("Comments"),
+    getTranslations("Status"),
     getAssignmentDetail(assignmentId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/assignments/${assignmentId}`, locale);
-
-  const classProgress =
-    assignment.can.viewAssignmentSolutions && assignment.groupId
-      ? await getAssignmentSolverSummary(
-          assignmentId,
-          assignment.groupId,
-          assignment.maxPointsFirst,
-        )
-      : null;
 
   return (
     <PageShell
@@ -95,20 +90,49 @@ export default async function AssignmentPage({
       <div className="flex flex-col gap-8">
         <ExerciseSyncNotice assignment={assignment} />
         <AssignmentDetailView assignment={assignment} />
-        {classProgress && (
-          <ClassProgress
-            assignmentId={assignmentId}
-            solvers={classProgress.solvers}
-            summary={classProgress.summary}
-          />
+        {/* The hint decides *whether* this section exists, above the boundary; only its fetch
+            streams. Moving the gate below it would mean claiming the reader may see this before
+            knowing that they may. */}
+        {assignment.can.viewAssignmentSolutions && assignment.groupId && (
+          <ErrorBoundary>
+            <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+              <ClassProgressSection
+                assignmentId={assignmentId}
+                groupId={assignment.groupId}
+                maxPoints={assignment.maxPointsFirst}
+              />
+            </Suspense>
+          </ErrorBoundary>
         )}
 
-        <Discussion
-          threadId={assignmentId}
-          publicMeans={tComments("audience.assignment")}
-          canModerate={assignment.can.update === true}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+            <Discussion
+              threadId={assignmentId}
+              publicMeans={tComments("audience.assignment")}
+              canModerate={assignment.can.update === true}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </PageShell>
   );
+}
+
+/**
+ * The class progress (S-013), reading its own summary so that the whole-group roster behind it
+ * holds back only this section rather than every byte of the page.
+ */
+async function ClassProgressSection({
+  assignmentId,
+  groupId,
+  maxPoints,
+}: {
+  assignmentId: string;
+  groupId: string;
+  maxPoints: number;
+}) {
+  const { solvers, summary } = await getAssignmentSolverSummary(assignmentId, groupId, maxPoints);
+
+  return <ClassProgress assignmentId={assignmentId} solvers={solvers} summary={summary} />;
 }

@@ -3,7 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
-import type { EvaluationInput } from "@/lib/status/evaluation";
+import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
 
@@ -164,7 +164,7 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     failure: solution.lastSubmission?.failure ?? null,
     plagiarismBatchId: solution.plagiarism ?? null,
     status: {
-      lastSubmission: solution.lastSubmission,
+      lastSubmission: evaluationInputOf(solution.lastSubmission),
       maxPoints: solution.maxPoints,
       accepted: solution.accepted,
     },

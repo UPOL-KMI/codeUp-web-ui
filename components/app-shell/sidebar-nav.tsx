@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
-import {
-  CommandPalette,
-  CommandPaletteTrigger,
-} from "@/components/command-palette/command-palette";
 
 import { LocaleSwitch } from "./locale-switch";
+
+/** cmdk and the Radix dialog it renders through are ~34 KB of JS that most sessions never open, so
+ *  they load on the first Ctrl-K or click rather than on every authenticated page. */
+const CommandPalette = dynamic(
+  () => import("@/components/command-palette/command-palette").then((mod) => mod.CommandPalette),
+  { ssr: false },
+);
 
 /**
  * The interactive half of the app shell (D-014): collapse, the mobile drawer, and the active-link
@@ -38,6 +42,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteRequested, setPaletteRequested] = useState(false);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   // Only the exact route is *the* current page; an ancestor whose subtree the reader is inside is
@@ -45,7 +50,26 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const currentPage = (href: string) =>
     pathname === href ? "page" : isActive(href) ? "true" : undefined;
 
-  const openPalette = () => setPaletteOpen(true);
+  const openPalette = () => {
+    setPaletteRequested(true);
+    setPaletteOpen(true);
+  };
+
+  // Cmd/Ctrl-K has to be listened for here, in the half that is always loaded: `CommandPalette`
+  // carries the same listener, but it does not exist until this one pulls its chunk in. It is
+  // dropped the moment the palette is mounted -- two listeners would toggle twice and cancel out.
+  useEffect(() => {
+    if (paletteRequested) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setPaletteRequested(true);
+        setPaletteOpen(true);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [paletteRequested]);
 
   const nav = (
     <nav aria-label={t("primary")} className="flex flex-col gap-5 p-4">
@@ -87,7 +111,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
     <>
       {/* Mounted here rather than in `AppShell`: this is the shell's only always-mounted client
           component, so it is the one that can hold the state both triggers below share. */}
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+      {paletteRequested && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
 
       {/* Mobile: a disclosure button and a drawer. Brief §9 requires phone width to work --
           "students check deadlines on phones" -- and a permanently-visible sidebar would eat most
@@ -102,7 +126,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         >
           {mobileOpen ? t("closeMenu") : t("openMenu")}
         </button>
-        <CommandPaletteTrigger onOpen={openPalette} className="px-3 py-1.5" />
+        <PaletteTrigger onOpen={openPalette} className="px-3 py-1.5" />
       </div>
 
       <aside
@@ -114,10 +138,27 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         {/* Hidden below md, where the copy in the bar above is reachable without opening the
             drawer this sits inside. */}
         <div className="hidden px-4 pt-4 md:block">
-          <CommandPaletteTrigger onOpen={openPalette} className="w-full px-2 py-1.5 text-left" />
+          <PaletteTrigger onOpen={openPalette} className="w-full px-2 py-1.5 text-left" />
         </div>
         {nav}
       </aside>
     </>
+  );
+}
+
+/** Deliberately not exported from `command-palette.tsx` and imported: a static import of anything
+ *  from that module puts it -- and cmdk with it -- back in this always-loaded chunk, which is the
+ *  whole cost the dynamic boundary above exists to defer. */
+function PaletteTrigger({ onOpen, className }: { onOpen: () => void; className: string }) {
+  const t = useTranslations("Palette");
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`rounded-md border border-input text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+    >
+      {t("open")}
+    </button>
   );
 }

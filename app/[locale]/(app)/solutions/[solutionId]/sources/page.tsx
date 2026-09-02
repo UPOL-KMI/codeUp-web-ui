@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -9,12 +10,14 @@ import {
   getSolutionFiles,
   MAX_DISPLAYED_FILES,
   type FileContent,
+  type SolutionFileEntry,
 } from "@/lib/api/solution-files";
 import { getSolutionDetail } from "@/lib/api/solution";
 import {
   getSolutionReview,
   groupCommentsByFile,
   visibleReviewComments,
+  type ReviewComment,
   type SolutionReview,
 } from "@/lib/api/solution-review";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
@@ -23,6 +26,8 @@ import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
+import { ErrorBoundary } from "@/components/state/error-boundary";
+import { TableSkeleton } from "@/components/state/skeleton";
 import { ReviewControls } from "@/components/solutions/review-controls";
 import { ReviewSummary } from "@/components/solutions/review-summary";
 import { fileAnchorId, SourceFile } from "@/components/solutions/source-file";
@@ -60,17 +65,22 @@ export default async function SolutionSourcesPage({
   params: Promise<{ solutionId: string }>;
 }) {
   const [{ solutionId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, solution, files, currentUser] = await Promise.all([
+  const [t, tComments, status, solution, files, currentUser] = await Promise.all([
     getTranslations("Sources"),
     getTranslations("Comments"),
+    getTranslations("Status"),
     getSolutionDetail(solutionId, locale),
     getSolutionFiles(solutionId),
     getCurrentUser(),
   ]);
-  const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}/sources`, locale);
+  // The review cannot join the fetch above: whether it may be asked for at all is that fetch's own
+  // answer, and asking without the hint is a refusal rather than an empty review.
+  const [breadcrumbs, review] = await Promise.all([
+    resolveBreadcrumbs(`/solutions/${solutionId}/sources`, locale),
+    solution.can.viewReview ? getSolutionReview(solutionId) : EMPTY_REVIEW,
+  ]);
 
   const canReview = solution.can.review === true;
-  const review = solution.can.viewReview ? await getSolutionReview(solutionId) : EMPTY_REVIEW;
   // A comment can only be added to a review that has been opened -- the legacy rule, and the one
   // that keeps "start a review" a deliberate act rather than a side effect of typing.
   const canComment = solution.can.addReviewComment === true && review.startedAt !== null;
@@ -82,18 +92,6 @@ export default async function SolutionSourcesPage({
   const canModerate = solution.groupPrimaryAdminIds.includes(currentUser.id);
 
   const displayable = canDisplayFiles(files);
-  const contents = displayable
-    ? await Promise.all(
-        files.map(async (file): Promise<{ content: FileContent | null; error?: string }> => {
-          try {
-            return { content: await getFileContent(file.fileId, file.entry) };
-          } catch (error) {
-            // One unreadable file must not cost the reader the other thirty-one.
-            return { content: null, error: error instanceof ApiError ? error.message : undefined };
-          }
-        }),
-      )
-    : [];
 
   return (
     <PageShell
@@ -183,34 +181,92 @@ export default async function SolutionSourcesPage({
                 ))}
               </nav>
             )}
-            <div className="flex flex-col gap-6">
-              {files.map((file, index) => (
-                <SourceFile
-                  key={file.name}
+            <ErrorBoundary>
+              <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+                <SourceFileList
                   solutionId={solutionId}
-                  file={file}
-                  content={contents[index]?.content ?? null}
-                  contentError={contents[index]?.error}
-                  comments={grouped.get(file.name) ?? []}
+                  files={files}
+                  comments={grouped}
                   canComment={canComment}
                   canModerate={canModerate}
                   currentUserId={currentUser.id}
                   reviewClosed={review.closedAt !== null}
                 />
-              ))}
-            </div>
+              </Suspense>
+            </ErrorBoundary>
           </>
         )}
 
         {/* The **solution's** thread, the same one its own screen shows -- the legacy app mounts
             it in both places, and the sources are where a remark about the code belongs. Not the
             same thing as S-018's inline review comments, which are attached to a line. */}
-        <Discussion
-          threadId={solutionId}
-          publicMeans={tComments("audience.solution")}
-          canModerate={solution.can.review === true}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+            <Discussion
+              threadId={solutionId}
+              publicMeans={tComments("audience.solution")}
+              canModerate={solution.can.review === true}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </PageShell>
+  );
+}
+
+/**
+ * The submitted files themselves: one content read per file, then one server-side highlighting
+ * pass per file. Both belong below a boundary rather than in the page -- everything above them
+ * (the review, its notices, the file index) is ready long before as much as a megabyte of source
+ * has been fetched and tokenised, and only this section has to wait for it.
+ *
+ * Which files these are, and whether they may be shown at all, is settled by the page above:
+ * `canDisplayFiles` and the comment grouping stay there and arrive as props.
+ */
+async function SourceFileList({
+  solutionId,
+  files,
+  comments,
+  canComment,
+  canModerate,
+  currentUserId,
+  reviewClosed,
+}: {
+  solutionId: string;
+  files: SolutionFileEntry[];
+  comments: Map<string, ReviewComment[]>;
+  canComment: boolean;
+  canModerate: boolean;
+  currentUserId: string;
+  reviewClosed: boolean;
+}) {
+  const contents = await Promise.all(
+    files.map(async (file): Promise<{ content: FileContent | null; error?: string }> => {
+      try {
+        return { content: await getFileContent(file.fileId, file.entry) };
+      } catch (error) {
+        // One unreadable file must not cost the reader the other thirty-one.
+        return { content: null, error: error instanceof ApiError ? error.message : undefined };
+      }
+    }),
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      {files.map((file, index) => (
+        <SourceFile
+          key={file.name}
+          solutionId={solutionId}
+          file={file}
+          content={contents[index]?.content ?? null}
+          contentError={contents[index]?.error}
+          comments={comments.get(file.name) ?? []}
+          canComment={canComment}
+          canModerate={canModerate}
+          currentUserId={currentUserId}
+          reviewClosed={reviewClosed}
+        />
+      ))}
+    </div>
   );
 }

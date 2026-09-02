@@ -411,14 +411,24 @@ export interface CalendarDeadline {
   kind: "first" | "second";
 }
 
+/** Constructing the formatter is the expensive half of ICU formatting and `dayOf` runs twice per
+ *  assignment below; keyed by zone rather than collapsed to one instance so a per-user zone still
+ *  works. */
+const dayFormatters = new Map<string, Intl.DateTimeFormat>();
+
 /** Buckets an instant into a calendar day **in the app's time zone**, never the server's. */
 function dayOf(unixSeconds: number, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(unixSeconds * 1000));
+  let formatter = dayFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    dayFormatters.set(timeZone, formatter);
+  }
+  return formatter.format(new Date(unixSeconds * 1000));
 }
 
 export async function getDeadlineCalendar(

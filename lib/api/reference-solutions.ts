@@ -25,8 +25,15 @@ export interface ReferenceSubmission {
   id: string;
   submittedAt: number;
   isDebug: boolean;
-  evaluation: SolutionEvaluation | null;
+  /** Only what `evaluationStatus()` reads -- a list row crosses into a client component by value,
+   *  and core-api's evaluation carries every test's judge log. */
+  evaluation: { initFailed: boolean; score: number } | null;
   failure: { type: string; description: string } | null;
+}
+
+/** The same submission with the run itself, which only the detail screen renders. */
+export interface ReferenceSubmissionDetail extends Omit<ReferenceSubmission, "evaluation"> {
+  evaluation: SolutionEvaluation | null;
 }
 
 export interface ReferenceSolutionRow {
@@ -71,12 +78,13 @@ export interface ReferenceSolutionFile {
 export interface ReferenceSolutionDetail extends ReferenceSolutionRow {
   exerciseId: string;
   files: ReferenceSolutionFile[];
-  submissions: ReferenceSubmission[];
+  lastSubmission: ReferenceSubmissionDetail | null;
+  submissions: ReferenceSubmissionDetail[];
 }
 
 function submissionOf(
   payload: ReferenceSolutionPayload["lastSubmission"],
-): ReferenceSubmission | null {
+): ReferenceSubmissionDetail | null {
   if (!payload) return null;
   return {
     id: payload.id,
@@ -84,6 +92,19 @@ function submissionOf(
     isDebug: payload.isDebug ?? false,
     evaluation: payload.evaluation ?? null,
     failure: payload.failure ?? null,
+  };
+}
+
+function rowSubmissionOf(
+  payload: ReferenceSolutionPayload["lastSubmission"],
+): ReferenceSubmission | null {
+  const submission = submissionOf(payload);
+  if (!submission) return null;
+  const { evaluation } = submission;
+  return {
+    ...submission,
+    evaluation:
+      evaluation === null ? null : { initFailed: evaluation.initFailed, score: evaluation.score },
   };
 }
 
@@ -124,7 +145,7 @@ function row(
       environments.get(solution.runtimeEnvironmentId) ?? solution.runtimeEnvironmentId,
     visibility: solution.visibility,
     submissionCount: solution.submissions?.length ?? 0,
-    lastSubmission: submissionOf(solution.lastSubmission),
+    lastSubmission: rowSubmissionOf(solution.lastSubmission),
     can: solution.permissionHints ?? {},
   };
 }
@@ -164,6 +185,7 @@ export async function getReferenceSolution(solutionId: string): Promise<Referenc
   return {
     ...row(solution, resolved.people, resolved.environments),
     exerciseId: solution.exerciseId,
+    lastSubmission: submissionOf(solution.lastSubmission),
     files: files.map((file) => ({ id: file.id, name: file.name, size: file.size })),
     // Newest first: a resubmitted solution's interesting run is the last one, and the older ones
     // are the history of what the exercise used to do to it.

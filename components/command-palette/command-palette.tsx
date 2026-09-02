@@ -184,23 +184,3 @@ export function CommandPalette({
     </Command.Dialog>
   );
 }
-
-export function CommandPaletteTrigger({
-  onOpen,
-  className,
-}: {
-  onOpen: () => void;
-  className: string;
-}) {
-  const t = useTranslations("Palette");
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className={`rounded-md border border-input text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
-    >
-      {t("open")}
-    </button>
-  );
-}

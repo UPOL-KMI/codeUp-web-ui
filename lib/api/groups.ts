@@ -114,13 +114,19 @@ const fetchUserGroups = cache(async function fetchUserGroups(): Promise<UserGrou
  * who *administers* a group appears in neither list. Group admins are only discoverable from the
  * group's own `privateData.admins`, which is how the legacy app derives the same thing.
  */
-const fetchVisibleGroups = cache(async function fetchVisibleGroups(
-  scope: "active" | "archived" = "active",
+const fetchGroupsInScope = cache(async function fetchGroupsInScope(
+  scope: "active" | "archived",
 ): Promise<GroupPayload[]> {
   return apiRead<GroupPayload[]>("/v1/groups", {
     query: scope === "archived" ? { onlyArchived: true } : undefined,
   });
 });
+
+// The default lives out here rather than on the memoized function: `cache()` keys on the argument
+// list *as passed*, so `f()` and `f("active")` would be two entries and the memo would never hit.
+function fetchVisibleGroups(scope: "active" | "archived" = "active"): Promise<GroupPayload[]> {
+  return fetchGroupsInScope(scope);
+}
 
 export async function getMyGroups(
   locale: string,

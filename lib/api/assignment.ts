@@ -4,7 +4,7 @@ import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { requireSession } from "@/lib/auth/require-session";
-import type { EvaluationInput } from "@/lib/status/evaluation";
+import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
 import { environmentNames } from "./runtime-environments";
@@ -176,7 +176,7 @@ function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
     reviewClosed: solution.review?.closedAt != null,
     plagiarismBatchId: solution.plagiarism ?? null,
     evaluation: {
-      lastSubmission: solution.lastSubmission,
+      lastSubmission: evaluationInputOf(solution.lastSubmission),
       maxPoints: solution.maxPoints,
       accepted: solution.accepted,
     },

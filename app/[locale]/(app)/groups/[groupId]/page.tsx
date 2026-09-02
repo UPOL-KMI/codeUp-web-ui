@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -38,6 +39,8 @@ import { GroupSettingsForm } from "@/components/groups/settings-form";
 import { StudentTable } from "@/components/groups/student-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { ErrorBoundary } from "@/components/state/error-boundary";
+import { TableSkeleton } from "@/components/state/skeleton";
 import { Badge } from "@/components/status/badge";
 
 export async function generateMetadata({
@@ -72,8 +75,9 @@ export default async function GroupPage({
   searchParams: Promise<{ tab?: string; filter?: string; exam?: string }>;
 }) {
   const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, group, viewer] = await Promise.all([
+  const [t, status, group, viewer] = await Promise.all([
     getTranslations("Group"),
+    getTranslations("Status"),
     getGroupDetail(groupId, locale),
     getCurrentUser(),
   ]);
@@ -108,12 +112,45 @@ export default async function GroupPage({
       }
       tabs={<GroupTabs groupId={groupId} tabs={tabs} current={current} label={t("tabs.label")} />}
     >
-      {current === "assignments" && <AssignmentsTab groupId={groupId} filter={query.filter} />}
-      {current === "students" && <StudentsTab groupId={groupId} />}
-      {current === "exams" && <ExamsTab group={group} selectedExam={query.exam ?? null} />}
-      {current === "settings" && <SettingsTab group={group} />}
+      {current === "assignments" && (
+        <TabBody label={status("loading")}>
+          <AssignmentsTab groupId={groupId} filter={query.filter} />
+        </TabBody>
+      )}
+      {current === "students" && (
+        <TabBody label={status("loading")}>
+          <StudentsTab groupId={groupId} />
+        </TabBody>
+      )}
+      {current === "exams" && (
+        <TabBody label={status("loading")}>
+          <ExamsTab group={group} selectedExam={query.exam ?? null} />
+        </TabBody>
+      )}
+      {current === "settings" && (
+        <TabBody label={status("loading")}>
+          <SettingsTab group={group} />
+        </TabBody>
+      )}
+      {/* No boundary: the Info tab is a rendering of the group this page already holds, so it has
+          nothing to wait for and a skeleton would only flash. */}
       {current === "info" && <GroupInfo group={group} />}
     </PageShell>
+  );
+}
+
+/**
+ * A tab body arrives after the page around it. Which tabs exist and which one is selected are
+ * decided above -- from `permissionHints`, before any of this streams -- so a tab a reader may not
+ * open is absent rather than briefly promised and then refused. What is deferred is only the
+ * selected tab's own fetching, which is what the title, the tab bar and the breadcrumb used to
+ * wait for.
+ */
+function TabBody({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<TableSkeleton label={label} />}>{children}</Suspense>
+    </ErrorBoundary>
   );
 }
 

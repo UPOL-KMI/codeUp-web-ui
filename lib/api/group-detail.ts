@@ -369,16 +369,38 @@ export interface GroupStudent {
   assignmentCount: number;
 }
 
-export async function getGroupStudents(groupId: string): Promise<GroupStudent[]> {
-  const stats = await apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", {
+/**
+ * The two reads the roster and the matrix below share, because a Students tab renders both and
+ * core-api would otherwise answer the same requests twice.
+ *
+ * The name lookup is keyed on a **joined id string**, not on the id array: `cache()` compares its
+ * arguments by identity, so a freshly built array per caller memoizes nothing.
+ */
+const fetchStudentStats = cache(async function fetchStudentStats(
+  groupId: string,
+): Promise<GroupStudentStats[]> {
+  return apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", {
     pathParams: { id: groupId },
   });
+});
+
+const fetchStudentNames = cache(async function fetchStudentNames(
+  idKey: string,
+): Promise<Map<string, string>> {
+  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
+    ids: idKey.split(","),
+  });
+  return new Map(people.map((person) => [person.id, person.fullName]));
+});
+
+const studentIdKey = (stats: GroupStudentStats[]) =>
+  [...new Set(stats.map((row) => row.userId))].sort().join(",");
+
+export async function getGroupStudents(groupId: string): Promise<GroupStudent[]> {
+  const stats = await fetchStudentStats(groupId);
   if (stats.length === 0) return [];
 
-  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
-    ids: [...new Set(stats.map((row) => row.userId))],
-  });
-  const names = new Map(people.map((person) => [person.id, person.fullName]));
+  const names = await fetchStudentNames(studentIdKey(stats));
 
   return stats
     .map((row) => ({
@@ -399,9 +421,11 @@ export async function getGroupStudents(groupId: string): Promise<GroupStudent[]>
  *
  * S-007's roster answers "how is this person doing overall" and deliberately stopped there; this
  * answers "who has not done which piece of work", which a teacher reads down the columns rather
- * than across the rows. **Both come out of the same response** --
+ * than across the rows. **The cells come out of the same response** --
  * `/v1/groups/{id}/students/stats` already carries a row per student with a nested entry per
- * assignment -- so the matrix costs one extra call for the assignment *names*, not for the data.
+ * assignment -- and that read and the batched name lookup are memoized with the roster's, so a
+ * Students tab showing both pays for neither twice. What the matrix adds on top is the assignment
+ * *names* and the attempt counts below.
  *
  * Shadow assignments are **not** columns here. Their points are inside `points.gained` (core-api
  * folds them in, as S-025 found from the other side), so the row totals already count them, but
@@ -440,7 +464,7 @@ export interface PointsMatrix {
 
 export async function getGroupPointsMatrix(groupId: string, locale: string): Promise<PointsMatrix> {
   const [stats, assignments, solvers] = await Promise.all([
-    apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
+    fetchStudentStats(groupId),
     apiRead<AssignmentPayload[]>("/v1/groups/{id}/assignments", { pathParams: { id: groupId } }),
     apiRead<{ assignmentId: string; solverId: string; lastAttemptIndex: number }[]>(
       "/v1/assignment-solvers",
@@ -453,10 +477,7 @@ export async function getGroupPointsMatrix(groupId: string, locale: string): Pro
     solvers.map((solver) => [`${solver.solverId}:${solver.assignmentId}`, solver.lastAttemptIndex]),
   );
 
-  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
-    ids: [...new Set(stats.map((row) => row.userId))],
-  });
-  const names = new Map(people.map((person) => [person.id, person.fullName]));
+  const names = await fetchStudentNames(studentIdKey(stats));
 
   const columns = assignments
     .map((assignment) => ({

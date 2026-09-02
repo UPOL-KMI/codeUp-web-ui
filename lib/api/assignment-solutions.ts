@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import type { EvaluationInput } from "@/lib/status/evaluation";
+import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiPost } from "./client";
 import { apiRead } from "./read";
@@ -100,7 +100,7 @@ export function solutionRow(
     pastDeadline: (solution.pastDeadline ?? 0) > 0,
     plagiarismBatchId: solution.plagiarism ?? null,
     status: {
-      lastSubmission: solution.lastSubmission,
+      lastSubmission: evaluationInputOf(solution.lastSubmission),
       maxPoints: solution.maxPoints,
       accepted: solution.accepted,
     },

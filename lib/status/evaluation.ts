@@ -38,6 +38,32 @@ export interface EvaluationInput {
   accepted?: boolean;
 }
 
+/**
+ * Narrows core-api's submission object to the three fields `evaluationStatus` reads.
+ *
+ * core-api embeds the *whole* last submission -- every test result, the judge's stdout, the
+ * compilation log -- and a row carrying it is serialised into the HTML of any page that hands the
+ * row to a client component. Three fields are enough to pick a badge, so the rest should not cross.
+ * `failure` collapses to a boolean and the two `evaluation` fields are copied: null, undefined and
+ * an object all have distinct meanings above ("no submission", "not evaluated", "evaluated"), so
+ * each branch is preserved rather than normalised.
+ */
+export function evaluationInputOf(
+  submission: {
+    failure?: unknown;
+    evaluation?: { initFailed?: boolean; score: number } | null;
+  } | null,
+): EvaluationInput["lastSubmission"] {
+  if (!submission) return null;
+  const { failure, evaluation } = submission;
+  return {
+    failure: failure ? true : undefined,
+    evaluation: evaluation
+      ? { initFailed: evaluation.initFailed, score: evaluation.score }
+      : evaluation,
+  };
+}
+
 export function evaluationStatus({
   lastSubmission,
   maxPoints,

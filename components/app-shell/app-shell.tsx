@@ -24,12 +24,16 @@ import { SidebarNav, type NavSection } from "./sidebar-nav";
  * links -- the routes listed here are all real entries in `app/[locale]/(app)/`.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const [locale, t, user] = await Promise.all([
-    getLocale(),
+  // `getLocale()` reads next-intl's request config rather than core-api, so awaiting it first costs
+  // nothing and keeps the three reads below in one wave -- none of them derives from another, and
+  // each calls `requireSession()` itself, so ordering them would authorise nothing.
+  const locale = await getLocale();
+  const [t, user, groups, broadcasts] = await Promise.all([
     getTranslations("Nav"),
     getCurrentUser(),
+    getMyGroups(locale),
+    getActiveSystemMessages(),
   ]);
-  const [groups, broadcasts] = await Promise.all([getMyGroups(locale), getActiveSystemMessages()]);
 
   // core-api keeps one "seen up to" timestamp rather than a flag per message (AD-007), so unread
   // is everything published since. A message written in neither of this app's languages is

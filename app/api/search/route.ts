@@ -77,6 +77,8 @@ export async function GET(request: Request) {
 
   const encoded = encodeURIComponent(query);
   const [groups, exercises, users] = await Promise.all([
+    // No `limit` here, unlike the two below: core-api offers `search` but no paging at all on
+    // `/v1/groups` (Q-015, checked), so the `.slice` below is the only cap available.
     kinds.has("group") ? fetchJson(`${apiBase}/groups?search=${encoded}`, token) : null,
     kinds.has("exercise")
       ? fetchJson(`${apiBase}/exercises?search=${encoded}&limit=${LIMIT}`, token)

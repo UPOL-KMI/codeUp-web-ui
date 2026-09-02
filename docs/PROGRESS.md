@@ -3661,6 +3661,87 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     source. A screen-reader pass by a person is the thing this ticket could not do, and it is in
     `RETROSPECTIVE.md` §5.12 as such.
 
+- **[2026-09-03 00:40] P-003:** The performance pass, and the five things it measured and did not do.
+  `components/app-shell/app-shell.tsx`, `lib/api/{groups,group-detail,assignment-solutions,reference-solutions,assignment,solution,dashboard}.ts`,
+  `lib/status/evaluation.ts`, three pages, `app/api/search/route.ts`, `components/app-shell/sidebar-nav.tsx`, DEC-119.
+  - **_Nothing in this app had ever been profiled_**, so there was no baseline to compare against and
+    the audit reasoned from the code instead: round trips counted in the source, bytes counted out of
+    the real build. Five lenses, and **every finding handed to a second agent told to refute it: 25
+    confirmed, 23 refuted.**
+  - **_The refuted half is the interesting half._** Most of it was duplicate `GET`s that Next 16
+    already collapses -- the auditor read `node_modules/next/dist/server/lib/dedupe-fetch.js` rather
+    than assuming, found that identical GETs are memoized per render pass, and downgraded every
+    "duplicate request" finding to "duplicate parse". Without that pass this ticket would have
+    "fixed" a dozen things that were not broken.
+  - **_The sharpest real finding is a memoization bug that looks like correct code._**
+    `fetchVisibleGroups(scope = "active")` is wrapped in React's `cache()`, and **`cache()` keys on
+    the argument list as passed** -- so `f()` from the sidebar and `f("active")` from the group list
+    are two different entries, and the unpaged whole-instance `/v1/groups` payload was fetched and
+    parsed twice on `/groups` and every exercise route. The default now lives in a thin wrapper
+    _outside_ the memo boundary, so no future call site can re-open it by writing `f()` again.
+  - _The same class of bug, twice more, on the group's Students tab_, where the page's own comment
+    claimed the two tables shared one response and they did not: the heaviest per-group payload in
+    the app (`students/stats`) and a `POST /v1/users/list` were each fetched twice. Both are shared
+    through `cache()` now -- the POST keyed on a **sorted joined id string**, because keying on the
+    array would memoize on object identity and silently never hit. The stale comment is corrected.
+  - **_One core-api round trip removed from 44 of 46 routes (DEC-119)._** The shell awaited
+    `getCurrentUser()` before it would even issue the sidebar's and the banner's reads, and nothing
+    made that ordering necessary -- checked properly, because parallelising an ordering that exists
+    for authorisation is a security bug and not an optimisation.
+  - _Four rows were leaking a whole core-api submission across the client boundary_ -- every test
+    result, judge log and compilation output -- so that a badge could read three fields off it.
+    `evaluationInputOf` now sits beside the `EvaluationInput` contract in `lib/status/evaluation.ts`
+    and all three readers share it. Null, undefined and object are preserved separately, because
+    above it they mean "no submission", "not evaluated" and "evaluated".
+  - _The command palette now loads on demand._ It was in the always-mounted shell chunk (cmdk, 34 KB
+    raw) on every authenticated page; the keyboard listener stays eager so Ctrl-K still opens it.
+    This is the repo's first `next/dynamic`, so it sets the idiom.
+  - **_One fix was declined for a good reason and it is worth recording._** The command palette's
+    group query is uncapped, and the obvious fix is `&limit=`. Q-015 records that core-api has no
+    paging on that endpoint, and **core-api silently ignores parameters it does not support** -- so
+    adding one would look like a fix, change nothing, and be believed by the next reader.
+  - _Five findings were measured and deliberately not applied_, filed as PF-001..PF-005 with their
+    numbers. The largest is not a waterfall at all: **`NextIntlClientProvider` ships all 62
+    namespaces to every page -- 116,258 of `en/faq.html`'s 136,599 bytes, 85% of the document** --
+    and narrowing it is dangerous in a specific way (a missed namespace is a runtime error on one
+    screen, invisible to `build` and `typecheck`), so it gets a ticket rather than a hurried edit at
+    the end of a long session. PF-002 is the other half of DEC-119: the shell still blocks every
+    page's own fetching, and fixing that changes what the first byte contains.
+  - _Observations:_ **`.next/static/chunks` is unchanged at 1.8 MB** -- this pass moved round trips
+    and payload bytes, not bundle size; PF-001 and PF-004 are where the bundle wins are, and both
+    are filed. Both prerendered routes still prerender.
+
+- **[2026-09-03 00:55] P-004:** The Czech review. `messages/cs.json`, 176 strings.
+  - _All 2251 strings read as en/cs pairs_, in six slices, by readers told to read as a Czech
+    speaker who is also a programmer and knows this domain -- and told just as firmly not to rewrite
+    correct Czech into their own preference.
+  - **_The largest finding is one word, translated two ways._** `exercise` is **úloha** across the
+    catalog, the navigation and every exercise screen -- and **cvičení** on the screens that assign
+    one. So a teacher pressed "Zadat cvičení" and arrived at a page titled "Katalog úloh". With it
+    went the agreement: úloha is feminine, so the whole flag set on those screens had drifted neuter
+    (`Uzamčeno`/`Rozbité`/`Snadné` against `Zamčená`/`Rozbitá`/`Lehká` elsewhere).
+  - _And one role collided with another._ `supervisor` is **cvičící** everywhere in the app; on the
+    group's info screen it was **vyučující**, which is this app's word for `teacher` -- two distinct
+    roles rendering as the same Czech noun on adjacent screens.
+  - **_Four real ICU plural bugs, of a kind key-parity checking cannot see._** The verb had been
+    left **outside** the plural block: `{count, plural, ...} se nezobrazuje` renders "Další 3 řádky
+    se nezobrazuje" for the 2--4 branch, a plural subject with a singular verb. Czech needs the verb
+    inside each branch. One string had no `few` branch at all.
+  - _Nine placeholder faults, all the same shape:_ a name interpolated where Czech needs a case the
+    value cannot carry. "V této skupině zatím od {name} nedorazilo žádné řešení" renders "od Jan
+    Novák" -- `od` governs the genitive. Fixed the way the rest of the file already does it, with a
+    classifier noun before the placeholder ("od uživatele {name}"), and participles agreeing with an
+    unknown gender written `byl(a)`, which the file already used elsewhere.
+  - _Verified mechanically after applying, not just read:_ every one of the 2251 Czech messages
+    still parses as ICU through `@formatjs/icu-messageformat-parser`, and **every message's argument
+    set still matches its English original** -- which is the check that would have caught a fix that
+    dropped or invented a placeholder. Key parity was already exact and stayed exact.
+  - _It also caught the strings this session had just added:_ P-002's `Pipeline.pageTitle` had been
+    written "Pipelina" against a codebase that says "pipeline" everywhere else.
+  - _Observations:_ **this is still not a native speaker's review**, and the retrospective says so in
+    §5.4. What it is: a systematic pass that found 62 outright errors and 82 inconsistencies, with a
+    terminology table now agreed across all six slices. A Czech reader will still find things.
+
 ### Current Status
 
 - **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is
