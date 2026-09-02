@@ -1452,7 +1452,82 @@
     }
   },
   "Pipelines": {
-    "title": "Pipeline"
+    "title": "Pipeliny",
+    "subtitle": "Mašinérie, na které běží testy úloh.",
+    "filters": {
+      "search": "Hledat",
+      "environment": "Jazyk",
+      "anyEnvironment": "Libovolný jazyk",
+      "apply": "Použít",
+      "envIsLocal": "ReCodEx neumí filtrovat pipeliny podle jazyka, takže tohle zúží jen stránku, na které jste, ne celý seznam."
+    },
+    "summary": "Zobrazeno {from}–{to} z {total}.",
+    "columns": {
+      "name": "Pipeline",
+      "environments": "Jazyky",
+      "parameters": "Co dělá",
+      "author": "Autor",
+      "updated": "Změněno"
+    },
+    "parameters": {
+      "isCompilationPipeline": "Překlad",
+      "isExecutionPipeline": "Spuštění",
+      "judgeOnlyPipeline": "Jen posouzení",
+      "producesStdout": "Porovnává standardní výstup",
+      "producesFiles": "Porovnává zapsaný soubor",
+      "hasEntryPoint": "Bere vstupní bod",
+      "hasExtraFiles": "Bere doplňkové soubory",
+      "hasSuccessExitCodes": "Bere přijímané návratové kódy"
+    },
+    "noParameters": "nic neuvádí",
+    "noEnvironments": "Žádné",
+    "instanceOwned": "Instance",
+    "empty": {
+      "title": "Žádné pipeliny",
+      "description": "Tato instance nemá žádné pipeliny, takže zatím nelze vyhodnotit žádnou úlohu.",
+      "noMatch": "Nic neodpovídá tomu, na co jste se ptali."
+    },
+    "pagination": "Stránky",
+    "previous": "Předchozí",
+    "next": "Další"
+  },
+  "Pipeline": {
+    "edit": "Upravit pipelinu",
+    "backToList": "Všechny pipeliny",
+    "structure": "Jak je zapojená",
+    "structureExplain": "Boxy jsou operace a dráty jsou proměnné: dva boxy jsou spojené, když jeden zapisuje a druhý čte totéž jméno. Přerušovaný uzel je díra, kterou vyplní úloha.",
+    "graphLabel": "Struktura {name}",
+    "details": "Podrobnosti",
+    "environments": "Jazyky",
+    "noEnvironments": "Žádné",
+    "parameters": "Co dělá",
+    "noParameters": "Nic neuvádí",
+    "author": "Autor",
+    "instanceOwned": "Instance",
+    "updated": "Změněno",
+    "boxes": "Boxy ({count})",
+    "box": {
+      "name": "Jméno",
+      "type": "Typ",
+      "inputs": "Čte",
+      "outputs": "Zapisuje",
+      "none": "—"
+    },
+    "variables": "Proměnné ({count})",
+    "variablesExplain": "Proměnná je drát. Ta, kterou nikdo nezapisuje, je díra, již musí někdo vyplnit; ta, kterou nikdo nečte, se zapíše a zahodí.",
+    "variable": {
+      "name": "Jméno",
+      "type": "Typ",
+      "value": "Hodnota",
+      "wiring": "Zapojení",
+      "external": "Vyplní úloha",
+      "noProducer": "Nikdo ji nezapisuje",
+      "noConsumer": "Nikdo ji nečte",
+      "wiredTo": "čte ji {count, plural, one {# box} few {# boxy} other {# boxů}}"
+    },
+    "exercises": "Úlohy, které ji používají",
+    "exercisesExplain": "Pipeline je sdílená mašinérie. Její změna změní vyhodnocení každé úlohy, která je na ni nastavená.",
+    "noExercises": "Tuto pipelinu nepoužívá žádná úloha."
   },
   "Users": {
     "title": "Uživatelé"

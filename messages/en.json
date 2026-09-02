@@ -1452,7 +1452,82 @@
     }
   },
   "Pipelines": {
-    "title": "Pipelines"
+    "title": "Pipelines",
+    "subtitle": "The machinery an exercise's tests run on.",
+    "filters": {
+      "search": "Search",
+      "environment": "Language",
+      "anyEnvironment": "Any language",
+      "apply": "Apply",
+      "envIsLocal": "ReCodEx cannot filter pipelines by language, so this narrows the page you are on rather than the whole list."
+    },
+    "summary": "Showing {from}–{to} of {total}.",
+    "columns": {
+      "name": "Pipeline",
+      "environments": "Languages",
+      "parameters": "What it does",
+      "author": "Author",
+      "updated": "Updated"
+    },
+    "parameters": {
+      "isCompilationPipeline": "Compilation",
+      "isExecutionPipeline": "Execution",
+      "judgeOnlyPipeline": "Judging only",
+      "producesStdout": "Compares standard output",
+      "producesFiles": "Compares a written file",
+      "hasEntryPoint": "Takes an entry point",
+      "hasExtraFiles": "Takes extra files",
+      "hasSuccessExitCodes": "Takes accepted exit codes"
+    },
+    "noParameters": "nothing declared",
+    "noEnvironments": "None",
+    "instanceOwned": "The instance",
+    "empty": {
+      "title": "No pipelines",
+      "description": "This instance has no pipelines, so no exercise can be evaluated yet.",
+      "noMatch": "Nothing matched what you asked for."
+    },
+    "pagination": "Pages",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "Pipeline": {
+    "edit": "Edit this pipeline",
+    "backToList": "All pipelines",
+    "structure": "How it is wired",
+    "structureExplain": "Boxes are operations and the wires are variables: two boxes are connected when one writes and another reads the same name. A dashed node is a hole an exercise fills in.",
+    "graphLabel": "The structure of {name}",
+    "details": "Details",
+    "environments": "Languages",
+    "noEnvironments": "None",
+    "parameters": "What it does",
+    "noParameters": "Nothing declared",
+    "author": "Author",
+    "instanceOwned": "The instance",
+    "updated": "Updated",
+    "boxes": "Boxes ({count})",
+    "box": {
+      "name": "Name",
+      "type": "Type",
+      "inputs": "Reads",
+      "outputs": "Writes",
+      "none": "—"
+    },
+    "variables": "Variables ({count})",
+    "variablesExplain": "A variable is a wire. One with no producer is a hole somebody has to fill; one with no consumer is written and thrown away.",
+    "variable": {
+      "name": "Name",
+      "type": "Type",
+      "value": "Value",
+      "wiring": "Wiring",
+      "external": "Filled in by the exercise",
+      "noProducer": "Nothing writes it",
+      "noConsumer": "Nothing reads it",
+      "wiredTo": "read by {count, plural, one {# box} other {# boxes}}"
+    },
+    "exercises": "Exercises using it",
+    "exercisesExplain": "A pipeline is shared machinery. Changing it changes the evaluation of every exercise configured against it.",
+    "noExercises": "No exercise uses this pipeline."
   },
   "Users": {
     "title": "Users"

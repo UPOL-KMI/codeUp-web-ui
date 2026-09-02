@@ -83,6 +83,17 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "ExerciseLimits", pattern: "/exercises/:exerciseId/edit-limits" },
   { namespace: "ExerciseAssignments", pattern: "/exercises/:exerciseId/assignments" },
   { namespace: "ReferenceSolutions", pattern: "/exercises/:exerciseId/reference-solutions" },
+  { namespace: "PipelineEdit", pattern: "/pipelines/:pipelineId/edit" },
+  {
+    // A pipeline has a plain `name`, unlike the entities whose labels live in `localizedTexts`.
+    pattern: "/pipelines/:pipelineId",
+    resolve: async (params) => {
+      const pipeline = await apiRead<{ name?: string }>("/v1/pipelines/{id}", {
+        pathParams: { id: params.pipelineId! },
+      });
+      return pipeline.name ?? "";
+    },
+  },
   {
     // A reference solution's crumb is its description -- the author's own note about what this
     // answer demonstrates -- which is the only thing that distinguishes it from the exercise's

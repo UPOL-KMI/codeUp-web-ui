@@ -36,8 +36,8 @@
 | `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | done   |
 | `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`          | done   |
 | `app/exercises/:exerciseId/reference-solution/:referenceSolutionId`        | ReferenceSolution          | true  | REFERENCE_SOLUTION_URI_FACTORY              | `/reference-solutions/[id]`            | todo   |
-| `app/pipelines`                                                            | Pipelines                  | true  | PIPELINES_URI                               | `/pipelines`                           | todo   |
-| `app/pipelines/:pipelineId`                                                | Pipeline                   | true  | PIPELINE_URI_FACTORY                        | `/pipelines/[id]`                      | todo   |
+| `app/pipelines`                                                            | Pipelines                  | true  | PIPELINES_URI                               | `/pipelines`                           | done   |
+| `app/pipelines/:pipelineId`                                                | Pipeline                   | true  | PIPELINE_URI_FACTORY                        | `/pipelines/[id]`                      | done   |
 | `app/pipelines/:pipelineId/edit`                                           | EditPipeline               | true  | PIPELINE_EDIT_URI_FACTORY                   | `/pipelines/[id]/edit`                 | todo   |
 | `app/pipelines/:pipelineId/edit-struct`                                    | EditPipelineStructure      | true  | PIPELINE_EDIT_STRUCT_URI_FACTORY            | `/pipelines/[id]/edit-struct`          | todo   |
 | `app/group/:groupId/edit`                                                  | EditGroup                  | true  | GROUP_EDIT_URI_FACTORY                      | `/groups/[id]?tab=settings`            | done   |
@@ -100,7 +100,7 @@
 | `notifications`                | In-app notifications                                       | Header + dashboard                             | todo   |
 | `pagination`                   | Pagination state                                           | `searchParams` in Server Components            | todo   |
 | `pipelineFiles`                | Pipeline files                                             | `pipelines/[id]`                               | todo   |
-| `pipelines`                    | Pipeline CRUD, structure                                   | `pipelines`                                    | todo   |
+| `pipelines`                    | Pipeline CRUD, structure                                   | `pipelines`                                    | done   |
 | `plagiarisms`                  | Plagiarism detection                                       | `solutions/[id]/plagiarisms`                   | done   |
 | `referenceSolutionEvaluations` | Reference solution evaluations                             | `reference-solutions/[id]`                     | todo   |
 | `referenceSolutions`           | Reference solutions                                        | `exercises/[id]/reference-solutions`           | done   |

@@ -533,6 +533,39 @@
   - _Observations:_ **209 e2e tests pass** (206 before), 120 unit tests. Every reference solution on
     this deployment reports an infrastructure failure (DEC-031), which is what the spec asserts.
 
+- **[2026-09-02 07:20] T-013 + T-014:** The instance's pipelines, and one of them drawn.
+  `app/[locale]/(app)/pipelines/`, `lib/api/pipelines.ts`, `lib/pipelines/{types,layout,svg}.ts`,
+  `components/pipelines/pipeline-graph.tsx`.
+  - _A pipeline is the machinery an exercise's tests run on_, and most people never come here: an
+    author picks from what the instance offers, which is what T-009's editor does for them. So the
+    list leads with each pipeline's **parameters** -- the flags T-009 reads to decide which fields a
+    test offers -- rather than with dates.
+  - **_The payload has no edges._** Boxes name variables on their ports, and two boxes are connected
+    exactly when one writes what another reads; the graph has to be derived. A table of boxes with a
+    column of variable names is the same information in the form in which nobody can see the shape,
+    which is why the picture comes first and the tables second.
+  - **_The brief's "decide early" about pipeline visualisation, decided -- and not the way it was
+    going to be_** (DEC-107). Server-side Graphviz was the plan and was implemented; then
+    `@viz-js/viz@3.30.0` (Graphviz 16.0.0) crashed on the seeded Python pipeline with
+    `RuntimeError: table index is out of bounds`. Reduced to plain synthetic input: **ten record
+    nodes with an empty leading cell crash it, five do not** -- the exact label shape the legacy
+    renderer emits, and a size threshold rather than a syntax error, so every realistic pipeline is
+    a coin toss. So the layout is now this app's own pure function and the drawing is string
+    building, both on the server, both unit-tested. Two things came free: the colours are design
+    tokens, so the diagram is themed like everything else instead of being a pale-green picture on
+    a dark page, and every node carries `data-name`, so selection will not need the legacy click
+    handler's trick of parsing generated markup for `<title>` elements.
+  - _Layering is as-late-as-possible._ The obvious rule puts every source in layer 0, and a ReCodEx
+    pipeline is nearly all sources -- a dozen `file-in` boxes feeding one execution box -- which
+    draws a mile-wide row above a two-node column. Working back from the sinks lowered the seeded
+    graph from 2075px wide to 1507px, and adding the **port's** own position to the barycentre key
+    took the long crossing edges from 8 to 5: without it every producer of the same box scores
+    identically and keeps whatever order it arrived in.
+  - _One filter is honestly local._ core-api's pipeline endpoint knows `search`, `exerciseId` and
+    `authorId` and nothing about languages, so the language filter narrows the page in hand -- and
+    says so, rather than implying it narrowed the list.
+  - _Observations:_ **212 e2e tests pass** (209 before), **138 unit tests** (120 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3038,8 +3071,8 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
   its basic settings). **Exercise authoring has begun**, and T-009 and T-010 have now built the
   configuration and limits editors between them -- **every reason core-api gives for a new exercise
-  being broken can now be answered from this app** -- leaving only the pipeline screens
-  (T-013..T-016), plus the two tickets T-009 filed for the parts of its own screen it does not own
+  being broken can now be answered from this app** -- leaving only the pipeline _editing_ screens
+  (T-015, T-016 -- T-013 and T-014 are done), plus the two tickets T-009 filed for the parts of its own screen it does not own
   (T-024, T-025). T-023, T-012 and T-011 closed with them: an exercise's files (which T-009
   needed), its people, forking it, where it is assigned, and the reference solutions without which
   core-api refuses to assign it at all.
@@ -3048,9 +3081,8 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-013 -- the pipeline list, and then T-014..T-016. **The exercise-authoring
-  block is otherwise finished**: an exercise can be created, written, configured, limited, filed,
-  handed over, copied, answered and assigned without leaving this app.
+- **Next ticket:** T-015 and T-016 -- editing a pipeline, and editing its structure. The reading
+  half (T-013, T-014) is done and the graph it needs already exists.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
