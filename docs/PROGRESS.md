@@ -750,6 +750,56 @@
     now shared instead of duplicated.
   - _Observations:_ **229 e2e tests pass** (221 before), 170 unit tests.
 
+- **[2026-09-02 13:20] AD-002:** Somebody else's account, as an administrator changes it.
+  `app/[locale]/(app)/users/[userId]/edit/page.tsx`, `components/users/user-admin-forms.tsx`,
+  `lib/api/user-roles.ts`, three more actions in `lib/actions/users.ts`.
+  - **_Half of this ticket turned out to be shipped already._** "User detail -- info, groups,
+    solutions" is S-021, built in the Student phase and reachable from every name in the app. What
+    was actually open was the sentence after it: **editing _another_ user's account**, which S-022
+    deliberately left here when it built the same forms for oneself. So this ticket is the legacy
+    `EditUser` page seen from the half nobody had built -- the third time a Teacher/Admin ticket has
+    turned out to be partly done (T-004 with S-013, T-017 with S-020).
+  - **_Editing oneself redirects to one's own settings rather than hiding controls_** (DEC-111).
+    The legacy page is one screen with four `id === loggedUserId` branches, and the branches exist
+    because core-api draws the line in four places. Three of them are hard refusals: `checkSetRole`
+    and `checkSetAllowed` each refuse the _current user_ before the ACL runs, and a **forced**
+    password change on oneself is refused by an `allow: false` rule sitting **above** the
+    superadmin's blanket allow in `permissions.neon`. That last one was confirmed by asking -- a
+    superadmin sending no old password for their own account gets `400-103 "Your current password
+does not match"`, which is a confusing sentence for a request that contained no password to not
+    match -- rather than by trusting the rule ordering in a file.
+  - **_Two sections are missing because core-api will not disclose them, not because they were
+    dropped._** `settings` and `uiData` reach `privateData` only for the account's owner (verified
+    live: both absent when a superadmin reads a student), so notification preferences and the iCal
+    tokens cannot be shown here by anybody. The legacy screen hides them for the same reason.
+  - _The name-and-email form is S-022's, unchanged._ `updateProfile` is the same call whoever makes
+    it and the action already took a `userId`, so the only work was rewording two strings out of the
+    first person ("Use my Gravatar picture", "Your profile was saved") so they are true on both
+    screens. What is genuinely new is the role, a password set without knowing the old one, ending
+    every session, and adding a local login to an account that signs in only through an external
+    service.
+  - _Setting somebody's password does **not** sign the administrator out_, which is the half of it
+    that is easy to get wrong: the validity threshold core-api stamps belongs to the edited account.
+    Confirmed live -- the response carries no refreshed token at all -- and S-022's form, which
+    _does_ end with a sign-out, is left alone.
+  - _`USER_ROLES` moved out of `lib/api/users.ts` into `lib/api/user-roles.ts`._ That module is
+    `server-only`, and the role vocabulary is now needed by a Zod schema a client component
+    imports; a `server-only` import reaching `"use client"` fails the build, which is the right
+    failure and the reason the constant now has a plain module of its own.
+  - _Two bugs found by verifying rather than by reading._ The self-redirect used `next/navigation`'s
+    `redirect`, which drops the locale prefix and rendered a blank page -- next-intl's own
+    (`{href, locale}`) is what this app has. And the first spec asked for the role select by label,
+    which matched the **section** instead: `<section aria-labelledby>` gives the section that
+    accessible name too.
+  - **_One reworded string took down two specs, and only one of them was about the string._**
+    Neutralising "Your profile was saved" broke `account.spec.ts`'s assertion -- expected -- but
+    that spec sets the seeded student's title to "Bc." and puts it back **in the same test**, so
+    failing halfway left her named "Bc. Alice Student" in the database. `points-export.spec.ts`
+    looks that name up in a downloaded CSV and failed on data, not on code, one spec away from the
+    change. The name was put back, and that spec now restores the field in a `finally` so a failure
+    there costs one red test rather than two.
+  - _Observations:_ **235 e2e tests pass** (229 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3266,9 +3316,11 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
   **The Admin phase has begun** with AD-001 (the user list, its search and role filter, and
-  enabling, disabling, deleting and creating an account).
-- **Next ticket:** AD-002 -- one person's account as an administrator edits it, which is the other
-  half of the `users` module and the only reason that row in `INVENTORY.md` is still open. **Every
+  enabling, disabling, deleting and creating an account) and AD-002 (that account edited: its role,
+  its password, its sessions and its logins). **The `users` module is complete**, and
+  `INVENTORY.md`'s row for it is closed.
+- **Next ticket:** AD-003 -- taking over an account, whose BFF route F-020 already built; the button
+  goes on S-021's profile screen, where AD-001 and AD-002 deliberately left room for it. **Every
   ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
   is open** -- the three that were (T-022's discussion threads, and T-024 and T-025, filed by
   T-009 for the parts of its own screen it did not own) all closed on 2026-09-02.
@@ -3277,7 +3329,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   configure -- Q-004).
 - **Closed this session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
   address only once, because anonymisation appends one fixed suffix to a column whose unique index
-  covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.
+  covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading. And
+  **AD-002**, half of which (the user detail screen) turned out to have shipped as S-021 already;
+  what it actually built was the administrator's side of `EditUser`.
 - **Blocked tickets:** None
 - **Operator inputs pending:** Q-011 through Q-020 (Q-014 closed by S-022) — all proceeding without
   operator input, reasoning recorded in `QUESTIONS.md`. Q-005 resolved. Q-007 (SMTP — operator will

@@ -1,13 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
+import { USER_ROLES, type UserRole } from "@/lib/api/user-roles";
 import {
   DIRECTORY_PAGE_SIZE,
   USER_ORDERINGS,
-  USER_ROLES,
   getUserDirectory,
   type UserOrdering,
-  type UserRole,
 } from "@/lib/api/users";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 

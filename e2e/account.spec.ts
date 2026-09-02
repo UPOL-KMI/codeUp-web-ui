@@ -23,12 +23,20 @@ test("edits a profile field and puts it back", async ({ page }) => {
   const main = page.getByRole("main");
   const titles = main.getByLabel("Titles before the name");
 
-  for (const value of ["Bc.", ""]) {
-    await titles.fill(value);
+  try {
+    for (const value of ["Bc.", ""]) {
+      await titles.fill(value);
+      await main.getByRole("button", { name: "Save profile" }).click();
+      await expect(page.getByText("The profile was saved.", { exact: true })).toBeVisible();
+      await page.reload();
+      await expect(main.getByLabel("Titles before the name")).toHaveValue(value);
+    }
+  } finally {
+    // Failing between the two halves used to leave this student named "Bc. Alice Student", which
+    // then broke `points-export.spec.ts` -- it looks that name up in a downloaded file. A failure
+    // here should cost one red test, not two.
+    await titles.fill("");
     await main.getByRole("button", { name: "Save profile" }).click();
-    await expect(page.getByText("Your profile was saved.", { exact: true })).toBeVisible();
-    await page.reload();
-    await expect(main.getByLabel("Titles before the name")).toHaveValue(value);
   }
 });
 

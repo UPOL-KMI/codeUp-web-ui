@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { USER_ROLES } from "@/lib/api/user-roles";
+
 /**
  * A new account, as an administrator fills it in from the user list (AD-001). Its own module apart
  * from the `"use server"` file (D-004), so the form and the action that re-validates it share one
@@ -26,3 +28,14 @@ export const createUserSchema = z
   });
 
 export type CreateUserValues = z.infer<typeof createUserSchema>;
+
+/**
+ * The role an administrator assigns (AD-002). core-api validates the name itself and answers
+ * `400 Unknown user role` for anything else (verified live), so this is that list restated once,
+ * from the same constant the directory's filter uses.
+ */
+export const userRoleSchema = z.object({
+  role: z.enum(USER_ROLES),
+});
+
+export type UserRoleValues = z.infer<typeof userRoleSchema>;

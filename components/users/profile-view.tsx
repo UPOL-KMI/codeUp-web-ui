@@ -30,8 +30,8 @@ import { Badge } from "@/components/status/badge";
  * that is the reader's to read: their own, or a group the reader teaches. `viewStudentStats` is a
  * two-subject rule with no hint of its own (DEC-090), so the offer is decided from the reader's own
  * group lists rather than from something core-api says about this page. Editing one's own account
- * is offered because S-022 built it; taking over an account is AD-003's and adds its own control
- * here when it lands.
+ * is offered because S-022 built it, and editing somebody else's because AD-002 did; taking over
+ * an account is AD-003's and adds its own control here when it lands.
  */
 export async function ProfileView({
   userId,
@@ -75,6 +75,16 @@ export async function ProfileView({
               className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {t("editMine")}
+            </Link>
+          )}
+          {/* AD-002's screen, offered on the reader's role because a user carries no permission
+              hints (DEC-110) -- and never on one's own row, where that screen would redirect. */}
+          {!isMe && viewer.role === "superadmin" && (
+            <Link
+              href={`/users/${profile.id}/edit`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("editTheirs")}
             </Link>
           )}
         </div>

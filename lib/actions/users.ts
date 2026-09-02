@@ -6,10 +6,17 @@ import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/api/current-user";
 import type { ActionResult } from "@/lib/forms/action-result";
 
-import { createUserSchema, type CreateUserValues } from "./users.schema";
+import {
+  createUserSchema,
+  userRoleSchema,
+  type CreateUserValues,
+  type UserRoleValues,
+} from "./users.schema";
 
 /**
- * What can be done to an account from the user list (AD-001): let it in, shut it out, or end it.
+ * What can be done to somebody else's account -- from the directory (AD-001) and from the account's
+ * own settings screen (AD-002): let it in, shut it out, end it, change what it may do, or hand it a
+ * way to sign in.
  *
  * **core-api is the authorisation here, not this file.** A user object carries no
  * `permissionHints` at all (DEC-080, verified again for the list payload), so there is no hint to
@@ -128,5 +135,74 @@ export async function createUserAccount(
     return { success: true, data: { created: true, id: result.user.id } };
   } catch (error) {
     return failure(error, "createFailed");
+  }
+}
+
+/**
+ * The role decides what the person may do everywhere in ReCodEx, so this is the most consequential
+ * field on the screen (AD-002).
+ *
+ * **core-api refuses it on one's own account outright** -- `checkSetRole` compares the target with
+ * the current user before the ACL even runs ("You cannot change your role"), which is the same
+ * second check `setIsAllowed` carries. The screen never offers it there, because the administrator
+ * editing themselves is sent to their own settings instead.
+ *
+ * The role name is validated twice on purpose: here against `USER_ROLES`, and by core-api's own
+ * `Roles::validateRole`, which answers `400 Unknown user role` (verified live). A select cannot
+ * produce a bad value, but a Server Action is a public endpoint that happens to have nice syntax.
+ */
+export async function setUserRole(
+  userId: string,
+  values: UserRoleValues,
+): Promise<ActionResult<{ role: string }>> {
+  const t = await getTranslations("Users.errors");
+  const parsed = userRoleSchema.safeParse(values);
+  if (!parsed.success) return { success: false, formError: t("unknownRole") };
+
+  try {
+    await apiPost(
+      "/v1/users/{id}/role",
+      { role: parsed.data.role },
+      { pathParams: { id: userId } },
+    );
+    return { success: true, data: { role: parsed.data.role } };
+  } catch (error) {
+    return failure(error, "roleFailed");
+  }
+}
+
+/**
+ * Signing somebody out of everywhere (AD-002): core-api stamps a token validity threshold, and
+ * every token issued before this moment stops working -- the browser they left signed in at the
+ * lab, an extension holding a token, all of it.
+ *
+ * Distinct from disabling the account, which the same screen also offers: this one lets them
+ * straight back in with their password, and is the answer to "my laptop was stolen" rather than to
+ * "this person should not be here".
+ */
+export async function invalidateUserTokens(userId: string): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiPost("/v1/users/{id}/invalidate-tokens", undefined, { pathParams: { id: userId } });
+    return { success: true, data: { id: userId } };
+  } catch (error) {
+    return failure(error, "invalidateFailed");
+  }
+}
+
+/**
+ * Giving an externally-authenticated account a local password as well (AD-002).
+ *
+ * **The password it creates is empty**, which is core-api's own design: the account then has a
+ * local login that cannot be used until somebody sets a password on it, and the password form
+ * beside this control is what does that. Offered only where the account has no local login --
+ * core-api answers `400 User is already registered locally` otherwise (verified live), which is
+ * an error rather than an answer.
+ */
+export async function createLocalLogin(userId: string): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiPost("/v1/users/{id}/create-local", undefined, { pathParams: { id: userId } });
+    return { success: true, data: { id: userId } };
+  } catch (error) {
+    return failure(error, "localFailed");
   }
 }

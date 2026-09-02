@@ -28,7 +28,18 @@ export interface AccountSettings {
   isLocal: boolean;
   /** True while a local account exists but has no password set yet. */
   emptyLocalPassword: boolean;
+  /** The account signs in through an external service (CAS and the like). */
+  isExternal: boolean;
   gravatarUrlEnabled: boolean;
+  /** False for an account an administrator has disabled. */
+  isAllowed: boolean;
+  role: string;
+  /**
+   * Empty for anybody but the account's owner: core-api attaches `settings` to `privateData` only
+   * for the user themselves, so an administrator editing somebody else (AD-002) cannot read -- let
+   * alone offer -- their notification preferences. Verified live, and the same rule the legacy
+   * screen follows by showing that form only on one's own account.
+   */
   settings: AccountNotificationSettings;
 }
 
@@ -69,6 +80,9 @@ interface UserPayload {
   privateData?: {
     email?: string;
     isLocal?: boolean;
+    isExternal?: boolean;
+    isAllowed?: boolean;
+    role?: string;
     emptyLocalPassword?: boolean;
     settings?: Record<string, string | boolean>;
   } | null;
@@ -89,6 +103,9 @@ export const getAccountSettings = cache(async function getAccountSettings(
     email: user.privateData?.email ?? "",
     isVerified: user.isVerified === true,
     isLocal: user.privateData?.isLocal === true,
+    isExternal: user.privateData?.isExternal === true,
+    isAllowed: user.privateData?.isAllowed !== false,
+    role: user.privateData?.role ?? "student",
     emptyLocalPassword: user.privateData?.emptyLocalPassword === true,
     // core-api has no `gravatarUrlEnabled` in the response; the avatar URL being set is what says
     // it is on, which is how the legacy form derives its own initial value.

@@ -53,6 +53,7 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "Exercises", pattern: "/exercises" },
   { namespace: "Pipelines", pattern: "/pipelines" },
   { namespace: "Users", pattern: "/users" },
+  { namespace: "UserEdit", pattern: "/users/:userId/edit" },
   { namespace: "SubmissionFailures", pattern: "/submission-failures" },
   { namespace: "SystemMessages", pattern: "/system-messages" },
   { namespace: "Archive", pattern: "/archive" },

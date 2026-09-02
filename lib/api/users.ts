@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isUserRole, type UserRole } from "./user-roles";
 import { apiRead } from "./read";
 
 /**
@@ -24,16 +25,6 @@ import { apiRead } from "./read";
  * (verified live, both directions). `apiRead` turns that refusal into the refusal page, so this
  * app carries no copy of the rule.
  */
-export const USER_ROLES = [
-  "student",
-  "supervisor-student",
-  "supervisor",
-  "empowered-supervisor",
-  "superadmin",
-] as const;
-
-export type UserRole = (typeof USER_ROLES)[number];
-
 /** core-api's three sortable columns; `name` collates by surname then first name. */
 export const USER_ORDERINGS = ["name", "email", "createdAt"] as const;
 
@@ -84,10 +75,6 @@ interface UserEnvelope {
   totalCount: number;
 }
 
-function isRole(role: string | undefined): role is UserRole {
-  return USER_ROLES.some((known) => known === role);
-}
-
 export async function getUserDirectory(query: UserDirectoryQuery): Promise<UserDirectoryPage> {
   const envelope = await apiRead<UserEnvelope>("/v1/users", {
     query: {
@@ -104,7 +91,7 @@ export async function getUserDirectory(query: UserDirectoryQuery): Promise<UserD
       id: user.id,
       fullName: user.fullName,
       email: user.privateData?.email ?? null,
-      role: isRole(user.privateData?.role) ? user.privateData.role : null,
+      role: isUserRole(user.privateData?.role) ? user.privateData.role : null,
       createdAt: user.privateData?.createdAt ?? null,
       isAllowed: user.privateData?.isAllowed ?? null,
     })),

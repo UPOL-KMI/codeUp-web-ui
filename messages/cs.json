@@ -1827,7 +1827,11 @@
       "noInstance": "Váš vlastní účet nepatří do žádné instance, takže zde nemůže žádný vytvořit.",
       "allowedFailed": "Účet se nepodařilo změnit.",
       "deleteFailed": "Účet se nepodařilo smazat.",
-      "createFailed": "Účet se nepodařilo vytvořit."
+      "createFailed": "Účet se nepodařilo vytvořit.",
+      "unknownRole": "Takovou roli core-api nezná.",
+      "roleFailed": "Roli se nepodařilo změnit.",
+      "invalidateFailed": "Přihlášení se nepodařilo ukončit.",
+      "localFailed": "Přihlášení heslem se nepodařilo přidat."
     }
   },
   "SubmissionFailures": {
@@ -1953,7 +1957,8 @@
       "title": "Žádné skupiny",
       "description": "Tento člověk teď v žádné skupině nestuduje ani nevyučuje."
     },
-    "editMine": "Upravit můj účet"
+    "editMine": "Upravit můj účet",
+    "editTheirs": "Upravit tento účet"
   },
   "Upload": {
     "dropzone": "Vyberte soubory nebo je sem přetáhněte",
@@ -2579,7 +2584,7 @@
       "lastName": "Příjmení",
       "email": "E-mail",
       "emailHint": "Po změně se na novou adresu odešle ověřovací zpráva.",
-      "gravatar": "Používat můj obrázek z Gravataru",
+      "gravatar": "Použít obrázek z Gravataru",
       "save": "Uložit profil",
       "saved": "Profil byl uložen.",
       "errors": {
@@ -2650,6 +2655,70 @@
       "passwordMismatch": "Hesla se neshodují.",
       "settingsFailed": "Nastavení se nepodařilo uložit.",
       "calendarFailed": "Odkaz na kalendář se nepodařilo změnit."
+    }
+  },
+  "UserEdit": {
+    "title": "Úprava účtu",
+    "subtitle": "Cizí účet tak, jak jej smí měnit správce.",
+    "unnamed": "Uživatel bez jména",
+    "backToProfile": "Zpět na profil",
+    "profile": {
+      "title": "Profil"
+    },
+    "role": {
+      "title": "Role",
+      "label": "Role",
+      "explain": "Role rozhoduje o tom, co tento člověk smí v celém ReCodExu, ne jen v jedné skupině.",
+      "save": "Změnit roli",
+      "changed": "Role je nyní {role}.",
+      "failed": "Roli se nepodařilo změnit.",
+      "confirm": "Z role {from} se stane {to}, naráz a v celém ReCodExu.",
+      "names": {
+        "student": "Student",
+        "supervisor-student": "Cvičící a student",
+        "supervisor": "Cvičící",
+        "empowered-supervisor": "Cvičící s rozšířenými právy",
+        "superadmin": "Správce"
+      },
+      "descriptions": {
+        "student": "Vidí jen skupiny, do kterých patří, a řeší, co je tam zadáno.",
+        "supervisor-student": "Obojí zároveň — v některých skupinách učí, v jiných studuje.",
+        "supervisor": "Vede vlastní skupiny, zadává příklady a vytváří nové.",
+        "empowered-supervisor": "Cvičící, který navíc smí psát pipeline a konfigurovat jimi příklady.",
+        "superadmin": "Smí cokoli, ve všech instancích, do kterých patří."
+      }
+    },
+    "password": {
+      "title": "Heslo",
+      "explain": "Nové heslo nastavíte, aniž byste znali staré. Tohoto člověka to odhlásí všude; vaše vlastní přihlášení to nijak neovlivní.",
+      "newPassword": "Nové heslo",
+      "confirmPassword": "Nové heslo znovu",
+      "save": "Nastavit heslo",
+      "changed": "Heslo bylo nastaveno.",
+      "errors": {
+        "required": "Zadejte nové heslo.",
+        "mismatch": "Hesla se liší."
+      }
+    },
+    "access": {
+      "title": "Přístup",
+      "stateEnabled": "Tento účet se používá.",
+      "stateDisabled": "Tento účet je zablokovaný — dokud jej někdo neodblokuje, je odmítnuta každá operace.",
+      "enable": "Odblokovat",
+      "disable": "Zablokovat",
+      "confirmEnable": "Účet mohl být zablokován z dobrého důvodu. Opravdu jej odblokovat?",
+      "confirmDisable": "Dokud účet někdo znovu neodblokuje, bude odmítnuta každá operace. Skupiny a řešení zůstávají.",
+      "enabled": "Účet se opět používá.",
+      "disabled": "Účet je zablokovaný.",
+      "allowedFailed": "Účet se nepodařilo změnit.",
+      "signOutEverywhere": "Odhlásit všude",
+      "confirmSignOut": "Každý přístupový token vydaný tomuto člověku do této chvíle přestane fungovat — všechny prohlížeče, kde je přihlášen, i cokoli dalšího, co token drží. Znovu se přihlásí svým heslem.",
+      "signedOut": "Všechna přihlášení tohoto účtu skončila.",
+      "tokensFailed": "Přihlášení se nepodařilo ukončit.",
+      "createLocal": "Přidat přihlášení heslem",
+      "createLocalHint": "Tento účet se přihlašuje jen přes externí službu. Přidané místní přihlášení má prázdné heslo — nastavte je pak výše.",
+      "localCreated": "Účet má nyní přihlášení heslem.",
+      "localFailed": "Přihlášení heslem se nepodařilo přidat."
     }
   }
 }

@@ -50,7 +50,7 @@
 | `app/instance/:instanceId`                                                 | Instance                   | true  | INSTANCE_URI_FACTORY                        | `/instances/[id]`                                          | todo   |
 | `app/users`                                                                | Users                      | true  | USERS_URI                                   | `/users`                                                   | done   |
 | `app/user/:userId`                                                         | User                       | true  | USER_URI_FACTORY                            | `/users/[id]`                                              | done   |
-| `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/profile/edit` (self)                                     | done   |
+| `app/user/:userId/edit`                                                    | EditUser                   | true  | EDIT_USER_URI_FACTORY                       | `/profile/edit` (self), `/users/[id]/edit` (admin)         | done   |
 | `app/submission-failures`                                                  | SubmissionFailures         | true  | FAILURES_URI                                | `/submission-failures`                                     | done   |
 | `app/system-messages`                                                      | SystemMessages             | true  | MESSAGES_URI                                | `/system-messages`                                         | todo   |
 | `app/archive`                                                              | Archive                    | true  | ARCHIVE_URI                                 | `/archive`                                                 | todo   |
@@ -118,7 +118,7 @@
 | `upload`                       | File upload state                                          | `lib/upload/use-file-upload.ts`                                | done   |
 | `userCalendars`                | User deadlines calendar                                    | `/profile/edit`                                                | done   |
 | `userSwitching`                | User switching (superadmin)                                | `admin/users`                                                  | todo   |
-| `users`                        | User management                                            | `users`, `admin/users`                                         | todo   |
+| `users`                        | User management                                            | `users`, `admin/users`                                         | done   |
 | `usersGroups`                  | User-group membership                                      | `groups/[id]/students`                                         | todo   |
 
 ---

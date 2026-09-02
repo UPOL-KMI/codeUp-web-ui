@@ -1827,7 +1827,11 @@
       "noInstance": "Your own account belongs to no instance, so it cannot create one here.",
       "allowedFailed": "The account could not be changed.",
       "deleteFailed": "The account could not be deleted.",
-      "createFailed": "The account could not be created."
+      "createFailed": "The account could not be created.",
+      "unknownRole": "That is not a role core-api knows.",
+      "roleFailed": "The role could not be changed.",
+      "invalidateFailed": "The sessions could not be ended.",
+      "localFailed": "The password login could not be added."
     }
   },
   "SubmissionFailures": {
@@ -1953,7 +1957,8 @@
       "title": "No groups",
       "description": "This person neither studies nor teaches in any group right now."
     },
-    "editMine": "Edit my account"
+    "editMine": "Edit my account",
+    "editTheirs": "Edit this account"
   },
   "Upload": {
     "dropzone": "Choose files or drag them here",
@@ -2579,9 +2584,9 @@
       "lastName": "Surname",
       "email": "Email",
       "emailHint": "Changing this sends a verification message to the new address.",
-      "gravatar": "Use my Gravatar picture",
+      "gravatar": "Use the Gravatar picture",
       "save": "Save profile",
-      "saved": "Your profile was saved.",
+      "saved": "The profile was saved.",
       "errors": {
         "tooShort": "At least two characters.",
         "invalidEmail": "That is not an email address."
@@ -2650,6 +2655,70 @@
       "passwordMismatch": "The two passwords differ.",
       "settingsFailed": "Your settings could not be saved.",
       "calendarFailed": "The calendar link could not be changed."
+    }
+  },
+  "UserEdit": {
+    "title": "Edit account",
+    "subtitle": "Someone else's account, as an administrator may change it.",
+    "unnamed": "Unnamed user",
+    "backToProfile": "Back to the profile",
+    "profile": {
+      "title": "Profile"
+    },
+    "role": {
+      "title": "Role",
+      "label": "Role",
+      "explain": "The role decides what this person may do everywhere in ReCodEx, not only in one group.",
+      "save": "Change role",
+      "changed": "The role is now {role}.",
+      "failed": "The role could not be changed.",
+      "confirm": "{from} becomes {to}, everywhere in ReCodEx and at once.",
+      "names": {
+        "student": "Student",
+        "supervisor-student": "Supervisor and student",
+        "supervisor": "Supervisor",
+        "empowered-supervisor": "Empowered supervisor",
+        "superadmin": "Administrator"
+      },
+      "descriptions": {
+        "student": "Sees only the groups they belong to, and solves what is assigned there.",
+        "supervisor-student": "Both at once — teaches some groups while studying in others.",
+        "supervisor": "Runs their own groups, assigns exercises, and creates new ones.",
+        "empowered-supervisor": "A supervisor who may also write pipelines and configure exercises with them.",
+        "superadmin": "May do anything, in every instance they belong to."
+      }
+    },
+    "password": {
+      "title": "Password",
+      "explain": "You set a new password without knowing the old one. It signs this person out everywhere; your own session is unaffected.",
+      "newPassword": "New password",
+      "confirmPassword": "New password again",
+      "save": "Set password",
+      "changed": "The password was set.",
+      "errors": {
+        "required": "Enter the new password.",
+        "mismatch": "The two passwords differ."
+      }
+    },
+    "access": {
+      "title": "Access",
+      "stateEnabled": "This account is in use.",
+      "stateDisabled": "This account is disabled — every operation is refused until it is enabled again.",
+      "enable": "Enable",
+      "disable": "Disable",
+      "confirmEnable": "The account may have been disabled for a reason. Enable it again?",
+      "confirmDisable": "Every operation will be refused until somebody enables the account again. Their groups and solutions are kept.",
+      "enabled": "The account is in use again.",
+      "disabled": "The account is disabled.",
+      "allowedFailed": "The account could not be changed.",
+      "signOutEverywhere": "Sign out everywhere",
+      "confirmSignOut": "Every access token issued to this person before now stops working — every browser they are signed in on, and anything else holding one. They can sign in again with their password.",
+      "signedOut": "Every session of this account is over.",
+      "tokensFailed": "The sessions could not be ended.",
+      "createLocal": "Add a password login",
+      "createLocalHint": "This account signs in only through an external service. Adding a local login leaves the password empty — set one above afterwards.",
+      "localCreated": "The account now has a password login.",
+      "localFailed": "The password login could not be added."
     }
   }
 }
