@@ -908,6 +908,7 @@
     "configure": "Testy a vyhodnocení",
     "limits": "Limity spuštění",
     "assignmentsLink": "Kde je zadaná",
+    "referenceSolutionsLink": "Vzorová řešení",
     "text": "Co má student udělat",
     "noText": "Tato úloha zatím nemá zadání v žádném jazyce.",
     "otherLocales": "Napsáno také v: {locales}.",
@@ -1355,6 +1356,99 @@
     "errors": {
       "noGroups": "Vyberte alespoň jednu skupinu.",
       "assignFailed": "Úlohu se tam nepodařilo zadat."
+    }
+  },
+  "ReferenceSolutions": {
+    "title": "Vzorová řešení",
+    "backToExercise": "Zpět na úlohu",
+    "list": {
+      "title": "Odpovědi",
+      "explain": "Vzorové řešení je vaše vlastní odpověď, prohnaná přesně tou pipeline jako řešení studenta. Právě ono dokazuje, že úloha je řešitelná — úlohu bez jediného nelze zadat.",
+      "none": "Tato úloha nemá žádné vzorové řešení, takže ji nelze zadat. Odevzdejte jedno níže.",
+      "allHidden": "Tato úloha vzorová řešení má, ale žádné z nich není vaše — soukromé odpovědi patří jen svému autorovi. Odevzdejte níže vlastní.",
+      "untitled": "Řešení bez popisu",
+      "description": "Popis",
+      "language": "Jazyk",
+      "author": "Autor",
+      "result": "Výsledek",
+      "visibility": "Kdo je vidí",
+      "attempts": "{count, plural, one {# vyhodnocení} few {# vyhodnocení} other {# vyhodnocení}}",
+      "levels": {
+        "private": "Jen učitelé",
+        "public": "I studenti",
+        "promoted": "Kanonická odpověď"
+      },
+      "visibilityOf": "Kdo vidí {description}",
+      "visibilityChanged": "Uloženo.",
+      "resubmit": "Vyhodnotit znovu",
+      "resubmitAll": "Vyhodnotit znovu všechna",
+      "resubmitAllExplain": "Spustí všechna vzorová řešení proti úloze tak, jak je nastavená teď. Dělejte to po změně testů, limitů nebo soudce — takhle zjistíte, jestli změna nerozbila vaši vlastní úlohu.",
+      "resubmitted": "Posláno k vyhodnocení.",
+      "delete": "Smazat",
+      "deleted": "Řešení bylo smazáno.",
+      "failed": "Nepovedlo se.",
+      "status": {
+        "failed": "Nešlo vyhodnotit",
+        "pending": "Vyhodnocuje se",
+        "compilation-failed": "Nepřeložilo se",
+        "correct": "Všechny testy prošly",
+        "partial": "Některé testy prošly",
+        "incorrect": "Neprošel žádný test",
+        "not-scored": "Vyhodnoceno"
+      },
+      "confirmDelete": {
+        "title": "Smazat toto vzorové řešení?",
+        "description": "{description} zmizí nadobro i se vším, co o něm pipeline zaznamenala.",
+        "lastOne": "Tohle je jediné vzorové řešení, které úloha má. Smazáním se úloha stane nezadatelnou, dokud nepřibude jiné, a vše, co o něm pipeline zaznamenala, jde s ním.",
+        "confirm": "Smazat"
+      }
+    },
+    "submit": {
+      "title": "Odevzdat další",
+      "explain": "Nahrajte soubory a ReCodEx sám určí, o jaký jazyk jde, ještě než se cokoli spustí.",
+      "note": "Popis",
+      "noteExplain": "Čím je tohle řešení jiné — jaký algoritmus používá nebo co má ukázat.",
+      "check": "Zkontrolovat soubory",
+      "checking": "Kontroluji…",
+      "language": "Jazyk",
+      "noEnvironments": "Žádný z jazyků této úlohy neodpovídá nahraným souborům. Zkontrolujte jména souborů, nebo jazyk přidejte na obrazovce s testy a vyhodnocením.",
+      "submit": "Odevzdat",
+      "submitting": "Odevzdávám…",
+      "submitted": "Odevzdáno. Právě se vyhodnocuje.",
+      "failed": "Nepovedlo se."
+    },
+    "detail": {
+      "untitled": "Řešení bez popisu",
+      "backToList": "Všechna vzorová řešení",
+      "facts": "O tomto řešení",
+      "result": "Výsledek",
+      "language": "Jazyk",
+      "author": "Autor",
+      "created": "Odevzdáno",
+      "files": "Soubory",
+      "noFiles": "Žádné soubory.",
+      "evaluation": "Co udělala pipeline",
+      "neverEvaluated": "Toto řešení nebylo nikdy vyhodnoceno.",
+      "history": "Dřívější vyhodnocení",
+      "historyExplain": "Stejný kód spuštěný proti úloze tak, jak byla nastavená tehdy.",
+      "status": {
+        "failed": "Nešlo vyhodnotit",
+        "pending": "Vyhodnocuje se",
+        "compilation-failed": "Nepřeložilo se",
+        "correct": "Všechny testy prošly",
+        "partial": "Některé testy prošly",
+        "incorrect": "Neprošel žádný test",
+        "not-scored": "Vyhodnoceno"
+      }
+    },
+    "errors": {
+      "noFiles": "Nejdřív nahrajte soubory řešení.",
+      "noEnvironment": "Nejdřív vyberte jazyk.",
+      "visibilityFailed": "Nepodařilo se to změnit.",
+      "resubmitFailed": "Nepodařilo se poslat k vyhodnocení.",
+      "deleteFailed": "Nepodařilo se smazat.",
+      "preSubmitFailed": "Soubory se nepodařilo zkontrolovat.",
+      "submitFailed": "Nepodařilo se odevzdat."
     }
   },
   "Pipelines": {

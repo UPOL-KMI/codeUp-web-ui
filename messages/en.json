@@ -908,6 +908,7 @@
     "configure": "Tests and evaluation",
     "limits": "Execution limits",
     "assignmentsLink": "Where it is assigned",
+    "referenceSolutionsLink": "Reference solutions",
     "text": "What the student is asked to do",
     "noText": "This exercise has no text in any language yet.",
     "otherLocales": "Also written in: {locales}.",
@@ -1355,6 +1356,99 @@
     "errors": {
       "noGroups": "Pick at least one group.",
       "assignFailed": "The exercise could not be assigned there."
+    }
+  },
+  "ReferenceSolutions": {
+    "title": "Reference solutions",
+    "backToExercise": "Back to the exercise",
+    "list": {
+      "title": "The answers",
+      "explain": "A reference solution is your own answer, run through the very pipeline a student's would be. It is what proves the exercise is possible — an exercise with none of them cannot be assigned.",
+      "none": "This exercise has no reference solution, so it cannot be assigned. Submit one below.",
+      "allHidden": "This exercise does have reference solutions, but none of them is yours to read — an author's private answers are theirs alone. Submit your own below.",
+      "untitled": "Untitled solution",
+      "description": "Description",
+      "language": "Language",
+      "author": "Author",
+      "result": "Result",
+      "visibility": "Who sees it",
+      "attempts": "{count, plural, one {# evaluation} other {# evaluations}}",
+      "levels": {
+        "private": "Only teachers",
+        "public": "Students too",
+        "promoted": "The canonical answer"
+      },
+      "visibilityOf": "Who sees {description}",
+      "visibilityChanged": "Saved.",
+      "resubmit": "Re-evaluate",
+      "resubmitAll": "Re-evaluate all of them",
+      "resubmitAllExplain": "Run every reference solution against the exercise as it is configured now. Do this after changing the tests, the limits or the judge — it is how you find out whether the change broke your own exercise.",
+      "resubmitted": "Sent for evaluation.",
+      "delete": "Delete",
+      "deleted": "The solution was deleted.",
+      "failed": "That did not work.",
+      "status": {
+        "failed": "Could not be evaluated",
+        "pending": "Being evaluated",
+        "compilation-failed": "Did not compile",
+        "correct": "All tests passed",
+        "partial": "Some tests passed",
+        "incorrect": "No test passed",
+        "not-scored": "Evaluated"
+      },
+      "confirmDelete": {
+        "title": "Delete this reference solution?",
+        "description": "{description} goes for good, along with everything the pipeline recorded about it.",
+        "lastOne": "This is the only reference solution the exercise has. Deleting it makes the exercise impossible to assign until another one is submitted, and everything the pipeline recorded about this one goes with it.",
+        "confirm": "Delete it"
+      }
+    },
+    "submit": {
+      "title": "Submit another",
+      "explain": "Upload the files, and ReCodEx works out which language they are before anything is run.",
+      "note": "Description",
+      "noteExplain": "What is different about this one — the algorithm it uses, or what it is meant to demonstrate.",
+      "check": "Check the files",
+      "checking": "Checking…",
+      "language": "Language",
+      "noEnvironments": "None of this exercise's languages matches the files you uploaded. Check the file names, or add the language on the tests-and-evaluation screen.",
+      "submit": "Submit it",
+      "submitting": "Submitting…",
+      "submitted": "Submitted. It is being evaluated now.",
+      "failed": "That did not work."
+    },
+    "detail": {
+      "untitled": "Untitled solution",
+      "backToList": "All reference solutions",
+      "facts": "About this solution",
+      "result": "Result",
+      "language": "Language",
+      "author": "Author",
+      "created": "Submitted",
+      "files": "Files",
+      "noFiles": "No files.",
+      "evaluation": "What the pipeline did",
+      "neverEvaluated": "This solution has never been evaluated.",
+      "history": "Earlier evaluations",
+      "historyExplain": "The same code, run against the exercise as it was configured at the time.",
+      "status": {
+        "failed": "Could not be evaluated",
+        "pending": "Being evaluated",
+        "compilation-failed": "Did not compile",
+        "correct": "All tests passed",
+        "partial": "Some tests passed",
+        "incorrect": "No test passed",
+        "not-scored": "Evaluated"
+      }
+    },
+    "errors": {
+      "noFiles": "Upload the solution's files first.",
+      "noEnvironment": "Choose the language first.",
+      "visibilityFailed": "That could not be changed.",
+      "resubmitFailed": "It could not be sent for evaluation.",
+      "deleteFailed": "It could not be deleted.",
+      "preSubmitFailed": "The files could not be checked.",
+      "submitFailed": "It could not be submitted."
     }
   },
   "Pipelines": {

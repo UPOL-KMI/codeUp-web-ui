@@ -32,7 +32,7 @@
 | `app/exercises/:exerciseId`                                                | Exercise                   | true  | EXERCISE_URI_FACTORY                        | `/exercises/[id]`                      | done   |
 | `app/exercises/:exerciseId/edit`                                           | EditExercise               | true  | EXERCISE_EDIT_URI_FACTORY                   | `/exercises/[id]/edit`                 | done   |
 | `app/exercises/:exerciseId/assignments`                                    | ExerciseAssignments        | true  | EXERCISE_ASSIGNMENTS_URI_FACTORY            | `/exercises/[id]/assignments`          | done   |
-| `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | todo   |
+| `app/exercises/:exerciseId/reference-solutions`                            | ExerciseReferenceSolutions | true  | EXERCISE_REFERENCE_SOLUTIONS_URI_FACTORY    | `/exercises/[id]/reference-solutions`  | done   |
 | `app/exercises/:exerciseId/edit-config`                                    | EditExerciseConfig         | true  | EXERCISE_EDIT_CONFIG_URI_FACTORY            | `/exercises/[id]/edit-config`          | done   |
 | `app/exercises/:exerciseId/edit-limits`                                    | EditExerciseLimits         | true  | EXERCISE_EDIT_LIMITS_URI_FACTORY            | `/exercises/[id]/edit-limits`          | done   |
 | `app/exercises/:exerciseId/reference-solution/:referenceSolutionId`        | ReferenceSolution          | true  | REFERENCE_SOLUTION_URI_FACTORY              | `/reference-solutions/[id]`            | todo   |
@@ -103,7 +103,7 @@
 | `pipelines`                    | Pipeline CRUD, structure                                   | `pipelines`                                    | todo   |
 | `plagiarisms`                  | Plagiarism detection                                       | `solutions/[id]/plagiarisms`                   | done   |
 | `referenceSolutionEvaluations` | Reference solution evaluations                             | `reference-solutions/[id]`                     | todo   |
-| `referenceSolutions`           | Reference solutions                                        | `exercises/[id]/reference-solutions`           | todo   |
+| `referenceSolutions`           | Reference solutions                                        | `exercises/[id]/reference-solutions`           | done   |
 | `registration`                 | User registration                                          | `/register`                                    | done   |
 | `runtimeEnvironments`          | Runtime environments                                       | `admin/server`                                 | todo   |
 | `shadowAssignments`            | Shadow assignments (bonus)                                 | `shadow-assignments/[id]`                      | done   |

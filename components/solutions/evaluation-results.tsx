@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
-import type { SolutionDetail, SolutionTestResult } from "@/lib/api/solution";
+import type { SolutionEvaluation, SolutionTestResult } from "@/lib/api/solution";
 import { formatPercent } from "@/lib/format/points";
 
 import { Badge } from "@/components/status/badge";
@@ -29,7 +29,18 @@ function TestStatus({ result, label }: { result: SolutionTestResult; label: stri
   return <Badge tone={tone}>{label}</Badge>;
 }
 
-export async function EvaluationResults({ solution }: { solution: SolutionDetail }) {
+/**
+ * Takes the two fields it actually reads rather than a whole `SolutionDetail` (widened by T-011):
+ * a **reference** solution has an evaluation of exactly this shape and none of the rest of an
+ * assignment solution -- no attempt index, no points, no review -- so passing the entity would
+ * have meant synthesising a fake one to reuse the only part that is genuinely shared.
+ */
+export interface EvaluatedSubmission {
+  evaluation: SolutionEvaluation | null;
+  failure: { type: string; description: string } | null;
+}
+
+export async function EvaluationResults({ solution }: { solution: EvaluatedSubmission }) {
   const [t, format] = await Promise.all([getTranslations("Solution.evaluation"), getFormatter()]);
 
   if (solution.failure) {

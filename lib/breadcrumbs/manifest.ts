@@ -82,6 +82,23 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "ExerciseConfig", pattern: "/exercises/:exerciseId/edit-config" },
   { namespace: "ExerciseLimits", pattern: "/exercises/:exerciseId/edit-limits" },
   { namespace: "ExerciseAssignments", pattern: "/exercises/:exerciseId/assignments" },
+  { namespace: "ReferenceSolutions", pattern: "/exercises/:exerciseId/reference-solutions" },
+  {
+    // A reference solution's crumb is its description -- the author's own note about what this
+    // answer demonstrates -- which is the only thing that distinguishes it from the exercise's
+    // other answers. `getReferenceSolution` is not memoized, so this is a second read; the list
+    // endpoint would be a larger one.
+    pattern: "/exercises/:exerciseId/reference-solutions/:solutionId",
+    resolve: async (params, locale) => {
+      const [solution, t] = await Promise.all([
+        apiRead<{ description?: string }>("/v1/reference-solutions/{solutionId}", {
+          pathParams: { solutionId: params.solutionId! },
+        }),
+        getTranslations({ locale, namespace: "ReferenceSolutions.detail" }),
+      ]);
+      return solution.description || t("untitled");
+    },
+  },
   { namespace: "AssignExercise", pattern: "/groups/:groupId/assign" },
   { namespace: "Sources", pattern: "/solutions/:solutionId/sources" },
   { namespace: "Plagiarism", pattern: "/solutions/:solutionId/plagiarisms" },

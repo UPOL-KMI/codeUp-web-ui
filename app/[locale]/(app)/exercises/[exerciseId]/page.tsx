@@ -22,9 +22,9 @@ import { Badge } from "@/components/status/badge";
  * this app states in words rather than showing a red badge and leaving the reader to guess.
  *
  * Nothing here writes. Editing is T-008's and the tests and their configuration are T-009's, and
- * both are linked from here now that those screens exist. The limits are T-010's and the assignments made
- * from it are T-012's; all three are linked. Only the reference solutions (T-011) have no screen
- * yet, so this page names how many there are and links to none (DEC-066).
+ * both are linked from here now that those screens exist. The limits are T-010's, the assignments made from
+ * it are T-012's and its reference solutions are T-011's; every one of them now exists and is
+ * linked, which is what DEC-066's rule was waiting for.
  */
 export default async function ExercisePage({
   params,
@@ -85,6 +85,12 @@ export default async function ExercisePage({
               {t("assignmentsLink")}
             </Link>
           )}
+          <Link
+            href={`/exercises/${exerciseId}/reference-solutions`}
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("referenceSolutionsLink")}
+          </Link>
           <Link
             href="/exercises"
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

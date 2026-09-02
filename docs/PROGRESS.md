@@ -504,6 +504,35 @@
     because assigning one twice in a group is legitimate and core-api allows it.
   - _Observations:_ **206 e2e tests pass** (203 before), 120 unit tests.
 
+- **[2026-09-02 06:50] T-011:** An exercise's reference solutions -- the answers that prove it is
+  possible. `app/[locale]/(app)/exercises/[exerciseId]/reference-solutions/`,
+  `lib/api/reference-solutions.ts`, `lib/actions/reference-solutions.ts`,
+  `components/exercises/{reference-solutions-table,reference-solution-submit}.tsx`.
+  - _A reference solution is the author's own answer run through the pipeline a student's would be_,
+    and core-api will not let an exercise be assigned without one -- the fifth refusal T-001's
+    picker could only meet on the attempt (DEC-097). This is where it gets answered.
+  - **_The results table is S-015's component, unchanged._** It was widened to take the two fields
+    it actually reads rather than a whole `SolutionDetail`, because a reference solution has none
+    of the rest of one -- no attempt index, no points, no review -- and synthesising a fake
+    assignment solution to reuse the shared part would have been the wrong kind of clever. The
+    claim the reuse makes is the true one: a reference run **is** the exercise's own configuration
+    executed for real.
+  - **_Found live, and it changed the screen: the list is filtered one solution at a time._**
+    `canViewDetail` runs per row, so a supervisor sees an empty array for an exercise that plainly
+    has reference solutions and is assignable. The obvious empty state would have been a plain
+    falsehood; `hasReferenceSolutions` on the exercise is not filtered and is what separates
+    "nobody has written one" from "none of them is yours to read" (DEC-106).
+  - _Re-evaluating all of them is the screen's real work._ A reference solution proves the
+    configuration works, and the proof goes stale the moment the configuration changes -- one call
+    after editing the tests is how an author finds out whether they have broken their own exercise.
+  - _Visibility is a three-level scale_ -- private, students too, or the canonical answer -- not a
+    switch: "students can read this" and "this is the answer" are different claims.
+  - _Submitting reuses S-014's two-step:_ `pre-submit` asks core-api what the uploaded files are
+    before anything runs, so the language is reported rather than guessed, and files no configured
+    language claims are refused **before** submission rather than after.
+  - _Observations:_ **209 e2e tests pass** (206 before), 120 unit tests. Every reference solution on
+    this deployment reports an infrastructure failure (DEC-031), which is what the spec asserts.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3009,17 +3038,19 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   catalog and one exercise read, two tickets this session filed) and T-008 (making an exercise and
   its basic settings). **Exercise authoring has begun**, and T-009 and T-010 have now built the
   configuration and limits editors between them -- **every reason core-api gives for a new exercise
-  being broken can now be answered from this app** -- leaving the reference solutions and the
-  pipeline screens (T-011..T-016), plus the two tickets T-009 filed for the parts of its own screen
-  it does not own (T-024, T-025). T-023 and T-012 closed with them: an exercise's files (which
-  T-009 needed), its people, forking it, and the list of where it is assigned.
+  being broken can now be answered from this app** -- leaving only the pipeline screens
+  (T-013..T-016), plus the two tickets T-009 filed for the parts of its own screen it does not own
+  (T-024, T-025). T-023, T-012 and T-011 closed with them: an exercise's files (which T-009
+  needed), its people, forking it, where it is assigned, and the reference solutions without which
+  core-api refuses to assign it at all.
   **The anonymous flows have begun**: A-002 (`/login` is a real form rather than a placeholder),
   A-004 + A-005 (the password reset it links to), A-006 (confirming an address, and the dashboard's
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-011 -- an exercise's reference solutions: the list, one solution's evaluation,
-  and submitting a new one. The last screen of the exercise-authoring block that is not a pipeline.
+- **Next ticket:** T-013 -- the pipeline list, and then T-014..T-016. **The exercise-authoring
+  block is otherwise finished**: an exercise can be created, written, configured, limited, filed,
+  handed over, copied, answered and assigned without leaving this app.
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the
