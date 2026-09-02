@@ -3574,6 +3574,33 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     filed as swaps, and for those two "we replaced the library" quietly meant "we did not replace
     the capability". They stay visible, pointing at G-028 and G-005, rather than being cleaned away.
 
+- **[2026-09-02 22:45] P-005:** A README, and the hour it is meant to save. `README.md` (new).
+  - _The repo had no README at all_ -- brief §14 wants a fresh developer to clone, install,
+    `pnpm dev` and be productive from it alone, and there was nothing to be productive from.
+  - **_The single most useful paragraph in it is about a hostname._** The compose stack sets
+    `APP_DOMAIN=recodex.local`, which is not in anybody's `/etc/hosts`; inside the network the
+    services reach each other by service name and from the host they are only on `localhost`. That
+    trap is already recorded in this repo's own `.env.local` comment, having been hit here, and it
+    is the first thing a new developer will hit too. It gets its own callout rather than a footnote.
+  - _`.env.example` is treated as the configuration documentation_ rather than duplicated. It
+    already carries verified values and a comment per variable saying what breaks; the README says
+    to read it and calls out only the internal/public split and the build-time `URL_PATH_PREFIX`.
+  - _Five things the file names do not tell you:_ the token never reaching client JS (with the test
+    that proves it), `proxy.ts` not being `middleware.ts`, `proxy.ts` not being the authorisation
+    boundary either, permissions coming from hints rather than role names, and `aria-label`/`title`/
+    `sr-only` counting as user-facing text for the both-locales rule.
+  - **_It says plainly that the app is not at parity._** A reader who sees every phase marked done
+    would reasonably assume it is; the `docs/` section warns that G-001..G-029 exist and that a
+    screen rendering is not the same as a screen being finished.
+  - _Deployment and cutover are separated_, because the cutover is not a code change: nginx serves
+    the legacy app at `/` today, and the redirect work, the `core-api` frontend-URL setting and the
+    question of whether the old app stays reachable are all operator decisions (P-006's R-004).
+  - _And the three local environment limits are stated up front_ -- no real pass/fail on cgroup v2,
+    no SMTP, six runtime environments -- because each one makes a screen look broken when it is not.
+  - _Every claim in it was checked against the file it describes_, not written from memory: the CI
+    job list, the security spec's two assertions, the licence, `.nvmrc`, the compose service's
+    environment block and the published port.
+
 ### Current Status
 
 - **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is
