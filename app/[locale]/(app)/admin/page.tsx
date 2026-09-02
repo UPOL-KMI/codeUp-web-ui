@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -8,6 +9,16 @@ import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 import { AsyncJobs } from "@/components/admin/async-jobs";
 import { BrokerPanel } from "@/components/admin/broker-panel";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Server" });
+  return { title: t("title") };
+}
 
 /**
  * The backend services this deployment runs on (AD-006) -- the `/admin` placeholder the sidebar has

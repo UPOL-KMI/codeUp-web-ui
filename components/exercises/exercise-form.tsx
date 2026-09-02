@@ -88,7 +88,16 @@ export function ExerciseForm({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-6">
+      <form
+        onSubmit={(event) => {
+          if (isPending) {
+            event.preventDefault();
+            return;
+          }
+          void onSubmit(event);
+        }}
+        className="flex flex-col gap-6"
+      >
         {editedLocales.map((locale, index) => (
           <fieldset
             key={locale}
@@ -100,25 +109,48 @@ export function ExerciseForm({
               {t("name")}
               <input type="text" className={input} {...register(`texts.${index}.name`)} />
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              {t("text")}
+            <div className="flex flex-col gap-1 text-sm">
+              <label htmlFor={`texts.${index}.text`}>{t("text")}</label>
               <textarea
+                id={`texts.${index}.text`}
                 rows={8}
+                aria-describedby={`texts.${index}.text-hint`}
                 className={`${input} font-mono`}
                 {...register(`texts.${index}.text`)}
               />
-              <span className="text-xs text-muted-foreground">{t("textHint")}</span>
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              {t("description")}
-              <textarea rows={2} className={input} {...register(`texts.${index}.description`)} />
-              <span className="text-xs text-muted-foreground">{t("descriptionHint")}</span>
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              {t("link")}
-              <input type="url" className={input} {...register(`texts.${index}.link`)} />
-              <span className="text-xs text-muted-foreground">{t("linkHint")}</span>
-            </label>
+              <span id={`texts.${index}.text-hint`} className="text-xs text-muted-foreground">
+                {t("textHint")}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 text-sm">
+              <label htmlFor={`texts.${index}.description`}>{t("description")}</label>
+              <textarea
+                id={`texts.${index}.description`}
+                rows={2}
+                aria-describedby={`texts.${index}.description-hint`}
+                className={input}
+                {...register(`texts.${index}.description`)}
+              />
+              <span
+                id={`texts.${index}.description-hint`}
+                className="text-xs text-muted-foreground"
+              >
+                {t("descriptionHint")}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 text-sm">
+              <label htmlFor={`texts.${index}.link`}>{t("link")}</label>
+              <input
+                type="url"
+                id={`texts.${index}.link`}
+                aria-describedby={`texts.${index}.link-hint`}
+                className={input}
+                {...register(`texts.${index}.link`)}
+              />
+              <span id={`texts.${index}.link-hint`} className="text-xs text-muted-foreground">
+                {t("linkHint")}
+              </span>
+            </div>
           </fieldset>
         ))}
 
@@ -160,18 +192,22 @@ export function ExerciseForm({
               })}
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
-            {t("solutionSizeLimit")}
+          <div className="flex flex-col gap-1 text-sm">
+            <label htmlFor="solutionSizeLimit">{t("solutionSizeLimit")}</label>
             <input
               type="number"
+              id="solutionSizeLimit"
               min={1}
+              aria-describedby="solutionSizeLimit-hint"
               className={`${input} w-40`}
               {...register("solutionSizeLimit", {
                 setValueAs: (value) => (value === "" ? null : Number(value)),
               })}
             />
-            <span className="text-xs text-muted-foreground">{t("solutionSizeLimitHint")}</span>
-          </label>
+            <span id="solutionSizeLimit-hint" className="text-xs text-muted-foreground">
+              {t("solutionSizeLimitHint")}
+            </span>
+          </div>
         </div>
 
         {errors.texts && (
@@ -188,10 +224,10 @@ export function ExerciseForm({
         <div>
           <button
             type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+            aria-disabled={isPending}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
           >
-            {t("save")}
+            {isPending ? t("saving") : t("save")}
           </button>
         </div>
       </form>

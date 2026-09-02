@@ -22,13 +22,15 @@ export function GroupTabs({
   groupId,
   tabs,
   current,
+  label,
 }: {
   groupId: string;
   tabs: GroupTab[];
   current: string;
+  label: string;
 }) {
   return (
-    <nav className="-mb-px flex flex-wrap gap-1">
+    <nav aria-label={label} className="-mb-px flex flex-wrap gap-1">
       {tabs.map((tab) => {
         const active = tab.id === current;
         return (

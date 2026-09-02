@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail } from "@/lib/api/assignment";
@@ -7,6 +8,16 @@ import { Link } from "@/i18n/navigation";
 import { SubmitForm } from "@/components/assignments/submit-form";
 import { PageShell } from "@/components/page-shell";
 import { StatusState } from "@/components/state/status-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Submit" });
+  return { title: t("title") };
+}
 
 /**
  * Submitting a solution (S-014).

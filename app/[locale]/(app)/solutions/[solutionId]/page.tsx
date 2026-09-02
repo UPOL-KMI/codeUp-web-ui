@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getSolutionDetail } from "@/lib/api/solution";
@@ -14,6 +15,16 @@ import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Solution" });
+  return { title: t("pageTitle") };
+}
 
 /**
  * A submitted solution and its evaluation (S-015) -- where submitting lands, and where every
@@ -49,6 +60,16 @@ export default async function SolutionPage({
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
   const pending = evaluationStatus(solution.status) === "pending";
   const expectedTasks = Number.parseInt(query.tasks ?? "", 10);
+  const announcement = solution.failure
+    ? t("evaluation.announce.failed")
+    : !solution.evaluation
+      ? t("evaluation.announce.pending")
+      : solution.evaluation.initFailed
+        ? t("evaluation.announce.initFailed")
+        : t("evaluation.announce.done", {
+            passed: solution.evaluation.testResults.filter((result) => result.score >= 1).length,
+            total: solution.evaluation.testResults.length,
+          });
 
   return (
     <PageShell
@@ -159,6 +180,11 @@ export default async function SolutionPage({
           <h2 id="solution-evaluation" className="mb-3 text-base font-semibold tracking-tight">
             {t("evaluation.heading")}
           </h2>
+          {/* Outside `pending`, so the region is still mounted when the result replaces the
+              progress island -- a live region inserted with its content announces nothing. */}
+          <p role="status" aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
           {pending && (
             <div className="mb-4">
               <EvaluationProgress

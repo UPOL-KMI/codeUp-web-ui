@@ -59,7 +59,8 @@ export function EvaluationProgress({
   const t = useTranslations("Solution.progress");
   const router = useRouter();
   const [done, setDone] = useState(0);
-  const [failed, setFailed] = useState(false);
+  const [failedTasks, setFailedTasks] = useState(0);
+  const [jobFailed, setJobFailed] = useState(false);
 
   useEffect(() => {
     let polls = 0;
@@ -96,9 +97,11 @@ export function EvaluationProgress({
       }
       if (message.command === "TASK") {
         setDone((count) => count + 1);
-        if (message.task_state === "FAILED") setFailed(true);
+        if (message.task_state === "FAILED") setFailedTasks((count) => count + 1);
       } else if (message.command === "FAILED") {
-        setFailed(true);
+        setJobFailed(true);
+        // A failed job is over, and what it recorded is core-api's to tell -- as for FINISHED.
+        router.refresh();
       } else if (message.command === "FINISHED") {
         socket.close();
         // The job is over; the authority on *what happened* is core-api, not this socket.
@@ -121,6 +124,11 @@ export function EvaluationProgress({
       <p className="text-sm">
         {percent !== null ? t("running", { done, total: expectedTasks }) : t("waiting")}
       </p>
+      {(jobFailed || failedTasks > 0) && (
+        <p className="text-sm text-destructive">
+          {jobFailed ? t("failed") : t("stepsFailed", { failed: failedTasks })}
+        </p>
+      )}
       {percent !== null && (
         <div
           className="h-2 overflow-hidden rounded-full bg-muted"
@@ -130,7 +138,7 @@ export function EvaluationProgress({
           aria-valuenow={done}
         >
           <div
-            className={`h-full ${failed ? "bg-destructive" : "bg-primary"}`}
+            className={`h-full ${jobFailed || failedTasks > 0 ? "bg-destructive" : "bg-primary"}`}
             style={{ width: `${percent}%` }}
           />
         </div>

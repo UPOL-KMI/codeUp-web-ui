@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -8,6 +9,16 @@ import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 import { routing } from "@/i18n/routing";
 import { MessageManager } from "@/components/messages/message-manager";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SystemMessages" });
+  return { title: t("title") };
+}
 
 /**
  * Broadcasts to everybody, and the screen that writes them (AD-007) -- the last placeholder page

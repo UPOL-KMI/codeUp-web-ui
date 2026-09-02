@@ -81,7 +81,7 @@ export function GroupSettingsControls({
     <div className="flex flex-col gap-6">
       {canChangeType && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("type.title")}</h3>
+          <h2 className="text-sm font-medium">{t("type.title")}</h2>
           <p className="text-sm text-muted-foreground">
             {t("type.current", {
               type: group.exam
@@ -126,7 +126,7 @@ export function GroupSettingsControls({
 
       {canArchive && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("archive.title")}</h3>
+          <h2 className="text-sm font-medium">{t("archive.title")}</h2>
           <p className="text-xs text-muted-foreground">{t("archive.explain")}</p>
           <div>
             <button
@@ -143,7 +143,7 @@ export function GroupSettingsControls({
 
       {canRelocate && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("relocate.title")}</h3>
+          <h2 className="text-sm font-medium">{t("relocate.title")}</h2>
           <p className="text-xs text-muted-foreground">{t("relocate.explain")}</p>
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -173,7 +173,7 @@ export function GroupSettingsControls({
 
       {canDelete && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium text-destructive">{t("delete.title")}</h3>
+          <h2 className="text-sm font-medium text-destructive">{t("delete.title")}</h2>
           <p className="text-xs text-muted-foreground">{t("delete.explain")}</p>
           <div>
             <button

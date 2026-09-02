@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -22,6 +23,16 @@ import { EnvironmentsForm } from "@/components/exercises/config/environments-for
 import { TestConfigForm } from "@/components/exercises/config/test-config-form";
 import { TestsForm } from "@/components/exercises/config/tests-form";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ExerciseConfig" });
+  return { title: t("title") };
+}
 
 /**
  * An exercise's evaluation configuration (T-009) -- the legacy `/app/exercises/:id/edit-config`

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -13,6 +14,16 @@ import { InstanceSettings } from "@/components/instances/instance-settings";
 import { LicenceManager } from "@/components/instances/licence-manager";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Instances" });
+  return { title: t("detailTitle") };
+}
 
 /**
  * One instance: what it is, whether people may join it, and the licences it runs on

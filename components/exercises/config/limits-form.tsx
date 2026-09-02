@@ -231,6 +231,10 @@ export function LimitsForm({
                               <button
                                 type="button"
                                 className={copyButton}
+                                aria-label={t("copyRowOf", {
+                                  test: test.name,
+                                  environment: environment.name,
+                                })}
                                 title={t("copyRow")}
                                 onClick={() => copy(test.id, environment.id, "row")}
                               >
@@ -241,6 +245,10 @@ export function LimitsForm({
                               <button
                                 type="button"
                                 className={copyButton}
+                                aria-label={t("copyColumnOf", {
+                                  test: test.name,
+                                  environment: environment.name,
+                                })}
                                 title={t("copyColumn")}
                                 onClick={() => copy(test.id, environment.id, "column")}
                               >
@@ -251,6 +259,10 @@ export function LimitsForm({
                               <button
                                 type="button"
                                 className={copyButton}
+                                aria-label={t("copyAllOf", {
+                                  test: test.name,
+                                  environment: environment.name,
+                                })}
                                 title={t("copyAll")}
                                 onClick={() => copy(test.id, environment.id, "all")}
                               >

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -9,6 +10,16 @@ import { Link } from "@/i18n/navigation";
 import { ExercisePicker } from "@/components/assignments/exercise-picker";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "AssignExercise" });
+  return { title: t("title") };
+}
 
 /**
  * Assigning an exercise to a group (T-001) -- the step before T-002's settings, and the only way
@@ -83,7 +94,6 @@ export default async function AssignExercisePage({
           <EmptyState
             title={t("empty.title")}
             description={search === "" ? t("empty.description") : t("empty.noMatch")}
-            headingLevel={3}
           />
         ) : (
           <>

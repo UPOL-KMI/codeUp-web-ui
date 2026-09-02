@@ -53,6 +53,9 @@ export function CommentThread({
   const [deleting, setDeleting] = useState<Comment | null>(null);
 
   async function run(call: () => Promise<ActionResult<unknown>>, successKey?: string) {
+    // The buttons are `aria-disabled` rather than `disabled` -- disabling the element under the
+    // pointer or the caret drops focus to the body -- so refusing the second call is this guard's.
+    if (pending) return false;
     setPending(true);
     setError(null);
     const result = await call();
@@ -104,22 +107,25 @@ export function CommentThread({
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      disabled={pending}
+                      aria-disabled={pending}
                       onClick={() =>
                         void run(
                           () => setCommentPrivacy(threadId, comment.id, !comment.isPrivate),
                           comment.isPrivate ? "madePublic" : "madePrivate",
                         )
                       }
-                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted aria-disabled:opacity-60"
                     >
                       {comment.isPrivate ? t("makePublic") : t("makePrivate")}
                     </button>
                     <button
                       type="button"
-                      disabled={pending}
-                      onClick={() => setDeleting(comment)}
-                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                      aria-disabled={pending}
+                      onClick={() => {
+                        if (pending) return;
+                        setDeleting(comment);
+                      }}
+                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted aria-disabled:opacity-60"
                     >
                       {t("delete")}
                     </button>
@@ -160,13 +166,14 @@ export function CommentThread({
         <div>
           <button
             type="button"
-            disabled={pending || text.trim() === ""}
-            onClick={() =>
+            aria-disabled={pending || text.trim() === ""}
+            onClick={() => {
+              if (pending || text.trim() === "") return;
               void run(() => addComment(threadId, text, isPrivate), "posted").then((ok) => {
                 if (ok) setText("");
-              })
-            }
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              });
+            }}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground aria-disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {pending ? t("posting") : t("post")}
           </button>

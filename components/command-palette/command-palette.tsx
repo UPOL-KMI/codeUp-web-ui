@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Command } from "cmdk";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -13,9 +13,11 @@ import { useRouter } from "@/i18n/navigation";
  * Built on `cmdk` rather than on this repo's own `Dialog` plus a list. The reasoning is the one
  * DEC-054 used for Radix: a command palette is a **combobox**, and combobox semantics --
  * `aria-activedescendant` moving through options while focus stays in the input, `role="listbox"`
- * / `role="option"` wiring, arrow-key and Home/End handling, announcing the count of results --
- * are the kind of thing that looks finished long before it is correct for a screen-reader user.
+ * / `role="option"` wiring, arrow-key and Home/End handling -- are the kind of thing that looks
+ * finished long before it is correct for a screen-reader user.
  * `cmdk` itself renders through Radix's Dialog, so this stays in the same primitive family.
+ * What it does not ship is a live region (nor translated names for its own listbox and busy
+ * indicator, hence the `label` props below), so the result count is announced here instead.
  *
  * Search is server-side (`/api/search`), never core-api directly: the session token stays in the
  * httpOnly cookie (brief §5), and that route also flattens the three different response shapes
@@ -32,14 +34,22 @@ const DEBOUNCE_MS = 200;
 /** Below this, every list endpoint matches nearly everything -- slow for core-api, useless here. */
 const MIN_QUERY_LENGTH = 2;
 
-export function CommandPalette() {
+/** `open` is owned by `SidebarNav`, not here: the trigger has to appear in both halves of the
+ *  shell's chrome, and that is the only component rendering both. */
+export function CommandPalette({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
+}) {
   const t = useTranslations("Palette");
   const locale = useLocale();
   const router = useRouter();
 
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
+  const [hitsQuery, setHitsQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Cmd+K on macOS, Ctrl+K elsewhere -- both, unconditionally, rather than sniffing the platform:
@@ -49,12 +59,12 @@ export function CommandPalette() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
-        setOpen((current) => !current);
+        onOpenChange((current) => !current);
       }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [onOpenChange]);
 
   // Short queries are handled by *deriving* the empty result below rather than by clearing state
   // here: a synchronous `setState` in an effect body is both an extra render and something this
@@ -74,7 +84,10 @@ export function CommandPalette() {
         signal: controller.signal,
       })
         .then((response) => response.json() as Promise<{ hits?: SearchHit[] }>)
-        .then((body) => setHits(body.hits ?? []))
+        .then((body) => {
+          setHits(body.hits ?? []);
+          setHitsQuery(trimmed);
+        })
         .catch(() => undefined)
         .finally(() => setLoading(false));
     }, DEBOUNCE_MS);
@@ -92,10 +105,18 @@ export function CommandPalette() {
   const visibleHits = isSearchable ? hits : [];
 
   const select = (hit: SearchHit) => {
-    setOpen(false);
+    onOpenChange(false);
     setQuery("");
     router.push(hit.href);
   };
+
+  // Announced only once the fetch for *this* query has landed: through the debounce window `hits`
+  // still holds the previous query's answer, and announcing that is worse than saying nothing.
+  const status = loading
+    ? t("loading")
+    : isSearchable && hitsQuery === trimmed
+      ? t("resultCount", { count: visibleHits.length })
+      : "";
 
   const groups: { kind: SearchHit["kind"]; heading: string }[] = [
     { kind: "group", heading: t("groups") },
@@ -106,7 +127,7 @@ export function CommandPalette() {
   return (
     <Command.Dialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       label={t("label")}
       // cmdk filters its own items by default, which would fight the server-side search: the API
       // already decided what matches (including on fields the label does not show, e.g. a user's
@@ -120,9 +141,9 @@ export function CommandPalette() {
         placeholder={t("placeholder")}
         className="w-full border-b border-border bg-transparent px-4 py-3 text-sm outline-none"
       />
-      <Command.List className="max-h-80 overflow-y-auto p-2">
+      <Command.List label={t("results")} className="max-h-80 overflow-y-auto p-2">
         {loading && (
-          <Command.Loading className="px-2 py-3 text-sm text-muted-foreground">
+          <Command.Loading label={t("loading")} className="px-2 py-3 text-sm text-muted-foreground">
             {t("loading")}
           </Command.Loading>
         )}
@@ -147,7 +168,7 @@ export function CommandPalette() {
                   key={`${hit.kind}-${hit.id}`}
                   value={`${hit.kind}-${hit.id}`}
                   onSelect={() => select(hit)}
-                  className="cursor-pointer truncate rounded-md px-2 py-1.5 text-sm font-normal normal-case text-foreground data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
+                  className="cursor-pointer truncate rounded-md px-2 py-1.5 text-sm font-normal normal-case text-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground"
                 >
                   {hit.label}
                 </Command.Item>
@@ -156,6 +177,30 @@ export function CommandPalette() {
           );
         })}
       </Command.List>
+      {/* A listbox may only contain options, so this sits outside Command.List rather than in it. */}
+      <span role="status" className="sr-only">
+        {status}
+      </span>
     </Command.Dialog>
+  );
+}
+
+export function CommandPaletteTrigger({
+  onOpen,
+  className,
+}: {
+  onOpen: () => void;
+  className: string;
+}) {
+  const t = useTranslations("Palette");
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`rounded-md border border-input text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+    >
+      {t("open")}
+    </button>
   );
 }

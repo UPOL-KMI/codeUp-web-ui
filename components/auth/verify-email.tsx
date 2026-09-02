@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
@@ -21,6 +21,13 @@ export function VerifyEmail({ token }: { token: string }) {
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirmation = useRef<HTMLDivElement>(null);
+
+  // The button that was pressed is unmounted by the panel that replaces it, which would drop focus
+  // to the document body -- so the panel takes it instead, and the next Tab is the dashboard link.
+  useEffect(() => {
+    if (done) confirmation.current?.focus();
+  }, [done]);
 
   async function verify() {
     setPending(true);
@@ -43,7 +50,7 @@ export function VerifyEmail({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div className="flex flex-col gap-3">
+      <div ref={confirmation} tabIndex={-1} className="flex flex-col gap-3 outline-none">
         <p className="rounded-lg border border-success bg-success/10 p-3 text-sm">{t("done")}</p>
         <p className="text-sm">
           <Link

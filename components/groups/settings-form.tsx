@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
@@ -43,6 +44,7 @@ export function GroupSettingsForm({
   const t = useTranslations("Group.settings.form");
   const router = useRouter();
   const toast = useToast();
+  const passingErrorId = useId();
 
   const editedLocales = [
     ...locales,
@@ -91,7 +93,16 @@ export function GroupSettingsForm({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <form
+        onSubmit={(event) => {
+          if (isPending) {
+            event.preventDefault();
+            return;
+          }
+          void onSubmit(event);
+        }}
+        className="flex flex-col gap-5"
+      >
         {editedLocales.map((locale, index) => (
           <fieldset key={locale} className="flex flex-col gap-2">
             <legend className="text-sm font-medium">{t("locale", { locale })}</legend>
@@ -107,11 +118,19 @@ export function GroupSettingsForm({
           </fieldset>
         ))}
 
-        <label className="flex flex-col gap-1 text-sm">
-          {t("externalId")}
-          <input type="text" className={input} {...register("externalId")} />
-          <span className="text-xs text-muted-foreground">{t("externalIdHint")}</span>
-        </label>
+        <div className="flex flex-col gap-1 text-sm">
+          <label htmlFor="externalId">{t("externalId")}</label>
+          <input
+            type="text"
+            id="externalId"
+            aria-describedby="externalId-hint"
+            className={input}
+            {...register("externalId")}
+          />
+          <span id="externalId-hint" className="text-xs text-muted-foreground">
+            {t("externalIdHint")}
+          </span>
+        </div>
 
         <div className="flex flex-col gap-2 text-sm">
           <label className="flex items-center gap-2">
@@ -143,6 +162,8 @@ export function GroupSettingsForm({
                 type="number"
                 min={1}
                 max={100}
+                aria-invalid={errors.threshold ? true : undefined}
+                aria-describedby={errors.threshold ? passingErrorId : undefined}
                 className={`${input} w-24`}
                 {...register("threshold", {
                   setValueAs: (value) => (value === "" ? null : Number(value)),
@@ -156,6 +177,8 @@ export function GroupSettingsForm({
               <input
                 type="number"
                 min={1}
+                aria-invalid={errors.pointsLimit ? true : undefined}
+                aria-describedby={errors.pointsLimit ? passingErrorId : undefined}
                 className={`${input} w-24`}
                 {...register("pointsLimit", {
                   setValueAs: (value) => (value === "" ? null : Number(value)),
@@ -164,7 +187,7 @@ export function GroupSettingsForm({
             </label>
           )}
           {(errors.threshold || errors.pointsLimit) && (
-            <p role="alert" className="text-sm text-destructive">
+            <p id={passingErrorId} role="alert" className="text-sm text-destructive">
               {t("errors.limitRequired")}
             </p>
           )}
@@ -185,10 +208,10 @@ export function GroupSettingsForm({
         <div>
           <button
             type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+            aria-disabled={isPending}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
           >
-            {t("save")}
+            {isPending ? t("saving") : t("save")}
           </button>
         </div>
       </form>

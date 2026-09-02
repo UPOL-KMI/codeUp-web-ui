@@ -102,6 +102,7 @@ export function GroupTable({ groups, tableId }: { groups: GroupListEntry[]; tabl
       columns={columns}
       data={groups}
       getRowId={(group) => group.id}
+      caption={t("caption")}
       filterPlaceholder={t("filter")}
     />
   );

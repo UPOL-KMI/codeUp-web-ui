@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail } from "@/lib/api/assignment";
@@ -11,6 +12,16 @@ import { ExerciseSyncNotice } from "@/components/assignments/exercise-sync-notic
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Assignment" });
+  return { title: t("title") };
+}
 
 /**
  * An assignment (S-012) -- the destination every deadline row on the dashboard and in a group has

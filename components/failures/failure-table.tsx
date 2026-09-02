@@ -146,6 +146,7 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
         columns={columns}
         data={failures}
         getRowId={(failure) => failure.id}
+        caption={t("caption")}
         filterPlaceholder={t("filterPlaceholder")}
       />
 

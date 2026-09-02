@@ -3601,6 +3601,66 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     job list, the security spec's two assertions, the licence, `.nvmrc`, the compose service's
     environment block and the published port.
 
+- **[2026-09-03 00:20] P-002:** The accessibility pass. 103 files, `messages/{en,cs}.json`, DEC-118.
+  - _Audited in six lenses_ -- the shell and the palette, forms and dialogs, tables and widgets,
+    per-route structure and headings, colour and contrast, asynchronous updates -- and **every
+    finding was then handed to a second reader whose instructions were to refute it**, with
+    "default to refuted when in doubt". **56 survived, 8 did not.** The refuted ones are the reason
+    to do it that way: most were ARIA that Radix already supplies, and adding it would have been a
+    regression rather than a neutral change.
+  - **_The findings clustered in three places, and none of them was where a checklist would look._**
+    First, **the shared `DataTable`** -- the weakest widget in the codebase and the one behind the
+    group list, the roster, the solutions table and the failure queue: no `aria-sort`, no `scope`,
+    an `aria-hidden` arrow as the only sort indicator, no accessible name, no announcement when
+    filtering or paging changed what is on screen, and a literal "Select row" on every bulk
+    checkbox. The bespoke tables around it were in better shape than the shared one.
+  - _Second, **the light theme was systematically under-saturated**._ Contrast was computed rather
+    than eyeballed, and the numbers are in the commit: the focus ring was **2.6:1** against white
+    (the floor is 3:1) and every control paired it with `outline-none`; every non-neutral badge
+    rendered its label in the same hue as its own background tint; the destructive confirm button
+    was `text-white` on a fill that could not carry it in dark. The dark theme passed everywhere it
+    was measured.
+  - _Third, **things that were said in colour or in a `title` attribute alone**._ The points matrix
+    is the sharpest: the "nobody submitted" versus "everything failed" distinction that T-006 built
+    the whole table for was **a glyph and a tooltip**, reachable by hovering and by nothing else.
+  - **_One CSS line was erasing table semantics across every exercise text in the product._**
+    `[data-slot="markdown"] table { display: block }` -- a scroll fix -- strips `table`/`row`/`cell`
+    roles from every GFM table an author has ever written. The scroll box is now a wrapper element,
+    which was always the right shape for it.
+  - _And all 46 routes shipped the identical `<title>ReCodEx</title>`_, because only the locale
+    layout set metadata. 45 now carry their own, taken from the namespace each page **already** uses
+    for its `<h1>` -- so **no page gained a data fetch to have a title.** Dynamic routes are titled
+    with their section ("Group", not the group's name): naming the entity means fetching it a second
+    time in `generateMetadata`, and with `cacheComponents: false` that is a real extra round trip on
+    every render. The landing page is the one deliberate omission -- its heading _is_ the product
+    name, so feeding it the template would render "ReCodEx · ReCodEx".
+  - **_One fix was built, measured, and taken back out (DEC-118)._** The loading skeleton's
+    `role="status"` had nothing to read, so it was given translated text -- which meant a client
+    component, because a `loading.tsx` is a `Suspense` fallback and must be synchronous. `next build`
+    then showed `/faq` and `/forgot-password`, **the only two prerendered routes in the app**,
+    turning dynamic. Confirmed by bisection rather than assumed: reverting that one file brought
+    both back to `●`. The role is now applied only where a caller passes a label, which the streamed
+    dashboard panels do and a `loading.tsx` cannot.
+  - _Half the work was cross-file follow-ups_, because a fix in a shared component is not finished
+    until its callers use it: `DataTable` gained a `caption` prop and six tables had to pass one;
+    `ErrorState` gained `headingLevel` and the dashboard had to pass it; `--destructive-foreground`
+    changed and the design-system gallery had to stop hardcoding `text-white`.
+  - **_One e2e assertion had to move in the same commit, and it is worth naming why._**
+    `groups.spec.ts` read the points matrix with `allInnerTexts()`. `sr-only` text is **clipped, not
+    hidden**, so it is part of `innerText` -- the moment the explanation moved out of a `title`
+    attribute and into visually hidden text, that assertion was reading `"!Every attempt failed…"`
+    and comparing it to `"!"`. It now reads the decorative span, and asserts the sentence separately.
+  - _A session limit killed three of the six appliers mid-edit._ Their partial work was reverted to
+    HEAD rather than salvaged -- unreported edits and unreported message keys are worse than none,
+    since a missing key is a runtime failure a build cannot catch -- and those three groups were
+    re-run from the same findings.
+  - _Verified:_ `typecheck`, `lint`, `format:check`, `build`, **170 unit tests**, **257 e2e tests**,
+    all green, and `/faq` and `/forgot-password` still prerender.
+  - _Observations:_ **not re-audited after the fixes, and no assistive technology was used at any
+    point** -- everything here is contrast arithmetic and reading the accessibility tree out of the
+    source. A screen-reader pass by a person is the thing this ticket could not do, and it is in
+    `RETROSPECTIVE.md` §5.12 as such.
+
 ### Current Status
 
 - **Phase:** Parity Sweep & Polish (Phase 7). **P-001 has been run and the picture it returned is

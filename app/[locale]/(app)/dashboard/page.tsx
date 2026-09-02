@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
@@ -14,6 +15,16 @@ import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Dashboard" });
+  return { title: t("title") };
+}
 
 /**
  * The authenticated landing page (`docs/IA.md` §4.1: "a landing pad, not a destination").
@@ -45,9 +56,10 @@ export default async function DashboardPage({
   searchParams: Promise<DashboardSearchParams>;
 }) {
   const locale = await getLocale();
-  const [breadcrumbs, t, groups, viewer, params] = await Promise.all([
+  const [breadcrumbs, t, status, groups, viewer, params] = await Promise.all([
     resolveBreadcrumbsForNamespace("Dashboard", locale),
     getTranslations("Dashboard"),
+    getTranslations("Status"),
     getMyGroups(locale),
     // A-006's nudge lives here because this is where the legacy app puts it, and because it is the
     // one screen everybody passes through.
@@ -112,8 +124,10 @@ export default async function DashboardPage({
             >
               {section.label}
             </h2>
-            <ErrorBoundary>
-              <Suspense fallback={<TableSkeleton />}>{section.body}</Suspense>
+            <ErrorBoundary headingLevel={3}>
+              <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+                {section.body}
+              </Suspense>
             </ErrorBoundary>
           </section>
         ))}

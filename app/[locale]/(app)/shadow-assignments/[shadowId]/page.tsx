@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getShadowAssignment } from "@/lib/api/shadow-assignment";
@@ -10,6 +11,16 @@ import { DateTime } from "@/components/format/date-time";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Shadow" });
+  return { title: t("title") };
+}
 
 /**
  * A shadow assignment (S-020) -- work ReCodEx does not evaluate, whose points a teacher awards by

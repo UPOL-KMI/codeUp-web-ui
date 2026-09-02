@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -9,6 +10,16 @@ import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
 import { StructureEditor } from "@/components/pipelines/structure-editor";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "PipelineEdit" });
+  return { title: t("title") };
+}
 
 /**
  * Editing a pipeline (T-015) and its structure (T-016) -- the legacy `EditPipeline` and

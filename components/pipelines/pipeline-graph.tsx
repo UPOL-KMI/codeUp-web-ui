@@ -33,7 +33,7 @@ export function PipelineGraph({
   if (layout.nodes.length === 0) return null;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-3">
+    <div tabIndex={0} className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-3">
       <div
         className="text-foreground"
         dangerouslySetInnerHTML={{ __html: renderPipelineSvg(layout, { selected, title }) }}

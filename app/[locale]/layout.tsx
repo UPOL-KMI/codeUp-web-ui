@@ -20,7 +20,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
-  return { title: t("title") };
+  // `default` is not optional alongside `template`: without it every route that supplies no title
+  // of its own would render an empty <title> rather than falling back to the app name.
+  return { title: { template: `%s · ${t("title")}`, default: t("title") } };
 }
 
 export default async function LocaleLayout({

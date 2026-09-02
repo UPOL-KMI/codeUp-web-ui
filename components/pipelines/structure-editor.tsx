@@ -220,7 +220,7 @@ export function StructureEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-3">
+      <div tabIndex={0} className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-3">
         <div className="text-foreground" dangerouslySetInnerHTML={{ __html: svg }} />
       </div>
 
@@ -322,6 +322,7 @@ export function StructureEditor({
                     <td className="py-1 text-right">
                       <button
                         type="button"
+                        aria-label={t("removeVariable", { index: index + 1 })}
                         onClick={() =>
                           setVariables((previous) => previous.filter((_, at) => at !== index))
                         }
@@ -375,6 +376,7 @@ export function StructureEditor({
                 {!readOnly && (
                   <button
                     type="button"
+                    aria-label={t("removeBox", { name: box.name })}
                     onClick={() => setBoxes((previous) => previous.filter((_, at) => at !== index))}
                     className="ml-auto rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
                   >

@@ -212,7 +212,11 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
             {t("mySolutions")}
           </h2>
           {assignment.mySolutions.length === 0 ? (
-            <EmptyState title={t("noSolutions.title")} description={t("noSolutions.description")} />
+            <EmptyState
+              title={t("noSolutions.title")}
+              description={t("noSolutions.description")}
+              headingLevel={3}
+            />
           ) : (
             <SolutionList solutions={assignment.mySolutions} />
           )}

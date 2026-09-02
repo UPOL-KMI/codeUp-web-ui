@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -31,10 +31,14 @@ export interface DataTableProps<T> {
    *  query server-side first is that caller's own decision, not this component's concern. */
   data: T[];
   getRowId: (row: T) => string;
+  /** The table's accessible name, rendered as a visually hidden `<caption>`. */
+  caption?: React.ReactNode;
   emptyState?: React.ReactNode;
   pageSize?: number;
   filterPlaceholder?: string;
   selectable?: boolean;
+  /** Names each selection checkbox after its own row, instead of a bare "select row". */
+  getRowLabel?: (row: T) => string;
   onSelectionChange?: (selectedIds: string[]) => void;
 }
 
@@ -97,10 +101,12 @@ function DataTableInner<T>({
   columns,
   data,
   getRowId,
+  caption,
   emptyState,
   pageSize = DEFAULT_PAGE_SIZE,
   filterPlaceholder,
   selectable = false,
+  getRowLabel,
   onSelectionChange,
 }: DataTableProps<T>) {
   const t = useTranslations("Table");
@@ -120,6 +126,7 @@ function DataTableInner<T>({
 
   const [filterInput, setFilterInput] = useState(urlQuery);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectPageRef = useRef<HTMLInputElement>(null);
 
   // Keep the input in sync if the URL changes from elsewhere (e.g. back/forward navigation) --
   // React's documented pattern for "adjust state when a prop changes" (a conditional setState
@@ -231,6 +238,23 @@ function DataTableInner<T>({
 
   const allPageRowsSelected =
     pageRows.length > 0 && pageRows.every((row) => selectedIds.has(getRowId(row)));
+  const somePageRowsSelected = pageRows.some((row) => selectedIds.has(getRowId(row)));
+
+  // `indeterminate` has no HTML attribute behind it -- it exists only as a DOM property, so JSX
+  // can't set it and it has to be written onto the node itself.
+  useEffect(() => {
+    const node = selectPageRef.current;
+    if (node) node.indeterminate = somePageRowsSelected && !allPageRowsSelected;
+  }, [somePageRowsSelected, allPageRowsSelected]);
+
+  const statusText =
+    sorted.length === 0
+      ? t("noResults")
+      : t("showing", {
+          from: (clampedPage - 1) * pageSize + 1,
+          to: Math.min(clampedPage * pageSize, sorted.length),
+          total: sorted.length,
+        });
 
   return (
     <div className="flex flex-col gap-3">
@@ -245,13 +269,19 @@ function DataTableInner<T>({
         />
       )}
 
+      <p role="status" aria-live="polite" className="sr-only">
+        {statusText}
+      </p>
+
       <div className="overflow-x-auto rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
+          {caption !== undefined && <caption className="sr-only">{caption}</caption>}
           <thead>
             <tr className="border-b border-border bg-muted/50">
               {selectable && (
-                <th className="w-10 px-3 py-2">
+                <th scope="col" className="w-10 px-3 py-2">
                   <input
+                    ref={selectPageRef}
                     type="checkbox"
                     checked={allPageRowsSelected}
                     onChange={togglePage}
@@ -259,27 +289,40 @@ function DataTableInner<T>({
                   />
                 </th>
               )}
-              {columns.map((column) => (
-                <th
-                  key={column.id}
-                  className={`px-3 py-2 text-left font-medium ${column.className ?? ""}`}
-                >
-                  {column.sortable ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSort(column.id)}
-                      className="flex items-center gap-1 hover:text-foreground"
-                    >
-                      {column.header}
-                      {sortColumn === column.id && (
-                        <span aria-hidden="true">{sortDirection === "asc" ? "↑" : "↓"}</span>
-                      )}
-                    </button>
-                  ) : (
-                    column.header
-                  )}
-                </th>
-              ))}
+              {columns.map((column) => {
+                const active = sortColumn === column.id;
+                return (
+                  <th
+                    key={column.id}
+                    scope="col"
+                    className={`px-3 py-2 text-left font-medium ${column.className ?? ""}`}
+                    aria-sort={
+                      column.sortable
+                        ? active
+                          ? sortDirection === "asc"
+                            ? "ascending"
+                            : "descending"
+                          : "none"
+                        : undefined
+                    }
+                  >
+                    {column.sortable ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSort(column.id)}
+                        className="flex items-center gap-1 hover:text-foreground"
+                      >
+                        {column.header}
+                        {active && (
+                          <span aria-hidden="true">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </button>
+                    ) : (
+                      column.header
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -306,7 +349,11 @@ function DataTableInner<T>({
                           type="checkbox"
                           checked={selectedIds.has(rowId)}
                           onChange={() => toggleRow(rowId)}
-                          aria-label={t("selectRow")}
+                          aria-label={
+                            getRowLabel
+                              ? t("selectRowNamed", { label: getRowLabel(row) })
+                              : t("selectRow")
+                          }
                         />
                       </td>
                     )}
@@ -325,13 +372,7 @@ function DataTableInner<T>({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {t("showing", {
-              from: (clampedPage - 1) * pageSize + 1,
-              to: Math.min(clampedPage * pageSize, sorted.length),
-              total: sorted.length,
-            })}
-          </span>
+          <span>{statusText}</span>
           <div className="flex items-center gap-2">
             <button
               type="button"

@@ -35,7 +35,9 @@ export async function ExamTable({
   const tExam = await getTranslations("Group.exams");
 
   if (exams.length === 0) {
-    return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
+    return (
+      <EmptyState title={t("empty.title")} description={t("empty.description")} headingLevel={3} />
+    );
   }
 
   return (

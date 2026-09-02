@@ -80,6 +80,7 @@ export function DesignSystemShowcase({
   dateSamples: React.ReactNode;
 }) {
   const t = useTranslations("DesignSystem");
+  const status = useTranslations("Status");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmCount, setConfirmCount] = useState(0);
   const form = useForm<{ email: string }>({ defaultValues: { email: "" } });
@@ -98,7 +99,7 @@ export function DesignSystemShowcase({
               ["secondary", "bg-secondary text-secondary-foreground border-transparent"],
               ["muted", "bg-muted text-muted-foreground border-transparent"],
               ["accent", "bg-accent text-accent-foreground border-transparent"],
-              ["destructive", "bg-destructive text-white border-transparent"],
+              ["destructive", "bg-destructive text-destructive-foreground border-transparent"],
             ] as const
           ).map(([name, classes]) => (
             <span
@@ -237,7 +238,7 @@ export function DesignSystemShowcase({
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">{t("stateLoading")}</p>
-            <TableSkeleton rows={3} columns={3} />
+            <TableSkeleton rows={3} columns={3} label={status("loading")} />
           </div>
 
           <div className="flex flex-col gap-2">

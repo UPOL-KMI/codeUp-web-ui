@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -11,6 +12,16 @@ import { AssignToGroups } from "@/components/exercises/exercise-assignments";
 import { DateTime } from "@/components/format/date-time";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ExerciseAssignments" });
+  return { title: t("title") };
+}
 
 /**
  * The assignments made from one exercise (T-012) -- the legacy

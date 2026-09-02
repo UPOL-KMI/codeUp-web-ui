@@ -4,6 +4,11 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
+import {
+  CommandPalette,
+  CommandPaletteTrigger,
+} from "@/components/command-palette/command-palette";
+
 import { LocaleSwitch } from "./locale-switch";
 
 /**
@@ -32,8 +37,15 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Only the exact route is *the* current page; an ancestor whose subtree the reader is inside is
+  // merely the current item of the set, which is what the generic `true` means.
+  const currentPage = (href: string) =>
+    pathname === href ? "page" : isActive(href) ? "true" : undefined;
+
+  const openPalette = () => setPaletteOpen(true);
 
   const nav = (
     <nav aria-label={t("primary")} className="flex flex-col gap-5 p-4">
@@ -49,7 +61,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
               <Link
                 key={item.href}
                 href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
+                aria-current={currentPage(item.href)}
                 onClick={() => setMobileOpen(false)}
                 className={`truncate rounded-md px-2 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   isActive(item.href)
@@ -73,6 +85,10 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
 
   return (
     <>
+      {/* Mounted here rather than in `AppShell`: this is the shell's only always-mounted client
+          component, so it is the one that can hold the state both triggers below share. */}
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+
       {/* Mobile: a disclosure button and a drawer. Brief §9 requires phone width to work --
           "students check deadlines on phones" -- and a permanently-visible sidebar would eat most
           of a phone screen. */}
@@ -86,6 +102,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         >
           {mobileOpen ? t("closeMenu") : t("openMenu")}
         </button>
+        <CommandPaletteTrigger onOpen={openPalette} className="px-3 py-1.5" />
       </div>
 
       <aside
@@ -94,6 +111,11 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
           mobileOpen ? "block border-b" : "hidden"
         }`}
       >
+        {/* Hidden below md, where the copy in the bar above is reachable without opening the
+            drawer this sits inside. */}
+        <div className="hidden px-4 pt-4 md:block">
+          <CommandPaletteTrigger onOpen={openPalette} className="w-full px-2 py-1.5 text-left" />
+        </div>
         {nav}
       </aside>
     </>

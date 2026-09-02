@@ -156,7 +156,11 @@ export async function ProfileView({
               {t("groups")}
             </h2>
             {groups.length === 0 ? (
-              <EmptyState title={t("noGroups.title")} description={t("noGroups.description")} />
+              <EmptyState
+                title={t("noGroups.title")}
+                description={t("noGroups.description")}
+                headingLevel={3}
+              />
             ) : (
               <ul className="flex flex-col gap-2">
                 {groups.map((group) => (

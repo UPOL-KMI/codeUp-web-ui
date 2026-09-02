@@ -76,7 +76,16 @@ export function AdminPasswordForm({ account }: { account: AccountSettings }) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          if (isPending) {
+            event.preventDefault();
+            return;
+          }
+          void onSubmit(event);
+        }}
+        className="flex flex-col gap-4"
+      >
         <p className="text-sm text-muted-foreground">{t("explain")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("newPassword")} error={errors.password && t("errors.required")}>
@@ -109,8 +118,8 @@ export function AdminPasswordForm({ account }: { account: AccountSettings }) {
         )}
 
         <div>
-          <button type="submit" disabled={isPending} className={primary}>
-            {t("save")}
+          <button type="submit" aria-disabled={isPending} className={primary}>
+            {isPending ? t("saving") : t("save")}
           </button>
         </div>
       </form>

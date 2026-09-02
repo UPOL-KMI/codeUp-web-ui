@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getSubmissionFailures, type FailureScope } from "@/lib/api/submission-failures";
@@ -7,6 +8,16 @@ import { Link } from "@/i18n/navigation";
 import { FailureTable } from "@/components/failures/failure-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SubmissionFailures" });
+  return { title: t("title") };
+}
 
 /**
  * Submissions that never became results (T-019) -- the legacy `/app/submission-failures` page.

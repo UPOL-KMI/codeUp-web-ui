@@ -50,6 +50,7 @@ export function FileSelect({
 }) {
   const t = useTranslations("ExerciseConfig.config");
   const [value, setValue] = useValue<string>(name);
+  const descriptionId = `${name}-description`;
 
   return (
     <label className="flex flex-col gap-1 text-sm">
@@ -60,6 +61,7 @@ export function FileSelect({
         // including every option's text -- as its accessible name. Naming it explicitly is what
         // makes a screen reader (and a test) hear "Expected output" rather than the option list.
         aria-label={label}
+        aria-describedby={description ? descriptionId : undefined}
         disabled={readOnly}
         value={value ?? ""}
         onChange={(event) => setValue(event.target.value)}
@@ -73,7 +75,11 @@ export function FileSelect({
           </option>
         ))}
       </select>
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
+      {description && (
+        <span id={descriptionId} className="text-xs text-muted-foreground">
+          {description}
+        </span>
+      )}
     </label>
   );
 }
@@ -94,6 +100,7 @@ export function StringListField({
   const t = useTranslations("ExerciseConfig.config");
   const [value, setValue] = useValue<string[]>(name);
   const items = value ?? [];
+  const descriptionId = `${name}-description`;
 
   return (
     <div className="flex flex-col gap-1 text-sm">
@@ -104,6 +111,7 @@ export function StringListField({
             type="text"
             className={`${INPUT} w-full font-mono`}
             aria-label={`${label} ${index + 1}`}
+            aria-describedby={description ? descriptionId : undefined}
             placeholder={placeholder}
             disabled={readOnly}
             value={item}
@@ -132,7 +140,11 @@ export function StringListField({
           {t("addItem")}
         </button>
       )}
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
+      {description && (
+        <span id={descriptionId} className="text-xs text-muted-foreground">
+          {description}
+        </span>
+      )}
     </div>
   );
 }
@@ -153,6 +165,7 @@ export function FileListField({
   const t = useTranslations("ExerciseConfig.config");
   const [value, setValue] = useValue<string[]>(name);
   const items = value ?? [];
+  const descriptionId = `${name}-description`;
 
   return (
     <div className="flex flex-col gap-1 text-sm">
@@ -162,6 +175,7 @@ export function FileListField({
           <select
             className={`${INPUT} w-full`}
             aria-label={`${label} ${index + 1}`}
+            aria-describedby={description ? descriptionId : undefined}
             disabled={readOnly}
             value={item}
             onChange={(event) =>
@@ -196,7 +210,11 @@ export function FileListField({
           {t("addItem")}
         </button>
       )}
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
+      {description && (
+        <span id={descriptionId} className="text-xs text-muted-foreground">
+          {description}
+        </span>
+      )}
     </div>
   );
 }
@@ -217,6 +235,7 @@ export function FilePairListField({
   const t = useTranslations("ExerciseConfig.config");
   const [value, setValue] = useValue<FileEntry[]>(name);
   const items = value ?? [];
+  const descriptionId = `${name}-description`;
 
   return (
     <div className="flex flex-col gap-1 text-sm">
@@ -226,6 +245,7 @@ export function FilePairListField({
           <select
             className={`${INPUT} min-w-0 flex-1`}
             aria-label={`${label} ${index + 1}`}
+            aria-describedby={description ? descriptionId : undefined}
             disabled={readOnly}
             value={item.file}
             onChange={(event) =>
@@ -249,6 +269,7 @@ export function FilePairListField({
             type="text"
             className={`${INPUT} min-w-0 flex-1 font-mono`}
             aria-label={t("renamedTo", { label, index: index + 1 })}
+            aria-describedby={description ? descriptionId : undefined}
             placeholder={t("sameName")}
             disabled={readOnly}
             value={item.name}
@@ -281,7 +302,11 @@ export function FilePairListField({
           {t("addItem")}
         </button>
       )}
-      {description && <span className="text-xs text-muted-foreground">{description}</span>}
+      {description && (
+        <span id={descriptionId} className="text-xs text-muted-foreground">
+          {description}
+        </span>
+      )}
     </div>
   );
 }

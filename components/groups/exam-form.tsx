@@ -101,7 +101,16 @@ export function ExamFormDialog({
         className="max-w-xl"
       >
         <FormProvider {...form}>
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <form
+            onSubmit={(event) => {
+              if (isPending) {
+                event.preventDefault();
+                return;
+              }
+              void onSubmit(event);
+            }}
+            className="flex flex-col gap-4"
+          >
             <fieldset className="flex flex-col gap-2" disabled={examRunning}>
               <legend className="text-sm font-medium text-foreground">{t("begin")}</legend>
               <label className="flex items-center gap-2 text-sm">
@@ -188,10 +197,10 @@ export function ExamFormDialog({
               </button>
               <button
                 type="submit"
-                disabled={isPending}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                aria-disabled={isPending}
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
               >
-                {t("save")}
+                {isPending ? t("saving") : t("save")}
               </button>
             </div>
           </form>

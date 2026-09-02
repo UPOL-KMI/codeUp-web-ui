@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { Link } from "@/i18n/navigation";
 
 export interface BreadcrumbItem {
@@ -30,7 +32,7 @@ export interface PageShellProps {
  * `tabs` are pre-built `ReactNode`s the caller supplies, already client components if they need
  * to be -- brief rule 4's "'use client' goes on interactive leaves only").
  */
-export function PageShell({
+export async function PageShell({
   title,
   subtitle,
   breadcrumbs,
@@ -38,10 +40,12 @@ export function PageShell({
   tabs,
   children,
 }: PageShellProps) {
+  const t = await getTranslations("Nav");
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       {breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
+        <nav aria-label={t("breadcrumb")} className="mb-4 text-sm text-muted-foreground">
           <ol className="flex flex-wrap items-center gap-1.5">
             {breadcrumbs.map((crumb, index) => (
               <li key={index} className="flex items-center gap-1.5">

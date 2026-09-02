@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPipelineCatalog, PIPELINE_PAGE_SIZE } from "@/lib/api/pipelines";
@@ -9,6 +10,16 @@ import { DateTime } from "@/components/format/date-time";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Pipelines" });
+  return { title: t("title") };
+}
 
 /**
  * The instance's pipelines (T-013) -- the legacy `/app/pipelines` page, and the screen the sidebar

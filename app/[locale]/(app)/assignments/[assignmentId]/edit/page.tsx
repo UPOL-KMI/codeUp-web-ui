@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -9,6 +10,16 @@ import { Link } from "@/i18n/navigation";
 import { AssignmentForm } from "@/components/assignments/assignment-form";
 import { DeleteAssignment } from "@/components/assignments/delete-assignment";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "AssignmentEdit" });
+  return { title: t("title") };
+}
 
 /**
  * An assignment's settings (T-002): when it is due, what it is worth, how often it may be

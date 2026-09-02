@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -10,6 +11,16 @@ import { Link } from "@/i18n/navigation";
 import { SubmitReferenceSolution } from "@/components/exercises/reference-solution-submit";
 import { ReferenceSolutionsTable } from "@/components/exercises/reference-solutions-table";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ReferenceSolutions" });
+  return { title: t("title") };
+}
 
 /**
  * An exercise's reference solutions (T-011) -- the legacy

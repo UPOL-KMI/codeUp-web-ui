@@ -54,6 +54,15 @@ export async function Markdown({ source }: { source: string }) {
             },
           ],
         ]}
+        components={{
+          // The scroll box is focusable because nothing inside it is: a scroll container no
+          // keyboard can reach is one no keyboard can scroll.
+          table: (props) => (
+            <div className="overflow-x-auto" tabIndex={0}>
+              <table {...props} />
+            </div>
+          ),
+        }}
       >
         {source}
       </ReactMarkdown>

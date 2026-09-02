@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getGroupList } from "@/lib/api/groups";
@@ -7,6 +8,16 @@ import { Link } from "@/i18n/navigation";
 import { GroupTable } from "@/components/groups/group-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Archive" });
+  return { title: t("title") };
+}
 
 /**
  * Archived groups (S-011) -- the same entity, the same table, one query parameter changed

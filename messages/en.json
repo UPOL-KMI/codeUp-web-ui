@@ -319,7 +319,8 @@
     "empty": {
       "title": "No groups",
       "description": "You are not a member of any group, and none are public on this instance."
-    }
+    },
+    "caption": "Every group you can see, your role in each, its kind and its size."
   },
   "Group": {
     "tabs": {
@@ -327,7 +328,8 @@
       "assignments": "Assignments",
       "students": "Students",
       "exams": "Exams",
-      "settings": "Settings"
+      "settings": "Settings",
+      "label": "Group sections"
     },
     "badges": {
       "archived": "Archived",
@@ -408,7 +410,8 @@
         "myPoints": "{points}/{max} points",
         "maxPoints": "up to {max} points"
       },
-      "assignExercise": "Assign an exercise"
+      "assignExercise": "Assign an exercise",
+      "caption": "Every assignment in this group, its deadlines and the points it is worth."
     },
     "students": {
       "filterPlaceholder": "Filter students",
@@ -424,7 +427,8 @@
         "title": "No students",
         "description": "Nobody has joined this group as a student yet."
       },
-      "viewSolutions": "Submissions"
+      "viewSolutions": "Submissions",
+      "caption": "Every student in this group, their points, and how much they have solved."
     },
     "points": {
       "title": "Points, assignment by assignment",
@@ -569,7 +573,8 @@
           "endInPast": "The end must be in the future.",
           "endBeforeBegin": "The end must come after the beginning.",
           "tooLong": "An exam cannot be longer than 24 hours."
-        }
+        },
+        "saving": "Saving…"
       },
       "toast": {
         "scheduled": "The exam was saved.",
@@ -611,7 +616,8 @@
         "errors": {
           "nameRequired": "At least one language needs a name.",
           "limitRequired": "Enter the number needed to pass."
-        }
+        },
+        "saving": "Saving…"
       },
       "controls": {
         "failed": "The change was not made.",
@@ -685,7 +691,8 @@
           "removed": "They no longer belong to this group.",
           "add": "Add a teacher or observer",
           "addAsSupervisor": "Add as supervisor",
-          "added": "They were added as a supervisor."
+          "added": "They were added as a supervisor.",
+          "removeMember": "Remove {name}"
         },
         "students": {
           "title": "Students",
@@ -693,8 +700,10 @@
           "add": "Add a student",
           "addButton": "Add as student",
           "added": "The student was added.",
-          "removed": "The student was removed."
-        }
+          "removed": "The student was removed.",
+          "removeStudent": "Remove {name}"
+        },
+        "resultCount": "{count, plural, one {# user found} other {# users found}}"
       },
       "errors": {
         "invalid": "Some of the settings are not valid.",
@@ -738,8 +747,11 @@
         "deleteFailed": "The link could not be deleted.",
         "invalidDate": "That is not a date.",
         "pastDate": "That moment has already passed."
-      }
-    }
+      },
+      "editNamed": "Edit the link “{note}”",
+      "deleteNamed": "Delete the link “{note}”"
+    },
+    "pageTitle": "Group"
   },
   "Solutions": {
     "title": "Solutions",
@@ -767,7 +779,9 @@
     "progress": {
       "waiting": "This solution is being evaluated. This page updates itself when the result arrives.",
       "running": "Evaluating — {done} of {total} steps done.",
-      "autoRefresh": "You do not need to reload the page."
+      "autoRefresh": "You do not need to reload the page.",
+      "failed": "The evaluation failed.",
+      "stepsFailed": "{failed, plural, one {# step failed} other {# steps failed}}."
     },
     "evaluation": {
       "heading": "Evaluation",
@@ -803,9 +817,16 @@
       "initFailed": {
         "title": "The solution did not build",
         "explanation": "Compilation or setup failed, so no test was run."
+      },
+      "announce": {
+        "pending": "The evaluation has not finished yet.",
+        "failed": "The evaluation could not be completed.",
+        "initFailed": "Compilation failed, so no test was run.",
+        "done": "The result is in: {passed, plural, one {# test} other {# tests}} out of {total} passed."
       }
     },
-    "plagiarisms": "Similarities"
+    "plagiarisms": "Similarities",
+    "pageTitle": "Solution"
   },
   "Sources": {
     "title": "Source code",
@@ -1040,7 +1061,8 @@
       "saved": "The settings were saved.",
       "errors": {
         "nameRequired": "Name the exercise in at least one language."
-      }
+      },
+      "saving": "Saving…"
     },
     "tags": {
       "title": "Tags",
@@ -1464,7 +1486,10 @@
       "save": "Save limits",
       "saving": "Saving…",
       "saved": "Limits saved.",
-      "saveFailed": "The limits could not be saved."
+      "saveFailed": "The limits could not be saved.",
+      "copyRowOf": "→ all languages, from the cell {test} in {environment}",
+      "copyColumnOf": "↓ all tests, from the cell {test} in {environment}",
+      "copyAllOf": "everywhere, from the cell {test} in {environment}"
     },
     "errors": {
       "invalid": "These limits are not something ReCodEx can store.",
@@ -1590,7 +1615,8 @@
         "partial": "Some tests passed",
         "incorrect": "No test passed",
         "not-scored": "Evaluated"
-      }
+      },
+      "pageTitle": "Reference solution"
     },
     "errors": {
       "noFiles": "Upload the solution's files first.",
@@ -1678,7 +1704,8 @@
     },
     "exercises": "Exercises using it",
     "exercisesExplain": "A pipeline is shared machinery. Changing it changes the evaluation of every exercise configured against it.",
-    "noExercises": "No exercise uses this pipeline."
+    "noExercises": "No exercise uses this pipeline.",
+    "pageTitle": "Pipeline"
   },
   "PipelineEdit": {
     "title": "Edit pipeline",
@@ -1765,7 +1792,9 @@
       "saving": "Saving…",
       "saved": "The structure was saved.",
       "saveNote": "The whole structure is saved at once — ReCodEx has no call that changes one box.",
-      "saveFailed": "The structure could not be saved."
+      "saveFailed": "The structure could not be saved.",
+      "removeVariable": "Remove variable {index}",
+      "removeBox": "Remove box {name}"
     },
     "errors": {
       "invalid": "That is not something ReCodEx can store.",
@@ -1949,7 +1978,8 @@
     "errors": {
       "invalid": "That note is too long.",
       "resolveFailed": "The failure could not be resolved."
-    }
+    },
+    "caption": "Every recorded failure, what happened, when, and whether it has been resolved."
   },
   "SystemMessages": {
     "title": "System messages",
@@ -2236,7 +2266,8 @@
       "open": "Open",
       "second-chance": "Second deadline",
       "closed": "Closed"
-    }
+    },
+    "loading": "Loading"
   },
   "Nav": {
     "primary": "Primary navigation",
@@ -2265,7 +2296,9 @@
         "cs": "Číst česky"
       }
     },
-    "instances": "Instances"
+    "instances": "Instances",
+    "skipToContent": "Skip to content",
+    "breadcrumb": "Breadcrumb"
   },
   "Palette": {
     "label": "Search",
@@ -2276,7 +2309,9 @@
     "groups": "Groups",
     "exercises": "Exercises",
     "users": "People",
-    "open": "Search (Ctrl+K)"
+    "open": "Search (Ctrl+K)",
+    "results": "Results",
+    "resultCount": "{count, plural, =0 {Nothing found} one {# result} other {# results}}"
   },
   "Table": {
     "noRecords": "No records.",
@@ -2285,7 +2320,9 @@
     "page": "Page {page} of {total}",
     "showing": "Showing {from}–{to} of {total}",
     "selectPage": "Select all rows on this page",
-    "selectRow": "Select row"
+    "selectRow": "Select row",
+    "noResults": "No results.",
+    "selectRowNamed": "Select row: {label}"
   },
   "Assignment": {
     "title": "Assignments",
@@ -2400,7 +2437,8 @@
       "empty": {
         "title": "This group has no students",
         "description": "Once students join the group, their progress on this assignment appears here."
-      }
+      },
+      "caption": "Every student in the group, their attempts, points and result for this assignment."
     },
     "userSolutions": {
       "title": "Solutions by {name}",
@@ -2554,7 +2592,9 @@
       "closedWithIssues": "{count, plural, one {# issue} other {# issues}}"
     },
     "untitledAssignment": "Unnamed assignment",
-    "filterByAssignment": "Filter by assignment or note"
+    "filterByAssignment": "Filter by assignment or note",
+    "caption": "Every submission to this assignment, its author and its result.",
+    "captionByAssignment": "Every submission this student has made in the group, the assignment it belongs to and its result."
   },
   "GroupUserSolutions": {
     "title": "Submissions in this group",
@@ -2715,7 +2755,8 @@
       "errors": {
         "tooShort": "At least two characters.",
         "invalidEmail": "That is not an email address."
-      }
+      },
+      "saving": "Saving…"
     },
     "password": {
       "title": "Password",
@@ -2728,7 +2769,8 @@
       "errors": {
         "required": "Enter the new password.",
         "mismatch": "The two passwords differ."
-      }
+      },
+      "saving": "Changing…"
     },
     "settings": {
       "title": "Notifications and language",
@@ -2823,7 +2865,8 @@
       "errors": {
         "required": "Enter the new password.",
         "mismatch": "The two passwords differ."
-      }
+      },
+      "saving": "Changing…"
     },
     "access": {
       "title": "Access",
@@ -2948,7 +2991,8 @@
       "deleteFailed": "The instance could not be deleted.",
       "licenceFailed": "The licence could not be saved.",
       "licenceDeleteFailed": "The licence could not be deleted."
-    }
+    },
+    "detailTitle": "Instance"
   },
   "Server": {
     "title": "Server",

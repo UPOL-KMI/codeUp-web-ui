@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
@@ -25,6 +25,7 @@ import { useRouter } from "@/i18n/navigation";
 export function RegisterForm({ instances }: { instances: { id: string; name: string }[] }) {
   const t = useTranslations("Register");
   const router = useRouter();
+  const strengthId = useId();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -175,22 +176,27 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
         )}
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        {t("password")}
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="new-password"
-          required
-          className={input}
-        />
-        {password !== "" && score !== null && (
-          <span className={`text-xs ${score === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-            {t(`strength.${score}`)}
-          </span>
-        )}
-      </label>
+      <div className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1 text-sm">
+          {t("password")}
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            required
+            aria-describedby={strengthId}
+            className={input}
+          />
+        </label>
+        <p
+          id={strengthId}
+          role="status"
+          className={`text-xs ${score === 0 ? "text-destructive" : "text-muted-foreground"}`}
+        >
+          {password !== "" && score !== null ? t(`strength.${score}`) : ""}
+        </p>
+      </div>
 
       <label className="flex flex-col gap-1 text-sm">
         {t("passwordConfirm")}

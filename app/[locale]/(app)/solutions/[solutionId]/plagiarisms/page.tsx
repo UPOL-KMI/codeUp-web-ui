@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -17,6 +18,16 @@ import { DateTime } from "@/components/format/date-time";
 import { fragmentRanges, MarkedSource } from "@/components/solutions/marked-source";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Plagiarism" });
+  return { title: t("title") };
+}
 
 /**
  * What a detection tool found in one solution (S-019) -- the legacy

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { ApiError } from "@/lib/api/client";
@@ -27,6 +28,16 @@ import { ReviewSummary } from "@/components/solutions/review-summary";
 import { fileAnchorId, SourceFile } from "@/components/solutions/source-file";
 
 const EMPTY_REVIEW: SolutionReview = { comments: [], startedAt: null, closedAt: null };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Sources" });
+  return { title: t("title") };
+}
 
 /**
  * The solution's source code (S-017) and its review (S-018) -- `docs/IA.md` §4.4's right column,

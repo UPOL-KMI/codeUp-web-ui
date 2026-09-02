@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getGroupInvitation } from "@/lib/api/group-invitation";
@@ -9,6 +10,16 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { InvitationAccept } from "@/components/groups/invitation-accept";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "GroupInvitation" });
+  return { title: t("title") };
+}
 
 /**
  * The page an invitation link leads to (S-023): what group this is, who runs it, and one button.

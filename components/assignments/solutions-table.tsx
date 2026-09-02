@@ -225,6 +225,7 @@ export function SolutionsTable({
       columns={columns}
       data={solutions}
       getRowId={(solution) => solution.id}
+      caption={lead === "author" ? t("caption") : t("captionByAssignment")}
       filterPlaceholder={lead === "author" ? t("filterPlaceholder") : t("filterByAssignment")}
     />
   );

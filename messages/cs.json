@@ -319,7 +319,8 @@
     "empty": {
       "title": "Žádné skupiny",
       "description": "Nejste členem žádné skupiny a na této instanci nejsou žádné veřejné."
-    }
+    },
+    "caption": "Všechny skupiny, které vidíte, vaše role v nich, jejich druh a velikost."
   },
   "Group": {
     "tabs": {
@@ -327,7 +328,8 @@
       "assignments": "Zadání",
       "students": "Studenti",
       "exams": "Zkoušky",
-      "settings": "Nastavení"
+      "settings": "Nastavení",
+      "label": "Sekce skupiny"
     },
     "badges": {
       "archived": "Archivováno",
@@ -408,7 +410,8 @@
         "myPoints": "{points}/{max} bodů",
         "maxPoints": "až {max} bodů"
       },
-      "assignExercise": "Zadat cvičení"
+      "assignExercise": "Zadat cvičení",
+      "caption": "Všechna zadání této skupiny, jejich termíny a počet bodů."
     },
     "students": {
       "filterPlaceholder": "Filtrovat studenty",
@@ -424,7 +427,8 @@
         "title": "Žádní studenti",
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
       },
-      "viewSolutions": "Odevzdání"
+      "viewSolutions": "Odevzdání",
+      "caption": "Všichni studenti této skupiny, jejich body a počet vyřešených zadání."
     },
     "points": {
       "title": "Body po jednotlivých zadáních",
@@ -569,7 +573,8 @@
           "endInPast": "Konec musí být v budoucnosti.",
           "endBeforeBegin": "Konec musí být až po začátku.",
           "tooLong": "Zkouška nesmí být delší než 24 hodin."
-        }
+        },
+        "saving": "Ukládám…"
       },
       "toast": {
         "scheduled": "Zkouška byla uložena.",
@@ -611,7 +616,8 @@
         "errors": {
           "nameRequired": "Alespoň v jednom jazyce musí být název.",
           "limitRequired": "Zadejte hodnotu potřebnou ke splnění."
-        }
+        },
+        "saving": "Ukládám…"
       },
       "controls": {
         "failed": "Změna se neprovedla.",
@@ -685,7 +691,8 @@
           "removed": "Do skupiny už nepatří.",
           "add": "Přidat vyučujícího nebo pozorovatele",
           "addAsSupervisor": "Přidat jako cvičícího",
-          "added": "Byl přidán jako cvičící."
+          "added": "Byl přidán jako cvičící.",
+          "removeMember": "Odebrat uživatele {name}"
         },
         "students": {
           "title": "Studenti",
@@ -693,8 +700,10 @@
           "add": "Přidat studenta",
           "addButton": "Přidat jako studenta",
           "added": "Student byl přidán.",
-          "removed": "Student byl odebrán."
-        }
+          "removed": "Student byl odebrán.",
+          "removeStudent": "Odebrat studenta {name}"
+        },
+        "resultCount": "{count, plural, one {Nalezen # uživatel} few {Nalezeni # uživatelé} other {Nalezeno # uživatelů}}"
       },
       "errors": {
         "invalid": "Některá nastavení nejsou platná.",
@@ -738,8 +747,11 @@
         "deleteFailed": "Odkaz se nepodařilo smazat.",
         "invalidDate": "To není datum.",
         "pastDate": "Tento okamžik už uplynul."
-      }
-    }
+      },
+      "editNamed": "Upravit odkaz „{note}“",
+      "deleteNamed": "Smazat odkaz „{note}“"
+    },
+    "pageTitle": "Skupina"
   },
   "Solutions": {
     "title": "Řešení",
@@ -767,7 +779,9 @@
     "progress": {
       "waiting": "Toto řešení se vyhodnocuje. Stránka se sama aktualizuje, jakmile bude výsledek k dispozici.",
       "running": "Vyhodnocuje se — hotovo {done} z {total} kroků.",
-      "autoRefresh": "Stránku není potřeba znovu načítat."
+      "autoRefresh": "Stránku není potřeba znovu načítat.",
+      "failed": "Vyhodnocení selhalo.",
+      "stepsFailed": "{failed, plural, one {# krok selhal} few {# kroky selhaly} other {# kroků selhalo}}."
     },
     "evaluation": {
       "heading": "Vyhodnocení",
@@ -803,9 +817,16 @@
       "initFailed": {
         "title": "Řešení se nepodařilo sestavit",
         "explanation": "Selhal překlad nebo příprava, takže neproběhl žádný test."
+      },
+      "announce": {
+        "pending": "Vyhodnocení zatím neskončilo.",
+        "failed": "Vyhodnocení se nepodařilo dokončit.",
+        "initFailed": "Překlad selhal, takže neproběhl žádný test.",
+        "done": "Výsledek je tu: {passed, plural, one {prošel # test} few {prošly # testy} other {prošlo # testů}} z {total}."
       }
     },
-    "plagiarisms": "Podobnosti"
+    "plagiarisms": "Podobnosti",
+    "pageTitle": "Řešení"
   },
   "Sources": {
     "title": "Zdrojový kód",
@@ -1040,7 +1061,8 @@
       "saved": "Nastavení bylo uloženo.",
       "errors": {
         "nameRequired": "Pojmenujte úlohu aspoň v jednom jazyce."
-      }
+      },
+      "saving": "Ukládám…"
     },
     "tags": {
       "title": "Štítky",
@@ -1464,7 +1486,10 @@
       "save": "Uložit limity",
       "saving": "Ukládám…",
       "saved": "Limity uloženy.",
-      "saveFailed": "Limity se nepodařilo uložit."
+      "saveFailed": "Limity se nepodařilo uložit.",
+      "copyRowOf": "→ všechny jazyky, z buňky {test} v {environment}",
+      "copyColumnOf": "↓ všechny testy, z buňky {test} v {environment}",
+      "copyAllOf": "všude, z buňky {test} v {environment}"
     },
     "errors": {
       "invalid": "Tyto limity ReCodEx uložit neumí.",
@@ -1590,7 +1615,8 @@
         "partial": "Některé testy prošly",
         "incorrect": "Neprošel žádný test",
         "not-scored": "Vyhodnoceno"
-      }
+      },
+      "pageTitle": "Vzorové řešení"
     },
     "errors": {
       "noFiles": "Nejdřív nahrajte soubory řešení.",
@@ -1678,7 +1704,8 @@
     },
     "exercises": "Úlohy, které ji používají",
     "exercisesExplain": "Pipeline je sdílená mašinérie. Její změna změní vyhodnocení každé úlohy, která je na ni nastavená.",
-    "noExercises": "Tuto pipelinu nepoužívá žádná úloha."
+    "noExercises": "Tuto pipelinu nepoužívá žádná úloha.",
+    "pageTitle": "Pipelina"
   },
   "PipelineEdit": {
     "title": "Úprava pipeliny",
@@ -1765,7 +1792,9 @@
       "saving": "Ukládám…",
       "saved": "Struktura uložena.",
       "saveNote": "Celá struktura se ukládá najednou — ReCodEx nemá volání, které by změnilo jeden box.",
-      "saveFailed": "Strukturu se nepodařilo uložit."
+      "saveFailed": "Strukturu se nepodařilo uložit.",
+      "removeVariable": "Odebrat proměnnou {index}",
+      "removeBox": "Odebrat box {name}"
     },
     "errors": {
       "invalid": "Tohle ReCodEx uložit neumí.",
@@ -1949,7 +1978,8 @@
     "errors": {
       "invalid": "Poznámka je příliš dlouhá.",
       "resolveFailed": "Selhání se nepodařilo vyřešit."
-    }
+    },
+    "caption": "Všechna zaznamenaná selhání, co se při nich stalo, kdy nastala a zda už byla vyřešena."
   },
   "SystemMessages": {
     "title": "Systémové zprávy",
@@ -2236,7 +2266,8 @@
       "open": "Otevřeno",
       "second-chance": "Druhý termín",
       "closed": "Uzavřeno"
-    }
+    },
+    "loading": "Načítání"
   },
   "Nav": {
     "primary": "Hlavní navigace",
@@ -2265,7 +2296,9 @@
         "cs": "Číst česky"
       }
     },
-    "instances": "Instance"
+    "instances": "Instance",
+    "skipToContent": "Přeskočit na obsah",
+    "breadcrumb": "Drobečková navigace"
   },
   "Palette": {
     "label": "Hledání",
@@ -2276,7 +2309,9 @@
     "groups": "Skupiny",
     "exercises": "Úlohy",
     "users": "Lidé",
-    "open": "Hledat (Ctrl+K)"
+    "open": "Hledat (Ctrl+K)",
+    "results": "Výsledky",
+    "resultCount": "{count, plural, =0 {Nic nenalezeno} one {# výsledek} few {# výsledky} other {# výsledků}}"
   },
   "Table": {
     "noRecords": "Žádné záznamy.",
@@ -2285,7 +2320,9 @@
     "page": "Stránka {page} z {total}",
     "showing": "Zobrazeno {from}–{to} z {total}",
     "selectPage": "Vybrat všechny řádky na této stránce",
-    "selectRow": "Vybrat řádek"
+    "selectRow": "Vybrat řádek",
+    "noResults": "Žádné výsledky.",
+    "selectRowNamed": "Vybrat řádek: {label}"
   },
   "Assignment": {
     "title": "Zadání",
@@ -2400,7 +2437,8 @@
       "empty": {
         "title": "Skupina nemá žádné studenty",
         "description": "Jakmile se do skupiny přidají studenti, uvidíte tu jejich postup na tomto zadání."
-      }
+      },
+      "caption": "Všichni studenti skupiny, jejich pokusy, body a výsledek u tohoto zadání."
     },
     "userSolutions": {
       "title": "Řešení studenta {name}",
@@ -2554,7 +2592,9 @@
       "closedWithIssues": "{count, plural, one {# výhrada} few {# výhrady} other {# výhrad}}"
     },
     "untitledAssignment": "Nepojmenované zadání",
-    "filterByAssignment": "Filtrovat podle zadání nebo poznámky"
+    "filterByAssignment": "Filtrovat podle zadání nebo poznámky",
+    "caption": "Všechna odevzdání tohoto zadání, jejich autoři a výsledky.",
+    "captionByAssignment": "Všechna odevzdání tohoto studenta ve skupině, zadání, kterých se týkají, a jejich výsledky."
   },
   "GroupUserSolutions": {
     "title": "Odevzdání v této skupině",
@@ -2715,7 +2755,8 @@
       "errors": {
         "tooShort": "Alespoň dva znaky.",
         "invalidEmail": "Tohle není e-mailová adresa."
-      }
+      },
+      "saving": "Ukládám…"
     },
     "password": {
       "title": "Heslo",
@@ -2728,7 +2769,8 @@
       "errors": {
         "required": "Zadejte nové heslo.",
         "mismatch": "Hesla se neshodují."
-      }
+      },
+      "saving": "Měním…"
     },
     "settings": {
       "title": "Oznámení a jazyk",
@@ -2823,7 +2865,8 @@
       "errors": {
         "required": "Zadejte nové heslo.",
         "mismatch": "Hesla se liší."
-      }
+      },
+      "saving": "Měním…"
     },
     "access": {
       "title": "Přístup",
@@ -2948,7 +2991,8 @@
       "deleteFailed": "Instanci se nepodařilo smazat.",
       "licenceFailed": "Licenci se nepodařilo uložit.",
       "licenceDeleteFailed": "Licenci se nepodařilo smazat."
-    }
+    },
+    "detailTitle": "Instance"
   },
   "Server": {
     "title": "Server",

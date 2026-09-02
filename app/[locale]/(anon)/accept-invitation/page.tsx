@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { decodeInvitationToken } from "@/lib/auth/invitation-token";
@@ -8,6 +9,16 @@ import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { PageShell } from "@/components/page-shell";
 import { AcceptInvitationForm } from "@/components/users/accept-invitation-form";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "AcceptInvitation" });
+  return { title: t("title") };
+}
 
 /**
  * Finishing an invitation that arrived by email (S-024): the one screen in the product where an

@@ -143,6 +143,7 @@ export function AssignmentTable({
       columns={columns}
       data={assignments}
       getRowId={(assignment) => assignment.id}
+      caption={t("caption")}
       filterPlaceholder={t("filterPlaceholder")}
     />
   );

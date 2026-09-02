@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser, type CurrentUser } from "@/lib/api/current-user";
@@ -38,6 +39,16 @@ import { StudentTable } from "@/components/groups/student-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Group" });
+  return { title: t("pageTitle") };
+}
 
 /**
  * A group (S-005, S-006, S-007), tabbed per `docs/IA.md` §4.2 with the tab in `searchParams` so a
@@ -95,7 +106,7 @@ export default async function GroupPage({
           {membership && <MembershipButton groupId={groupId} action={membership} />}
         </div>
       }
-      tabs={<GroupTabs groupId={groupId} tabs={tabs} current={current} />}
+      tabs={<GroupTabs groupId={groupId} tabs={tabs} current={current} label={t("tabs.label")} />}
     >
       {current === "assignments" && <AssignmentsTab groupId={groupId} filter={query.filter} />}
       {current === "students" && <StudentsTab groupId={groupId} />}
@@ -200,7 +211,7 @@ async function SettingsTab({ group }: { group: GroupDetail }) {
     <div className="flex flex-col gap-8">
       {group.can.update === true && !group.archived && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-medium">{t("form.title")}</h3>
+          <h2 className="text-sm font-medium">{t("form.title")}</h2>
           <GroupSettingsForm group={group} locales={routing.locales} />
         </section>
       )}
@@ -209,7 +220,7 @@ async function SettingsTab({ group }: { group: GroupDetail }) {
 
       {group.can.viewInvitations === true && !group.organizational && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-medium">{tInvitations("title")}</h3>
+          <h2 className="text-sm font-medium">{tInvitations("title")}</h2>
           <InvitationManager
             groupId={group.id}
             invitations={invitations}
@@ -221,7 +232,7 @@ async function SettingsTab({ group }: { group: GroupDetail }) {
 
       {group.can.viewStudents === true && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-medium">{t("members.title")}</h3>
+          <h2 className="text-sm font-medium">{t("members.title")}</h2>
           <MemberManager
             groupId={group.id}
             members={group.members}
@@ -296,7 +307,7 @@ async function ExamsTab({
       {phase === "running" && canWatchRoster && <ExamRoster groupId={group.id} students={roster} />}
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">{t("table.title")}</h3>
+        <h2 className="text-sm font-medium">{t("table.title")}</h2>
         <ExamTable
           exams={group.exams}
           groupId={group.id}
@@ -307,7 +318,7 @@ async function ExamsTab({
 
       {selectedExam && phase !== "running" && group.can.viewExamLocks === true && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("locks.title")}</h3>
+          <h2 className="text-sm font-medium">{t("locks.title")}</h2>
           <ExamLocks locks={locks} />
         </section>
       )}
@@ -364,7 +375,7 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 
       {shadowAssignments.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("shadow.title")}</h3>
+          <h2 className="text-sm font-medium">{t("shadow.title")}</h2>
           <p className="text-xs text-muted-foreground">{t("shadow.explain")}</p>
           <ul className="flex flex-col gap-2">
             {shadowAssignments.map((shadow) => (
@@ -429,9 +440,9 @@ async function StudentsTab({ groupId }: { groupId: string }) {
           one call for the assignment names and nothing for the data. */}
       {matrix.columns.length > 0 && (
         <section aria-labelledby="group-points" className="flex flex-col gap-2">
-          <h3 id="group-points" className="text-sm font-medium">
+          <h2 id="group-points" className="text-sm font-medium">
             {tPoints("title")}
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground">{tPoints("explain")}</p>
           <PointsMatrixTable matrix={matrix} />
           {staffView && (

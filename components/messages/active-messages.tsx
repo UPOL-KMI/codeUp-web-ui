@@ -48,6 +48,7 @@ export function ActiveMessages({
   userId: string;
 }) {
   const t = useTranslations("SystemMessages.active");
+  const tType = useTranslations("SystemMessages.types");
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -69,6 +70,7 @@ export function ActiveMessages({
           key={message.id}
           className={`rounded-lg border px-4 py-3 text-sm ${TONES[message.type]}`}
         >
+          <span className="mr-2 font-semibold">{tType(message.type)}</span>
           {message.text}
         </p>
       ))}

@@ -153,16 +153,23 @@ export function ExamStatus({
   const endsWithinDay = end !== null && now !== null && end - now <= 86400;
 
   return (
-    <section className={`flex flex-col gap-3 rounded-lg border p-4 ${tone}`}>
-      <h3 className="text-base font-medium" role="status">
-        {phase === null
-          ? t("status.unknown")
-          : phase === "running"
-            ? t("status.running")
-            : phase === "scheduled"
-              ? t("status.scheduled")
-              : t("status.none")}
-      </h3>
+    <section
+      aria-labelledby="exam-status"
+      className={`flex flex-col gap-3 rounded-lg border p-4 ${tone}`}
+    >
+      {/* The live region is the span, not the heading: an explicit `role` would replace the
+          heading semantics rather than add to them. */}
+      <h2 id="exam-status" className="text-base font-medium">
+        <span role="status">
+          {phase === null
+            ? t("status.unknown")
+            : phase === "running"
+              ? t("status.running")
+              : phase === "scheduled"
+                ? t("status.scheduled")
+                : t("status.none")}
+        </span>
+      </h2>
 
       {begin !== null && end !== null && phase !== "none" && (
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">

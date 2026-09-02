@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -11,6 +12,16 @@ import { Link } from "@/i18n/navigation";
 import { HardwareGroupsForm } from "@/components/exercises/config/hardware-groups-form";
 import { LimitsForm } from "@/components/exercises/config/limits-form";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ExerciseLimits" });
+  return { title: t("title") };
+}
 
 /**
  * An exercise's resource limits (T-010) -- the legacy `/app/exercises/:id/edit-limits` route.

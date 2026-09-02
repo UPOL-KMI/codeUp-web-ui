@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
@@ -15,6 +16,16 @@ import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { CreateUser } from "@/components/users/create-user";
 import { UserTable } from "@/components/users/user-table";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Users" });
+  return { title: t("title") };
+}
 
 /**
  * The user directory (AD-001) -- the legacy `/app/users` page, and the screen the sidebar has been

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import {
@@ -15,6 +16,16 @@ import { CreateExercise } from "@/components/exercises/create-exercise";
 import { ExerciseTable } from "@/components/exercises/exercise-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Exercises" });
+  return { title: t("title") };
+}
 
 /**
  * The exercise catalog (T-020) -- the legacy `/app/exercises` page, and the screen the sidebar has

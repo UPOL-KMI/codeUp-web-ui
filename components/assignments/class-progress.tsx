@@ -60,7 +60,11 @@ export async function ClassProgress({
       </div>
 
       {solvers.length === 0 ? (
-        <EmptyState title={t("empty.title")} description={t("empty.description")} />
+        <EmptyState
+          title={t("empty.title")}
+          description={t("empty.description")}
+          headingLevel={3}
+        />
       ) : (
         <SolverTable solvers={solvers} assignmentId={assignmentId} />
       )}

@@ -111,6 +111,7 @@ export function SolverTable({
       columns={columns}
       data={solvers}
       getRowId={(solver) => solver.userId}
+      caption={t("caption")}
       filterPlaceholder={t("filterPlaceholder")}
     />
   );

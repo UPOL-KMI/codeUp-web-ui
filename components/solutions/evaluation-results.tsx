@@ -57,10 +57,7 @@ export async function EvaluationResults({ solution }: { solution: EvaluatedSubmi
 
   if (!solution.evaluation) {
     return (
-      <div
-        role="status"
-        className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"
-      >
+      <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
         {t("pending")}
       </div>
     );

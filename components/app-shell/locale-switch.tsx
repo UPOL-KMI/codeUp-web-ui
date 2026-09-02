@@ -54,6 +54,9 @@ function LocaleSwitchInner() {
           href={href}
           locale={locale}
           hrefLang={locale}
+          // `hrefLang` only describes the destination; `lang` is what makes a synthesiser read
+          // this link's own name -- written in the target language -- with that language's sounds.
+          lang={locale}
           aria-current={locale === active ? "true" : undefined}
           className={`rounded-md px-2 py-1 uppercase transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             locale === active

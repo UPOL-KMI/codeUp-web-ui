@@ -117,6 +117,7 @@ export function InvitationManager({
                       type="button"
                       disabled={pending}
                       className={button}
+                      aria-label={t("editNamed", { note: invitation.note || invitation.id })}
                       onClick={() => startEditing(invitation)}
                     >
                       {t("edit")}
@@ -125,6 +126,7 @@ export function InvitationManager({
                       type="button"
                       disabled={pending}
                       className={button}
+                      aria-label={t("deleteNamed", { note: invitation.note || invitation.id })}
                       onClick={() => setDeleting(invitation.id)}
                     >
                       {t("delete")}
@@ -160,7 +162,7 @@ export function InvitationManager({
 
       {canEdit && editing === null && (
         <div className="rounded-lg border border-dashed border-border p-3">
-          <h4 className="mb-2 text-sm font-medium">{t("createTitle")}</h4>
+          <h3 className="mb-2 text-sm font-medium">{t("createTitle")}</h3>
           <InvitationFields
             draft={draft}
             setDraft={setDraft}
@@ -222,16 +224,22 @@ function InvitationFields({
           className={classes.input}
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">{labels.expiresAt}</span>
-        <span className="text-xs text-muted-foreground">{labels.hint}</span>
+      <div className="flex flex-col gap-1 text-sm">
+        <label htmlFor="invitation-expires-at" className="font-medium">
+          {labels.expiresAt}
+        </label>
+        <span id="invitation-expires-at-hint" className="text-xs text-muted-foreground">
+          {labels.hint}
+        </span>
         <input
+          id="invitation-expires-at"
+          aria-describedby="invitation-expires-at-hint"
           type="datetime-local"
           value={draft.expiresAt}
           onChange={(event) => setDraft({ ...draft, expiresAt: event.target.value })}
           className={classes.input}
         />
-      </label>
+      </div>
       <div className="flex gap-2">
         <button type="button" disabled={pending} className={classes.primary} onClick={onSubmit}>
           {submitLabel}

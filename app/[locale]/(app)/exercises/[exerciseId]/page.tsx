@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
@@ -11,6 +12,16 @@ import { ExerciseDetailPanel } from "@/components/exercises/exercise-detail";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Exercise" });
+  return { title: t("title") };
+}
 
 /**
  * One exercise, read (T-021) -- the legacy `/app/exercises/:exerciseId` route, and where the

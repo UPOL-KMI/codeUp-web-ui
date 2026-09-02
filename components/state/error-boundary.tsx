@@ -18,9 +18,11 @@ import { ErrorState } from "./error-state";
  *
  * Usage: wrap the fallible subtree. `error.tsx` remains the right tool for a whole route segment.
  */
-// Props type is `object` rather than `Record<string, never>`: `catchError` returns
+// Props type is a concrete object rather than `Record<string, never>`: `catchError` returns
 // `ComponentType<P & {children?: ReactNode}>`, and a `never`-valued index signature makes that
-// intersection reject its own `children`. This boundary takes no props of its own anyway.
-export const ErrorBoundary = catchError((_props: object, { retry }: ErrorInfo) => (
-  <ErrorState retry={retry} />
-));
+// intersection reject its own `children`.
+export const ErrorBoundary = catchError(
+  ({ headingLevel }: { headingLevel?: 2 | 3 | 4 }, { retry }: ErrorInfo) => (
+    <ErrorState retry={retry} headingLevel={headingLevel} />
+  ),
+);

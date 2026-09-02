@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail } from "@/lib/api/assignment";
@@ -9,6 +10,16 @@ import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "AssignmentSolutions" });
+  return { title: t("title") };
+}
 
 /**
  * Every attempt at one assignment (T-003), for whoever set it.

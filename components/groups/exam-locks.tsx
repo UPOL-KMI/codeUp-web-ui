@@ -18,7 +18,9 @@ export async function ExamLocks({ locks }: { locks: ExamLockRecord[] }) {
   const t = await getTranslations("Group.exams.locks");
 
   if (locks.length === 0) {
-    return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
+    return (
+      <EmptyState title={t("empty.title")} description={t("empty.description")} headingLevel={3} />
+    );
   }
 
   const showAddress = locks.some((lock) => lock.remoteAddr !== null);

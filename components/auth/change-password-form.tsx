@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
@@ -30,6 +30,7 @@ const STRENGTH_TONES = [
 export function ChangePasswordForm({ token }: { token: string }) {
   const t = useTranslations("ForgotPasswordChange");
   const router = useRouter();
+  const strengthId = useId();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [score, setScore] = useState<number | null>(null);
@@ -56,9 +57,11 @@ export function ChangePasswordForm({ token }: { token: string }) {
 
   const mismatched = confirmation !== "" && confirmation !== password;
   const tooWeak = score === 0;
+  const blocked = pending || mismatched || tooWeak || password === "";
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (blocked) return;
     setPending(true);
     setError(null);
 
@@ -93,37 +96,38 @@ export function ChangePasswordForm({ token }: { token: string }) {
         </p>
       )}
 
-      <label className="flex flex-col gap-1 text-sm">
-        {t("password")}
-        <input
-          type="password"
-          name="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="new-password"
-          required
-          autoFocus
-          className={input}
-        />
-      </label>
+      <div className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1 text-sm">
+          {t("password")}
+          <input
+            type="password"
+            name="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            required
+            autoFocus
+            aria-describedby={strengthId}
+            className={input}
+          />
+        </label>
 
-      {password !== "" && score !== null && (
-        <div className="flex flex-col gap-1">
-          <div
-            className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
-            role="img"
-            aria-label={t(`strength.${score}`)}
-          >
+        {password !== "" && score !== null && (
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
             <div
               className={`h-full ${STRENGTH_TONES[score] ?? "bg-muted"}`}
               style={{ width: `${((score + 1) / 5) * 100}%` }}
             />
           </div>
-          <p className={`text-xs ${tooWeak ? "text-destructive" : "text-muted-foreground"}`}>
-            {t(`strength.${score}`)}
-          </p>
-        </div>
-      )}
+        )}
+        <p
+          id={strengthId}
+          role="status"
+          className={`text-xs ${tooWeak ? "text-destructive" : "text-muted-foreground"}`}
+        >
+          {password !== "" && score !== null ? t(`strength.${score}`) : ""}
+        </p>
+      </div>
 
       <label className="flex flex-col gap-1 text-sm">
         {t("confirmation")}
@@ -146,8 +150,9 @@ export function ChangePasswordForm({ token }: { token: string }) {
 
       <button
         type="submit"
-        disabled={pending || mismatched || tooWeak || password === ""}
-        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+        aria-disabled={blocked}
+        aria-describedby={strengthId}
+        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
       >
         {pending ? t("saving") : t("save")}
       </button>

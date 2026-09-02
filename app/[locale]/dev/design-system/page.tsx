@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { CodeViewer } from "@/components/code/code-viewer";
@@ -45,6 +46,16 @@ const SAMPLE_MARKDOWN = [
   "",
   "> Raw HTML such as <b>this</b> is shown as written, never executed.",
 ].join("\n");
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "DesignSystem" });
+  return { title: t("title") };
+}
 
 /**
  * \`/dev/design-system\` (D-013): every Design System component rendered in isolation, on one page,

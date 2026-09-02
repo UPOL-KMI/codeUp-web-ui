@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { externalAuthProvider } from "@/lib/auth/external-auth";
@@ -6,6 +7,16 @@ import { shortSessionSeconds } from "@/lib/auth/short-session";
 
 import { Link } from "@/i18n/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Login" });
+  return { title: t("title") };
+}
 
 /**
  * Signing in (A-002) -- the app's front door, and until now a `PlaceholderPage` in front of a real

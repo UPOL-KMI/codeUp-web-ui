@@ -232,8 +232,16 @@ test("shows points per student and per assignment, and says which cells were nev
 
   // The distinction the table exists for. On this machine no evaluation can succeed (DEC-031), so
   // every attempted cell is the "everything failed" state and the rest are "nothing submitted" --
-  // the assertion is that both appear and are not the same mark.
-  const marks = await matrix.locator("tbody td").allInnerTexts();
+  // the assertion is that both appear and are not the same mark. Read from the decorative span
+  // rather than the cell: P-002 moved the explanation out of a `title` attribute and into visually
+  // hidden text beside the glyph, and sr-only text is clipped, not hidden, so it is part of the
+  // cell's innerText.
+  const marks = await matrix.locator('tbody td span[aria-hidden="true"]').allTextContents();
   expect(marks.some((mark) => mark.trim() === "!")).toBe(true);
   expect(marks.some((mark) => mark.trim() === "—")).toBe(true);
+
+  // And that each glyph is backed by a sentence, which is the point of the change: the state was
+  // previously reachable only by hovering.
+  await expect(matrix.getByText("Nothing submitted").first()).toBeAttached();
+  await expect(matrix.getByText(/none of which produced a result/).first()).toBeAttached();
 });

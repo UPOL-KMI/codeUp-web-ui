@@ -71,6 +71,10 @@ export function MarkedSource({
 
   return (
     <pre
+      // `<pre>` is `generic`, which ARIA forbids naming; `group` takes a name and is not a
+      // landmark, so two compared files do not become two entries in the landmark list.
+      role="group"
+      tabIndex={0}
       aria-label={label}
       className="max-h-[32rem] overflow-auto rounded-lg border border-border bg-card p-3 text-xs leading-relaxed whitespace-pre"
     >

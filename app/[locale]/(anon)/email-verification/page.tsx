@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { readQueryToken } from "@/lib/auth/query-token";
 
 import { Link } from "@/i18n/navigation";
 import { VerifyEmail } from "@/components/auth/verify-email";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "EmailVerification" });
+  return { title: t("title") };
+}
 
 /**
  * Confirming an email address (A-006) -- where the link in ReCodEx's own verification message

@@ -1,9 +1,20 @@
-import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { ProfileView } from "@/components/users/profile-view";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Profile" });
+  return { title: t("title") };
+}
 
 /**
  * "My profile" (S-021) -- the same screen as anyone else's, rendered here rather than redirected

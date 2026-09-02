@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -13,6 +14,16 @@ import { ExerciseFiles } from "@/components/exercises/exercise-files";
 import { ExerciseForm } from "@/components/exercises/exercise-form";
 import { ExercisePeople } from "@/components/exercises/exercise-people";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ExerciseEdit" });
+  return { title: t("title") };
+}
 
 /**
  * An exercise's basic settings (T-008) -- the legacy `/app/exercises/:id/edit` route, and where

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -13,6 +14,16 @@ import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ReferenceSolutions.detail" });
+  return { title: t("pageTitle") };
+}
 
 /**
  * One reference solution and what the pipeline made of it (T-011).

@@ -4,7 +4,6 @@ import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
 import { getMyGroups } from "@/lib/api/groups";
 import { getActiveSystemMessages } from "@/lib/api/system-messages";
 
-import { CommandPalette } from "@/components/command-palette/command-palette";
 import { ActiveMessages } from "@/components/messages/active-messages";
 
 import { SidebarNav, type NavSection } from "./sidebar-nav";
@@ -106,13 +105,18 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      {/* Mounted once here rather than per page: Cmd/Ctrl-K has to work from anywhere behind the
-          session, and a palette that only exists on some screens is worse than none. */}
-      <CommandPalette />
+      {/* First in the tab order, before the sidebar's one link per enrolled and taught group. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:ring-2 focus:ring-ring"
+      >
+        {t("skipToContent")}
+      </a>
       <SidebarNav sections={sections} />
       {/* The page's landmark, so assistive technology can jump past the sidebar -- and so a
-          heading in the page cannot be confused with the identically-named sidebar section. */}
-      <main className="min-w-0 flex-1">
+          heading in the page cannot be confused with the identically-named sidebar section.
+          `tabIndex={-1}` so the skip link moves focus rather than only the scroll position. */}
+      <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
         {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
             worth reading without opening a dropdown, and this shell has no header to hang one on
             (DEC-115). */}

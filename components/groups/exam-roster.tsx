@@ -47,10 +47,10 @@ export function ExamRoster({ groupId, students }: { groupId: string; students: E
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">
+        <h2 className="text-sm font-medium">
           {t("locked.title")}{" "}
           <span className="text-muted-foreground tabular-nums">({locked.length})</span>
-        </h3>
+        </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {locked.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">{t("locked.empty")}</p>
@@ -82,10 +82,10 @@ export function ExamRoster({ groupId, students }: { groupId: string; students: E
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">
+        <h2 className="text-sm font-medium">
           {t("waiting.title")}{" "}
           <span className="text-muted-foreground tabular-nums">({waiting.length})</span>
-        </h3>
+        </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {waiting.length === 0 ? (
             <p className="p-4 text-sm text-muted-foreground">{t("waiting.empty")}</p>

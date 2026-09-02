@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
@@ -13,6 +14,16 @@ import {
   SettingsForm,
 } from "@/components/users/account-forms";
 import { PageShell } from "@/components/page-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Account" });
+  return { title: t("title") };
+}
 
 /**
  * The reader's own account (S-022): name and email, password, what ReCodEx emails them, and the

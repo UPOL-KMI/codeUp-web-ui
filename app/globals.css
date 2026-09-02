@@ -20,20 +20,20 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.47 0.18 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   /* Status semantics (D-011). The base set this theme started from has only `destructive`, but
      evaluation and deadline states need "succeeded" and "nearly/at risk" as first-class tokens --
      brief §9's "dark mode via tokens from day one; never hardcode a colour" applies to status
      colouring most of all, since that is where a hardcoded green would otherwise appear first.
      Chroma and lightness are matched to `destructive` so the three read as one family. */
-  --success: oklch(0.577 0.155 149);
+  --success: oklch(0.46 0.125 149);
   --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.646 0.16 70);
-  --warning-foreground: oklch(0.205 0 0);
+  --warning: oklch(0.5 0.105 70);
+  --warning-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --input: oklch(0.63 0 0);
+  --ring: oklch(0.55 0 0);
 }
 
 .dark {
@@ -52,13 +52,13 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive-foreground: oklch(0.205 0 0);
   --success: oklch(0.72 0.15 149);
   --success-foreground: oklch(0.205 0 0);
   --warning: oklch(0.79 0.15 75);
   --warning-foreground: oklch(0.205 0 0);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 35%);
   --ring: oklch(0.556 0 0);
 }
 
@@ -99,7 +99,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -349,8 +349,6 @@
 }
 [data-slot="markdown"] table {
   border-collapse: collapse;
-  display: block;
-  overflow-x: auto;
 }
 [data-slot="markdown"] th,
 [data-slot="markdown"] td {

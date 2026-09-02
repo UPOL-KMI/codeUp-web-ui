@@ -81,15 +81,13 @@ export async function PointsMatrixTable({ matrix }: { matrix: PointsMatrix }) {
                     className="px-3 py-2 text-right whitespace-nowrap tabular-nums"
                   >
                     {nothing ? (
-                      <span
-                        className={onlyFailures ? "text-destructive" : "text-muted-foreground"}
-                        title={
-                          onlyFailures
+                      <span className={onlyFailures ? "text-destructive" : "text-muted-foreground"}>
+                        <span aria-hidden="true">{onlyFailures ? "!" : "—"}</span>
+                        <span className="sr-only">
+                          {onlyFailures
                             ? t("allFailed", { attempts: cell?.attempts ?? 0 })
-                            : t("notSubmitted")
-                        }
-                      >
-                        {onlyFailures ? "!" : "—"}
+                            : t("notSubmitted")}
+                        </span>
                       </span>
                     ) : (
                       <Link

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { forbidden, notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -10,6 +11,16 @@ import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { ClosePendingReviews } from "@/components/groups/close-pending-reviews";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "GroupUserSolutions" });
+  return { title: t("title") };
+}
 
 /**
  * One student's whole course, submission by submission (T-005) -- the legacy

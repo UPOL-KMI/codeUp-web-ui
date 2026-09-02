@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 /**
@@ -39,6 +39,7 @@ export function UserPicker({
 }) {
   const t = useTranslations("Group.settings.members");
   const locale = useLocale();
+  const resultsId = useId();
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<UserHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -71,6 +72,17 @@ export function UserPicker({
   // rejects it on sight).
   const results = term.length < MIN_QUERY ? [] : hits.filter((hit) => !excludeIds.includes(hit.id));
 
+  // Empty below the floor rather than unmounted: a live region only announces what changes inside
+  // one that was already there when the search settled.
+  const status =
+    term.length < MIN_QUERY
+      ? ""
+      : searching
+        ? t("searching")
+        : results.length === 0
+          ? t("noMatches")
+          : t("resultCount", { count: results.length });
+
   return (
     <div className="flex flex-col gap-2">
       <label className="flex flex-col gap-1 text-sm">
@@ -80,16 +92,15 @@ export function UserPicker({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("searchPlaceholder")}
+          aria-controls={resultsId}
           className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
       </label>
+      <p role="status" className="text-sm text-muted-foreground">
+        {status}
+      </p>
       {term.length >= MIN_QUERY && (
-        <ul className="flex flex-col gap-1">
-          {results.length === 0 && (
-            <li className="text-sm text-muted-foreground">
-              {searching ? t("searching") : t("noMatches")}
-            </li>
-          )}
+        <ul id={resultsId} className="flex flex-col gap-1">
           {results.map((hit) => (
             <li key={hit.id} className="flex items-center justify-between gap-2 text-sm">
               <span>{hit.label}</span>

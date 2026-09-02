@@ -116,7 +116,9 @@ export function FileUpload({ onUploadedFilesChange, accept, disabled, maxBytes }
                       className="h-1.5 w-full"
                     />
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm text-muted-foreground">
+                      {/* Kept out of the list's live region: it changes several times a second,
+                          and the `<progress>` above exposes the same number on demand. */}
+                      <span aria-hidden="true" className="text-sm text-muted-foreground">
                         {t("uploading", { percent })}
                       </span>
                       <button

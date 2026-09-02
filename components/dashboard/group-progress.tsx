@@ -36,14 +36,14 @@ export async function GroupProgressCards({ groups }: { groups: GroupProgress[] }
         return (
           <li key={group.id} className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
-              <h3 className="font-medium">
+              <h4 className="font-medium">
                 <Link
                   href={`/groups/${group.id}`}
                   className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   {group.name}
                 </Link>
-              </h3>
+              </h4>
               {group.hasLimit && (
                 <Badge tone={group.passesLimit ? "success" : "warning"}>
                   {group.passesLimit ? t("limitMet") : t("limitNotMet")}

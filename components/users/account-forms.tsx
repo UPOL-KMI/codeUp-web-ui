@@ -39,7 +39,7 @@ import { useToast } from "@/components/toast/toast-provider";
 const input =
   "rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring aria-invalid:border-destructive";
 const primary =
-  "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60";
+  "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60 aria-disabled:opacity-60";
 const secondary =
   "rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60";
 
@@ -72,7 +72,16 @@ export function ProfileForm({ account }: { account: AccountSettings }) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          if (isPending) {
+            event.preventDefault();
+            return;
+          }
+          void onSubmit(event);
+        }}
+        className="flex flex-col gap-4"
+      >
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("titlesBeforeName")}>
             <input type="text" className={input} {...register("titlesBeforeName")} />
@@ -124,8 +133,8 @@ export function ProfileForm({ account }: { account: AccountSettings }) {
         )}
 
         <div>
-          <button type="submit" disabled={isPending} className={primary}>
-            {t("save")}
+          <button type="submit" aria-disabled={isPending} className={primary}>
+            {isPending ? t("saving") : t("save")}
           </button>
         </div>
       </form>
@@ -159,7 +168,16 @@ export function PasswordForm({ account }: { account: AccountSettings }) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={(event) => {
+          if (isPending) {
+            event.preventDefault();
+            return;
+          }
+          void onSubmit(event);
+        }}
+        className="flex flex-col gap-4"
+      >
         <p className="text-sm text-muted-foreground">{t("signsYouOut")}</p>
         {!account.emptyLocalPassword && (
           <Field label={t("oldPassword")}>
@@ -175,6 +193,7 @@ export function PasswordForm({ account }: { account: AccountSettings }) {
           <input
             type="password"
             autoComplete="new-password"
+            aria-invalid={errors.password ? true : undefined}
             className={input}
             {...register("password")}
           />
@@ -183,6 +202,7 @@ export function PasswordForm({ account }: { account: AccountSettings }) {
           <input
             type="password"
             autoComplete="new-password"
+            aria-invalid={errors.passwordConfirm ? true : undefined}
             className={input}
             {...register("passwordConfirm")}
           />
@@ -195,8 +215,8 @@ export function PasswordForm({ account }: { account: AccountSettings }) {
         )}
 
         <div>
-          <button type="submit" disabled={isPending} className={primary}>
-            {t("save")}
+          <button type="submit" aria-disabled={isPending} className={primary}>
+            {isPending ? t("saving") : t("save")}
           </button>
         </div>
       </form>

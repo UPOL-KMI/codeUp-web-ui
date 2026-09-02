@@ -113,6 +113,7 @@ export function StudentTable({
       columns={columns}
       data={students}
       getRowId={(student) => student.id}
+      caption={t("caption")}
       filterPlaceholder={t("filterPlaceholder")}
     />
   );

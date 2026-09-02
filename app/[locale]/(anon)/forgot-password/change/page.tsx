@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { readQueryToken } from "@/lib/auth/query-token";
 
 import { Link } from "@/i18n/navigation";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ForgotPasswordChange" });
+  return { title: t("title") };
+}
 
 /**
  * Choosing a new password, from the link in the email (A-005).

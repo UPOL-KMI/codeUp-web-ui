@@ -102,6 +102,7 @@ export function MemberManager({
                     </select>
                     <button
                       type="button"
+                      aria-label={t("staff.removeMember", { name: member.fullName })}
                       disabled={pending}
                       className={rowButton}
                       onClick={() =>
@@ -146,6 +147,7 @@ export function MemberManager({
                 {canEditStudents && (
                   <button
                     type="button"
+                    aria-label={t("students.removeStudent", { name: student.fullName })}
                     disabled={pending}
                     className={rowButton}
                     onClick={() =>
