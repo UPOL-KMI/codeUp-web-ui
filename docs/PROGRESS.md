@@ -993,7 +993,12 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
 
 - **Phase:** Recon complete
 - **Next ticket:** F-001 (Scaffold Next.js 16.3 repo)
-- **Blocked tickets:** None
+- **Blocked tickets:** **F-028** (the TypeScript 7 / ESLint 10 pin), moved from `todo` on
+  2026-09-02 because `todo` was never the right word for it: the re-evaluation it asks for has
+  been done twice and the answer both times was "upstream is not ready". `typescript-eslint`
+  still excludes TS 7 outright; `eslint-plugin-react`, transitive via `eslint-config-next`, still
+  caps ESLint at 9. Nothing in this repo can lift either, so it waits on a release rather than on
+  a session.
 - **Operator inputs pending:** Q-001 (API URL), Q-005 (port), Q-007 (SMTP), Q-008 (multi-instance) — proceeding on assumptions per §3
 
 ---
