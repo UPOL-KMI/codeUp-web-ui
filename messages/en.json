@@ -1882,6 +1882,45 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
+  "Comments": {
+    "title": "Discussion",
+    "explain": "Notes and questions about this, kept with it.",
+    "empty": "Nothing has been said here yet.",
+    "unknownAuthor": "Somebody you cannot see",
+    "you": "(you)",
+    "privateBadge": "Only you",
+    "write": "Say something",
+    "post": "Post it",
+    "posting": "Posting…",
+    "posted": "Posted.",
+    "keepPrivate": "Keep this to myself",
+    "privateMeans": "Nobody else will see it — ReCodEx leaves a private comment out of everyone else's copy of the discussion, so it is a note in the margin rather than a quiet word with the staff.",
+    "publicMeans": "It will be visible to {audience}, and they will be told about it by email.",
+    "makePrivate": "Hide from others",
+    "madePrivate": "Only you can see it now.",
+    "makePublic": "Show to others",
+    "madePublic": "Others can see it now.",
+    "delete": "Delete",
+    "deleted": "The comment was deleted.",
+    "confirmDelete": {
+      "title": "Delete this comment?",
+      "description": "It goes for good, including from the copies other people have already read.",
+      "action": "Delete it"
+    },
+    "errors": {
+      "empty": "Write something first.",
+      "tooLong": "That is longer than ReCodEx will store.",
+      "postFailed": "The comment could not be posted.",
+      "privacyFailed": "That could not be changed.",
+      "deleteFailed": "The comment could not be deleted."
+    },
+    "audience": {
+      "exercise": "everyone who may see this exercise",
+      "assignment": "the students this is assigned to and the group's teachers",
+      "solution": "the solution's author and the group's teachers",
+      "referenceSolution": "the teachers who may see this reference solution"
+    }
+  },
   "Toast": {
     "close": "Dismiss",
     "regionLabel": "Notifications"

@@ -7,6 +7,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { Link } from "@/i18n/navigation";
 import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { PageShell } from "@/components/page-shell";
+import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
 
 /**
@@ -29,8 +30,9 @@ export default async function AssignmentSolutionsPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, assignment, solutions] = await Promise.all([
+  const [t, tComments, assignment, solutions] = await Promise.all([
     getTranslations("AssignmentSolutions"),
+    getTranslations("Comments"),
     getAssignmentDetail(assignmentId, locale),
     getAssignmentSolutions(assignmentId),
   ]);
@@ -62,6 +64,17 @@ export default async function AssignmentSolutionsPage({
           <SolutionsTable solutions={solutions} scopeId={assignmentId} />
         </div>
       )}
+
+      {/* The **assignment's** discussion, not one of its own: the legacy screen mounts the same
+          thread here, and a teacher looking at every attempt is exactly who wants to read what was
+          said about the assignment. */}
+      <div className="mt-8">
+        <Discussion
+          threadId={assignmentId}
+          publicMeans={tComments("audience.assignment")}
+          canModerate
+        />
+      </div>
     </PageShell>
   );
 }

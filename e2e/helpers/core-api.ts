@@ -37,6 +37,22 @@ export async function deletePipelineIfPresent(pipelineId: string): Promise<void>
   }).catch(() => undefined);
 }
 
+/**
+ * Delete an assignment directly, for a spec's own cleanup (T-012).
+ *
+ * Sibling of `deletePipelineIfPresent`, and for the same reason: an assignment made from a seeded
+ * exercise **inherits that exercise's name**, so one left behind by a failed run is invisible to
+ * any name-based sweep and simply accumulates. A spec that creates one owns it whether or not it
+ * reaches its own teardown.
+ */
+export async function deleteAssignmentIfPresent(assignmentId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/exercise-assignments/${assignmentId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 async function coreApiToken(): Promise<string> {
   const response = await fetch(`${coreApiBase}/login`, {
     method: "POST",

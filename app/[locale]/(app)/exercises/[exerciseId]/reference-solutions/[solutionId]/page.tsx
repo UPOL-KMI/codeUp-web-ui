@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { PageShell } from "@/components/page-shell";
+import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
 
 /**
@@ -36,8 +37,9 @@ export default async function ReferenceSolutionPage({
   params: Promise<{ exerciseId: string; solutionId: string }>;
 }) {
   const [{ exerciseId, solutionId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, solution] = await Promise.all([
+  const [t, tComments, solution] = await Promise.all([
     getTranslations("ReferenceSolutions.detail"),
+    getTranslations("Comments"),
     getReferenceSolution(solutionId),
   ]);
 
@@ -140,6 +142,15 @@ export default async function ReferenceSolutionPage({
             </ul>
           </section>
         )}
+
+        {/* A reference solution has a thread like any other solution -- the legacy app's shared
+            `SolutionDetail` mounts one for both kinds, and this is where a note about why the
+            answer is written this way belongs. */}
+        <Discussion
+          threadId={solutionId}
+          publicMeans={tComments("audience.referenceSolution")}
+          canModerate={solution.can.update === true}
+        />
       </div>
     </PageShell>
   );

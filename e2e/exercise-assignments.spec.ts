@@ -5,6 +5,7 @@ import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { deleteAssignmentIfPresent } from "./helpers/core-api";
 
 /**
  * The assignments made from one exercise (T-012).
@@ -13,6 +14,17 @@ import { baseURL } from "./helpers/base-url";
  * creates real assignments and deletes them again through the product, the way T-001's spec does
  * -- an assignment left behind would change what the group screens and the points matrix count.
  */
+/**
+ * Assignments this spec created, removed even when a test dies before its own teardown. An
+ * assignment made from a seeded exercise carries that exercise's name, so one left behind cannot
+ * be told from a seeded one by looking -- it just accumulates.
+ */
+const created: string[] = [];
+
+test.afterEach(async () => {
+  while (created.length > 0) await deleteAssignmentIfPresent(created.pop()!);
+});
+
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
@@ -62,6 +74,7 @@ test("assigns to several groups at once, and each one stands on its own", async 
   // Put it back, through the product: the newest row for Lab A is the one just made.
   await main.getByRole("row").filter({ hasText: "Lab A" }).last().getByRole("link").first().click();
   await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+  created.push(/\/assignments\/([0-9a-f-]+)/.exec(page.url())![1]!);
   await main.getByRole("link", { name: "Edit assignment" }).click();
   await main.getByRole("button", { name: "Delete this assignment" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Confirm" }).click();

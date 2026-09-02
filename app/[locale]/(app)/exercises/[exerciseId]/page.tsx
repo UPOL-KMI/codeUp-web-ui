@@ -6,6 +6,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { describeValidationError } from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
+import { Discussion } from "@/components/comments/discussion";
 import { ExerciseDetailPanel } from "@/components/exercises/exercise-detail";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
@@ -32,8 +33,9 @@ export default async function ExercisePage({
   params: Promise<{ exerciseId: string }>;
 }) {
   const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, exercise] = await Promise.all([
+  const [t, tComments, exercise] = await Promise.all([
     getTranslations("Exercise"),
+    getTranslations("Comments"),
     getExerciseDetail(exerciseId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/exercises/${exerciseId}`, locale);
@@ -187,6 +189,12 @@ export default async function ExercisePage({
             </ul>
           )}
         </section>
+
+        <Discussion
+          threadId={exerciseId}
+          publicMeans={tComments("audience.exercise")}
+          canModerate={exercise.can.update === true}
+        />
       </div>
     </PageShell>
   );

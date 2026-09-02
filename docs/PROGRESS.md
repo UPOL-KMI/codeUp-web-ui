@@ -664,6 +664,34 @@
     editors this session added.
   - _Observations:_ **219 e2e tests pass** (217 before), **170 unit tests** (152 before).
 
+- **[2026-09-02 09:40] T-022:** Discussion threads -- the last open parity gap.
+  `lib/api/comments.ts`, `lib/actions/comments.ts`,
+  `components/comments/{discussion,comment-thread}.tsx`, on six screens over four threads.
+  - **_A thread's id is the id of the thing being discussed._** `/v1/comments/{exerciseId}` _is_
+    the exercise's discussion, and core-api creates the thread the first time anybody reads or
+    writes it -- so there is nothing to create, no "start a discussion" control, and an entity
+    nobody has talked about simply has an empty thread.
+  - **_"Private" is stronger than most people will expect, so the checkbox says what it means._**
+    core-api filters a private comment out of everybody else's copy of the thread
+    (`filterPublic($user)`), so it is a note in the margin rather than a quiet word with the staff
+    -- this app never has to hide one and could not leak one if it tried. What _public_ reaches
+    differs by screen, so each mount point supplies that sentence in its own words.
+  - _Deleting and unhiding are offered where there is a basis._ core-api's rule is `isAuthor` **or**
+    supervising the group of the commented solution or assignment, and **no hint for it rides on a
+    comment** -- so the controls appear on the reader's own comments always, and on everybody's
+    where the screen already knows the reader teaches there. DEC-090's shape for the fifth time.
+  - _Uses `/private` rather than the `/toggle` the legacy app calls_, which core-api marks
+    deprecated: sending the value you want is not the same as flipping whatever is there.
+  - _Six mounts, four threads:_ the exercise; the assignment, whose thread the solutions list also
+    shows (as legacy does -- a teacher reading every attempt is exactly who wants it); a solution,
+    whose thread its sources page also shows; and a reference solution. **Not** S-018's inline
+    review comments, which `INVENTORY.md` had confused this with and which are attached to a line.
+  - _Found and swept on the way:_ three invisible assignments left behind by T-012's spec when runs
+    were interrupted. An assignment made from a seeded exercise **inherits that exercise's name**,
+    so a name-based sweep cannot see one -- that spec now records what it creates and removes it in
+    an `afterEach`, like T-015's.
+  - _Observations:_ **221 e2e tests pass** (219 before), 170 unit tests.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3179,8 +3207,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-022 -- the legacy discussion threads on exercises, assignments and solutions,
-  the last open parity gap before the Admin phase (AD-001..AD-008).
+- **Next ticket:** AD-001 -- the user list, and the Admin phase with it (AD-001..AD-008). **Every
+  ticket of the Foundation, Design System, Student and Teacher phases is done, and no parity gap
+  is open.**
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the

@@ -9,6 +9,7 @@ import { AssignmentDetailView } from "@/components/assignments/assignment-detail
 import { ClassProgress } from "@/components/assignments/class-progress";
 import { ExerciseSyncNotice } from "@/components/assignments/exercise-sync-notice";
 import { PageShell } from "@/components/page-shell";
+import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
 
 /**
@@ -27,8 +28,9 @@ export default async function AssignmentPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, assignment] = await Promise.all([
+  const [t, tComments, assignment] = await Promise.all([
     getTranslations("Assignment"),
+    getTranslations("Comments"),
     getAssignmentDetail(assignmentId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/assignments/${assignmentId}`, locale);
@@ -89,6 +91,12 @@ export default async function AssignmentPage({
             summary={classProgress.summary}
           />
         )}
+
+        <Discussion
+          threadId={assignmentId}
+          publicMeans={tComments("audience.assignment")}
+          canModerate={assignment.can.update === true}
+        />
       </div>
     </PageShell>
   );

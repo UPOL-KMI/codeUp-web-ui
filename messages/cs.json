@@ -1882,6 +1882,45 @@
     "confirm": "Potvrdit",
     "cancel": "Zrušit"
   },
+  "Comments": {
+    "title": "Diskuse",
+    "explain": "Poznámky a otázky k tomuhle, uložené u toho.",
+    "empty": "Tady zatím nikdo nic neřekl.",
+    "unknownAuthor": "Někdo, koho nevidíte",
+    "you": "(vy)",
+    "privateBadge": "Jen vy",
+    "write": "Něco napsat",
+    "post": "Odeslat",
+    "posting": "Odesílám…",
+    "posted": "Odesláno.",
+    "keepPrivate": "Nechat si to pro sebe",
+    "privateMeans": "Nikdo jiný to neuvidí — ReCodEx soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tiché slovo personálu.",
+    "publicMeans": "Uvidí to {audience} a přijde jim o tom e-mail.",
+    "makePrivate": "Skrýt ostatním",
+    "madePrivate": "Teď to vidíte jen vy.",
+    "makePublic": "Ukázat ostatním",
+    "madePublic": "Teď to vidí i ostatní.",
+    "delete": "Smazat",
+    "deleted": "Komentář byl smazán.",
+    "confirmDelete": {
+      "title": "Smazat tento komentář?",
+      "description": "Zmizí nadobro, i z kopií, které si ostatní už přečetli.",
+      "action": "Smazat"
+    },
+    "errors": {
+      "empty": "Nejdřív něco napište.",
+      "tooLong": "Tohle je delší, než ReCodEx uloží.",
+      "postFailed": "Komentář se nepodařilo odeslat.",
+      "privacyFailed": "Nepodařilo se to změnit.",
+      "deleteFailed": "Komentář se nepodařilo smazat."
+    },
+    "audience": {
+      "exercise": "všichni, kdo smí vidět tuhle úlohu",
+      "assignment": "studenti, kterým je to zadané, a učitelé skupiny",
+      "solution": "autor řešení a učitelé skupiny",
+      "referenceSolution": "učitelé, kteří smí vidět tohle vzorové řešení"
+    }
+  },
   "Toast": {
     "close": "Zavřít",
     "regionLabel": "Oznámení"

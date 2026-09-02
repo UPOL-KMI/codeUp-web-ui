@@ -20,6 +20,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
+import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
 import { ReviewControls } from "@/components/solutions/review-controls";
 import { ReviewSummary } from "@/components/solutions/review-summary";
@@ -48,8 +49,9 @@ export default async function SolutionSourcesPage({
   params: Promise<{ solutionId: string }>;
 }) {
   const [{ solutionId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, solution, files, currentUser] = await Promise.all([
+  const [t, tComments, solution, files, currentUser] = await Promise.all([
     getTranslations("Sources"),
+    getTranslations("Comments"),
     getSolutionDetail(solutionId, locale),
     getSolutionFiles(solutionId),
     getCurrentUser(),
@@ -188,6 +190,15 @@ export default async function SolutionSourcesPage({
             </div>
           </>
         )}
+
+        {/* The **solution's** thread, the same one its own screen shows -- the legacy app mounts
+            it in both places, and the sources are where a remark about the code belongs. Not the
+            same thing as S-018's inline review comments, which are attached to a line. */}
+        <Discussion
+          threadId={solutionId}
+          publicMeans={tComments("audience.solution")}
+          canModerate={solution.can.review === true}
+        />
       </div>
     </PageShell>
   );

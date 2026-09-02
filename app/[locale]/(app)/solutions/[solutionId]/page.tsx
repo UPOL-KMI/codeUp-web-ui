@@ -11,6 +11,7 @@ import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { PageShell } from "@/components/page-shell";
+import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
 
@@ -40,8 +41,9 @@ export default async function SolutionPage({
   searchParams: Promise<{ monitor?: string; tasks?: string }>;
 }) {
   const [{ solutionId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, solution] = await Promise.all([
+  const [t, tComments, solution] = await Promise.all([
     getTranslations("Solution"),
+    getTranslations("Comments"),
     getSolutionDetail(solutionId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
@@ -168,6 +170,12 @@ export default async function SolutionPage({
           )}
           <EvaluationResults solution={solution} />
         </section>
+
+        <Discussion
+          threadId={solutionId}
+          publicMeans={tComments("audience.solution")}
+          canModerate={solution.can.review === true}
+        />
       </div>
     </PageShell>
   );
