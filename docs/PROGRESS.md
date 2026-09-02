@@ -604,6 +604,37 @@
     core-api. `test.slow()`, with the reason written down.
   - _Observations:_ **215 e2e tests pass** (212 before), 138 unit tests.
 
+- **[2026-09-02 08:30] T-024:** The other kind of exercise configuration, and the way back out of
+  it. `components/exercises/config/advanced-config.tsx`, `lib/exercise-config/advanced-config.ts`,
+  `lib/actions/exercise-advanced.ts`.
+  - _An `advancedExerciseConfig` is one language, one pipeline list shared by every test, and every
+    variable those pipelines ask for filled in by hand._ **Which variables those are is core-api's
+    answer** (`POST /config/variables`), not a vocabulary this app carries -- which is the whole
+    reason this editor could be built without a second copy of the descriptor table T-009 needs.
+  - **_The switch exists in both directions now, and only one of them confirms_** (DEC-108).
+    DEC-101 made T-009 refuse to rewrite an advanced configuration, which was right and left an
+    exercise in that state with no way out of this app -- the one-way door S-026 and T-001 were
+    each filed for. Going _to_ advanced sets a flag and keeps the configuration, so nothing is
+    asked; coming _back_ rebuilds it, so the dialog **names the variables and pipelines that will
+    actually go**, read from the exercise. "Something may be lost" is not a warning anybody can act
+    on.
+  - **_Found and fixed a latent defect in T-009's writer_** (DEC-102, corrected). It carried
+    forward every variable already in a pipeline, on the reasoning that this app's vocabulary
+    should not be the ceiling. core-api disagrees: it refuses a configuration holding a variable
+    the pipeline does not declare -- `Variable 'extra-files' is redundant in pipeline ...` -- which
+    surfaced the first time the switch back wrote one. The writer now asks what each pipeline
+    declares and writes exactly that: the form's value where the vocabulary covers it, the stored
+    value where name and type still match, the pipeline's default otherwise. The intent survives,
+    but the ceiling is the pipeline's rather than this app's, which is where it belonged.
+  - _The editor is keyed by its two structural choices_ -- the language and the pipeline list --
+    because saving either rebuilds the configuration on core-api's side, the same reason T-016's
+    structure editor is keyed by its version. Saving the _values_ leaves the key alone, so nothing
+    just typed is thrown away.
+  - _Verified as a real round trip_: an exercise taken to a configuration of its own, given a
+    pipeline and a judge, brought back to the standard form, and the judge still there -- because
+    `judge-type` is one variable both vocabularies know.
+  - _Observations:_ **217 e2e tests pass** (215 before), **152 unit tests** (138 before).
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3119,9 +3150,8 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   nudge to do it), A-008 (the language switch) and A-003 (registration, closed on this deployment
   and saying so). Only A-001 and A-007 remain of that phase.
   Foundation and Design System complete.
-- **Next ticket:** T-024 -- the advanced exercise configuration and the switch between the two
-  kinds, which is the one place this app can still strand somebody. Then T-025 and T-022.
-  **The Teacher phase is complete**: every ticket T-001..T-023 is done.
+- **Next ticket:** T-025 -- the custom score expression, the last thing an exercise can hold that
+  this app can show but not edit. Then T-022 (the legacy discussion threads).
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004). **Three parity gaps are filed and open:** T-022 (the

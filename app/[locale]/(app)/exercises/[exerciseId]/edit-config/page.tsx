@@ -6,8 +6,16 @@ import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { describeValidationError } from "@/lib/status/exercise-validation";
 import { configCapabilities, readSimpleConfig } from "@/lib/exercise-config/simple-config";
+import {
+  configuredEnvironment,
+  configuredPipelines,
+  possibleEnvironmentVariables,
+  readAdvancedConfig,
+} from "@/lib/exercise-config/advanced-config";
+import { askPipelineVariables } from "@/lib/actions/exercise-advanced";
 
 import { Link } from "@/i18n/navigation";
+import { AdvancedConfigEditor } from "@/components/exercises/config/advanced-config";
 import { EnvironmentsForm } from "@/components/exercises/config/environments-form";
 import { TestConfigForm } from "@/components/exercises/config/test-config-form";
 import { TestsForm } from "@/components/exercises/config/tests-form";
@@ -28,11 +36,12 @@ import { PageShell } from "@/components/page-shell";
  * T-021 shows, and this is the screen that answers most of them, so putting them next to the forms
  * that fix them is the point rather than duplication.
  *
- * **Only the simple configuration is edited here.** An exercise whose configuration was built out
- * of hand-picked pipelines (`advancedExerciseConfig`) is left alone and says so: rewriting it
- * through this form would replace those pipelines with the instance's default ones, which is a
- * silent, unrecoverable loss. The editor for it, and the switch between the two kinds, are T-024
- * (DEC-101).
+ * **Two kinds of configuration, and the screen shows whichever this exercise has.** The simple
+ * kind is the three forms above; the advanced kind -- built out of hand-picked pipelines -- has its
+ * own editor (T-024), because rewriting one through the simple form would replace those pipelines
+ * with the instance's default ones and lose everything configured on them (DEC-101). The switch
+ * between them lives at the bottom of the advanced editor and is not symmetrical: going to
+ * advanced loses nothing, coming back rebuilds, so only one of them confirms.
  *
  * Reading is `viewConfig`; the tests and the score are separate hints and are read even when the
  * configuration is refused, so a reader who may see one and not the other gets what they may see.
@@ -43,9 +52,10 @@ export default async function EditExerciseConfigPage({
   params: Promise<{ exerciseId: string }>;
 }) {
   const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tExercise, exercise] = await Promise.all([
+  const [t, tExercise, tAdvanced, exercise] = await Promise.all([
     getTranslations("ExerciseConfig"),
     getTranslations("Exercise"),
+    getTranslations("ExerciseAdvanced"),
     getExerciseDetail(exerciseId, locale),
   ]);
 
@@ -66,6 +76,19 @@ export default async function EditExerciseConfigPage({
     data.score?.calculator === "weighted"
       ? ((data.score.config as { testWeights?: Record<string, number> } | null)?.testWeights ?? {})
       : {};
+
+  const advancedPipelines = isAdvanced ? configuredPipelines(data.config) : [];
+  const advancedEnvironment = isAdvanced ? configuredEnvironment(data.config) : null;
+  // Which variables each chosen pipeline asks for is core-api's answer, not a guess -- the one
+  // endpoint T-009 never had to call, and the whole basis of the advanced editor.
+  const declared =
+    isAdvanced && advancedEnvironment && advancedPipelines.length > 0
+      ? await askPipelineVariables(exerciseId, advancedEnvironment, advancedPipelines)
+      : null;
+  const advancedValues =
+    declared?.success && advancedEnvironment
+      ? readAdvancedConfig(data.config, data.tests, advancedEnvironment, declared.data)
+      : null;
 
   const capabilities = configCapabilities(environmentIds, data.pipelines);
   const values = readSimpleConfig(data.config, data.tests, environmentIds);
@@ -175,9 +198,32 @@ export default async function EditExerciseConfigPage({
             <p className="text-sm text-muted-foreground">{t("config.explain")}</p>
           </div>
           {isAdvanced ? (
-            <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
-              {t("advanced.config")}
-            </p>
+            /* Keyed by the two structural choices. Saving either the language or the pipeline
+               list rebuilds the configuration on core-api's side, so the editor has to re-seed
+               from what came back rather than keep the state it was holding -- the same reason
+               T-016's structure editor is keyed by its pipeline's version. Saving the *values*
+               leaves the key alone, so nothing that was just typed is thrown away. */
+            <AdvancedConfigEditor
+              key={`${advancedEnvironment ?? ""}:${advancedPipelines.join(",")}`}
+              exerciseId={exerciseId}
+              isAdvanced
+              values={advancedValues}
+              testNames={testNames}
+              pipelines={data.pipelines.map((pipeline) => ({
+                id: pipeline.id,
+                name: pipeline.name,
+                environments: pipeline.runtimeEnvironmentIds,
+              }))}
+              chosenPipelines={advancedPipelines}
+              environments={data.availableEnvironments}
+              environmentId={advancedEnvironment}
+              environmentVariables={data.environments[0]?.variablesTable ?? []}
+              suggestedVariables={possibleEnvironmentVariables(
+                data.pipelineVariables,
+                advancedPipelines,
+              )}
+              readOnly={readOnly}
+            />
           ) : data.configRefused ? (
             <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
               {t("config.refused")}
@@ -214,6 +260,29 @@ export default async function EditExerciseConfigPage({
             </>
           )}
         </section>
+
+        {!isAdvanced && !readOnly && (
+          <section aria-labelledby="config-kind" className="flex flex-col gap-3">
+            <div>
+              <h2 id="config-kind" className="text-base font-semibold tracking-tight">
+                {tAdvanced("toAdvanced.title")}
+              </h2>
+            </div>
+            <AdvancedConfigEditor
+              exerciseId={exerciseId}
+              isAdvanced={false}
+              values={null}
+              testNames={testNames}
+              pipelines={[]}
+              chosenPipelines={[]}
+              environments={data.availableEnvironments}
+              environmentId={environmentIds[0] ?? null}
+              environmentVariables={[]}
+              suggestedVariables={{}}
+              readOnly={readOnly}
+            />
+          </section>
+        )}
       </div>
     </PageShell>
   );

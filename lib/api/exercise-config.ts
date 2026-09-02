@@ -5,6 +5,7 @@ import { pageRead } from "./read";
 import { getRuntimeEnvironments } from "./runtime-environments";
 import type {
   ConfigPipelineDefinition,
+  ConfigVariable,
   EnvironmentConfig,
   ExerciseConfig,
   ExerciseTest,
@@ -35,6 +36,9 @@ export interface ExerciseConfigData {
   /** The instance's environments, narrowed to those the simple editor can express. */
   availableEnvironments: { id: string; name: string; longName: string; description: string }[];
   pipelines: ConfigPipelineDefinition[];
+  /** Every pipeline's own declared variables -- what an advanced environment table may define
+   *  (T-024). Only the file-typed ones matter, and only for the pipelines actually chosen. */
+  pipelineVariables: { id: string; pipeline?: { variables?: ConfigVariable[] } }[];
   /** True when `viewConfig` was refused -- the tests are still readable, the rest is not. */
   configRefused: boolean;
 }
@@ -48,7 +52,7 @@ interface RuntimeEnvironmentPayload {
 }
 
 interface PipelineListPayload {
-  items: ConfigPipelineDefinition[];
+  items: (ConfigPipelineDefinition & { pipeline?: { variables?: ConfigVariable[] } })[];
 }
 
 async function orRefused<T>(read: Promise<T>, fallback: T): Promise<[T, boolean]> {
@@ -106,6 +110,10 @@ export async function getExerciseConfigData(exerciseId: string): Promise<Exercis
       }))
       .sort((a, b) => a.longName.localeCompare(b.longName)),
     pipelines: pipelines.items ?? [],
+    pipelineVariables: (pipelines.items ?? []).map((entry) => ({
+      id: entry.id,
+      pipeline: entry.pipeline,
+    })),
     configRefused,
   };
 }

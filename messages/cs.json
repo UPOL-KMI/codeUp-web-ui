@@ -1269,6 +1269,71 @@
       "advancedRefused": "Tato úloha je poskládaná z ručně vybraných pipeline, což tento formulář neumí vyjádřit. Zůstala, jak byla."
     }
   },
+  "ExerciseAdvanced": {
+    "remove": "Odebrat",
+    "toAdvanced": {
+      "title": "Vlastní konfigurace",
+      "explain": "Formulář výše vyjadřuje obvyklý tvar úlohy: ReCodEx vybere pipeliny a ví, co které pole znamená. Úloha, která se do toho tvaru nevejde — vlastní řetěz soudců, dvoufázové sestavení, jazyk, pro který formulář nemá slova — může místo toho pojmenovat vlastní pipeliny a vyplnit všechny proměnné, které si vyžádají. Přepnutím se nic neztratí: stávající konfigurace zůstane a druhý editor ji přečte.",
+      "action": "Nastavit si to po svém",
+      "done": "Úloha má teď vlastní konfiguraci."
+    },
+    "environment": {
+      "title": "Jazyk",
+      "explain": "Vlastní konfigurace má právě jeden jazyk — seznam pipeline je pevný a druhý jazyk by potřeboval svůj vlastní.",
+      "language": "Jazyk",
+      "choose": "— vyberte —",
+      "variables": "Co dodává jazyk",
+      "variablesExplain": "Hodnoty, které pipeliny čtou, ale nikdo je nenastavuje po testech — maska toho, co smí student odevzdat, a cokoli dalšího společného všem testům. Jméno, které žádná pipeline nečte, neudělá vůbec nic, takže se při psaní nabízejí ta, která se opravdu použijí.",
+      "nameOf": "Jméno proměnné {index}",
+      "typeOf": "Typ {name}",
+      "valueOf": "Hodnota {name}",
+      "listHint": "oddělené čárkami",
+      "unused": "žádná zvolená pipeline tohle nečte",
+      "addVariable": "Přidat proměnnou",
+      "save": "Uložit jazyk",
+      "saved": "Jazyk uložen."
+    },
+    "pipelines": {
+      "title": "Pipeliny",
+      "explain": "Každý test projde těmito, v tomto pořadí. Které proměnné pak musíte vyplnit, určují ony, ne domněnky ReCodExu.",
+      "none": "Tato instalace nemá pro zvolený jazyk žádnou pipelinu.",
+      "save": "Uložit pipeliny",
+      "saved": "Pipeliny uloženy.",
+      "saveNote": "Změna seznamu přestaví hodnoty níže a zachová vše, co dál platí."
+    },
+    "values": {
+      "title": "Co dodává který test",
+      "explain": "Všechny proměnné, které si zvolené pipeliny vyžádají, za každý test. Co to je, odpoví ReCodEx — tenhle seznam si aplikace nenese.",
+      "nothing": "Nejdřív vyberte jazyk a alespoň jednu pipelinu.",
+      "variableOf": "{variable} pro {test}",
+      "save": "Uložit hodnoty",
+      "saved": "Hodnoty uloženy."
+    },
+    "toSimple": {
+      "title": "Zpět ke standardnímu formuláři",
+      "explain": "Standardní formulář zná jen vlastní pipeliny ReCodExu a pevnou sadu proměnných, takže návrat konfiguraci přestaví a zahodí, co vyjádřit neumí.",
+      "action": "Použít standardní formulář",
+      "done": "Úloha teď používá standardní formulář.",
+      "confirm": {
+        "title": "Přestavět tuto konfiguraci?",
+        "description": "Pipeliny se nahradí standardními pro tento jazyk a každá hodnota, kterou standardní formulář nezná, se zahodí. Odtud to nejde vzít zpět — přepnutí nazpět by začínalo od toho, co zbude.",
+        "variables": "Tyto hodnoty by se ztratily: {variables}",
+        "pipelines": "Tyto pipeliny by se nahradily: {pipelines}",
+        "nothingLost": "Nic by se neztratilo: tahle konfigurace se do standardního formuláře vejde.",
+        "action": "Přestavět"
+      }
+    },
+    "errors": {
+      "generic": "Nepovedlo se.",
+      "switchFailed": "Druh konfigurace se nepodařilo změnit.",
+      "variablesFailed": "ReCodEx nedokázal říct, jaké proměnné tyto pipeliny potřebují.",
+      "pipelinesFailed": "Pipeliny se nepodařilo uložit.",
+      "environmentFailed": "Jazyk se nepodařilo uložit.",
+      "configFailed": "Hodnoty se nepodařilo uložit.",
+      "noEnvironment": "Nejdřív vyberte jazyk.",
+      "noPipelines": "Vyberte alespoň jednu pipelinu."
+    }
+  },
   "ExerciseLimits": {
     "title": "Limity spuštění",
     "configure": "Testy a vyhodnocení",

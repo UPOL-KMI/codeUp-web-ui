@@ -219,24 +219,66 @@ describe("writeSimpleConfig", () => {
     // The entry point is written as core-api's sentinel, never as an empty string.
     expect(execution.find((v) => v.name === "entry-point")?.value).toBe("$entry-point");
     expect(execution.find((v) => v.name === "success-exit-codes")?.value).toEqual(["0"]);
-    // Extra files are a compilation variable, so that is where they are written.
+    // Extra files are a compilation variable, so that is where they are written -- and they are
+    // not left in the execution pipeline, which is what core-api calls redundant.
     const compilation = config[0]!.tests[0]!.pipelines[0]!.variables;
     expect(compilation.find((v) => v.name === "extra-files")?.value).toEqual([]);
     expect(compilation.find((v) => v.name === "expected-output")).toBeUndefined();
+    expect(execution.find((v) => v.name === "extra-files")).toBeUndefined();
   });
 
-  it("keeps variables the descriptors do not know about", () => {
+  it("writes exactly the variables a pipeline declares, and nothing else", () => {
+    // core-api refuses anything a pipeline does not declare ("Variable 'extra-files' is redundant
+    // in pipeline ...") -- found by writing one, and the reason the declaration is passed in
+    // rather than the writer guessing from the descriptor table.
+    const declared = {
+      python3: {
+        "python-stdout": [
+          { name: "expected-output", type: "remote-file", value: "" },
+          { name: "judge-type", type: "string", value: "" },
+        ],
+        "compile-passthrough": [{ name: "extra-files", type: "remote-file[]", value: [] }],
+      },
+    };
+    const values = readSimpleConfig(SEEDED, TESTS, ["python3"]);
+    const config = writeSimpleConfig(values, ["python3"], PIPELINES, SEEDED, declared);
+
+    const execution = config[0]!.tests[0]!.pipelines.find((p) => p.name === "python-stdout")!;
+    expect(execution.variables.map((v) => v.name)).toEqual(["expected-output", "judge-type"]);
+    // The form's own value wins where the vocabulary covers the variable.
+    expect(execution.variables[0]!.value).toBe("expected.txt");
+  });
+
+  it("carries a stored value the form has no field for, when the pipeline still declares it", () => {
     const withStranger = structuredClone(SEEDED);
     withStranger[0]!.tests[0]!.pipelines[0]!.variables.push({
       name: "future-variable",
       type: "string",
       value: "keep me",
     });
+    const declared = {
+      python3: {
+        "python-stdout": [{ name: "future-variable", type: "string", value: "" }],
+        "compile-passthrough": [],
+      },
+    };
 
     const values = readSimpleConfig(withStranger, TESTS, ["python3"]);
-    const config = writeSimpleConfig(values, ["python3"], PIPELINES, withStranger);
+    const config = writeSimpleConfig(values, ["python3"], PIPELINES, withStranger, declared);
     const execution = config[0]!.tests[0]!.pipelines.find((p) => p.name === "python-stdout")!;
-    expect(execution.variables.find((v) => v.name === "future-variable")?.value).toBe("keep me");
+    expect(execution.variables).toEqual([
+      { name: "future-variable", type: "string", value: "keep me" },
+    ]);
+  });
+
+  it("falls back to what the form can express when nothing declared anything", () => {
+    const values = readSimpleConfig(SEEDED, TESTS, ["python3"]);
+    const config = writeSimpleConfig(values, ["python3"], PIPELINES, SEEDED);
+    const execution = config[0]!.tests[0]!.pipelines.find((p) => p.name === "python-stdout")!;
+    expect(execution.variables.find((v) => v.name === "expected-output")?.value).toBe(
+      "expected.txt",
+    );
+    expect(execution.variables.find((v) => v.name === "extra-files")).toBeUndefined();
   });
 
   it("blanks the judge type when a custom judge is used, and the reverse", () => {

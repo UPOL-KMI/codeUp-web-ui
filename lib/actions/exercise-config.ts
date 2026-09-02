@@ -4,9 +4,14 @@ import { getTranslations } from "next-intl/server";
 
 import { ApiError, apiGet, apiPost } from "@/lib/api/client";
 import type { ActionResult } from "@/lib/forms/action-result";
-import { writeSimpleConfig } from "@/lib/exercise-config/simple-config";
+import {
+  relevantPipelines,
+  writeSimpleConfig,
+  type DeclaredVariables,
+} from "@/lib/exercise-config/simple-config";
 import type {
   ConfigPipelineDefinition,
+  ConfigVariable,
   EnvironmentConfig,
   ExerciseConfig,
   ExerciseTest,
@@ -135,6 +140,54 @@ export async function updateExerciseEnvironments(
   }
 }
 
+/**
+ * What each pipeline of each environment declares, asked of core-api rather than assumed.
+ *
+ * The set of variables a pipeline's configuration entry may hold is the pipeline's, and core-api
+ * refuses anything outside it -- so the writer is told rather than left to infer it from the
+ * descriptor table (DEC-102, corrected after a save was refused for a variable the descriptors
+ * had faithfully carried across from an older configuration).
+ *
+ * Asked per environment, because `/config/variables` answers for one at a time. A refusal or a
+ * failure is not fatal: the writer falls back to what the form can express, which is never *more*
+ * than a pipeline declares and so is safe, only occasionally incomplete.
+ */
+async function declaredVariables(
+  exerciseId: string,
+  environmentIds: string[],
+  pipelines: ConfigPipelineDefinition[],
+  values: { tests: { useOutFile: boolean }[] },
+): Promise<DeclaredVariables> {
+  const declared: DeclaredVariables = {};
+  await Promise.all(
+    environmentIds.map(async (environmentId) => {
+      const ids = [
+        ...new Set(
+          values.tests.flatMap((test) =>
+            relevantPipelines(pipelines, environmentId, test.useOutFile).map(
+              (pipeline) => pipeline.id,
+            ),
+          ),
+        ),
+      ];
+      if (ids.length === 0) return;
+      try {
+        const answer = await apiPost<{ id: string; variables: ConfigVariable[] }[]>(
+          "/v1/exercises/{id}/config/variables",
+          { runtimeEnvironmentId: environmentId, pipelinesIds: ids },
+          { pathParams: { id: exerciseId } },
+        );
+        declared[environmentId] = Object.fromEntries(
+          answer.map((entry) => [entry.id, entry.variables]),
+        );
+      } catch {
+        // Leave this environment undeclared; the writer falls back.
+      }
+    }),
+  );
+  return declared;
+}
+
 export async function updateExerciseConfig(
   exerciseId: string,
   values: ConfigValues,
@@ -155,10 +208,12 @@ export async function updateExerciseConfig(
       apiGet<{ items: ConfigPipelineDefinition[] }>("/v1/pipelines"),
     ]);
 
-    // The screen does not render this form for an exercise built from hand-picked pipelines, and
-    // this is the check that means it: core-api would accept the rewrite and the pipelines would
-    // be gone. A hidden form is not a safeguard (AGENTS.md constraint 4, from the other side --
-    // here the boundary that has to hold is this app's, because core-api has no rule against it).
+    // The simple form is not rendered for an exercise built from hand-picked pipelines, and this
+    // is the check that means it: core-api would accept the rewrite and the pipelines would be
+    // gone. A hidden form is not a safeguard (AGENTS.md constraint 4, from the other side -- here
+    // the boundary that has to hold is this app's, because core-api has no rule against it).
+    // T-024's editor writes such a configuration through `updateAdvancedConfig`, which is a
+    // different action for exactly this reason.
     if (exercise.configurationType === "advancedExerciseConfig") {
       return { success: false, formError: t("advancedRefused") };
     }
@@ -173,6 +228,7 @@ export async function updateExerciseConfig(
       environmentIds,
       pipelines.items ?? [],
       current ?? [],
+      await declaredVariables(exerciseId, environmentIds, pipelines.items ?? [], parsed.data),
     );
 
     await apiPost("/v1/exercises/{id}/config", { config }, { pathParams: { id: exerciseId } });

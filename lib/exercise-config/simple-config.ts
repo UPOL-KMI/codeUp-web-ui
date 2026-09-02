@@ -25,9 +25,14 @@ import type {
  * -- saving without touching anything is not a no-op, it rewrites the configuration into the shape
  * the simple editor can express.
  *
- * Variables a descriptor does not know about are **kept**: `mergeVariables()` starts from what was
- * already in that pipeline and lets the form's own values override by name. Without it, saving one
- * test would silently drop anything the vocabulary has not caught up with.
+ * **Which variables a pipeline's entry may hold is core-api's answer, not this app's guess.**
+ * `POST /exercises/{id}/config/variables` says, for a chosen environment and pipeline list,
+ * exactly what each pipeline declares -- and core-api refuses a configuration holding anything
+ * else ("Variable 'extra-files' is redundant in pipeline ..., environment python3", found by
+ * writing one). So the writer is given that answer and emits exactly those names: the descriptors
+ * supply the values it knows, the declaration supplies the defaults for the rest, and a value
+ * already stored under the same name and type is carried across. Nothing outside the declaration
+ * survives, because nothing outside it can (DEC-102, corrected).
  */
 export interface FileEntry {
   /** The exercise file's name, as stored. */
@@ -368,17 +373,44 @@ function writeVariables(
   return [];
 }
 
-function mergeVariables(written: ConfigVariable[], original: ConfigVariable[]): ConfigVariable[] {
-  const merged = new Map(original.map((variable) => [variable.name, variable]));
-  for (const variable of written) merged.set(variable.name, variable);
-  return [...merged.values()];
+/**
+ * The variables one pipeline's entry gets: exactly the names it declares, valued from the form
+ * where the vocabulary covers them, from what is already stored where the name and type still
+ * match, and from the pipeline's own default otherwise.
+ *
+ * With no declaration to go on -- an instance that did not answer, or a caller that did not ask --
+ * this falls back to what the descriptors produced, which is what the form can express and is
+ * never *more* than a pipeline declares.
+ */
+function variablesFor(
+  written: ConfigVariable[],
+  stored: ConfigVariable[],
+  declared: ConfigVariable[] | undefined,
+): ConfigVariable[] {
+  if (!declared) return written;
+  const fromForm = new Map(written.map((variable) => [variable.name, variable]));
+  const fromConfig = new Map(stored.map((variable) => [variable.name, variable]));
+  return declared.map((variable) => {
+    const supplied = fromForm.get(variable.name);
+    if (supplied && supplied.type === variable.type) return supplied;
+    const existing = fromConfig.get(variable.name);
+    if (existing && existing.type === variable.type) return { ...existing };
+    return { ...variable };
+  });
 }
+
+/**
+ * What each pipeline declares, keyed by environment and then pipeline -- core-api's own answer
+ * from `/config/variables`, which the caller asks for and passes in.
+ */
+export type DeclaredVariables = Record<string, Record<string, ConfigVariable[]>>;
 
 export function writeSimpleConfig(
   values: SimpleConfigValues,
   environmentIds: string[],
   pipelines: ConfigPipelineDefinition[],
   original: ExerciseConfig,
+  declared?: DeclaredVariables,
 ): ExerciseConfig {
   const descriptors = descriptorsFor(environmentIds);
 
@@ -391,12 +423,15 @@ export function writeSimpleConfig(
           .filter((descriptor) => appliesToPipeline(descriptor, pipeline))
           .flatMap((descriptor) => writeVariables(descriptor, test, environmentId));
 
-        const previous =
+        const stored =
           testPipelines(original, environmentId, test.id).find(
             (entry) => entry.name === pipeline.id,
           )?.variables ?? [];
 
-        return { name: pipeline.id, variables: mergeVariables(written, previous) };
+        return {
+          name: pipeline.id,
+          variables: variablesFor(written, stored, declared?.[environmentId]?.[pipeline.id]),
+        };
       }),
     })),
   }));

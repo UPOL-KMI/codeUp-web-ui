@@ -1269,6 +1269,71 @@
       "advancedRefused": "This exercise is configured from hand-picked pipelines, which this form cannot express. It was left as it is."
     }
   },
+  "ExerciseAdvanced": {
+    "remove": "Remove",
+    "toAdvanced": {
+      "title": "A configuration of your own",
+      "explain": "The form above expresses the ordinary shape of an exercise: ReCodEx picks the pipelines and knows what each field means. An exercise that does not fit that shape — a custom judge chain, a two-stage build, a language the form has no words for — can instead name its own pipelines and fill in every variable they ask for. Switching loses nothing: the configuration you have is kept and the other editor reads it.",
+      "action": "Configure it myself",
+      "done": "This exercise now has a configuration of its own."
+    },
+    "environment": {
+      "title": "Language",
+      "explain": "A configuration of your own has exactly one language — the pipeline list is fixed, and a second language would need its own.",
+      "language": "Language",
+      "choose": "— choose —",
+      "variables": "What the language supplies",
+      "variablesExplain": "Values the pipelines read but nobody sets per test — the glob of what a student may submit, and anything else shared by every test. A name no pipeline reads does nothing at all, so the ones that would be picked up are offered as you type.",
+      "nameOf": "Name of variable {index}",
+      "typeOf": "Type of {name}",
+      "valueOf": "Value of {name}",
+      "listHint": "comma separated",
+      "unused": "no chosen pipeline reads this",
+      "addVariable": "Add a variable",
+      "save": "Save the language",
+      "saved": "The language was saved."
+    },
+    "pipelines": {
+      "title": "Pipelines",
+      "explain": "Every test runs through these, in this order. Which variables you then have to fill in is decided by them, not by ReCodEx's assumptions.",
+      "none": "This deployment has no pipeline for the chosen language.",
+      "save": "Save the pipelines",
+      "saved": "The pipelines were saved.",
+      "saveNote": "Changing the list rebuilds the values below, keeping everything that still applies."
+    },
+    "values": {
+      "title": "What each test supplies",
+      "explain": "Every variable the chosen pipelines ask for, per test. ReCodEx answers what those are — this is not a list this app carries.",
+      "nothing": "Choose a language and at least one pipeline first.",
+      "variableOf": "{variable} for {test}",
+      "save": "Save the values",
+      "saved": "The values were saved."
+    },
+    "toSimple": {
+      "title": "Back to the standard form",
+      "explain": "The standard form only knows ReCodEx's own pipelines and a fixed set of variables, so coming back rebuilds the configuration and drops whatever it cannot express.",
+      "action": "Use the standard form",
+      "done": "This exercise now uses the standard form.",
+      "confirm": {
+        "title": "Rebuild this configuration?",
+        "description": "The pipelines become the standard ones for this language and every value the standard form does not know is dropped. This cannot be undone from here — switching back would start from what is left.",
+        "variables": "These values would be lost: {variables}",
+        "pipelines": "These pipelines would be replaced: {pipelines}",
+        "nothingLost": "Nothing would be lost: this configuration already fits the standard form.",
+        "action": "Rebuild it"
+      }
+    },
+    "errors": {
+      "generic": "That did not work.",
+      "switchFailed": "The configuration kind could not be changed.",
+      "variablesFailed": "ReCodEx could not say which variables these pipelines need.",
+      "pipelinesFailed": "The pipelines could not be saved.",
+      "environmentFailed": "The language could not be saved.",
+      "configFailed": "The values could not be saved.",
+      "noEnvironment": "Choose a language first.",
+      "noPipelines": "Choose at least one pipeline."
+    }
+  },
   "ExerciseLimits": {
     "title": "Execution limits",
     "configure": "Tests and evaluation",
