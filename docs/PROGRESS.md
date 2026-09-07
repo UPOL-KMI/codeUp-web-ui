@@ -3771,6 +3771,45 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     team cannot get by reading the code, and thinning them to fit a page would remove the part that
     makes them actionable. It opens with an eight-item summary for a reader who wants only that.
 
+- **[2026-09-03 02:20] G-008:** A group can be made. `lib/actions/group-create.ts` and its schema,
+  `components/groups/create-group.tsx`, `canCreateRootGroup()`, the `/groups` header and the group's
+  Info tab, `e2e/group-create.spec.ts`.
+  - _The first of the twenty-nine gaps P-001 filed, and the one that mattered most:_ **a course could
+    not be started in this app at all.** The hierarchy could be read, renamed, moved, archived and
+    deleted, and never extended.
+  - _Two entry points, both core-api's own._ On `/groups` for a group under the instance, and on a
+    group's Info tab beside the list it adds to. Both gated on `addSubgroup` -- **which is the same
+    hint in both cases**, because `actionAddGroup` reads a missing `parentGroupId` as "use this
+    instance's root group" and then checks `canAddSubgroup` on whichever parent it resolved. So the
+    top-level control omits the parent rather than naming a root, and `canCreateRootGroup()` asks
+    the group list this app already holds whether any parentless group carries the hint. No round
+    trip: `fetchVisibleGroups` is memoized per request and the page has already called it.
+  - **_The dialog asks for names and nothing else (DEC-093's shape)._** core-api has no call that
+    creates a group _and_ configures it, so the alternative was a wizard holding visibility, the
+    pass rule and the group's kind in the browser until the end -- a second copy of S-009's form
+    that loses everything if the tab closes. It creates plain and lands on the settings tab, where
+    all of it already exists. A name per locale, because core-api looks a group up by name per
+    locale; blank locales are dropped rather than saved empty, which is the settings form's own rule
+    reused rather than restated.
+  - **_Filed Q-024, and it is a genuine API gap rather than a quirk._** `instanceId` is required to
+    create a group **even when a parent is given** -- confirmed by sending the parent alone and
+    getting `400-000 "Missing required POST field instanceId"` -- and **a group\'s payload never
+    says which instance it belongs to.** So a client adding a subgroup has the parent\'s id and no
+    way to learn the parent\'s instance. Worse, `actionAddGroup` resolves the two independently and
+    never checks they agree, so a mismatched pair creates a group whose parent is in one instance
+    and whose own instance is another. This app sends the reader\'s own instance and records it.
+  - _Verified against the live API before a line of UI was written:_ the three bodies this action
+    actually sends -- top-level, subgroup, one locale named -- each created what they should, the
+    creator became the group\'s admin, the blank locale was dropped, and all three were deleted again.
+  - _Verified in the browser in both entry points_, and the Subgroups section now appears on a group
+    that has none, which is exactly when the control is wanted -- it used to render only when there
+    was already a subgroup to list.
+  - _Four new e2e tests, each cleaning up in a `finally` through core-api_, child before parent
+    because core-api refuses to delete a group that still has children. Confirmed afterwards that
+    the instance holds no `[e2e]` or `[probe]` leftovers.
+  - _Observations:_ **261 e2e tests** (257 before), 170 unit tests. The `groups` inventory row is
+    closed; twenty-eight gaps remain.
+
 ### Current Status
 
 - **Phase:** **Parity Sweep & Polish (Phase 7) is complete, and with it every ticket of the original
@@ -3828,8 +3867,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-008** -- creating a group, the first of the twenty-nine gaps P-001 filed, and
-  the one without which a course cannot be started in this app at all. Then the rest of the G block
+- **Next ticket:** **G-001** -- a teacher's verdict on a solution (the accepted flag and the points
+  override), the pair that between them let a teacher correct a grade the pipeline got wrong.
+  **G-008 is done**: a group, and a subgroup, can be created. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
   CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
   largest measured saving in the project and touches none of the same files.

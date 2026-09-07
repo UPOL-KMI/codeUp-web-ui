@@ -128,6 +128,25 @@ function fetchVisibleGroups(scope: "active" | "archived" = "active"): Promise<Gr
   return fetchGroupsInScope(scope);
 }
 
+/**
+ * Whether to offer creating a group that hangs directly under an instance (G-008).
+ *
+ * core-api resolves a parentless `addGroup` to the instance's root group and then checks
+ * `canAddSubgroup` on it, so the question this answers is exactly "is there a root the reader may
+ * add to". It is asked of the list this app already holds -- `fetchVisibleGroups` is memoized per
+ * request and the group screens have called it by the time this runs -- so it costs no round trip.
+ *
+ * A parentless group is not necessarily *this* reader's instance root: a group's payload does not
+ * publish its instance (Q-024), and Q-023 found that deleting an instance leaves its root behind.
+ * That only makes this over-permissive by a hint core-api will re-check anyway.
+ */
+export async function canCreateRootGroup(): Promise<boolean> {
+  const groups = await fetchVisibleGroups();
+  return groups.some(
+    (group) => !group.parentGroupId && group.permissionHints?.addSubgroup === true,
+  );
+}
+
 export async function getMyGroups(
   locale: string,
 ): Promise<{ member: SidebarGroup[]; teaching: SidebarGroup[] }> {

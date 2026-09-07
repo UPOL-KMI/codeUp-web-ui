@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getGroupList } from "@/lib/api/groups";
+import { canCreateRootGroup, getGroupList } from "@/lib/api/groups";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 
+import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
+import { CreateGroup } from "@/components/groups/create-group";
 import { GroupTable } from "@/components/groups/group-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
@@ -32,10 +34,11 @@ export async function generateMetadata({
  */
 export default async function GroupsPage() {
   const locale = await getLocale();
-  const [breadcrumbs, t, groups] = await Promise.all([
+  const [breadcrumbs, t, groups, canCreate] = await Promise.all([
     resolveBreadcrumbsForNamespace("Groups", locale),
     getTranslations("Groups"),
     getGroupList(locale),
+    canCreateRootGroup(),
   ]);
 
   return (
@@ -43,12 +46,15 @@ export default async function GroupsPage() {
       title={breadcrumbs[breadcrumbs.length - 1]!.label}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href="/archive"
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("archiveLink")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/archive"
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("archiveLink")}
+          </Link>
+          {canCreate && <CreateGroup locales={routing.locales} label={t("create.action")} />}
+        </div>
       }
     >
       {groups.length === 0 ? (

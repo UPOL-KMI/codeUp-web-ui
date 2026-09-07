@@ -395,3 +395,36 @@ half-succeed.
 **What would close it.** Cascading the root group's removal, or refusing to delete an instance
 whose root group still has children. Both are API changes, which this repo may not make
 (constraint 1).
+
+---
+
+## Q-024: A group cannot say which instance it belongs to, yet creating one requires it (G-008)
+
+`POST /v1/groups` requires `instanceId`, and **it requires it even when `parentGroupId` is given** --
+verified against the live instance, not read: a body carrying only a parent and localized texts is
+answered `400-000 "Missing required POST field instanceId"`.
+
+**But a group's payload does not publish its instance.** `GET /v1/groups` returns
+`archived, childGroups, directlyArchived, exam, externalId, id, localizedTexts, organizational,
+parentGroupId, parentGroupsIds, permissionHints, primaryAdminsIds, privateData, public` -- and no
+`instanceId`. So a client that wants to add a subgroup to a group it is looking at has the parent's
+id and no way to learn the parent's instance.
+
+**What core-api does with the two fields.** `GroupsPresenter::actionAddGroup` resolves them
+independently: `$instance = $this->instances->findOrThrow($instanceId)` and
+`$parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId)`.
+The ACL check is then `canAddSubgroup($parentGroup)`. **Nothing checks that the parent belongs to
+the instance**, so a mismatched pair creates a group whose parent is in one instance and whose own
+instance is another.
+
+**What this app does about it.** Sends the _reader's own_ instance (`privateData.instancesIds[0]`
+from `getCurrentUser()`), for both the top-level and the subgroup case. On a deployment with one
+instance -- this one, and the normal case -- that is always right, and a person who may add a
+subgroup to a group is in that group's instance in every arrangement we can construct. It is
+recorded rather than hidden because it is a guess the API forced, and because it would be wrong for
+a superadmin adding a subgroup to a group in an instance other than their own first one.
+
+**What would close it.** Either publish `instanceId` on the group format -- one field, and every
+client stops guessing -- or make `instanceId` optional when `parentGroupId` is given and take the
+instance from the parent, which is the only value that can be correct. The second is better: it
+removes the possibility of a mismatch rather than making it detectable.

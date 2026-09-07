@@ -3,7 +3,9 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import type { GroupDetail } from "@/lib/api/group-detail";
 import { formatPoints } from "@/lib/format/points";
 
+import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
+import { CreateGroup } from "@/components/groups/create-group";
 import { Markdown } from "@/components/markdown/markdown";
 import { Badge } from "@/components/status/badge";
 
@@ -129,23 +131,34 @@ export async function GroupInfo({ group }: { group: GroupDetail }) {
         </section>
       )}
 
-      {group.subgroups.length > 0 && (
-        <section aria-labelledby="group-subgroups">
-          <h2 id="group-subgroups" className="mb-3 text-base font-semibold tracking-tight">
+      {(group.subgroups.length > 0 || group.can.addSubgroup === true) && (
+        <section aria-labelledby="group-subgroups" className="flex flex-col gap-3">
+          <h2 id="group-subgroups" className="text-base font-semibold tracking-tight">
             {t("subgroups")}
           </h2>
-          <ul className="flex flex-col gap-1">
-            {group.subgroups.map((subgroup) => (
-              <li key={subgroup.id}>
-                <Link
-                  href={`/groups/${subgroup.id}`}
-                  className="text-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  {subgroup.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {group.subgroups.length > 0 ? (
+            <ul className="flex flex-col gap-1">
+              {group.subgroups.map((subgroup) => (
+                <li key={subgroup.id}>
+                  <Link
+                    href={`/groups/${subgroup.id}`}
+                    className="text-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {subgroup.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("noSubgroups")}</p>
+          )}
+          {group.can.addSubgroup === true && (
+            <CreateGroup
+              parentGroupId={group.id}
+              locales={routing.locales}
+              label={t("addSubgroup")}
+            />
+          )}
         </section>
       )}
     </div>

@@ -320,7 +320,24 @@
       "title": "No groups",
       "description": "You are not a member of any group, and none are public on this instance."
     },
-    "caption": "Every group you can see, your role in each, its kind and its size."
+    "caption": "Every group you can see, your role in each, its kind and its size.",
+    "create": {
+      "action": "New group",
+      "title": "New group",
+      "subgroupTitle": "New subgroup",
+      "explain": "Name it, and it is created. Everything else -- who may see it, how it is passed, whether it is an exam group -- is set on the settings tab you land on.",
+      "name": "Name ({locale})",
+      "submit": "Create the group",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "created": "The group was created.",
+      "errors": {
+        "nameRequired": "Give the group a name in at least one language.",
+        "invalid": "The group could not be created from what was entered.",
+        "createFailed": "The group could not be created.",
+        "noInstance": "Your account belongs to no instance, so there is nowhere to create a group."
+      }
+    }
   },
   "Group": {
     "tabs": {
@@ -361,7 +378,9 @@
         "supervisor": "Supervisors",
         "observer": "Observers"
       },
-      "subgroups": "Subgroups"
+      "subgroups": "Subgroups",
+      "addSubgroup": "New subgroup",
+      "noSubgroups": "This group has no subgroups."
     },
     "membership": {
       "join": "Join this group",

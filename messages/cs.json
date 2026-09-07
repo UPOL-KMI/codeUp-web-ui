@@ -320,7 +320,24 @@
       "title": "Žádné skupiny",
       "description": "Nejste členem žádné skupiny a na této instanci nejsou žádné veřejné."
     },
-    "caption": "Všechny skupiny, které vidíte, vaše role v nich, jejich druh a velikost."
+    "caption": "Všechny skupiny, které vidíte, vaše role v nich, jejich druh a velikost.",
+    "create": {
+      "action": "Nová skupina",
+      "title": "Nová skupina",
+      "subgroupTitle": "Nová podskupina",
+      "explain": "Zadejte název a skupina vznikne. Vše ostatní – kdo ji uvidí, jak se prochází, zda jde o zkouškovou skupinu – nastavíte na kartě nastavení, na kterou budete přesměrováni.",
+      "name": "Název ({locale})",
+      "submit": "Vytvořit skupinu",
+      "submitting": "Vytvářím…",
+      "cancel": "Zrušit",
+      "created": "Skupina byla vytvořena.",
+      "errors": {
+        "nameRequired": "Zadejte název skupiny alespoň v jednom jazyce.",
+        "invalid": "Z vyplněných údajů nelze skupinu vytvořit.",
+        "createFailed": "Skupinu se nepodařilo vytvořit.",
+        "noInstance": "Váš účet nepatří k žádné instanci, takže není kde skupinu vytvořit."
+      }
+    }
   },
   "Group": {
     "tabs": {
@@ -361,7 +378,9 @@
         "supervisor": "Cvičící",
         "observer": "Pozorovatelé"
       },
-      "subgroups": "Podskupiny"
+      "subgroups": "Podskupiny",
+      "addSubgroup": "Nová podskupina",
+      "noSubgroups": "Tato skupina nemá žádné podskupiny."
     },
     "membership": {
       "join": "Vstoupit do skupiny",
