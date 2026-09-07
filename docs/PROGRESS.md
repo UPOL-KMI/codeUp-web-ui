@@ -1027,6 +1027,51 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ **264 e2e tests pass** (257 at the start of the day, +4 for G-008, +3 here),
     170 unit tests. Twenty-seven gaps remain.
 
+- **[2026-09-07 22:40] G-002:** Work already submitted can be re-graded, and removed.
+  `lib/actions/solution-rerun.ts`, `components/solutions/rerun-controls.tsx`,
+  `components/assignments/resubmit-all.tsx`, `canResubmit` on the solution, `e2e/solution-rerun.spec.ts`.
+  - _Until now nothing in this app could apply a fix to work already done._ A teacher who mended a
+    broken test, a wrong limit or a bad judge had no way to re-grade against it: every solution on
+    record kept the verdict the broken configuration gave it.
+  - **_A resubmit answers with a submit's own payload, and that turned out to matter._** core-api
+    builds both through `finishSubmission`, so a re-run comes back with the **monitor channel** of
+    the job it just started -- disclosed once and never again. So the control **navigates** to the
+    same `?monitor=&tasks=` URL the submit form produces rather than merely refreshing, and S-016's
+    live progress display works for a re-run exactly as it does for a first submission. Refreshing
+    would have looked identical and silently thrown the channel away.
+  - _Debug is a second button rather than a checkbox._ It is not a variation on the ordinary re-run;
+    it is what a teacher reaches for when the ordinary result did not explain itself, and a checkbox
+    left ticked from last time is a surprise the next re-run does not need.
+  - **_Re-running everything is asynchronous, and the screen says so rather than lying._** core-api
+    starts a background job and answers with the pending and failed job lists -- and **starts
+    nothing at all if a job is already pending, answering with the same list either way**. So
+    "started" and "already running" are indistinguishable in the response; the toast reports how
+    many jobs are pending instead of claiming the work is done, and the rows do not change under the
+    reader's hands.
+  - _The gate is the **assignment's** hint, not the solution's_ (`canResubmitSubmissions($solution->getAssignment())`),
+    and the solution screen already fetches that assignment for its name -- so reading
+    `resubmitSubmissions` off it costs nothing. Deleting is the solution's own `delete`.
+  - _Deleting takes more than it looks like._ core-api removes the review and its comments, every
+    submission's result archive and job config, and the submitted source, and it does not confirm.
+    The dialog here is the only confirmation there is, so it names all of it.
+  - _Verified live before any UI existed:_ a real resubmit returned a real channel id and
+    `expectedTasksCount: 6`, and the extra evaluation run it created was deleted again through
+    `DELETE /v1/assignment-solutions/submission/{id}`.
+  - **_This ticket's own spec had the defect G-001 had just fixed elsewhere, and it was caught the
+    same way._** The re-run test adds an evaluation run to a **seeded** solution, so without cleanup
+    it would deepen that solution by one on every pass -- exactly the drift that had broken
+    `assignment-solutions.spec.ts`. It now records the submissions before and removes whatever is
+    new afterwards, and the instance was confirmed byte-for-byte back: four solutions, one
+    submission on the one it re-ran.
+  - _`resubmit-all` is offered by the spec and not pressed_, deliberately: it starts a job over
+    every submission of an assignment and there is no way to wait for one without asserting on the
+    worker's own timing. Verified by hand instead, the way T-002 verified its re-sync.
+  - _One flake, and it was not this ticket._ A full run failed `system-messages.spec.ts`, which
+    passed in isolation immediately afterwards; the broadcast it had left behind was removed. Two
+    workers against one instance, with system messages rendering above every page, is the shape
+    that produces it.
+  - _Observations:_ **269 e2e tests pass** (264 before), 170 unit tests. Twenty-six gaps remain.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3905,9 +3950,11 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-002** -- re-running a solution (one, or every solution of an assignment, and
-  in debug mode) and deleting one. **G-008 and G-001 are done**: a group and a subgroup can be
-  created, and a teacher can accept an attempt and set what it is worth. Then the rest of the G block
+- **Next ticket:** **G-003** -- the student's review request, which is the cheapest item in the
+  queue and turns S-002's already-built dashboard queue from decorative into working. **G-008,
+  G-001 and G-002 are done**: a group and a subgroup can be created, a teacher can accept an attempt
+  and set what it is worth, and work already submitted can be re-run or removed. Then the rest of
+  the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
   CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
   largest measured saving in the project and touches none of the same files.

@@ -1,0 +1,130 @@
+import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+import { STUDENT, SUPERADMIN } from "./helpers/accounts";
+import type { SeedAccount } from "./helpers/accounts";
+import { loginAndGetCookie } from "./helpers/auth";
+import { baseURL } from "./helpers/base-url";
+import {
+  deleteSolutionIfPresent,
+  deleteSubmissionIfPresent,
+  firstSeededSolution,
+  solutionSubmissionIds,
+} from "./helpers/core-api";
+
+/**
+ * Running a solution again, and removing one (G-002).
+ *
+ * **The deletion test submits its own solution rather than removing a seeded one**, for the obvious
+ * reason: a seeded solution deleted is gone, and half the suite reads them. Submitting one is the
+ * only way to have something disposable, and it goes through the real upload path because that is
+ * the only way to create a solution at all -- there is no fixture endpoint.
+ *
+ * **Nothing here asserts an evaluation result.** This host cannot produce a passing one (DEC-031)
+ * and a resubmit's job fails within a second, so what is asserted is that the re-run *started* and
+ * that the screen carries the monitor channel it was given -- which is the part this ticket built.
+ */
+async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
+  const cookie = await loginAndGetCookie(account);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await page.goto(path);
+}
+
+/** Submits a throwaway solution as the student and returns its id. */
+async function submitThrowaway(page: Page): Promise<string> {
+  await signIn(page, STUDENT, "/en/dashboard");
+  await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+  await page.getByRole("link", { name: "Submit a solution" }).click();
+
+  await page.setInputFiles('input[type="file"]', {
+    name: "solution.py",
+    mimeType: "text/x-python",
+    buffer: Buffer.from('print("Hello, ReCodEx!")\n'),
+  });
+  const environment = page.getByLabel("Language", { exact: true });
+  await expect(environment).toBeEnabled({ timeout: 30_000 });
+  await page.getByLabel("Note").fill("[e2e] to be deleted");
+  await page.getByRole("button", { name: "Submit", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\?monitor=/, { timeout: 30_000 });
+
+  const id = new URL(page.url()).pathname.split("/").at(-1);
+  if (id === undefined) throw new Error("no solution id after submitting");
+  return id;
+}
+
+test("runs a solution again, and carries the monitor channel of the new job", async ({ page }) => {
+  const { id } = await firstSeededSolution();
+  // A resubmit adds an evaluation run to this very solution, so the run it adds has to come back
+  // out again -- otherwise every pass of this suite leaves the seeded solution one deeper, which is
+  // precisely the drift that broke `assignment-solutions.spec.ts` before G-001 fixed it.
+  const before = await solutionSubmissionIds(id);
+  try {
+    await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
+    const main = page.getByRole("main");
+    await expect(main.getByRole("heading", { name: "Running it again" })).toBeVisible();
+
+    await main.getByRole("button", { name: "Run it again", exact: true }).click();
+
+    // core-api hands the monitor channel out once, in the response to the resubmit that created the
+    // job. If it is not in this URL it is gone, and the progress display has nothing to listen to.
+    await expect(page).toHaveURL(new RegExp(`/en/solutions/${id}\\?monitor=[^&]+&tasks=\\d+$`), {
+      timeout: 30_000,
+    });
+  } finally {
+    const after = await solutionSubmissionIds(id);
+    for (const submissionId of after.filter((s) => !before.includes(s))) {
+      await deleteSubmissionIfPresent(submissionId);
+    }
+  }
+});
+
+test("offers a debug run beside the ordinary one", async ({ page }) => {
+  const { id } = await firstSeededSolution();
+  await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
+  const main = page.getByRole("main");
+
+  await expect(main.getByRole("button", { name: "Run it again in debug mode" })).toBeVisible();
+  await expect(main.getByRole("button", { name: "Run it again", exact: true })).toBeVisible();
+});
+
+test("deletes a solution, saying first what goes with it", async ({ page }) => {
+  const solutionId = await submitThrowaway(page);
+  try {
+    await signIn(page, SUPERADMIN, `/en/solutions/${solutionId}`);
+    const main = page.getByRole("main");
+
+    await main.getByRole("button", { name: "Delete this solution" }).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toContainText("whole review with its comments");
+    await dialog.getByRole("button", { name: "Delete it" }).click();
+
+    // Deleting leaves the screen it deleted, for the list it belonged to.
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/solutions$/, { timeout: 15_000 });
+    await page.goto(`/en/solutions/${solutionId}`);
+    await expect(page.getByRole("heading", { name: "Running it again" })).toHaveCount(0);
+  } finally {
+    await deleteSolutionIfPresent(solutionId);
+  }
+});
+
+test("offers re-running every solution from the assignment's own list", async ({ page }) => {
+  const { id } = await firstSeededSolution();
+  await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
+  await page.getByRole("link", { name: "Back to the assignment" }).click();
+  await page.getByRole("link", { name: "All submissions" }).click();
+  await expect(page).toHaveURL(/\/solutions$/);
+
+  // Only offered, not pressed: it starts a background job over every submission of the assignment,
+  // and this suite has no way to wait for one without asserting on the worker's own timing.
+  await expect(page.getByRole("button", { name: "Run all of them again" })).toBeVisible();
+});
+
+test("is offered to no student", async ({ page }) => {
+  const { id } = await firstSeededSolution();
+  await signIn(page, STUDENT, `/en/solutions/${id}`);
+
+  await expect(page.getByRole("heading", { name: "Running it again" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Run it again", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Delete this solution" })).toHaveCount(0);
+});

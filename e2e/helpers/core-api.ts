@@ -82,6 +82,31 @@ async function coreApiToken(): Promise<string> {
 }
 
 /**
+ * The submission ids a solution currently has (G-002).
+ *
+ * A resubmit adds one to the *same* solution rather than creating a new one, so a spec that
+ * re-runs a seeded solution has to know which submissions were there before in order to put it
+ * back. Pairs with `deleteSubmissionIfPresent`.
+ */
+export async function solutionSubmissionIds(solutionId: string): Promise<string[]> {
+  const token = await coreApiToken();
+  const solution = await coreApi<{ submissions: string[] }>(
+    `/assignment-solutions/${solutionId}`,
+    token,
+  );
+  return solution.submissions;
+}
+
+/** Delete one evaluation run of a solution, for a spec that caused an extra one (G-002). */
+export async function deleteSubmissionIfPresent(submissionId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/assignment-solutions/submission/${submissionId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
+/**
  * Delete a solution a spec submitted, for its own cleanup.
  *
  * **Added because the submit test was not idempotent.** It uploads a real file and creates a real

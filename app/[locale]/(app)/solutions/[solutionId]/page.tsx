@@ -9,6 +9,7 @@ import { evaluationStatus } from "@/lib/status/evaluation";
 import { Link } from "@/i18n/navigation";
 import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
+import { RerunControls } from "@/components/solutions/rerun-controls";
 import { VerdictControls } from "@/components/solutions/verdict-controls";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
@@ -185,6 +186,13 @@ export default async function SolutionPage({
           maxPoints={solution.maxPoints}
           canAccept={solution.can.setFlag === true}
           canSetPoints={solution.can.setBonusPoints === true}
+        />
+
+        <RerunControls
+          solutionId={solution.id}
+          assignmentId={solution.assignmentId}
+          canResubmit={solution.canResubmit}
+          canDelete={solution.can.delete === true}
         />
 
         <section aria-labelledby="solution-evaluation">

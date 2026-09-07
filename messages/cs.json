@@ -877,6 +877,27 @@
         "pointsFailed": "Body se nepodařilo uložit.",
         "invalid": "Body musí být celá čísla."
       }
+    },
+    "rerun": {
+      "title": "Nové spuštění",
+      "explain": "Spustit toto řešení znovu skrz pipeline – to se hodí po opravě testu, limitu nebo soudce, který je vyhodnotil špatně. Výsledek nahradí to, co je uvedeno výše.",
+      "resubmit": "Spustit znovu",
+      "resubmitDebug": "Spustit znovu v ladicím režimu",
+      "delete": "Smazat toto řešení",
+      "confirmDelete": {
+        "title": "Smazat toto řešení?",
+        "description": "Odevzdaný zdrojový kód, všechna jeho vyhodnocení i celá revize včetně komentářů zmizí s ním. Tuto akci nelze vrátit zpět.",
+        "confirm": "Smazat"
+      },
+      "toast": {
+        "resubmitted": "Řešení se spouští znovu.",
+        "deleted": "Řešení bylo smazáno."
+      },
+      "errors": {
+        "resubmitFailed": "Řešení se nepodařilo spustit znovu.",
+        "resubmitAllFailed": "Řešení se nepodařilo spustit znovu.",
+        "deleteFailed": "Řešení se nepodařilo smazat."
+      }
     }
   },
   "Sources": {
@@ -2645,7 +2666,21 @@
     "untitledAssignment": "Nepojmenované zadání",
     "filterByAssignment": "Filtrovat podle zadání nebo poznámky",
     "caption": "Všechna odevzdání tohoto zadání, jejich autoři a výsledky.",
-    "captionByAssignment": "Všechna odevzdání tohoto studenta ve skupině, zadání, kterých se týkají, a jejich výsledky."
+    "captionByAssignment": "Všechna odevzdání tohoto studenta ve skupině, zadání, kterých se týkají, a jejich výsledky.",
+    "resubmitAll": {
+      "action": "Spustit všechna znovu",
+      "confirm": {
+        "title": "Spustit znovu všechna řešení?",
+        "description": "Všechna odevzdání tohoto zadání projdou znovu pipeline, a to na pozadí. Již zobrazené výsledky se budou postupně měnit.",
+        "confirm": "Spustit znovu"
+      },
+      "toast": {
+        "started": "{count, plural, =0 {Běží to na pozadí.} one {Běží to na pozadí – čeká # úloha.} few {Běží to na pozadí – čekají # úlohy.} other {Běží to na pozadí – čeká # úloh.}}"
+      },
+      "errors": {
+        "failed": "Řešení se nepodařilo spustit znovu."
+      }
+    }
   },
   "GroupUserSolutions": {
     "title": "Odevzdání v této skupině",

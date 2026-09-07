@@ -877,6 +877,27 @@
         "pointsFailed": "The points could not be saved.",
         "invalid": "Points must be whole numbers."
       }
+    },
+    "rerun": {
+      "title": "Running it again",
+      "explain": "Run this solution through the pipeline again -- what to do after fixing a test, a limit or a judge that graded it wrongly. The result replaces what is shown above.",
+      "resubmit": "Run it again",
+      "resubmitDebug": "Run it again in debug mode",
+      "delete": "Delete this solution",
+      "confirmDelete": {
+        "title": "Delete this solution?",
+        "description": "The submitted source, every evaluation of it and the whole review with its comments go with it. This cannot be undone.",
+        "confirm": "Delete it"
+      },
+      "toast": {
+        "resubmitted": "It is running again.",
+        "deleted": "The solution was deleted."
+      },
+      "errors": {
+        "resubmitFailed": "It could not be run again.",
+        "resubmitAllFailed": "They could not be run again.",
+        "deleteFailed": "The solution could not be deleted."
+      }
     }
   },
   "Sources": {
@@ -2645,7 +2666,21 @@
     "untitledAssignment": "Unnamed assignment",
     "filterByAssignment": "Filter by assignment or note",
     "caption": "Every submission to this assignment, its author and its result.",
-    "captionByAssignment": "Every submission this student has made in the group, the assignment it belongs to and its result."
+    "captionByAssignment": "Every submission this student has made in the group, the assignment it belongs to and its result.",
+    "resubmitAll": {
+      "action": "Run all of them again",
+      "confirm": {
+        "title": "Run every solution again?",
+        "description": "Every submission to this assignment goes through the pipeline again, in the background. Results already shown will change as it works through them.",
+        "confirm": "Run them again"
+      },
+      "toast": {
+        "started": "{count, plural, =0 {It is running in the background.} one {It is running in the background -- # job is pending.} other {It is running in the background -- # jobs are pending.}}"
+      },
+      "errors": {
+        "failed": "They could not be run again."
+      }
+    }
   },
   "GroupUserSolutions": {
     "title": "Submissions in this group",

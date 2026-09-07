@@ -87,6 +87,8 @@ export interface SolutionDetail {
    *  field rather than nulling it, which is why this is read as "batch or nothing". */
   plagiarismBatchId: string | null;
   can: Record<string, boolean>;
+  /** The assignment's `resubmitSubmissions`, which is what gates re-running this solution. */
+  canResubmit: boolean;
 }
 
 interface SubmissionPayload {
@@ -125,10 +127,11 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     pathParams: { id: solutionId },
   });
 
-  const assignment = await apiRead<{ localizedTexts?: LocalizedText[]; groupId: string | null }>(
-    "/v1/exercise-assignments/{id}",
-    { pathParams: { id: solution.assignmentId } },
-  );
+  const assignment = await apiRead<{
+    localizedTexts?: LocalizedText[];
+    groupId: string | null;
+    permissionHints?: Record<string, boolean>;
+  }>("/v1/exercise-assignments/{id}", { pathParams: { id: solution.assignmentId } });
   const group = assignment.groupId
     ? await apiRead<{ localizedTexts?: LocalizedText[]; primaryAdminsIds?: string[] }>(
         "/v1/groups/{id}",
@@ -169,5 +172,9 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
       accepted: solution.accepted,
     },
     can: solution.permissionHints ?? {},
+    // Re-running is the *assignment's* grant, not the solution's -- core-api checks
+    // `canResubmitSubmissions($solution->getAssignment())`. The assignment is already on the wire
+    // for its name, so reading its hint here costs nothing.
+    canResubmit: assignment.permissionHints?.resubmitSubmissions === true,
   };
 });

@@ -6,6 +6,7 @@ import { getAssignmentSolutions } from "@/lib/api/assignment-solutions";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
+import { ResubmitAll } from "@/components/assignments/resubmit-all";
 import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
@@ -57,12 +58,17 @@ export default async function AssignmentSolutionsPage({
       subtitle={assignment.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/assignments/${assignmentId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("backToAssignment")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/assignments/${assignmentId}`}
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("backToAssignment")}
+          </Link>
+          {assignment.can.resubmitSubmissions === true && solutions.length > 0 && (
+            <ResubmitAll assignmentId={assignmentId} />
+          )}
+        </div>
       }
     >
       {solutions.length === 0 ? (
