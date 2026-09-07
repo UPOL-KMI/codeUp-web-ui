@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { RerunControls } from "@/components/solutions/rerun-controls";
+import { ReviewRequest } from "@/components/solutions/review-request";
 import { VerdictControls } from "@/components/solutions/verdict-controls";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
@@ -177,6 +178,13 @@ export default async function SolutionPage({
             )}
           </dl>
         </section>
+
+        <ReviewRequest
+          solutionId={solution.id}
+          requested={solution.reviewRequested}
+          canRequest={solution.can.setFlagAsStudent === true || solution.can.setFlag === true}
+          reviewStarted={solution.reviewStartedAt !== null}
+        />
 
         <VerdictControls
           solutionId={solution.id}

@@ -82,6 +82,43 @@ async function coreApiToken(): Promise<string> {
 }
 
 /**
+ * A seeded solution that has **no review yet** (G-003).
+ *
+ * Distinct from `firstSeededSolution` on purpose: the seed opens a review on its first solution, and
+ * asking for a review is deliberately not offered once one exists -- so a test of the request
+ * control that used the first solution would be asserting against the guard rather than the
+ * control. Found rather than pinned, for the same reason as its neighbour.
+ */
+export async function seededSolutionWithoutReview(): Promise<{ id: string; authorId: string }> {
+  const token = await coreApiToken();
+  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
+  for (const group of groups) {
+    for (const assignmentId of group.privateData?.assignments ?? []) {
+      const solutions = await coreApi<{ id: string; authorId: string; review: unknown | null }[]>(
+        `/exercise-assignments/${assignmentId}/solutions`,
+        token,
+      );
+      const clean = solutions.find((solution) => solution.review === null);
+      if (clean) return { id: clean.id, authorId: clean.authorId };
+    }
+  }
+  throw new Error("no seeded solution without a review");
+}
+
+/** Set or clear a solution's review request without going through a screen, for teardown (G-003). */
+export async function setReviewRequestedDirectly(
+  solutionId: string,
+  value: boolean,
+): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/assignment-solutions/${solutionId}/set-flag/reviewRequest`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ value }),
+  }).catch(() => undefined);
+}
+
+/**
  * The submission ids a solution currently has (G-002).
  *
  * A resubmit adds one to the *same* solution rather than creating a new one, so a spec that

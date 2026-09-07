@@ -971,7 +971,21 @@
       "updateFailed": "The change to the comment could not be saved.",
       "deleteFailed": "The comment could not be deleted.",
       "stateFailed": "The state of the review could not be changed.",
-      "deleteReviewFailed": "The review could not be erased."
+      "deleteReviewFailed": "The review could not be erased.",
+      "requestFailed": "The request could not be changed."
+    },
+    "request": {
+      "ask": "Ask for a review",
+      "withdraw": "Withdraw the request",
+      "askNote": "Your teacher will see it in their list of solutions to look at.",
+      "askedNote": "Your teacher has it in their list of solutions to look at.",
+      "toast": {
+        "asked": "Your teacher has been asked to look at this.",
+        "withdrawn": "The request was withdrawn."
+      },
+      "errors": {
+        "failed": "The request could not be changed."
+      }
     }
   },
   "Exercises": {

@@ -971,7 +971,21 @@
       "updateFailed": "Změnu komentáře se nepodařilo uložit.",
       "deleteFailed": "Komentář se nepodařilo smazat.",
       "stateFailed": "Stav revize se nepodařilo změnit.",
-      "deleteReviewFailed": "Revizi se nepodařilo smazat."
+      "deleteReviewFailed": "Revizi se nepodařilo smazat.",
+      "requestFailed": "Žádost se nepodařilo změnit."
+    },
+    "request": {
+      "ask": "Požádat o revizi",
+      "withdraw": "Stáhnout žádost",
+      "askNote": "Vyučující ji uvidí ve svém seznamu řešení k prohlédnutí.",
+      "askedNote": "Vyučující ji má ve svém seznamu řešení k prohlédnutí.",
+      "toast": {
+        "asked": "Vyučující byl požádán, aby se na to podíval.",
+        "withdrawn": "Žádost byla stažena."
+      },
+      "errors": {
+        "failed": "Žádost se nepodařilo změnit."
+      }
     }
   },
   "Exercises": {

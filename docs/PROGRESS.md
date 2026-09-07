@@ -1072,6 +1072,43 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     that produces it.
   - _Observations:_ **269 e2e tests pass** (264 before), 170 unit tests. Twenty-six gaps remain.
 
+- **[2026-09-07 23:30] G-003:** The dashboard queue is no longer empty by construction.
+  `setReviewRequested()` in `lib/actions/solution-review.ts`,
+  `components/solutions/review-request.tsx`, the solution screen, `e2e/review-request.spec.ts`.
+  - **_The cheapest ticket in the queue, and the one with the strangest shape:_** S-002 built the
+    teacher's "reviews students have asked for" panel, `reviewRequested` is read in four places
+    across this app, and **nothing anywhere could set it.** The badge rendered, the queue existed,
+    and only the seed could ever put a row in it.
+  - _Offered on `setFlagAsStudent` **or** `setFlag`_, which is core-api's own weaker test for this
+    flag -- `checkSetFlag` maps `reviewRequest` to "the author may also do this" and `accepted` to
+    "the teacher only". Watched happen rather than read: as the author, toggling this flag succeeded
+    and `accepted` was refused with a 403 in the same breath, which also confirms G-001's gate.
+  - **_Gone once a review exists._** Asking for something already happening is noise, and
+    withdrawing would not stop a teacher who has started reading -- core-api keeps the flag and the
+    review independently, so the honest thing is to stop offering it rather than imply it still
+    means something.
+  - _Unique per author per assignment, like `accepted`_ -- but this one needs no confirmation,
+    because it moves the student's **own** request rather than taking something off somebody else's
+    screen.
+  - **_The spec's second test is the ticket._** Asserting the panel exists proves nothing: the seed
+    leaves two requests standing, so the heading is there either way. It asserts that a link to
+    _this_ solution appears in that panel after the student asks.
+  - **_Two false alarms on the way, both worth recording so the next reader does not repeat them._**
+    First, the control seemed not to render for the student -- it was correct, and the fixture was
+    wrong: the seed **opens a review on its first solution**, which is precisely the state the guard
+    hides for. A `seededSolutionWithoutReview()` helper now finds one that is clean, and the guard
+    got a test of its own. Second, `[seed] correct` appeared to have lost its seeded review request
+    -- it had not; the seed puts that solution under **two different assignments** and the one being
+    read was the other. Re-seeding was run before that was understood and changed nothing, which is
+    itself the useful fact: `scripts/seed.ts` is idempotent and did not need to repair anything.
+  - **_And one real defect in this ticket's own spec._** All three tests act on the same seeded
+    solution -- there is only one without a review -- so run in parallel the first test's teardown
+    cleared the flag the second had just set, and the second then failed looking for a row core-api
+    had already been told to remove. Confirmed by asking `/v1/users/{id}/review-requests` directly
+    with the flag set, which returned it. The file is `mode: "serial"` now, with the reason written
+    where the next person will read it.
+  - _Observations:_ **272 e2e tests pass** (269 before), 170 unit tests. Twenty-five gaps remain.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3950,11 +3987,11 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-003** -- the student's review request, which is the cheapest item in the
-  queue and turns S-002's already-built dashboard queue from decorative into working. **G-008,
-  G-001 and G-002 are done**: a group and a subgroup can be created, a teacher can accept an attempt
-  and set what it is worth, and work already submitted can be re-run or removed. Then the rest of
-  the G block
+- **Next ticket:** **G-009** -- shadow assignments can be read and awarded points and cannot be
+  created, edited or removed, so `scripts/seed.ts` is currently their only user interface. **G-008,
+  G-001, G-002 and G-003 are done**: a group and a subgroup can be created, a teacher can accept an
+  attempt and set what it is worth, work already submitted can be re-run or removed, and a student
+  can ask for a review. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
   CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
   largest measured saving in the project and touches none of the same files.

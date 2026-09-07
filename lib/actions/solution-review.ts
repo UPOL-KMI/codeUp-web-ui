@@ -161,3 +161,39 @@ export async function deleteReview(solutionId: string): Promise<ActionResult<{ i
     return failure(error, "deleteReviewFailed");
   }
 }
+
+/**
+ * Ask for a review, or take the request back (G-003).
+ *
+ * **The one thing on a solution a student may change about the review.** core-api's `checkSetFlag`
+ * treats `reviewRequest` as the weaker case -- `setFlagAsStudent` *or* `setFlag` -- where
+ * `accepted` demands `setFlag` outright; verified live, where the author toggled this flag and was
+ * refused `accepted` with a 403 in the same breath.
+ *
+ * It is also **unique per author per assignment**, like `accepted`: core-api clears the request from
+ * the author's other attempts before setting it here. That is the behaviour a student wants (asking
+ * about this attempt withdraws the question about the last one) and it needs no confirmation,
+ * because it moves the student's own request rather than anybody else's.
+ *
+ * This is what fills the teacher's "reviews students have asked for" queue, which S-002 built on the
+ * dashboard and which nothing in this app could put a solution into until now.
+ */
+export async function setReviewRequested(
+  solutionId: string,
+  value: boolean,
+): Promise<ActionResult<{ solutionId: string }>> {
+  const t = await getTranslations("Review.errors");
+  try {
+    await apiPost(
+      "/v1/assignment-solutions/{id}/set-flag/{flag}",
+      { value },
+      { pathParams: { id: solutionId, flag: "reviewRequest" } },
+    );
+    return { success: true, data: { solutionId } };
+  } catch (error) {
+    return {
+      success: false,
+      formError: error instanceof ApiError ? error.message : t("requestFailed"),
+    };
+  }
+}
