@@ -845,7 +845,39 @@
       }
     },
     "plagiarisms": "Similarities",
-    "pageTitle": "Solution"
+    "pageTitle": "Solution",
+    "verdict": {
+      "title": "The teacher's verdict",
+      "explain": "What this attempt is worth, whatever the tests said. Points set here replace the ones the evaluation computed.",
+      "accept": "Accept this attempt",
+      "unaccept": "Stop accepting this attempt",
+      "acceptNote": "It will count instead of the best-scoring one.",
+      "acceptedNote": "This attempt counts instead of the best-scoring one.",
+      "zero": "Award nothing",
+      "full": "Award full marks ({points})",
+      "clear": "Clear the award",
+      "override": "Points instead of the evaluated ones",
+      "overridePlaceholder": "evaluated",
+      "bonus": "Bonus",
+      "save": "Save the points",
+      "saving": "Saving…",
+      "overrideNote": "Leave the first field empty to let the evaluation decide. A bonus may be negative.",
+      "confirmAccept": {
+        "title": "Accept this attempt?",
+        "description": "Whichever attempt this student had accepted before stops being accepted -- only one attempt at an assignment can be.",
+        "confirm": "Accept it"
+      },
+      "toast": {
+        "accepted": "The attempt was accepted.",
+        "unaccepted": "The attempt is no longer accepted.",
+        "pointsSaved": "The points were saved."
+      },
+      "errors": {
+        "acceptFailed": "The attempt could not be accepted.",
+        "pointsFailed": "The points could not be saved.",
+        "invalid": "Points must be whole numbers."
+      }
+    }
   },
   "Sources": {
     "title": "Source code",

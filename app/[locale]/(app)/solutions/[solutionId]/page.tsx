@@ -9,6 +9,7 @@ import { evaluationStatus } from "@/lib/status/evaluation";
 import { Link } from "@/i18n/navigation";
 import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
+import { VerdictControls } from "@/components/solutions/verdict-controls";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { PageShell } from "@/components/page-shell";
@@ -175,6 +176,16 @@ export default async function SolutionPage({
             )}
           </dl>
         </section>
+
+        <VerdictControls
+          solutionId={solution.id}
+          accepted={solution.accepted}
+          overridden={solution.overridden}
+          bonus={solution.bonus}
+          maxPoints={solution.maxPoints}
+          canAccept={solution.can.setFlag === true}
+          canSetPoints={solution.can.setBonusPoints === true}
+        />
 
         <section aria-labelledby="solution-evaluation">
           <h2 id="solution-evaluation" className="mb-3 text-base font-semibold tracking-tight">

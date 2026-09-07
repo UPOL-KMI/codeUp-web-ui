@@ -989,6 +989,44 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     deployment can actually be in (Q-004).
   - _Observations:_ **257 e2e tests pass** (253 before), 170 unit tests.
 
+- **[2026-09-07 21:30] G-001:** A teacher can say what an attempt is worth.
+  `lib/actions/solution-verdict.ts` and its schema, `components/solutions/verdict-controls.tsx`, the
+  solution screen, `e2e/solution-verdict.spec.ts`.
+  - _Two grants, two halves, rendered independently._ `setFlag` decides whether the accept control
+    appears and `setBonusPoints` the points one; core-api hands them out separately, so the screen
+    does too rather than gating both on whichever is handier.
+  - **_Accepting confirms, because it is a move rather than an addition._** `actionSetFlag` treats
+    `accepted` as **unique per author per assignment** -- read in core-api's source and then watched
+    happen -- so it clears the flag from every other attempt that student made before setting it
+    here. A button that quietly takes something off another screen has to say so, and the dialog
+    does. Taking it back needs no confirmation: it removes nothing from anywhere else.
+  - _Three shortcuts and a form, the legacy screen's own shape._ Award nothing, award full marks,
+    clear the award -- one click each, because a teacher fixing a broken test does this on twenty
+    submissions and should not type "0" twenty times. They are not separate endpoints; all four
+    submit the same call.
+  - **_`overriddenPoints` is a string, or null to clear, and core-api's source carries three TODOs
+    apologising for it._** `Validators::isNumericInt` decides whether to set it, `empty()` decides
+    whether to clear it, and anything else is a 400 -- verified by sending all three, including the
+    400 for `"nope"`, against the live instance before a line of UI existed.
+  - _Verified live first, then in the browser._ The four calls this action makes were exercised
+    against a real seeded solution and the solution was put back exactly as the seed leaves it.
+  - **_Two pieces of pre-existing test rot surfaced and were fixed, because the tree cannot be red._**
+    Neither was caused by this ticket and both were caused by time rather than by code.
+    (1) `groups.spec.ts` asserted that the "closed" assignment filter was **empty** -- true the week
+    the seed was written, false now that two seeded deadlines have passed. It asserts the property
+    that is actually about the filter now: it narrows, and its result survives a reload.
+    (2) **The submit test was not idempotent.** It uploads a real file and creates a real solution
+    every run and removed none of them, so Alice's attempt count grew by one per full suite run
+    until `assignment-solutions.spec.ts`'s `toHaveCount(3)` stopped being true -- the suite
+    reporting on its own history rather than on the app. It cleans up after itself now, and the two
+    solutions earlier runs had left were removed.
+  - _One thing that was **not** a defect._ Three consecutive full runs failed one different
+    unrelated test each -- pipelines, forgot-password, assignment-solutions. That was contention: a
+    `pnpm dev` server was running beside the suite's own production server and two workers. With it
+    stopped, all 264 pass. Worth knowing before somebody hunts a flake that is not there.
+  - _Observations:_ **264 e2e tests pass** (257 at the start of the day, +4 for G-008, +3 here),
+    170 unit tests. Twenty-seven gaps remain.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3771,7 +3809,7 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     team cannot get by reading the code, and thinning them to fit a page would remove the part that
     makes them actionable. It opens with an eight-item summary for a reader who wants only that.
 
-- **[2026-09-03 02:20] G-008:** A group can be made. `lib/actions/group-create.ts` and its schema,
+- **[2026-09-07 20:40] G-008:** A group can be made. `lib/actions/group-create.ts` and its schema,
   `components/groups/create-group.tsx`, `canCreateRootGroup()`, the `/groups` header and the group's
   Info tab, `e2e/group-create.spec.ts`.
   - _The first of the twenty-nine gaps P-001 filed, and the one that mattered most:_ **a course could
@@ -3867,9 +3905,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-001** -- a teacher's verdict on a solution (the accepted flag and the points
-  override), the pair that between them let a teacher correct a grade the pipeline got wrong.
-  **G-008 is done**: a group, and a subgroup, can be created. Then the rest of the G block
+- **Next ticket:** **G-002** -- re-running a solution (one, or every solution of an assignment, and
+  in debug mode) and deleting one. **G-008 and G-001 are done**: a group and a subgroup can be
+  created, and a teacher can accept an attempt and set what it is worth. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
   CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
   largest measured saving in the project and touches none of the same files.

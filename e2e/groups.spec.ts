@@ -154,9 +154,20 @@ test.describe("the group's assignments tab", () => {
 
     await page.getByRole("link", { name: "Closed", exact: true }).click();
     await expect(page).toHaveURL(/filter=closed/);
-    // Both seeded assignments are still open, so "closed" is empty -- and says so.
-    await expect(page.getByText("No assignment has passed its deadline.")).toBeVisible();
     expect(rowsAll).toBeGreaterThan(0);
+
+    // What "closed" contains depends on the date, not on this app: the seed sets real deadlines and
+    // they pass as the calendar moves. This used to assert the empty state, which was true the week
+    // the seed was written and became false the week a deadline expired. So assert the property that
+    // is actually about the filter -- it narrows, and its result round-trips through the URL --
+    // rather than a count that time decides.
+    const closedRows = await rows.count();
+    expect(closedRows).toBeLessThanOrEqual(rowsAll);
+    if (closedRows === 0) {
+      await expect(page.getByText("No assignment has passed its deadline.")).toBeVisible();
+    }
+    await page.reload();
+    await expect(rows).toHaveCount(closedRows);
   });
 
   test("does not offer a supervisor a filter for their own submissions", async ({ page }) => {

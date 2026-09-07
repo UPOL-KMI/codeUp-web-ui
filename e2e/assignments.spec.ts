@@ -4,6 +4,7 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { deleteSolutionIfPresent } from "./helpers/core-api";
 import type { SeedAccount } from "./helpers/accounts";
 
 /**
@@ -157,6 +158,12 @@ test.describe("submitting a solution", () => {
     await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\?monitor=[^&]+&tasks=\d+$/, {
       timeout: 30_000,
     });
+
+    // ...and then remove it, because this test creates a real solution and everything that counts
+    // Alice's attempts -- the solutions table, the dashboard, the points matrix -- counts this one
+    // too. Left in, it made the suite pass once per seeded database and fail on every run after.
+    const solutionId = new URL(page.url()).pathname.split("/").at(-1);
+    if (solutionId !== undefined) await deleteSolutionIfPresent(solutionId);
   });
 
   test("refuses to submit before a file exists", async ({ page }) => {

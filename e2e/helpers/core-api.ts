@@ -82,6 +82,68 @@ async function coreApiToken(): Promise<string> {
 }
 
 /**
+ * Delete a solution a spec submitted, for its own cleanup.
+ *
+ * **Added because the submit test was not idempotent.** It uploads a real file and creates a real
+ * solution every run, and removed none of them -- so Alice's attempt count grew by one per full
+ * suite run until `assignment-solutions.spec.ts`'s `toHaveCount(3)` stopped being true. That is the
+ * suite reporting on its own history rather than on the app. Returns quietly if it is already gone.
+ */
+export async function deleteSolutionIfPresent(solutionId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/assignment-solutions/${solutionId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
+/**
+ * A seeded solution to act on, and the assignment maximum it is scored against (G-001).
+ *
+ * Found rather than hardcoded: `scripts/seed.ts` does not publish solution ids, and pinning one
+ * would break the moment the seed changed. Returns the first solution of the first seeded
+ * assignment that has any, which is stable for a given seeded database and is all the caller needs.
+ */
+export async function firstSeededSolution(): Promise<{ id: string; maxPoints: number }> {
+  const token = await coreApiToken();
+  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
+  for (const group of groups) {
+    for (const assignmentId of group.privateData?.assignments ?? []) {
+      const solutions = await coreApi<{ id: string; maxPoints: number }[]>(
+        `/exercise-assignments/${assignmentId}/solutions`,
+        token,
+      );
+      const first = solutions[0];
+      if (first) return { id: first.id, maxPoints: first.maxPoints };
+    }
+  }
+  throw new Error("no seeded solution to act on");
+}
+
+/**
+ * Put a solution's teacher-set fields back where the seed leaves them (G-001).
+ *
+ * The verdict spec mutates a *seeded* solution rather than creating one, because on this host no
+ * evaluation can succeed (DEC-031) and a freshly submitted solution is in a state no teacher ever
+ * sees. That makes restoring it the price, and it belongs here beside the other teardowns rather
+ * than in the spec.
+ */
+export async function restoreSolutionVerdict(solutionId: string): Promise<void> {
+  const token = await coreApiToken();
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  await fetch(`${coreApiBase}/assignment-solutions/${solutionId}/set-flag/accepted`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ value: false }),
+  }).catch(() => undefined);
+  await fetch(`${coreApiBase}/assignment-solutions/${solutionId}/bonus-points`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ bonusPoints: 0, overriddenPoints: null }),
+  }).catch(() => undefined);
+}
+
+/**
  * The ids of the seeded group invitations, keyed by their seed note (S-023).
  *
  * **The only fixture in this suite fetched from core-api rather than found in the app**, and

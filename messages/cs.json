@@ -845,7 +845,39 @@
       }
     },
     "plagiarisms": "Podobnosti",
-    "pageTitle": "Řešení"
+    "pageTitle": "Řešení",
+    "verdict": {
+      "title": "Rozhodnutí vyučujícího",
+      "explain": "Kolik tento pokus platí, bez ohledu na výsledek testů. Zde nastavené body nahradí ty, které spočítalo vyhodnocení.",
+      "accept": "Uznat tento pokus",
+      "unaccept": "Přestat uznávat tento pokus",
+      "acceptNote": "Bude se počítat místo nejlépe hodnoceného.",
+      "acceptedNote": "Tento pokus se počítá místo nejlépe hodnoceného.",
+      "zero": "Nedat žádné body",
+      "full": "Dát plný počet bodů ({points})",
+      "clear": "Zrušit udělení bodů",
+      "override": "Body místo vyhodnocených",
+      "overridePlaceholder": "vyhodnocené",
+      "bonus": "Bonus",
+      "save": "Uložit body",
+      "saving": "Ukládám…",
+      "overrideNote": "Ponechte první pole prázdné, aby rozhodlo vyhodnocení. Bonus může být i záporný.",
+      "confirmAccept": {
+        "title": "Uznat tento pokus?",
+        "description": "Pokus, který měl tento student uznaný dosud, přestane být uznaný – u jednoho zadání může být uznaný jen jeden.",
+        "confirm": "Uznat"
+      },
+      "toast": {
+        "accepted": "Pokus byl uznán.",
+        "unaccepted": "Pokus už není uznaný.",
+        "pointsSaved": "Body byly uloženy."
+      },
+      "errors": {
+        "acceptFailed": "Pokus se nepodařilo uznat.",
+        "pointsFailed": "Body se nepodařilo uložit.",
+        "invalid": "Body musí být celá čísla."
+      }
+    }
   },
   "Sources": {
     "title": "Zdrojový kód",
