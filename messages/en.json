@@ -427,7 +427,10 @@
         "bonus": "Bonus",
         "hidden": "Hidden",
         "myPoints": "{points}/{max} points",
-        "maxPoints": "up to {max} points"
+        "maxPoints": "up to {max} points",
+        "create": "New shadow assignment",
+        "created": "The shadow assignment was created.",
+        "createFailed": "It could not be created."
       },
       "assignExercise": "Assign an exercise",
       "caption": "Every assignment in this group, its deadlines and the points it is worth."
@@ -2836,7 +2839,43 @@
       "invalid": "Those points are not valid.",
       "awardFailed": "The points could not be saved.",
       "removeFailed": "The points could not be withdrawn."
-    }
+    },
+    "edit": {
+      "title": "Shadow assignment settings",
+      "backToAssignment": "Back to the assignment",
+      "locale": "Texts ({locale})",
+      "name": "Name",
+      "text": "Text",
+      "link": "Link",
+      "linkHint": "Where the work lives, if it is not in ReCodEx.",
+      "maxPoints": "Points it is worth",
+      "deadline": "Deadline (informative)",
+      "deadlineHint": "Nothing is submitted against it and nothing is enforced by it -- you decide whether it was met.",
+      "isPublic": "Students can see it",
+      "isBonus": "Bonus -- the points do not count towards the group total",
+      "sendNotification": "Email the group about this change",
+      "save": "Save the settings",
+      "saving": "Saving…",
+      "saved": "The settings were saved.",
+      "deleted": "The shadow assignment was deleted.",
+      "delete": {
+        "title": "Delete the shadow assignment",
+        "explain": "Every points record awarded against it goes with it.",
+        "button": "Delete this shadow assignment",
+        "confirmTitle": "Delete this shadow assignment?",
+        "confirmDescription": "The points every student was awarded for it go with it. This cannot be undone.",
+        "confirm": "Delete it"
+      },
+      "errors": {
+        "nameRequired": "Give it a name in at least one language.",
+        "badLink": "A link has to be a full address, starting with http:// or https://.",
+        "invalid": "The settings could not be saved from what was entered.",
+        "saveFailed": "The settings could not be saved.",
+        "createFailed": "The shadow assignment could not be created.",
+        "deleteFailed": "The shadow assignment could not be deleted."
+      }
+    },
+    "editLink": "Settings"
   },
   "Account": {
     "title": "Account settings",

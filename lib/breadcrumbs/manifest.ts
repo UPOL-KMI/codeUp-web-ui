@@ -80,6 +80,7 @@ const MANIFEST: ManifestEntry[] = [
     pattern: "/assignments/:assignmentId/solutions",
   },
   { namespace: "AssignmentEdit", pattern: "/assignments/:assignmentId/edit" },
+  { namespace: "Shadow.edit", pattern: "/shadow-assignments/:shadowId/edit" },
   { namespace: "ExerciseEdit", pattern: "/exercises/:exerciseId/edit" },
   { namespace: "ExerciseConfig", pattern: "/exercises/:exerciseId/edit-config" },
   { namespace: "ExerciseLimits", pattern: "/exercises/:exerciseId/edit-limits" },

@@ -159,6 +159,15 @@ export async function deleteSolutionIfPresent(solutionId: string): Promise<void>
   }).catch(() => undefined);
 }
 
+/** Delete a shadow assignment a spec created, for its own cleanup (G-009). */
+export async function deleteShadowAssignmentIfPresent(shadowId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/shadow-assignments/${shadowId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 /**
  * A seeded solution to act on, and the assignment maximum it is scored against (G-001).
  *

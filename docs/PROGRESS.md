@@ -1109,6 +1109,43 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     where the next person will read it.
   - _Observations:_ **272 e2e tests pass** (269 before), 170 unit tests. Twenty-five gaps remain.
 
+- **[2026-09-08 00:40] G-009:** `scripts/seed.ts` is no longer a shadow assignment's only way in.
+  `lib/actions/shadow-assignment.ts` and its schema, `getShadowAssignmentSettings()`,
+  `components/assignments/shadow-assignment-form.tsx`, `/shadow-assignments/[shadowId]/edit`,
+  `CreateShadowAssignment` on the group's Assignments tab, `e2e/shadow-assignment-edit.spec.ts`.
+  - _S-020 built reading one and T-024 the points awarded against it_, and the entity's own
+    lifecycle was never built -- so the seed had to create them by raw API call, because no screen
+    could. That is what this closes.
+  - **_Creating takes a group and nothing else, so there is no dialog._** core-api's `actionCreate`
+    accepts only `groupId` and hands back an empty assignment -- DEC-093's create-first shape for
+    the third time, and the one place it is not even a choice: a form here would collect fields the
+    endpoint cannot receive. One press, and the settings screen it lands on is where the name, the
+    points and the deadline are typed.
+  - _A second reader, for the reason `getAssignmentSettings` exists._ The detail screen wants the
+    text in the reader's language; the editor wants **all** of them, including the languages the
+    assignment has no text in yet -- which are exactly the ones somebody opens the editor to fill.
+    **A locale omitted is a locale deleted**, because core-api replaces the whole collection with
+    what it is sent, so the form carries a row per locale this app speaks _plus_ any the assignment
+    already has in another.
+  - _`version` rides along as the optimistic lock_, its `400-010` surfaced verbatim rather than
+    retried -- verified by sending a stale version and getting core-api's own sentence back.
+  - **_The deadline is informative and the form says so in words._** Nothing is submitted against it
+    and nothing is enforced by it; core-api's own documentation says the supervisor decides whether
+    it was breached. That is DEC-087's reasoning from the authoring side, and a picker that looked
+    like a real deadline would promise a countdown that does not exist.
+  - _The whole lifecycle was verified against the live API before any UI existed:_ create returns
+    version 1 with no texts, the update this action sends moves it to version 2, a stale version is
+    refused, a malformed link is refused, and the delete answers 200.
+  - _Two mistakes in the spec, both mine and both worth noting._ The save toast matched **twice** --
+    P-002 gave every toast an `sr-only` live-region twin, and `sr-only` is clipped rather than
+    hidden, so a bare `getByText` is ambiguous now; `{ exact: true }` picks the visible one. And the
+    link test asserted a form error that never renders: the field is `type="url"`, so the **browser**
+    refuses the value before the form's own rule is reached. The assertion is about the field's
+    validity now, and the schema's rule is still what matters, since a Server Action is a public
+    endpoint whatever the browser did.
+  - _The instance is left with the two shadow assignments the seed makes and no strays._
+  - _Observations:_ **276 e2e tests pass** (272 before), 170 unit tests. Twenty-four gaps remain.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -3987,9 +4024,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-009** -- shadow assignments can be read and awarded points and cannot be
-  created, edited or removed, so `scripts/seed.ts` is currently their only user interface. **G-008,
-  G-001, G-002 and G-003 are done**: a group and a subgroup can be created, a teacher can accept an
+- **Next ticket:** **G-005** -- comparing two solutions, the one brief §7 landmine that was stepped
+  on and the largest single build left in the G block. **G-008, G-001, G-002, G-003 and G-009 are
+  done**: a group and a subgroup can be created, a teacher can accept an
   attempt and set what it is worth, work already submitted can be re-run or removed, and a student
   can ask for a review. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment

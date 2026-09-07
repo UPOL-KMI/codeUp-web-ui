@@ -57,6 +57,14 @@ export default async function ShadowAssignmentPage({
         <div className="flex flex-wrap items-center gap-2">
           {assignment.isBonus && <Badge tone="info">{t("flags.bonus")}</Badge>}
           {!assignment.isPublic && <Badge tone="warning">{t("flags.hidden")}</Badge>}
+          {assignment.can.update === true && (
+            <Link
+              href={`/shadow-assignments/${shadowId}/edit`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("editLink")}
+            </Link>
+          )}
           {assignment.groupId && (
             <Link
               href={`/groups/${assignment.groupId}?tab=assignments`}

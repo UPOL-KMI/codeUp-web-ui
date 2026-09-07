@@ -84,6 +84,8 @@ interface ShadowAssignmentPayload {
  *  too, S-012) rather than `description`. */
 interface ShadowLocalizedText extends LocalizedText {
   text?: string;
+  /** An address the work lives at, where the assignment is somewhere other than ReCodEx. */
+  link?: string | null;
 }
 
 function localizedBody(texts: ShadowLocalizedText[] | undefined, locale: string): string {
@@ -205,3 +207,70 @@ export const getGroupShadowAssignments = cache(async function getGroupShadowAssi
 function mine(assignment: ShadowAssignmentPayload, userId: string): PointsPayload | undefined {
   return (assignment.points ?? []).find((record) => record.awardeeId === userId);
 }
+
+/**
+ * A shadow assignment as its editor needs it (G-009): every locale, not the reader's one.
+ *
+ * Separate from `getShadowAssignmentDetail` for the reason `getAssignmentSettings` is separate from
+ * the assignment's own reader -- a screen that *reads* wants the text in the reader's language, and
+ * a screen that *edits* wants all of them. Collapsing first and re-splitting later would lose the
+ * languages the assignment has no text in yet, which are exactly the ones somebody opens the editor
+ * to fill in.
+ */
+export interface ShadowAssignmentSettings {
+  id: string;
+  version: number;
+  groupId: string | null;
+  groupName: string;
+  maxPoints: number;
+  isBonus: boolean;
+  isPublic: boolean;
+  deadline: number | null;
+  texts: { locale: string; name: string; text: string; link: string }[];
+  can: Record<string, boolean>;
+}
+
+export const getShadowAssignmentSettings = cache(async function getShadowAssignmentSettings(
+  shadowId: string,
+  locale: string,
+  locales: readonly string[],
+): Promise<ShadowAssignmentSettings> {
+  const assignment = await apiRead<ShadowAssignmentPayload>("/v1/shadow-assignments/{id}", {
+    pathParams: { id: shadowId },
+  });
+  const group = assignment.groupId
+    ? await apiRead<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
+        pathParams: { id: assignment.groupId },
+      })
+    : null;
+
+  const texts = assignment.localizedTexts ?? [];
+  // A row per locale this app speaks, plus any the assignment already carries in another --
+  // core-api replaces the whole collection with what it is sent, so a locale left out of the form
+  // is a locale deleted, and one it has never heard of would be lost silently.
+  const codes = [
+    ...locales,
+    ...texts.map((text) => text.locale).filter((code) => !locales.includes(code)),
+  ];
+
+  return {
+    id: assignment.id,
+    version: assignment.version,
+    groupId: assignment.groupId ?? null,
+    groupName: group ? localizedName(group.localizedTexts, locale) : "",
+    maxPoints: assignment.maxPoints,
+    isBonus: assignment.isBonus,
+    isPublic: assignment.isPublic,
+    deadline: assignment.deadline ?? null,
+    texts: codes.map((code) => {
+      const existing = texts.find((text) => text.locale === code);
+      return {
+        locale: code,
+        name: existing?.name ?? "",
+        text: existing?.text ?? "",
+        link: existing?.link ?? "",
+      };
+    }),
+    can: assignment.permissionHints ?? {},
+  };
+});

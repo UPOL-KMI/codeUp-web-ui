@@ -427,7 +427,10 @@
         "bonus": "Bonus",
         "hidden": "Skryté",
         "myPoints": "{points}/{max} bodů",
-        "maxPoints": "až {max} bodů"
+        "maxPoints": "až {max} bodů",
+        "create": "Nové stínové zadání",
+        "created": "Stínové zadání bylo vytvořeno.",
+        "createFailed": "Nepodařilo se ho vytvořit."
       },
       "assignExercise": "Zadat úlohu",
       "caption": "Všechna zadání této skupiny, jejich termíny a počet bodů."
@@ -2836,7 +2839,43 @@
       "invalid": "Tyto body nejsou platné.",
       "awardFailed": "Body se nepodařilo uložit.",
       "removeFailed": "Body se nepodařilo odebrat."
-    }
+    },
+    "edit": {
+      "title": "Nastavení stínového zadání",
+      "backToAssignment": "Zpět na zadání",
+      "locale": "Texty ({locale})",
+      "name": "Název",
+      "text": "Text",
+      "link": "Odkaz",
+      "linkHint": "Kde se práce nachází, pokud není v ReCodExu.",
+      "maxPoints": "Počet bodů",
+      "deadline": "Termín (informativní)",
+      "deadlineHint": "Nic se proti němu neodevzdává a nic se podle něj nevynucuje – zda byl dodržen, rozhodujete vy.",
+      "isPublic": "Studenti ho vidí",
+      "isBonus": "Bonus – body se nepočítají do celkového součtu skupiny",
+      "sendNotification": "Poslat skupině e-mail o této změně",
+      "save": "Uložit nastavení",
+      "saving": "Ukládám…",
+      "saved": "Nastavení bylo uloženo.",
+      "deleted": "Stínové zadání bylo smazáno.",
+      "delete": {
+        "title": "Smazat stínové zadání",
+        "explain": "Zmizí s ním všechny body, které byly proti němu uděleny.",
+        "button": "Smazat toto stínové zadání",
+        "confirmTitle": "Smazat toto stínové zadání?",
+        "confirmDescription": "Body, které za něj studenti dostali, zmizí s ním. Tuto akci nelze vrátit zpět.",
+        "confirm": "Smazat"
+      },
+      "errors": {
+        "nameRequired": "Zadejte název alespoň v jednom jazyce.",
+        "badLink": "Odkaz musí být úplná adresa začínající na http:// nebo https://.",
+        "invalid": "Z vyplněných údajů nelze nastavení uložit.",
+        "saveFailed": "Nastavení se nepodařilo uložit.",
+        "createFailed": "Stínové zadání se nepodařilo vytvořit.",
+        "deleteFailed": "Stínové zadání se nepodařilo smazat."
+      }
+    },
+    "editLink": "Nastavení"
   },
   "Account": {
     "title": "Nastavení účtu",

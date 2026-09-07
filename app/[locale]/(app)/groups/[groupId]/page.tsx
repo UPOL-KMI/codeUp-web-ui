@@ -24,6 +24,7 @@ import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { AssignmentFilterNav } from "@/components/groups/assignment-filter";
 import { AssignmentTable } from "@/components/groups/assignment-table";
+import { CreateShadowAssignment } from "@/components/groups/create-shadow-assignment";
 import { ExamLocks } from "@/components/groups/exam-locks";
 import { ExamRoster } from "@/components/groups/exam-roster";
 import { ExamStatus } from "@/components/groups/exam-status";
@@ -380,6 +381,10 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
     getGroupAssignments(groupId, locale, current),
     getGroupShadowAssignments(groupId, locale),
   ]);
+  // core-api refuses one in an organizational group, and an archived group is immutable -- so the
+  // control is not offered where it could only fail. Everything else is its own hint's business.
+  const canCreateShadow =
+    group.can.createShadowAssignment === true && !group.archived && !group.organizational;
 
   return (
     <div className="flex flex-col gap-4">
@@ -410,7 +415,7 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
         <AssignmentTable assignments={assignments} groupId={groupId} />
       )}
 
-      {shadowAssignments.length > 0 && (
+      {(shadowAssignments.length > 0 || canCreateShadow) && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{t("shadow.title")}</h2>
           <p className="text-xs text-muted-foreground">{t("shadow.explain")}</p>
@@ -438,6 +443,7 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
               </li>
             ))}
           </ul>
+          {canCreateShadow && <CreateShadowAssignment groupId={groupId} />}
         </section>
       )}
     </div>
