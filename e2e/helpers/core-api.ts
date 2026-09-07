@@ -159,6 +159,39 @@ export async function deleteSolutionIfPresent(solutionId: string): Promise<void>
   }).catch(() => undefined);
 }
 
+/**
+ * Several attempts by one student at one assignment, oldest first (G-005).
+ *
+ * The comparison screen needs two solutions by the **same author**, which is what it offers to
+ * compare; the seed leaves three under its primary assignment and their contents genuinely differ.
+ * Found rather than pinned, like its neighbours.
+ */
+export async function seededAttemptsOfOneAuthor(): Promise<
+  { id: string; attemptIndex: number; note: string }[]
+> {
+  const token = await coreApiToken();
+  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
+  for (const group of groups) {
+    for (const assignmentId of group.privateData?.assignments ?? []) {
+      const solutions = await coreApi<
+        { id: string; attemptIndex: number; note: string; authorId: string }[]
+      >(`/exercise-assignments/${assignmentId}/solutions`, token);
+      const byAuthor = new Map<string, typeof solutions>();
+      for (const solution of solutions) {
+        byAuthor.set(solution.authorId, [...(byAuthor.get(solution.authorId) ?? []), solution]);
+      }
+      for (const attempts of byAuthor.values()) {
+        if (attempts.length >= 2) {
+          return [...attempts]
+            .sort((a, b) => a.attemptIndex - b.attemptIndex)
+            .map(({ id, attemptIndex, note }) => ({ id, attemptIndex, note }));
+        }
+      }
+    }
+  }
+  throw new Error("no seeded author with two attempts at one assignment");
+}
+
 /** Delete a shadow assignment a spec created, for its own cleanup (G-009). */
 export async function deleteShadowAssignmentIfPresent(shadowId: string): Promise<void> {
   const token = await coreApiToken();

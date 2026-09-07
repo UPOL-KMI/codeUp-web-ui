@@ -1146,6 +1146,47 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _The instance is left with the two shadow assignments the seed makes and no strays._
   - _Observations:_ **276 e2e tests pass** (272 before), 170 unit tests. Twenty-four gaps remain.
 
+- **[2026-09-08 01:40] G-005:** The landmine that was stepped on, defused. `lib/code/diff.ts` and
+  its 12 unit tests, `components/solutions/diff-view.tsx`,
+  `/solutions/[solutionId]/diff/[otherId]`, `ComparePicker` on the sources screen,
+  `e2e/solution-diff.spec.ts`.
+  - _Brief §7 named solution diffing as a thing that must survive the redesign,_ `INVENTORY.md`
+    carried it in **three** rows with "keep capability" beside it, and nothing was ever built. P-001
+    found it; this closes it.
+  - **_The diff is written here rather than pulled in, and that is not invented-here._** The legacy
+    app ships `react-diff-viewer`, which is a React component carrying its own markup, its own
+    styling and its own highlighter -- and this app tokenises code on the **server** through Shiki
+    and renders it through one shared `CodeLine`. Adopting that library would have meant a second
+    highlighter in the browser on the screen a teacher reads most. What was actually needed is the
+    _pairing decision_: an LCS line diff, forty lines, unit-tested, shipping nothing to the client.
+  - _Twelve unit tests, and one of them found a real bug before any screen existed:_ `"".split("\n")`
+    is `[""]`, so an empty file diffed as one blank line and the screen would have reported
+    "removed a blank line" for a file that was never there.
+  - **_Files pair by name, and everything unpaired is named rather than compared to what was left
+    over._** Two attempts at one exercise almost always carry the same filenames; when they do not,
+    quietly diffing `main.py` against `solution.py` because they happen to be the only two left is
+    worse than saying they did not match. Legacy lets a reader map those by hand -- filed as
+    **G-030**, with the note that nothing is hidden without it.
+  - _Colour is never the only signal._ Each changed row carries `+`/`−` and an `sr-only` word in its
+    own column; the tint is for the sighted reader. P-002's lesson from the points matrix, applied
+    before anybody had to file it, and the table keeps `scope`, a caption and one header row.
+  - _Reviews are deliberately absent_, as they are in the legacy diff: a comment is anchored to one
+    solution's lines, and in an aligned two-file view its anchor may land on a row belonging to the
+    other file. A comment shown against the wrong line is worse than one not shown.
+  - **_A gate got this wrong first, and the suite caught it in the right way._** The picker was
+    gated on the solution's own `viewDetail` -- which **its author has** -- so a student's sources
+    screen rendered a picker whose reader then hit a teacher-only endpoint, and `apiRead`'s refusal
+    took the whole page down: four `solution-sources` tests lost their "Source code" heading. The
+    hint that means "may read other people's attempts" is the **assignment's**
+    `viewAssignmentSolutions`, which the solution screen already fetches, so the fix cost no round
+    trip. Both screens are gated on it now, and the diff checks it on **both** solutions, since the
+    two may belong to different assignments.
+  - _Verified in the browser against the seed's own attempts:_ `[seed] correct` against
+    `[seed] wrong` lines up as one removal and one addition, syntax-highlighted, with the swap link
+    reversing the sides.
+  - _Observations:_ **281 e2e tests pass** (276 before), **182 unit tests** (170 before). Twenty-three
+    gaps remain, plus G-030 filed by this one.
+
 ### Current Status
 
 - **Phase:** Recon complete
@@ -4024,9 +4065,9 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-005** -- comparing two solutions, the one brief §7 landmine that was stepped
-  on and the largest single build left in the G block. **G-008, G-001, G-002, G-003 and G-009 are
-  done**: a group and a subgroup can be created, a teacher can accept an
+- **Next ticket:** **G-007** -- an assignment's own localized texts, which today are whatever its
+  exercise says and can only be changed by editing the exercise (which changes every assignment made
+  from it). **G-008, G-001, G-002, G-003, G-009 and G-005 are done**: a group and a subgroup can be created, a teacher can accept an
   attempt and set what it is worth, work already submitted can be re-run or removed, and a student
   can ask for a review. Then the rest of the G block
   in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment

@@ -3186,5 +3186,49 @@
       "pingFailed": "The handler could not be pinged.",
       "abortFailed": "The job could not be aborted."
     }
+  },
+  "Diff": {
+    "title": "Comparing two attempts",
+    "subtitle": "{left} against {right}",
+    "explain": "Lines on the left come from {left}, lines on the right from {right}. Reviews are not shown here -- a comment belongs to one attempt's lines, and this view has two.",
+    "swap": "Swap the sides",
+    "backToSources": "Back to the source code",
+    "identical": "The two are identical.",
+    "counts": "{added} added, {removed} removed.",
+    "caption": "{name}, line by line: {left} on the left, {right} on the right.",
+    "columns": {
+      "leftLine": "Left",
+      "rightLine": "Right",
+      "change": "Change",
+      "line": "Line"
+    },
+    "kind": {
+      "equal": "unchanged",
+      "added": "added",
+      "removed": "removed"
+    },
+    "attemptOf": "attempt {attempt} of {name}",
+    "tooBig": {
+      "title": "Too much to compare here",
+      "description": "One of the two has more files, or larger ones, than this screen renders. Download both archives and compare them locally."
+    },
+    "noPairs": {
+      "title": "No file appears in both",
+      "description": "The two attempts share no filename, so there is nothing to line up. The files each of them has are listed below."
+    },
+    "unpaired": {
+      "title": "Files in only one of them",
+      "explain": "Files are lined up by name, so these had nothing to be compared against.",
+      "onlyIn": "{name} -- only in {side}"
+    },
+    "others": {
+      "title": "Compare with another attempt instead"
+    },
+    "picker": {
+      "title": "Compare with another attempt",
+      "explain": "The same student's other attempts at this assignment, side by side with this one.",
+      "attempt": "Attempt {attempt}"
+    },
+    "otherAttempt": "Attempt {attempt}"
   }
 }

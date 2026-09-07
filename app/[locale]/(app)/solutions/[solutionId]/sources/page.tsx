@@ -28,6 +28,7 @@ import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
+import { ComparePicker } from "@/components/solutions/compare-picker";
 import { ReviewControls } from "@/components/solutions/review-controls";
 import { ReviewSummary } from "@/components/solutions/review-summary";
 import { fileAnchorId, SourceFile } from "@/components/solutions/source-file";
@@ -195,6 +196,18 @@ export default async function SolutionSourcesPage({
               </Suspense>
             </ErrorBoundary>
           </>
+        )}
+
+        {/* Comparing is a teacher's tool: the list it offers is *other* attempts, which is exactly
+            what `viewAssignmentSolutions` grants and what the solution's own `viewDetail` does not
+            -- an author has that for their own work and must not be shown a picker whose reader
+            would be refused. */}
+        {solution.canViewSolutions && (
+          <ComparePicker
+            solutionId={solutionId}
+            assignmentId={solution.assignmentId}
+            authorId={solution.authorId}
+          />
         )}
 
         {/* The **solution's** thread, the same one its own screen shows -- the legacy app mounts

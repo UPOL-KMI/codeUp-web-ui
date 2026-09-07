@@ -3186,5 +3186,49 @@
       "pingFailed": "Obsluhu úloh se nepodařilo pingnout.",
       "abortFailed": "Úlohu se nepodařilo přerušit."
     }
+  },
+  "Diff": {
+    "title": "Porovnání dvou pokusů",
+    "subtitle": "{left} proti {right}",
+    "explain": "Řádky vlevo pocházejí z {left}, řádky vpravo z {right}. Revize se zde nezobrazují – komentář patří k řádkům jednoho pokusu a tento pohled má dva.",
+    "swap": "Prohodit strany",
+    "backToSources": "Zpět na zdrojový kód",
+    "identical": "Obě verze jsou shodné.",
+    "counts": "{added} přidáno, {removed} odebráno.",
+    "caption": "{name}, řádek po řádku: {left} vlevo, {right} vpravo.",
+    "columns": {
+      "leftLine": "Vlevo",
+      "rightLine": "Vpravo",
+      "change": "Změna",
+      "line": "Řádek"
+    },
+    "kind": {
+      "equal": "beze změny",
+      "added": "přidáno",
+      "removed": "odebráno"
+    },
+    "attemptOf": "pokus {attempt} – {name}",
+    "tooBig": {
+      "title": "Příliš mnoho na porovnání",
+      "description": "Jedno z odevzdání má více souborů nebo větší, než kolik tato obrazovka zobrazí. Stáhněte si oba archivy a porovnejte je lokálně."
+    },
+    "noPairs": {
+      "title": "Žádný soubor není v obou",
+      "description": "Oba pokusy nemají žádný společný název souboru, takže není co srovnat vedle sebe. Soubory jednotlivých pokusů jsou uvedeny níže."
+    },
+    "unpaired": {
+      "title": "Soubory jen v jednom z nich",
+      "explain": "Soubory se párují podle názvu, takže tyto neměly s čím být porovnány.",
+      "onlyIn": "{name} – jen v {side}"
+    },
+    "others": {
+      "title": "Porovnat místo toho s jiným pokusem"
+    },
+    "picker": {
+      "title": "Porovnat s jiným pokusem",
+      "explain": "Ostatní pokusy téhož studenta o toto zadání, vedle sebe s tímto.",
+      "attempt": "Pokus {attempt}"
+    },
+    "otherAttempt": "Pokus {attempt}"
   }
 }

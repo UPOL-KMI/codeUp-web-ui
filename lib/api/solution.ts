@@ -89,6 +89,10 @@ export interface SolutionDetail {
   can: Record<string, boolean>;
   /** The assignment's `resubmitSubmissions`, which is what gates re-running this solution. */
   canResubmit: boolean;
+  /** The assignment's `viewAssignmentSolutions` -- who may read *other people's* attempts, and so
+   *  who may compare two of them (G-005). Not the solution's own `viewDetail`, which its author
+   *  has for their own work. */
+  canViewSolutions: boolean;
 }
 
 interface SubmissionPayload {
@@ -176,5 +180,6 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     // `canResubmitSubmissions($solution->getAssignment())`. The assignment is already on the wire
     // for its name, so reading its hint here costs nothing.
     canResubmit: assignment.permissionHints?.resubmitSubmissions === true,
+    canViewSolutions: assignment.permissionHints?.viewAssignmentSolutions === true,
   };
 });
