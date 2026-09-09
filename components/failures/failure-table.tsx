@@ -20,10 +20,12 @@ import { useToast } from "@/components/toast/toast-provider";
  * configuration that will not compile are different problems for different people, and the legacy
  * screen distinguishes them only by an icon with a tooltip.
  *
- * A row links to the solution it happened to, where this app has a screen for it. **A reference
- * solution's does not**: T-011 has not built that screen, and a link to a route that does not
- * exist is worse than none (DEC-066) -- Next prefetches every visible link, so it would 404 from
- * here on every render.
+ * A row links to the solution it happened to, whichever kind it is. A reference solution's link
+ * needs the exercise as well as the solution, because that is how the route is addressed, and
+ * core-api may report the one without the other -- a failure whose exercise has since been deleted
+ * keeps its `referenceSolutionId` and loses its `exerciseId`. Without both it stays the plain text
+ * it was: a link to a route that cannot be built is worse than none (DEC-066), since Next
+ * prefetches every visible link (G-029).
  *
  * Resolving takes a note and closes the row for good, so it is a dialog with a typed note rather
  * than a button that fires on one click: core-api has no un-resolve.
@@ -86,6 +88,13 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
             className="whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {t("what.solution")}
+          </Link>
+        ) : failure.referenceSolutionId !== null && failure.exerciseId !== null ? (
+          <Link
+            href={`/exercises/${failure.exerciseId}/reference-solutions/${failure.referenceSolutionId}`}
+            className="whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("what.referenceSolution")}
           </Link>
         ) : failure.referenceSolutionId !== null ? (
           <span className="whitespace-nowrap text-muted-foreground">

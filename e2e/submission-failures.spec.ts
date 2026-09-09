@@ -45,6 +45,27 @@ test("opens on the queue, not on the history", async ({ page }) => {
   expect(all).toBeGreaterThanOrEqual(unresolved);
 });
 
+test("a reference solution's failure links to the screen that shows it", async ({ page }) => {
+  await signIn(page, SUPERADMIN, "/en/submission-failures?scope=all");
+  const main = page.getByRole("main");
+
+  // core-api names the job's kind in the description, which is the only thing telling these rows
+  // apart from the student submissions filling the same list -- and every one of them is resolved,
+  // so the history is where they are.
+  await main.getByPlaceholder("Filter by description or kind").fill("type: 'reference'");
+
+  // Addressed by both ids, because that is how T-011's route is addressed (G-029).
+  const link = main.getByRole("link", { name: "A reference solution" }).first();
+  await expect(link).toHaveAttribute(
+    "href",
+    /\/en\/exercises\/[0-9a-f-]+\/reference-solutions\/[0-9a-f-]+$/,
+  );
+
+  await link.click();
+  await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/reference-solutions\/[0-9a-f-]+$/);
+  await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toBeVisible();
+});
+
 test("resolving one takes it out of the queue for good", async ({ page }) => {
   await signIn(page, SUPERADMIN, "/en/submission-failures");
   const main = page.getByRole("main");

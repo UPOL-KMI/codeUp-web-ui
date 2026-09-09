@@ -42,8 +42,9 @@ export interface SubmissionFailure {
   resolutionNote: string;
   /** The student's solution this happened to, when it was one. */
   solutionId: string | null;
-  /** A reference solution instead -- no screen of this app shows one yet (T-011). */
+  /** A reference solution instead. Its screen is T-011's, addressed by both ids below. */
   referenceSolutionId: string | null;
+  /** The exercise the reference solution proves. Null once that exercise is deleted. */
   exerciseId: string | null;
 }
 

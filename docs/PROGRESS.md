@@ -1237,6 +1237,27 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ **284 e2e tests pass** (281 before), **189 unit tests** (182 before). Twenty-two gaps remain,
     plus G-031 filed by this one.
 
+- **[2026-09-09 08:45] G-029:** A reference solution's failure stops being a dead end.
+  `components/failures/failure-table.tsx`, `lib/api/submission-failures.ts`,
+  `e2e/submission-failures.spec.ts`.
+  - _The cell was inert because the screen it wanted did not exist when T-019 was built_, and by the
+    time T-011 built it nothing went back to connect the two -- RETROSPECTIVE §6.6's point that the
+    cheapest work left is finishing halves of things that already exist.
+  - **_It needs two ids, not one._** T-011's route is `/exercises/:exerciseId/reference-solutions/:id`,
+    and core-api reports `referenceSolutionId` and `exerciseId` independently: a failure whose
+    exercise has since been deleted keeps the first and loses the second. Both, or the plain text it
+    was -- DEC-066's rule, because Next prefetches every visible link and a route that cannot be
+    built would 404 from here on every render.
+  - _Every reference-solution failure on this instance is **resolved**_, so the row is in the
+    history rather than the queue (DEC-096), and the only thing that tells those rows apart from the
+    student submissions filling the same list is core-api's own wording: the description names the
+    job's kind (`type: 'reference'`). That is what the spec filters on.
+  - _Two stale sentences went with it_ -- `lib/api/submission-failures.ts` said "no screen of this
+    app shows one yet" and the T-019 backlog row said the same. Both were true when written and had
+    been false since T-011.
+  - _Observations:_ 4 e2e tests in that file pass (3 before). The failure list on this box is 88
+    rows, 8 of them reference solutions, all from the seeded exercises' own evaluations.
+
 ### Current Status
 
 - **Phase:** Recon complete
