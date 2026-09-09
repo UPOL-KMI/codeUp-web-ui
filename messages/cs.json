@@ -219,7 +219,8 @@
     }
   },
   "Faq": {
-    "title": "FAQ"
+    "title": "FAQ",
+    "loadError": "Obsah stránky FAQ se nepodařilo načíst. Pravděpodobně se tak stalo kvůli nesprávné konfiguraci aplikace."
   },
   "Dashboard": {
     "title": "Přehled",

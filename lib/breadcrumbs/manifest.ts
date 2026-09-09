@@ -297,7 +297,7 @@ export async function resolveBreadcrumbs(
 }
 
 /** Convenience entry point for static pages that already identify themselves by namespace
- *  (`components/placeholder-page.tsx`) rather than knowing their own full pathname. */
+ *  (`/faq`, `/archive`, `/pipelines`, ...) rather than knowing their own full pathname. */
 export async function resolveBreadcrumbsForNamespace(
   namespace: string,
   locale: string,

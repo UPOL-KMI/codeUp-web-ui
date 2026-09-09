@@ -1187,6 +1187,56 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ **281 e2e tests pass** (276 before), **182 unit tests** (170 before). Twenty-three
     gaps remain, plus G-030 filed by this one.
 
+- **[2026-09-09 08:20] G-024:** The last placeholder in the product, and the one a stranger meets
+  first. `lib/faq/faq-url.ts` and its seven tests, `lib/faq/document.ts`,
+  `app/[locale]/(anon)/faq/page.tsx`, `e2e/faq.spec.ts`.
+  - **_The front page has been sending visitors to "this page hasn't been built yet."_** That is
+    the whole reason P-001 ranked this above every remaining teacher control (RETROSPECTIVE §6.5):
+    the gaps under it cost a signed-in professional a workaround, this one is the product's first
+    impression, and `/`'s second call to action walked straight into it.
+  - _The document is not this app's, and that is the design._ `FAQ_URI` is the legacy frontend's
+    own variable with the legacy frontend's own semantics -- one URL, or a per-locale mapping
+    falling back to English and then to whatever is there, defaulting to the ReCodEx wiki so the
+    page says something useful on a deployment nobody configured. Legacy reads it out of a JSON
+    config file, so the mapping form is an object there; an environment variable is a string, so it
+    is parsed as JSON here. **Both forms verified live**, the mapping against two locally served
+    documents: `/en/faq` and `/cs/faq` rendered different files, each as markdown.
+  - **_Fetched on the server, which is not where legacy fetches it_**, so the value decides what
+    this app's own machine connects to: only an absolute `http(s)` URL is accepted, and anything
+    else -- `file:///etc/passwd`, a relative path, unparseable JSON -- resolves to the same
+    "could not be loaded" a misconfiguration always did. The `response.ok` check is likewise not
+    legacy's, which reads the body whatever the status and would render a 404 page as the FAQ.
+  - **_DEC-120, and the half of it that had to be found rather than reasoned about._** The fetch is
+    the one cached read in this app (`revalidate: 3600`) -- not core-api's, not per-user, so
+    DEC-021 is about something else, and without it every page view is a request to a third party.
+    Four page loads against a local fixture server produced **one** upstream GET. But the page
+    around it had to be kept _out_ of the build: `next build` reports `/en/faq` and `/cs/faq` as
+    `●` prerendered, and a prerendered page reads `process.env.FAQ_URI` on the **build** host,
+    which supplies nothing -- this deployment builds an image once and hands it an environment
+    through compose. `connection()` before the fetch makes it `ƒ`, confirmed by building both ways
+    and reading the route table, and the Data Cache still applies afterwards. `dynamic =
+"force-dynamic"` would have rewritten the fetch to `no-store` and lost the cache
+    (`caching-without-cache-components.md`, read in `node_modules`).
+  - _Legacy ships a stylesheet for this one page_ (`src/pages/FAQ/FAQ.css`: underlined headings, a
+    quote glyph). Deliberately not ported -- D-010's markdown styles already differentiate the same
+    elements, and a second set scoped to one page is how two markdown surfaces drift apart.
+  - **_`components/placeholder-page.tsx` is deleted, not orphaned._** This route was its last
+    caller; the two remaining mentions of it in the tree are doc comments recording where a
+    placeholder used to be. `resolveBreadcrumbsForNamespace`'s comment, which cited it as the
+    convenience entry point's user, now names the pages that actually call it.
+  - _Verified live in both locales_, and from the other side by hand: with `FAQ_URI` pointed at a
+    dead port the page renders legacy's exact sentence in English and in Czech and emits no
+    markdown container at all. The spec asserts the working half in both locales and the landing
+    page's button reaching it, because the failing half is decided by an environment the e2e server
+    cannot vary per test.
+  - _Filed **G-031** on the way:_ the legacy sidebar offers the FAQ to a signed-in reader
+    (`Sidebar.js:205`) and this app's does not, because `IA.md` §2 files `/faq` with the anonymous
+    pages. Reachable through `/` -- which a signed-in reader may still open -- and by URL, so it is
+    a navigation gap rather than a lost capability, and the acceptable outcome is either one
+    sidebar item or one `IA.md` line saying it stays anonymous-only.
+  - _Observations:_ **284 e2e tests pass** (281 before), **189 unit tests** (182 before). Twenty-two gaps remain,
+    plus G-031 filed by this one.
+
 ### Current Status
 
 - **Phase:** Recon complete

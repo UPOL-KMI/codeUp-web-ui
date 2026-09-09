@@ -219,7 +219,8 @@
     }
   },
   "Faq": {
-    "title": "FAQ"
+    "title": "FAQ",
+    "loadError": "FAQ content could not be loaded. Possibly due to the misconfiguration of the application."
   },
   "Dashboard": {
     "title": "Dashboard",
