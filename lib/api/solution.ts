@@ -30,6 +30,11 @@ export interface SolutionTestResult {
   wallTimeExceeded: boolean;
   cpuTimeExceeded: boolean;
   exitCode: number | null;
+  /** Whether that code is one the *exercise* configured as a success, which need not be zero. */
+  exitCodeOk: boolean;
+  /** False where the code came from a signal, a timeout or the sandbox rather than the program. */
+  exitCodeNative: boolean;
+  exitSignal: number | null;
   message: string | null;
   wallTime: number | null;
   cpuTime: number | null;

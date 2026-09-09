@@ -1258,6 +1258,47 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ 4 e2e tests in that file pass (3 before). The failure list on this box is 88
     rows, 8 of them reference solutions, all from the seeded exercises' own evaluations.
 
+- **[2026-09-09 13:30] G-004 (the `exitCode` half):** A student whose program crashed is told what
+  happened to it. `lib/status/exit-code.ts` and its 3 tests, `components/solutions/evaluation-results.tsx`,
+  `lib/api/solution.ts`, the design-system showcase's first evaluation fixture.
+  - **_Three fields core-api sends and this app was throwing away._** `exitCode` was already on the
+    interface and rendered nowhere; `exitCodeOk`, `exitCodeNative` and `exitSignal` were not even
+    declared. Read off core-api's own entity (`repos/api/app/model/entity/TestResult.php`) rather
+    than the swagger, which has no response schemas at all.
+  - _They are three different questions and the cell answers them in that order._ `exitSignal` is
+    the process being **killed** rather than returning. `exitCodeNative` says the code is the
+    program's own -- false means a signal, a timeout or the sandbox produced it, and then there is
+    nothing to name. `exitCodeOk` is the **exercise's** verdict, which need not be zero, so a code
+    the exercise accepts is shown as the number and one it does not is given its name.
+  - **_The names are the legacy app's own tables_** (`exitCodeMapping.js`): 99 codes over
+    `freepascal-linux`, `python3`, `java` and `cs-dotnet-core`, produced not by the operating system
+    but by the wrapper each environment runs a solution under -- `110` from Python is a division by
+    zero. Only the **codes** live in `lib/status/`; the names are messages like every other string,
+    and an unknown code renders as the number it is, which is what legacy does too.
+  - **_All 99 are English in the Czech locale, and that is the legacy app's state carried across on
+    purpose._** Checked rather than assumed: of the 100 `app.exitCodes.*` keys in `cs.json`, exactly
+    one (`unknown`) differs from English. These are the runtime's own error names -- a Czech student
+    debugging Java searches for "NullPointerException", not a translation of it -- so the keys exist
+    in both locales, as constraint 6 requires, and hold the same text.
+  - _The keys are built at render time_, so `messages.test.ts`'s literal-key scan cannot see them.
+    `lib/status/exit-code.test.ts` is the same guard for the one place in the app where a key is
+    data: every code the table claims to know has a string in both locales.
+  - **_Verified live, which needed a fixture, because this box cannot produce a test result at
+    all._** DEC-031's sandbox never runs, so no solution here has ever carried one -- the standing
+    "unverified for want of an environment" list. D-013's showcase now renders an `EvaluationResults`
+    with six rows covering every branch, and all six were read back out of the DOM in both locales:
+    a named code (`Zero division error`), an unnamed one (`42`), a signal (`Terminated by signal
+11`), a skipped test (empty), and a non-zero code the exercise accepts (`3` plus the note that
+    explains it). That fixture is committed rather than thrown away: RETROSPECTIVE §6.19's
+    complaint is precisely that these states have never been seen, and now one of them can be.
+  - _`EvaluationResults` takes `environment` as its own prop_ rather than widening
+    `EvaluatedSubmission`, whose whole point (T-011) is that a reference solution shares the
+    evaluation and none of the rest. Both call sites already had the id under different names.
+  - _Observations:_ **192 unit tests** (189 before), and `design-system.spec.ts` grew a test for
+    the six cases (8 in that file, 7 before) -- the only automated coverage this rendering can have
+    here. The rest of G-004 -- the runs behind a solution, the `?submission=` selector, the result
+    archive -- is still open and is a screen.
+
 ### Current Status
 
 - **Phase:** Recon complete

@@ -72,11 +72,13 @@ export function DesignSystemShowcase({
   codeSample,
   markdownSample,
   evaluationBadges,
+  evaluationTable,
   dateSamples,
 }: {
   codeSample: React.ReactNode;
   markdownSample: React.ReactNode;
   evaluationBadges: React.ReactNode;
+  evaluationTable: React.ReactNode;
   dateSamples: React.ReactNode;
 }) {
   const t = useTranslations("DesignSystem");
@@ -227,6 +229,11 @@ export function DesignSystemShowcase({
           <DeadlineBadge firstDeadline={PAST} secondDeadline={FUTURE} allowSecondDeadline />
           <DeadlineBadge firstDeadline={PAST} />
         </div>
+      </Section>
+
+      <Section title={t("evaluationTable")}>
+        <p className="text-sm text-muted-foreground">{t("evaluationTableNote")}</p>
+        {evaluationTable}
       </Section>
 
       <Section title={t("markdown")}>

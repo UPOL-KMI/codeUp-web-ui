@@ -24,6 +24,7 @@ test("renders every component section", async ({ page }) => {
     "Form kit",
     "Dialogs",
     "Code viewer",
+    "Evaluation results",
     "States",
     "Toasts",
     "Upload",
@@ -94,6 +95,27 @@ test("code is highlighted server-side and its lines are linkable", async ({ page
     other.evaluate((el) => getComputedStyle(el).backgroundColor),
   ]);
   expect(targetedBg).not.toBe(otherBg);
+});
+
+test("names an exit code the environment gives a meaning to", async ({ page }) => {
+  // The only place this table can be seen at all: DEC-031's sandbox never runs, so no solution on
+  // this deployment has ever carried a test result (G-004).
+  const row = (test: string) =>
+    page.getByRole("row").filter({ hasText: test }).locator("td").last();
+
+  // A python3 wrapper's code, named; one nobody named, as the number it is.
+  await expect(row("divides by zero")).toHaveText("Zero division error");
+  await expect(row("returns a code nobody named")).toHaveText("42");
+
+  // Killed rather than returning, and a test that never ran has nothing to report.
+  await expect(row("killed by a signal")).toHaveText("Terminated by signal 11");
+  await expect(row("never ran")).toBeEmpty();
+
+  // The exercise decides which codes are a success, and says so when it is not zero.
+  await expect(row("an exit code this exercise accepts")).toContainText("3");
+  await expect(row("an exit code this exercise accepts")).toContainText(
+    "This exercise treats other codes as a success too.",
+  );
 });
 
 test("markdown keeps the legacy renderer's delimiter behaviour", async ({ page }) => {

@@ -125,7 +125,10 @@ export default async function ReferenceSolutionPage({
             {t("evaluation")}
           </h2>
           {solution.lastSubmission ? (
-            <EvaluationResults solution={solution.lastSubmission} />
+            <EvaluationResults
+              solution={solution.lastSubmission}
+              environment={solution.environmentId}
+            />
           ) : (
             <p className="text-sm text-muted-foreground">{t("neverEvaluated")}</p>
           )}

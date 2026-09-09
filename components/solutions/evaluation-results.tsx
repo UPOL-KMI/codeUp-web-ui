@@ -2,6 +2,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 
 import type { SolutionEvaluation, SolutionTestResult } from "@/lib/api/solution";
 import { formatPercent } from "@/lib/format/points";
+import { exitCodeMessageKey } from "@/lib/status/exit-code";
 
 import { Badge } from "@/components/status/badge";
 
@@ -40,7 +41,63 @@ export interface EvaluatedSubmission {
   failure: { type: string; description: string } | null;
 }
 
-export async function EvaluationResults({ solution }: { solution: EvaluatedSubmission }) {
+/**
+ * How a test's process ended (G-004). Three things core-api reports and this app used to throw
+ * away, which between them are the difference between "Failed" and "your program divided by zero".
+ *
+ * `exitSignal` is the process being killed rather than returning at all. `exitCodeNative` says the
+ * code is the program's own -- false means a signal, a timeout or the sandbox produced it, and
+ * then there is nothing to name. `exitCodeOk` is the *exercise's* verdict on the code, which need
+ * not be zero (`lib/exercise-config/exit-codes.ts` is where that is configured), so a code the
+ * exercise accepts is shown as the number it is and one it does not is given its name where the
+ * environment has one.
+ */
+function ExitCode({
+  result,
+  environment,
+  t,
+}: {
+  result: SolutionTestResult;
+  environment: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  const code = result.exitCode;
+  const key = code === null || result.exitCodeOk ? null : exitCodeMessageKey(environment, code);
+
+  return (
+    <>
+      {result.exitSignal !== null && result.exitSignal !== 0 && (
+        <div className="font-medium text-destructive">
+          {t("exit.signal", { signal: result.exitSignal })}
+        </div>
+      )}
+      {result.exitCodeNative ? (
+        <div className={result.exitCodeOk ? "text-muted-foreground" : undefined}>
+          {key !== null ? t(key) : code}
+          {/* The exercise accepts a non-zero code, or refuses zero. Rare, and unexplained it
+              reads as a contradiction. */}
+          {(code === 0) !== result.exitCodeOk && (
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              {t("exit.successNote")}
+            </span>
+          )}
+        </div>
+      ) : (
+        result.exitSignal === null &&
+        result.status !== "SKIPPED" && <span className="text-muted-foreground">{code}</span>
+      )}
+    </>
+  );
+}
+
+export async function EvaluationResults({
+  solution,
+  environment,
+}: {
+  solution: EvaluatedSubmission;
+  /** The runtime environment id, which is what gives an exit code a name. */
+  environment: string;
+}) {
   const [t, format] = await Promise.all([getTranslations("Solution.evaluation"), getFormatter()]);
 
   if (solution.failure) {
@@ -124,6 +181,7 @@ export async function EvaluationResults({ solution }: { solution: EvaluatedSubmi
                 {showRatios && (
                   <th className="px-3 py-2 text-left font-medium">{t("columns.limits")}</th>
                 )}
+                <th className="px-3 py-2 text-left font-medium">{t("columns.exit")}</th>
               </tr>
             </thead>
             <tbody>
@@ -193,6 +251,9 @@ export async function EvaluationResults({ solution }: { solution: EvaluatedSubmi
                       </div>
                     </td>
                   )}
+                  <td className="px-3 py-2 text-sm whitespace-nowrap">
+                    <ExitCode result={result} environment={environment} t={t} />
+                  </td>
                 </tr>
               ))}
             </tbody>

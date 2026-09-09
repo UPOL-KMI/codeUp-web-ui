@@ -5,6 +5,7 @@ import { CodeViewer } from "@/components/code/code-viewer";
 import { Markdown } from "@/components/markdown/markdown";
 import { DateTime } from "@/components/format/date-time";
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
+import { EvaluationResults } from "@/components/solutions/evaluation-results";
 import { DesignSystemShowcase } from "@/components/dev/design-system";
 import { PageShell } from "@/components/page-shell";
 
@@ -21,6 +22,83 @@ if __name__ == "__main__":
 `;
 
 const SAMPLE_TIMESTAMP = Date.parse("2026-09-01T21:59:00Z") / 1000;
+
+/**
+ * The one state this deployment cannot produce (DEC-031): its sandbox never runs, so no solution
+ * here has ever carried a test result and the table G-004 finished has no live fixture to be read
+ * against. These rows are the exit-code cases, which is what that ticket added -- a code the
+ * environment names, one it does not, a process killed by a signal, a code the sandbox produced
+ * rather than the program, and a non-zero code the exercise itself accepts.
+ */
+const SAMPLE_TEST_RESULT = {
+  status: "FAILED",
+  score: 0,
+  memoryExceeded: false,
+  wallTimeExceeded: false,
+  cpuTimeExceeded: false,
+  exitCode: 0,
+  exitCodeOk: false,
+  exitCodeNative: true,
+  exitSignal: null,
+  message: null,
+  wallTime: null,
+  cpuTime: null,
+  memory: null,
+  wallTimeRatio: null,
+  cpuTimeRatio: null,
+  memoryRatio: null,
+  judgeLogStdout: null,
+  judgeLogStderr: null,
+};
+
+const SAMPLE_EVALUATION = {
+  evaluation: {
+    evaluatedAt: SAMPLE_TIMESTAMP,
+    score: 0.25,
+    points: 3,
+    initFailed: false,
+    initiationOutputs: null,
+    testResults: [
+      {
+        ...SAMPLE_TEST_RESULT,
+        id: 1,
+        testName: "passes",
+        status: "OK",
+        score: 1,
+        exitCode: 0,
+        exitCodeOk: true,
+      },
+      { ...SAMPLE_TEST_RESULT, id: 2, testName: "divides by zero", exitCode: 110 },
+      { ...SAMPLE_TEST_RESULT, id: 3, testName: "returns a code nobody named", exitCode: 42 },
+      {
+        ...SAMPLE_TEST_RESULT,
+        id: 4,
+        testName: "killed by a signal",
+        exitCode: -1,
+        exitCodeNative: false,
+        exitSignal: 11,
+      },
+      {
+        ...SAMPLE_TEST_RESULT,
+        id: 5,
+        testName: "never ran",
+        status: "SKIPPED",
+        exitCode: -1,
+        exitCodeNative: false,
+      },
+      {
+        ...SAMPLE_TEST_RESULT,
+        id: 6,
+        testName: "an exit code this exercise accepts",
+        status: "OK",
+        score: 1,
+        exitCode: 3,
+        exitCodeOk: true,
+      },
+    ],
+  },
+  failure: null,
+};
 
 const SAMPLE_MARKDOWN = [
   "## Assignment",
@@ -97,6 +175,7 @@ export default async function DesignSystemPage() {
             <DateTime unixSeconds={SAMPLE_TIMESTAMP} withSeconds />
           </>
         }
+        evaluationTable={<EvaluationResults solution={SAMPLE_EVALUATION} environment="python3" />}
         evaluationBadges={
           <>
             <EvaluationBadge

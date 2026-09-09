@@ -221,7 +221,7 @@ export default async function SolutionPage({
               />
             </div>
           )}
-          <EvaluationResults solution={solution} />
+          <EvaluationResults solution={solution} environment={solution.environment} />
         </section>
 
         <Discussion
