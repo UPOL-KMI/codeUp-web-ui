@@ -4,6 +4,7 @@ import { apiGet, apiPost } from "./client";
 import { pageRead } from "./read";
 import { getRuntimeEnvironments } from "./runtime-environments";
 import type { SolutionEvaluation } from "./solution";
+import { getReferenceSolutionFiles, type SolutionFileEntry } from "./solution-files";
 
 /**
  * An exercise's reference solutions (T-011).
@@ -69,15 +70,9 @@ interface ReferenceSolutionPayload {
   permissionHints?: Record<string, boolean>;
 }
 
-export interface ReferenceSolutionFile {
-  id: string;
-  name: string;
-  size: number;
-}
-
 export interface ReferenceSolutionDetail extends ReferenceSolutionRow {
   exerciseId: string;
-  files: ReferenceSolutionFile[];
+  files: SolutionFileEntry[];
   lastSubmission: ReferenceSubmissionDetail | null;
   submissions: ReferenceSubmissionDetail[];
 }
@@ -172,9 +167,7 @@ export async function getReferenceSolution(solutionId: string): Promise<Referenc
 
   const [names, files, submissions] = await Promise.all([
     withNames([solution]),
-    apiGet<ReferenceSolutionFile[]>("/v1/reference-solutions/{id}/files", {
-      pathParams: { id: solutionId },
-    }),
+    getReferenceSolutionFiles(solutionId),
     apiGet<NonNullable<ReferenceSolutionPayload["lastSubmission"]>[]>(
       "/v1/reference-solutions/{solutionId}/submissions",
       { pathParams: { solutionId } },
@@ -186,7 +179,7 @@ export async function getReferenceSolution(solutionId: string): Promise<Referenc
     ...row(solution, resolved.people, resolved.environments),
     exerciseId: solution.exerciseId,
     lastSubmission: submissionOf(solution.lastSubmission),
-    files: files.map((file) => ({ id: file.id, name: file.name, size: file.size })),
+    files,
     // Newest first: a resubmitted solution's interesting run is the last one, and the older ones
     // are the history of what the exercise used to do to it.
     submissions: submissions

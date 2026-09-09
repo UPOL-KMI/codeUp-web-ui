@@ -1372,6 +1372,18 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     two specs touched here pass. One inventory row (`referenceSolutionEvaluations`) stays partial
     until G-014.
 
+- **[2026-09-09 14:50] G-013 follow-up:** The file listing was fetched twice, and it was mine.
+  `lib/api/reference-solutions.ts`, the detail screen.
+  - _G-013 added `getReferenceSolutionFiles()` and had the page call it, without noticing that
+    `getReferenceSolution()` was **already** reading the same endpoint_ for the name-and-size list
+    it used to render. Two round trips to `/v1/reference-solutions/{id}/files` per page view, one
+    of them for a shape nothing rendered any more.
+  - _The fix is the one reader, used by both._ `ReferenceSolutionDetail.files` is now
+    `SolutionFileEntry[]` from the shared expansion, so the archive-aware listing is what the whole
+    app sees and `ReferenceSolutionFile` is gone. Caught by reading the module while starting
+    G-014, not by any check we have -- `cache()` dedupes within a render only when it is the _same_
+    function, which is exactly what these two were not.
+
 ### Current Status
 
 - **Phase:** Recon complete

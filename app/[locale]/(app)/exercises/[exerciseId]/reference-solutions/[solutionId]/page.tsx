@@ -5,12 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/api/client";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getReferenceSolution } from "@/lib/api/reference-solutions";
-import {
-  canDisplayFiles,
-  getFileContent,
-  getReferenceSolutionFiles,
-  type FileContent,
-} from "@/lib/api/solution-files";
+import { canDisplayFiles, getFileContent, type FileContent } from "@/lib/api/solution-files";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { EVALUATION_TONE, evaluationStatus } from "@/lib/status/evaluation";
@@ -70,11 +65,12 @@ export default async function ReferenceSolutionPage({
   // pair is a wrong address rather than a refusal -- the same reading S-015 gives one.
   if (solution.exerciseId !== exerciseId) notFound();
 
-  const [exercise, breadcrumbs, files] = await Promise.all([
+  const [exercise, breadcrumbs] = await Promise.all([
     getExerciseDetail(exerciseId, locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/reference-solutions/${solutionId}`, locale),
-    getReferenceSolutionFiles(solutionId),
   ]);
+
+  const files = solution.files;
 
   // S-017's ceiling, for S-017's reason: past 32 files or a megabyte, highlighting them all costs
   // far more than the reader is asking for, and the archive is the honest answer.
