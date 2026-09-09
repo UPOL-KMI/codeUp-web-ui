@@ -5,6 +5,7 @@ import { readQueryToken } from "@/lib/auth/query-token";
 
 import { Link } from "@/i18n/navigation";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { RouteMessages } from "@/components/route-messages";
 
 export async function generateMetadata({
   params,
@@ -40,29 +41,31 @@ export default async function ForgotPasswordChangePage({
   const token = readQueryToken(params);
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("explain")}</p>
-      </div>
-
-      {token === null ? (
-        <div className="flex flex-col gap-3">
-          <p className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
-            {t("noToken")}
-          </p>
-          <p className="text-sm">
-            <Link
-              href="/forgot-password"
-              className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("askAgain")}
-            </Link>
-          </p>
+    <RouteMessages>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("explain")}</p>
         </div>
-      ) : (
-        <ChangePasswordForm token={token} />
-      )}
-    </div>
+
+        {token === null ? (
+          <div className="flex flex-col gap-3">
+            <p className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+              {t("noToken")}
+            </p>
+            <p className="text-sm">
+              <Link
+                href="/forgot-password"
+                className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {t("askAgain")}
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <ChangePasswordForm token={token} />
+        )}
+      </div>
+    </RouteMessages>
   );
 }

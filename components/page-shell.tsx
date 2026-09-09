@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
+import { RouteMessages } from "@/components/route-messages";
 
 export interface BreadcrumbItem {
   label: string;
@@ -43,50 +44,52 @@ export async function PageShell({
   const t = await getTranslations("Nav");
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      {breadcrumbs.length > 0 && (
-        <nav aria-label={t("breadcrumb")} className="mb-4 text-sm text-muted-foreground">
-          <ol className="flex flex-wrap items-center gap-1.5">
-            {breadcrumbs.map((crumb, index) => (
-              <li key={index} className="flex items-center gap-1.5">
-                {index > 0 && (
-                  <span aria-hidden="true" className="text-muted-foreground/60">
-                    /
-                  </span>
-                )}
-                {crumb.href ? (
-                  <Link
-                    href={crumb.href}
-                    className="transition-colors hover:text-foreground hover:underline"
-                  >
-                    {crumb.label}
-                  </Link>
-                ) : index === breadcrumbs.length - 1 ? (
-                  <span aria-current="page" className="font-medium text-foreground">
-                    {crumb.label}
-                  </span>
-                ) : (
-                  // A section with no page of its own. Plain text, and deliberately *not*
-                  // `aria-current="page"` -- that attribute names the one crumb the user is on.
-                  <span>{crumb.label}</span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
+    <RouteMessages>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        {breadcrumbs.length > 0 && (
+          <nav aria-label={t("breadcrumb")} className="mb-4 text-sm text-muted-foreground">
+            <ol className="flex flex-wrap items-center gap-1.5">
+              {breadcrumbs.map((crumb, index) => (
+                <li key={index} className="flex items-center gap-1.5">
+                  {index > 0 && (
+                    <span aria-hidden="true" className="text-muted-foreground/60">
+                      /
+                    </span>
+                  )}
+                  {crumb.href ? (
+                    <Link
+                      href={crumb.href}
+                      className="transition-colors hover:text-foreground hover:underline"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : index === breadcrumbs.length - 1 ? (
+                    <span aria-current="page" className="font-medium text-foreground">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    // A section with no page of its own. Plain text, and deliberately *not*
+                    // `aria-current="page"` -- that attribute names the one crumb the user is on.
+                    <span>{crumb.label}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+            {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+          </div>
+          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+
+        {tabs && <div className="mt-6 border-b border-border">{tabs}</div>}
+
+        <div className="mt-6">{children}</div>
       </div>
-
-      {tabs && <div className="mt-6 border-b border-border">{tabs}</div>}
-
-      <div className="mt-6">{children}</div>
-    </div>
+    </RouteMessages>
   );
 }

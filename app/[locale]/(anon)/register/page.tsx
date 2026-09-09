@@ -6,6 +6,7 @@ import { localRegistrationEnabled } from "@/lib/auth/registration";
 
 import { Link } from "@/i18n/navigation";
 import { RegisterForm } from "@/components/auth/register-form";
+import { RouteMessages } from "@/components/route-messages";
 
 /**
  * Creating an account (A-003).
@@ -45,26 +46,30 @@ export default async function RegisterPage() {
   const instances = enabled ? await getPublicInstances() : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-16">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{enabled ? t("explain") : t("closedShort")}</p>
+    <RouteMessages>
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-16">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {enabled ? t("explain") : t("closedShort")}
+          </p>
+        </div>
+
+        {enabled ? (
+          <RegisterForm instances={instances} />
+        ) : (
+          <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">{t("closed")}</p>
+        )}
+
+        <p className="text-sm">
+          <Link
+            href="/login"
+            className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("haveAccount")}
+          </Link>
+        </p>
       </div>
-
-      {enabled ? (
-        <RegisterForm instances={instances} />
-      ) : (
-        <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">{t("closed")}</p>
-      )}
-
-      <p className="text-sm">
-        <Link
-          href="/login"
-          className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("haveAccount")}
-        </Link>
-      </p>
-    </div>
+    </RouteMessages>
   );
 }

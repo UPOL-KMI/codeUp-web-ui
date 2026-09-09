@@ -7,6 +7,7 @@ import { shortSessionSeconds } from "@/lib/auth/short-session";
 
 import { Link } from "@/i18n/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+import { RouteMessages } from "@/components/route-messages";
 
 export async function generateMetadata({
   params,
@@ -45,71 +46,73 @@ export default async function LoginPage({
   const external = externalAuthProvider();
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-      </div>
-
-      {query.from && (
-        <p className="rounded-lg border border-warning bg-warning/10 p-3 text-sm">
-          {t("signInRequired")}
-        </p>
-      )}
-
-      {query.passwordChanged && (
-        <p className="rounded-lg border border-success bg-success/10 p-3 text-sm">
-          {t("passwordChanged")}
-        </p>
-      )}
-
-      {query.externalAuthError && (
-        <p
-          role="alert"
-          className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
-        >
-          {t("externalAuthFailed")}
-        </p>
-      )}
-
-      <LoginForm
-        from={query.from}
-        shortSessionMinutes={shortSession === null ? null : Math.round(shortSession / 60)}
-      />
-
-      {/* A plain link, and a plain full navigation: the provider sends the browser back to
-          `/api/auth/external/{service}/callback`, which establishes the session itself. Nothing is
-          appended to the URL -- where it returns to is the provider's own configuration. */}
-      {external && (
-        <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <p className="text-sm text-muted-foreground">{t("externalIntro")}</p>
-          <a
-            href={external.url}
-            className="rounded-md border border-input px-3 py-2 text-center text-sm font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {t("externalSignIn", { name: external.name })}
-          </a>
+    <RouteMessages>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-      )}
 
-      <p className="flex flex-wrap gap-4 text-sm">
-        <Link
-          href="/forgot-password"
-          className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("forgotPassword")}
-        </Link>
-        {/* Only where this deployment lets people create their own accounts (A-003): a link to a
-            page that explains it cannot be done is a link nobody should be offered. */}
-        {localRegistrationEnabled() && (
+        {query.from && (
+          <p className="rounded-lg border border-warning bg-warning/10 p-3 text-sm">
+            {t("signInRequired")}
+          </p>
+        )}
+
+        {query.passwordChanged && (
+          <p className="rounded-lg border border-success bg-success/10 p-3 text-sm">
+            {t("passwordChanged")}
+          </p>
+        )}
+
+        {query.externalAuthError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            {t("externalAuthFailed")}
+          </p>
+        )}
+
+        <LoginForm
+          from={query.from}
+          shortSessionMinutes={shortSession === null ? null : Math.round(shortSession / 60)}
+        />
+
+        {/* A plain link, and a plain full navigation: the provider sends the browser back to
+            `/api/auth/external/{service}/callback`, which establishes the session itself. Nothing is
+            appended to the URL -- where it returns to is the provider's own configuration. */}
+        {external && (
+          <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <p className="text-sm text-muted-foreground">{t("externalIntro")}</p>
+            <a
+              href={external.url}
+              className="rounded-md border border-input px-3 py-2 text-center text-sm font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("externalSignIn", { name: external.name })}
+            </a>
+          </div>
+        )}
+
+        <p className="flex flex-wrap gap-4 text-sm">
           <Link
-            href="/register"
+            href="/forgot-password"
             className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            {t("createAccount")}
+            {t("forgotPassword")}
           </Link>
-        )}
-      </p>
-    </div>
+          {/* Only where this deployment lets people create their own accounts (A-003): a link to a
+              page that explains it cannot be done is a link nobody should be offered. */}
+          {localRegistrationEnabled() && (
+            <Link
+              href="/register"
+              className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("createAccount")}
+            </Link>
+          )}
+        </p>
+      </div>
+    </RouteMessages>
   );
 }

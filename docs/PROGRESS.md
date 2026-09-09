@@ -1464,6 +1464,72 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ **288 e2e tests pass** (287 before), 192 unit tests. **G-004 closes the last
     partial row in the G block**, and with it ranks 1--8 of the retrospective's queue.
 
+- **[2026-09-09 22:45] PF-001:** About 130 kB comes off every document. `scripts/route-messages.ts`,
+  `lib/i18n-text/route-messages.ts` and its generated map, `proxy.ts`,
+  `app/[locale]/layout.tsx`, `lib/i18n-text/route-messages.test.ts`.
+  - **_Three designs, measured rather than argued (DEC-122)._** Pruning the catalogue globally to
+    every namespace any client component uses leaves **71%** of it -- 46 of 63 top-level namespaces
+    are reached by _some_ client component, so a global prune barely helps. Splitting by route group
+    leaves `(app)` at **65%**, and `(app)` is most of the product. Per route leaves **2%** at the
+    median (2,968 bytes of 126,514) and 12% at the worst, `/groups/[groupId]`. The first two were
+    written off on numbers, not on taste.
+  - _Measured before and after on the same build:_ `/en/login` **154,223 → 23,188** bytes (−85%),
+    `/en` −80%, `/en/faq` −73%, `/en/dashboard` −57%, `/en/exercises` −53%. The absolute saving is
+    about 130 kB on every document, which is what P-003 predicted.
+  - **_The map is generated, and that is the whole safety story._** A namespace a route needs and
+    does not get is a **runtime** `MISSING_MESSAGE` on one screen -- `typecheck` cannot see a string
+    and `build` renders no page. So `scripts/route-messages.ts` walks each page's import graph,
+    carrying an "inside a client module" flag across the boundary (a client component's own imports
+    are client too), and unions in every layout above the page plus `error`/`not-found`/`forbidden`/
+    `unauthorized`, which can render anywhere. The test re-runs it with `--check` and fails when the
+    committed file is stale, so drift is red rather than silent.
+  - **_A layout is not told which route it wraps_**, which is the one real obstacle. `proxy.ts` sets
+    the locale-stripped path on the **request** headers _before_ next-intl runs -- read out of its
+    compiled middleware, its pass-through does `new Headers(request.headers)` and forwards the lot,
+    so this rides a mechanism that is already there instead of writing Next's
+    `x-middleware-override-headers` by hand.
+  - _The cost is one prerendered route._ Reading a header makes the layout dynamic, and
+    `/forgot-password` was the only route still being prerendered -- 73 of 75 were already `ƒ`
+    before this. A form that posts to core-api on submit is a thin thing to keep static, and the
+    trade is recorded rather than absorbed.
+  - **_A unit test found a real bug in my own picker before any page did._** Asked for
+    `Solution.evaluation` and `Solution` together, the first version kept only the narrow branch and
+    dropped `Solution.title` -- because it refused to overwrite an object it had already made.
+    Fixed by taking the **widest namespace first** and skipping any whose parent is already taken,
+    which also stops the picker from ever writing into the catalogue's own objects.
+  - _An unmatched path falls back to the whole catalogue_ rather than to nothing: a route added
+    without regenerating the map is as heavy as it was before this ticket, never missing its words.
+  - **_The first design was wrong in a way only the suite could show, and it cost 43 red tests._**
+    The provider went into `app/[locale]/layout.tsx`, which is right on a fresh load and wrong on
+    every client-side navigation after it: the App Router does not re-render a layout two routes
+    share, so the provider kept the messages of whichever route the reader landed on first. Every
+    test that **clicks** rather than `goto`s went red on forms whose labels had vanished. It now
+    lives in `components/route-messages.tsx`, rendered inside `PageShell` (40 of 48 pages) and in
+    the six anonymous pages that have no shell; the layout keeps only what renders _outside_ a
+    page, which the generator emits separately as `SHELL_MESSAGE_NAMESPACES`.
+  - **_Three wrong diagnoses before the right one, and the sequence is the lesson._** After the
+    redesign one test kept failing. I said it was a PF-001 regression -- it was not, and stashing
+    the work showed it failing on `HEAD` too. I said it was timing -- it was not. What it actually
+    was: `openSourcesContaining` waits for the "Source code" heading, which `PageShell` renders at
+    once, and then reads `innerText` while the files are still behind their own `<Suspense>`,
+    whose fallback is a skeleton with **no text at all**. It reported "no match" for a solution
+    that plainly contained the marker. The helper now waits for the skeleton to detach.
+  - **_And an over-eager cleanup of my own made it worse._** `assignments.spec.ts` submits a
+    solution every run and deletes none, so one seeded assignment had grown to **70 solutions, 66
+    of them residue** -- which is why the race began to bite. Deleting all 66 emptied the
+    submission-failure queue, and `submission-failures.spec.ts` says in its own doc comment that
+    resolving one permanently is affordable _because_ every run mints a new one. Three tests that
+    had been green went red. Restored by re-seeding and minting four fresh failures. The suite's
+    dependence on accumulated instance state is real and undeclared; **PF-006** records it.
+  - _The suite also got its time back:_ **288 e2e tests in 4.4 minutes**, against 13--15 for the
+    same 288 before the helper fix and the fixture cleanup. The walk was reading a Suspense
+    fallback and then trying every remaining solution.
+  - _Observations:_ **203 unit tests** (192 before). Verified live that `/en/faq` and `/en/login`
+    carry none of `ExerciseConfig`, `Dashboard`, `Groups`, `Solution` or `Review`, and that
+    `/en/dashboard` carries the shell's `Nav` and `Toast` and still not `ExerciseConfig` -- checked
+    against `>`-prefixed markup, because the catalogue's own text is in the document and a plain
+    substring search says "true" for a string that is nowhere rendered.
+
 ### Current Status
 
 - **Phase:** Recon complete

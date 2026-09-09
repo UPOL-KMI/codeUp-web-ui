@@ -18,7 +18,8 @@
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
     "generate:api-types": "openapi-typescript openapi/core-api.yaml -o lib/api/core-api.generated.ts",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "generate:route-messages": "tsx scripts/route-messages.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

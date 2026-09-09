@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
+import { pickMessages } from "@/lib/i18n-text/route-messages";
+import { SHELL_MESSAGE_NAMESPACES } from "@/lib/i18n-text/route-messages.generated";
+
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -42,13 +45,19 @@ export default async function LocaleLayout({
   // generateStaticParams above to actually produce a static (not dynamic-per-request) route.
   setRequestLocale(locale);
 
+  // Only what renders *outside* a page: the two shells and the error pages (PF-001). The route's
+  // own share is `components/route-messages.tsx`, inside the page, because a layout two routes
+  // share is not re-rendered when the reader navigates between them -- so a provider here would
+  // serve the first route's messages for the rest of the session.
+  const messages = pickMessages(await getMessages(), SHELL_MESSAGE_NAMESPACES);
+
   return (
     // suppressHydrationWarning is next-themes' own documented requirement: it sets the
     // `class`/`style` attribute on <html> before hydration (to avoid a light/dark flash),
     // which would otherwise be flagged as a server/client mismatch.
     <html lang={locale} suppressHydrationWarning>
       <body>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

@@ -62,6 +62,15 @@ async function openSourcesContaining(page: Page, marker: string): Promise<void> 
       // has rendered returns an empty string that looks exactly like "no match".
       const main = page.getByRole("main");
       await main.getByRole("heading", { name: "Source code" }).waitFor();
+      // The heading is **not** enough, and believing it was cost a day of chasing a phantom
+      // regression: the files stream in behind their own `<Suspense>`, whose fallback is a
+      // skeleton with no text at all. On a busy instance this read the fallback and reported "no
+      // match" for a solution that plainly contains the marker. Wait for the skeleton to go.
+      await main
+        .locator('[data-slot="skeleton"]')
+        .first()
+        .waitFor({ state: "detached" })
+        .catch(() => undefined);
       // `innerText`, not `getByText`: Shiki splits a line into one span per token, so no single
       // element directly contains `print("...")` -- Playwright's text engine would never match it.
       if ((await main.innerText()).includes(marker)) return;

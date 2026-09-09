@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { RouteMessages } from "@/components/route-messages";
 
 export async function generateMetadata({
   params,
@@ -26,22 +27,24 @@ export default async function ForgotPasswordPage() {
   const t = await getTranslations("ForgotPassword");
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("explain")}</p>
+    <RouteMessages>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("explain")}</p>
+        </div>
+
+        <ForgotPasswordForm />
+
+        <p className="text-sm">
+          <Link
+            href="/login"
+            className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("backToLogin")}
+          </Link>
+        </p>
       </div>
-
-      <ForgotPasswordForm />
-
-      <p className="text-sm">
-        <Link
-          href="/login"
-          className="text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("backToLogin")}
-        </Link>
-      </p>
-    </div>
+    </RouteMessages>
   );
 }

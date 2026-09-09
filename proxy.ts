@@ -8,6 +8,7 @@ import {
   sessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "./lib/auth/session-cookie";
+import { PATHNAME_HEADER } from "./lib/i18n-text/route-messages";
 import { routing } from "./i18n/routing";
 
 // Filename must be proxy.ts, not middleware.ts -- middleware.ts is a deprecated Edge-runtime
@@ -63,6 +64,13 @@ function stripLocale(pathname: string): string {
  * gets refreshed even on a request that also happens to redirect.
  */
 export default async function proxy(request: NextRequest) {
+  // The locale-stripped path, handed to the app so `app/[locale]/layout.tsx` can ship that route's
+  // messages rather than the whole catalogue (PF-001). Set on the *request* before next-intl runs,
+  // because its own pass-through copies `request.headers` into the headers it forwards -- so this
+  // rides along on the mechanism that is already there instead of reaching into Next's
+  // middleware-override headers afterwards.
+  request.headers.set(PATHNAME_HEADER, stripLocale(request.nextUrl.pathname));
+
   const intlResponse = intlMiddleware(request);
 
   // next-intl wants to redirect for locale reasons (bare "/dashboard" -> "/en/dashboard", or a
