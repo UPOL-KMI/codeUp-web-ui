@@ -1420,6 +1420,50 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
   - _Observations:_ 4 e2e tests in that file (3 before). **G-004's remaining half is now the same
     screen on the student's side**, and this is the shape to copy.
 
+- **[2026-09-09 19:30] G-004 (the rest of it):** The runs behind a solution, and a defect in every
+  download route in the app. `getSolutionSubmissions()` and `getSubmissionScoreConfig()`,
+  `app/[locale]/(app)/solutions/[solutionId]/page.tsx`, `components/solutions/delete-submission.tsx`,
+  `components/solutions/score-config.tsx`, **`lib/http/stream-download.ts`**,
+  `e2e/solution-rerun.spec.ts`.
+  - _Built as G-014's twin, deliberately_, because RETROSPECTIVE §6.8 asks for it: the same
+    `?submission=` selector, the same "not the one that counts" warning, the same delete gated on
+    core-api's own refusal to remove the last run. What differs is what core-api says -- the result
+    archive is a real `downloadResultArchive` hint here and plain `viewDetail` there, which the
+    legacy app also distinguishes.
+  - **_core-api answers an unevaluated run's result archive with HTTP 202 and a JSON envelope_**
+    (`{"success": false, "error": {"message": "Submission is not evaluated yet"}}`), because
+    `NotReadyException` is a 2xx in this API. **`response.ok` is true for 202**, so every download
+    route in this app -- S-017's solution archive, both of G-013/G-014's, and this one -- would
+    hand the browser a file named `.zip` containing that sentence. Found by curling the route rather
+    than by reading it. All four now go through one `streamFromCoreApi()` whose test is **200 and
+    not JSON**; anything else is forwarded with core-api's own message, and a 2xx that is not a file
+    becomes a 409. Verified both ways live: the unevaluated run answers `409` with "Submission is
+    not evaluated yet", and a real solution archive still streams `200 application/zip`.
+  - _The runs list is gated on `viewResubmissions`_ -- the legacy app's own gate for the same table
+    -- while core-api gates the _list endpoint_ on `viewDetail`. Two different questions: who may
+    read the runs, and who is offered the choice. Nothing is fetched for a reader not offered it.
+  - **_The score-config explanation has never been rendered with data and cannot be here._**
+    core-api reads it off the evaluation, and no evaluation on this host has ever produced one
+    (DEC-031) -- `/score-config` answers `null` for every submission that exists. What is built
+    reuses T-025's own reading: the calculator by name, `weighted`'s per-test weights as a table,
+    `universal`'s tree through `printScoreExpression`, and a calculator this app has not been taught
+    printed as its own id. Re-verify on a cgroup v1 host, with the rest of the standing list.
+  - **_A grep for the rendered warning lied, and the message catalogue is why._** Checking the page
+    with `"This is not the run..." in html` said **true** on a URL where the warning must not
+    render -- because PF-001's whole catalogue ships inside every page. Re-checked by matching
+    `>`-prefixed markup, which said false, as it should. Worth remembering the next time this
+    project verifies a string by grepping HTML.
+  - _Verified live in a real build:_ two runs listed newest-first with "Scored by this" and the
+    debug badge on the newest, per-run result archives and delete controls, `?submission=` selecting
+    the older one with the warning and its own archive link, and a fabricated id answering the
+    not-found page. The spec asserts all of it and cleans up the run it makes.
+  - **_Two pieces of residue were cleaned out of the instance_**, both mine: a debug run left on the
+    seeded solution by this session's own verification, and an extra run on `[seed] wrong` left by
+    the full suite that ran while the worker was down. The second had already broken the new spec's
+    first assertion once -- the same class of failure as this morning's `solutions.spec.ts`.
+  - _Observations:_ **288 e2e tests pass** (287 before), 192 unit tests. **G-004 closes the last
+    partial row in the G block**, and with it ranks 1--8 of the retrospective's queue.
+
 ### Current Status
 
 - **Phase:** Recon complete

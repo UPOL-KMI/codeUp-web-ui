@@ -1015,7 +1015,40 @@
       "errors": {
         "resubmitFailed": "It could not be run again.",
         "resubmitAllFailed": "They could not be run again.",
-        "deleteFailed": "The solution could not be deleted."
+        "deleteFailed": "The solution could not be deleted.",
+        "deleteSubmissionFailed": "The evaluation could not be deleted."
+      }
+    },
+    "runs": {
+      "heading": "Runs of this solution",
+      "explain": "Every time this solution went through the pipeline. The newest is the one it is scored by.",
+      "scored": "Scored by this",
+      "debug": "Debug",
+      "result": "Result archive",
+      "downloadResult": "Download the result archive",
+      "delete": "Delete",
+      "notScored": "This is not the run the solution is scored by. Only the newest one counts towards the points; the rest are the record of what the pipeline used to make of this code.",
+      "toast": {
+        "deleted": "The evaluation was deleted."
+      },
+      "errors": {
+        "deleteFailed": "The evaluation could not be deleted."
+      },
+      "confirmDelete": {
+        "title": "Delete this run?",
+        "description": "The run and its result archive go for good. The solution, its other runs and its review stay. core-api refuses to delete the last run, so this is offered only while another remains.",
+        "confirm": "Delete run"
+      }
+    },
+    "scoreConfig": {
+      "heading": "How this score was computed",
+      "weightsCaption": "The weight of each test in the score",
+      "test": "Test",
+      "weight": "Weight",
+      "calculators": {
+        "uniform": "Every test counts the same.",
+        "weighted": "Each test carries its own weight in the score.",
+        "universal": "The score is a custom expression over the tests."
       }
     }
   },

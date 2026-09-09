@@ -1015,7 +1015,40 @@
       "errors": {
         "resubmitFailed": "Řešení se nepodařilo spustit znovu.",
         "resubmitAllFailed": "Řešení se nepodařilo spustit znovu.",
-        "deleteFailed": "Řešení se nepodařilo smazat."
+        "deleteFailed": "Řešení se nepodařilo smazat.",
+        "deleteSubmissionFailed": "Vyhodnocení se nepodařilo smazat."
+      }
+    },
+    "runs": {
+      "heading": "Běhy tohoto řešení",
+      "explain": "Každý průchod tohoto řešení pipeline. Bodováno je podle nejnovějšího.",
+      "scored": "Podle tohoto se boduje",
+      "debug": "Debug",
+      "result": "Archiv výsledku",
+      "downloadResult": "Stáhnout archiv výsledku",
+      "delete": "Smazat",
+      "notScored": "Podle tohoto běhu se řešení neboduje. Do bodů se počítá jen nejnovější; ostatní jsou záznamem toho, co s tímto kódem pipeline dělávala.",
+      "toast": {
+        "deleted": "Vyhodnocení bylo smazáno."
+      },
+      "errors": {
+        "deleteFailed": "Vyhodnocení se nepodařilo smazat."
+      },
+      "confirmDelete": {
+        "title": "Smazat tento běh?",
+        "description": "Běh i jeho archiv výsledku zmizí nadobro. Řešení, jeho ostatní běhy a jeho review zůstanou. core-api odmítá smazat poslední běh, takže se tohle nabízí jen dokud zbývá další.",
+        "confirm": "Smazat běh"
+      }
+    },
+    "scoreConfig": {
+      "heading": "Jak se tohle skóre spočítalo",
+      "weightsCaption": "Váha jednotlivých testů ve skóre",
+      "test": "Test",
+      "weight": "Váha",
+      "calculators": {
+        "uniform": "Každý test se počítá stejně.",
+        "weighted": "Každý test má ve skóre vlastní váhu.",
+        "universal": "Skóre je vlastní výraz nad testy."
       }
     }
   },

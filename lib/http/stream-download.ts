@@ -1,0 +1,63 @@
+import "server-only";
+
+import { NextResponse } from "next/server";
+
+import { readSessionToken } from "@/lib/auth/session-cookie";
+
+/**
+ * Handing a file core-api holds to the browser, without buffering it here (S-017, G-004, G-013,
+ * G-014).
+ *
+ * A Route Handler cannot go through `lib/api/client.ts`: that unwraps core-api's `{success,
+ * payload}` envelope and would reject a ZIP outright. Streaming `response.body` passes the bytes
+ * on as they arrive. The token is read from the httpOnly cookie here and never reaches the browser
+ * (brief §5) -- the link a page renders points at this app.
+ *
+ * **`response.ok` is the wrong test, and it took a live check to see it.** core-api answers a
+ * result archive whose job never produced one with **HTTP 202** and its own JSON envelope --
+ * `{"success": false, "error": {"message": "Submission is not evaluated yet", "code": "202-000"}}`
+ * -- because `NotReadyException` is a 2xx in this API. `ok` is true for 202, so a route that trusts
+ * it hands the browser a file called `.zip` containing that sentence. The test is therefore **200
+ * and not JSON**, and anything else is forwarded with core-api's own status so the reason survives
+ * instead of becoming this app's 500.
+ */
+export async function streamFromCoreApi(path: string, fallbackFilename: string): Promise<Response> {
+  const token = await readSessionToken();
+  if (!token) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  const apiBase = process.env.API_BASE_INTERNAL;
+  if (!apiBase) {
+    throw new Error("API_BASE_INTERNAL is not set.");
+  }
+
+  const response = await fetch(`${apiBase}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (response.status !== 200 || contentType.includes("json") || !response.body) {
+    const envelope = contentType.includes("json")
+      ? ((await response.json().catch(() => null)) as { error?: { message?: string } } | null)
+      : null;
+    return NextResponse.json(
+      { error: envelope?.error?.message ?? "The file could not be downloaded." },
+      // A 2xx that is not a file is not a success as far as the browser is concerned; 409 says
+      // "not in a state that can answer this" without inventing a server error.
+      { status: response.status === 200 ? 502 : response.status < 300 ? 409 : response.status },
+    );
+  }
+
+  const headers = new Headers();
+  headers.set("Content-Type", contentType || "application/zip");
+  headers.set(
+    "Content-Disposition",
+    response.headers.get("content-disposition") ?? `attachment; filename="${fallbackFilename}"`,
+  );
+  const length = response.headers.get("content-length");
+  if (length) headers.set("Content-Length", length);
+
+  return new Response(response.body, { status: 200, headers });
+}

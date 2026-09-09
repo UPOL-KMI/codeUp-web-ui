@@ -88,6 +88,47 @@ test("offers a debug run beside the ordinary one", async ({ page }) => {
   await expect(main.getByRole("button", { name: "Run it again", exact: true })).toBeVisible();
 });
 
+test("lists the runs behind a solution, and reads or removes one", async ({ page }) => {
+  // The other half of G-004: the exit codes are asserted on the design-system fixture, because no
+  // evaluation on this host ever produces a test result (DEC-031). This half is about the runs
+  // themselves, which do exist.
+  const { id } = await firstSeededSolution();
+  const before = await solutionSubmissionIds(id);
+  try {
+    await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
+    const main = page.getByRole("main");
+
+    // One run, so there is nothing to choose between and core-api would refuse to delete it.
+    await expect(main.getByRole("heading", { name: "Runs of this solution" })).toBeHidden();
+
+    await main.getByRole("button", { name: "Run it again in debug mode" }).click();
+    await expect(main.getByRole("heading", { name: "Runs of this solution" })).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const runs = main.getByRole("listitem").filter({ has: page.locator("time") });
+    await expect(runs).toHaveCount(2);
+    // The newest is the one the points come from, and it says so rather than leaving the reader
+    // to infer it from the order.
+    await expect(runs.first()).toContainText("Scored by this");
+    await expect(runs.first()).toContainText("Debug");
+
+    // Each run is a URL of its own, and the page says when the one on screen is not the scored one.
+    await runs.last().getByRole("link").first().click();
+    await expect(page).toHaveURL(new RegExp(`/en/solutions/${id}\\?submission=[0-9a-f-]+$`));
+    await expect(main.getByText("This is not the run the solution is scored by")).toBeVisible();
+
+    // An id that belongs to no run of this solution is a wrong address, not the last run.
+    await page.goto(`/en/solutions/${id}?submission=00000000-0000-0000-0000-000000000000`);
+    await expect(main.getByRole("heading", { name: "Page not found" })).toBeVisible();
+  } finally {
+    const after = await solutionSubmissionIds(id);
+    for (const submissionId of after.filter((s) => !before.includes(s))) {
+      await deleteSubmissionIfPresent(submissionId);
+    }
+  }
+});
+
 test("deletes a solution, saying first what goes with it", async ({ page }) => {
   const solutionId = await submitThrowaway(page);
   try {

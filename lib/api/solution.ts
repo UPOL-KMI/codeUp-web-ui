@@ -188,3 +188,66 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     canViewSolutions: assignment.permissionHints?.viewAssignmentSolutions === true,
   };
 });
+
+/** One run of a solution through the pipeline (G-004): the same shape the detail's last one has. */
+export interface SolutionSubmission {
+  id: string;
+  submittedAt: number;
+  isDebug: boolean;
+  evaluation: SolutionEvaluation | null;
+  failure: { type: string; description: string } | null;
+}
+
+interface SubmissionListPayload {
+  id: string;
+  submittedAt: number;
+  isDebug?: boolean;
+  evaluation?: SolutionEvaluation | null;
+  failure?: { type: string; description: string } | null;
+}
+
+/**
+ * Every run behind a solution, newest first (G-004).
+ *
+ * A solution is re-run whenever a teacher asks for it, and the detail payload carries only the
+ * **last** one plus a list of ids. core-api gates this on `canViewDetail` -- the grant that
+ * discloses the solution at all -- while the *offer* to look through them is the separate
+ * `viewResubmissions` hint the legacy app reads, so the page checks that before asking.
+ */
+export const getSolutionSubmissions = cache(async function getSolutionSubmissions(
+  solutionId: string,
+): Promise<SolutionSubmission[]> {
+  const payload = await apiRead<SubmissionListPayload[]>(
+    "/v1/assignment-solutions/{id}/submissions",
+    {
+      pathParams: { id: solutionId },
+    },
+  );
+  return payload
+    .map((entry) => ({
+      id: entry.id,
+      submittedAt: entry.submittedAt,
+      isDebug: entry.isDebug === true,
+      evaluation: entry.evaluation ?? null,
+      failure: entry.failure ?? null,
+    }))
+    .sort((a, b) => b.submittedAt - a.submittedAt);
+});
+
+/**
+ * How the score of one run was computed (G-004) -- the calculator the exercise used at the moment
+ * it ran, which is not necessarily the one it uses now.
+ *
+ * **Null is the ordinary answer for a run that never produced a result**, not an error: core-api
+ * reads the config off the evaluation, and a job that failed has none. Every evaluation on this
+ * development host is in exactly that state (DEC-031), so the rendering below it has never been
+ * seen with data.
+ */
+export const getSubmissionScoreConfig = cache(async function getSubmissionScoreConfig(
+  submissionId: string,
+): Promise<{ calculator: string; config: unknown } | null> {
+  return apiRead<{ calculator: string; config: unknown } | null>(
+    "/v1/assignment-solutions/submission/{submissionId}/score-config",
+    { pathParams: { submissionId } },
+  );
+});

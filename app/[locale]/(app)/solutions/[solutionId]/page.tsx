@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getSolutionDetail } from "@/lib/api/solution";
+import {
+  getSolutionDetail,
+  getSolutionSubmissions,
+  getSubmissionScoreConfig,
+} from "@/lib/api/solution";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { formatPoints } from "@/lib/format/points";
 import { evaluationStatus } from "@/lib/status/evaluation";
@@ -9,6 +14,8 @@ import { evaluationStatus } from "@/lib/status/evaluation";
 import { Link } from "@/i18n/navigation";
 import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
+import { DeleteSubmission } from "@/components/solutions/delete-submission";
+import { ScoreConfigExplanation } from "@/components/solutions/score-config";
 import { RerunControls } from "@/components/solutions/rerun-controls";
 import { ReviewRequest } from "@/components/solutions/review-request";
 import { VerdictControls } from "@/components/solutions/verdict-controls";
@@ -52,7 +59,7 @@ export default async function SolutionPage({
   searchParams,
 }: {
   params: Promise<{ solutionId: string }>;
-  searchParams: Promise<{ monitor?: string; tasks?: string }>;
+  searchParams: Promise<{ monitor?: string; tasks?: string; submission?: string }>;
 }) {
   const [{ solutionId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, tComments, solution] = await Promise.all([
@@ -61,6 +68,28 @@ export default async function SolutionPage({
     getSolutionDetail(solutionId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
+
+  // The runs behind this solution (G-004). `viewResubmissions` is the *offer* to look through
+  // them -- the legacy app's own gate -- while core-api gates the list itself on `viewDetail`, so
+  // there is nothing to fetch for a reader who is not offered it.
+  const showRuns = solution.can.viewResubmissions === true && solution.submissionCount > 1;
+  const runs = showRuns ? await getSolutionSubmissions(solutionId) : [];
+  const selected =
+    query.submission === undefined
+      ? null
+      : (runs.find((run) => run.id === query.submission) ?? null);
+  // An id that is not this solution's is a wrong address, not a silent fall back to the last run.
+  if (query.submission !== undefined && selected === null) notFound();
+
+  const shown = selected ?? solution;
+  const solutionPath = `/solutions/${solutionId}`;
+  // core-api refuses to delete the last run (`checkDeleteSubmission`), so this needs a second one.
+  const canDeleteRuns = solution.can.deleteEvaluation === true && runs.length > 1;
+  const scoreConfig =
+    solution.can.viewEvaluation === true && (selected !== null || runs.length > 0)
+      ? await getSubmissionScoreConfig((selected ?? runs[0]!).id)
+      : null;
+
   const pending = evaluationStatus(solution.status) === "pending";
   const expectedTasks = Number.parseInt(query.tasks ?? "", 10);
   const announcement = solution.failure
@@ -221,8 +250,75 @@ export default async function SolutionPage({
               />
             </div>
           )}
-          <EvaluationResults solution={solution} environment={solution.environment} />
+          {selected !== null && (
+            <p className="mb-3 rounded-lg border border-warning bg-warning/10 p-3 text-sm">
+              {t("runs.notScored")}
+            </p>
+          )}
+          <EvaluationResults solution={shown} environment={solution.environment} />
+          <div className="mt-3 flex flex-col gap-3">
+            <ScoreConfigExplanation scoreConfig={scoreConfig} />
+            {solution.can.downloadResultArchive === true && (
+              <div>
+                <a
+                  href={`/api/solutions/submissions/${(selected ?? runs[0])?.id ?? ""}/result`}
+                  className="inline-flex rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t("runs.downloadResult")}
+                </a>
+              </div>
+            )}
+          </div>
         </section>
+
+        {showRuns && (
+          <section aria-labelledby="solution-runs" className="flex flex-col gap-2">
+            <h2 id="solution-runs" className="text-base font-semibold tracking-tight">
+              {t("runs.heading")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{t("runs.explain")}</p>
+            <ul className="flex flex-col divide-y divide-border rounded-lg border border-border text-sm">
+              {runs.map((run, index) => {
+                const current = selected === null ? index === 0 : run.id === selected.id;
+                return (
+                  <li
+                    key={run.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
+                  >
+                    <Link
+                      href={`${solutionPath}?submission=${run.id}`}
+                      aria-current={current ? "true" : undefined}
+                      className={`hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                        current ? "font-semibold" : ""
+                      }`}
+                    >
+                      <DateTime unixSeconds={run.submittedAt} withSeconds />
+                    </Link>
+                    <span className="flex flex-wrap items-center gap-2">
+                      {index === 0 && <Badge tone="info">{t("runs.scored")}</Badge>}
+                      {run.isDebug && <Badge tone="info">{t("runs.debug")}</Badge>}
+                      {solution.can.downloadResultArchive === true && (
+                        <a
+                          href={`/api/solutions/submissions/${run.id}/result`}
+                          className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {t("runs.result")}
+                        </a>
+                      )}
+                      {canDeleteRuns && (
+                        <DeleteSubmission
+                          submissionId={run.id}
+                          selected={current}
+                          solutionPath={solutionPath}
+                        />
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <Discussion
           threadId={solutionId}

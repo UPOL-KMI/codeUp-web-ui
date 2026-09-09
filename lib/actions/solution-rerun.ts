@@ -91,6 +91,27 @@ export async function resubmitAllSolutions(
  * submission's result archive and job config, and the submitted source itself. The confirmation
  * this app shows is the only one there is.
  */
+/**
+ * Removing one run of a solution, keeping the solution (G-004).
+ *
+ * **core-api refuses to delete the last one** -- `checkDeleteSubmission` throws a
+ * `BadRequestException` below two submissions, which is not a permission problem and which no
+ * payload announces -- so the screen offers this only where a second run exists. The same rule,
+ * and the same reading of the presenter, as G-014's on the reference side.
+ */
+export async function deleteSolutionSubmission(
+  submissionId: string,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiDelete("/v1/assignment-solutions/submission/{submissionId}", {
+      pathParams: { submissionId },
+    });
+    return { success: true, data: { id: submissionId } };
+  } catch (error) {
+    return failure(error, "deleteSubmissionFailed");
+  }
+}
+
 export async function deleteSolution(
   solutionId: string,
 ): Promise<ActionResult<{ solutionId: string }>> {
