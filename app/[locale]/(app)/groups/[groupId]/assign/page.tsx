@@ -40,7 +40,7 @@ export default async function AssignExercisePage({
   searchParams,
 }: {
   params: Promise<{ groupId: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; scope?: string }>;
 }) {
   const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, group] = await Promise.all([
@@ -51,10 +51,23 @@ export default async function AssignExercisePage({
   if (group.can.assignExercise !== true || group.organizational) forbidden();
 
   const search = (query.q ?? "").trim();
+  // The group's own pool by default (G-010), the whole instance catalog on request. A teacher
+  // assigning work reaches for a course's own exercises far more often than for everything the
+  // instance holds, and until this ticket the picker started from everything with no way to say
+  // otherwise. In the URL, so a narrowed picker can be linked to and survives a reload.
+  const wholeCatalog = query.scope === "all";
   const [{ exercises, totalCount }, breadcrumbs] = await Promise.all([
-    getAssignableExercises(locale, search),
+    getAssignableExercises(locale, search, wholeCatalog ? null : groupId),
     resolveBreadcrumbs(`/groups/${groupId}/assign`, locale),
   ]);
+
+  const scopeHref = (scope: "group" | "all") => {
+    const params = new URLSearchParams();
+    if (search !== "") params.set("q", search);
+    if (scope === "all") params.set("scope", "all");
+    const qs = params.toString();
+    return `/groups/${groupId}/assign${qs === "" ? "" : `?${qs}`}`;
+  };
 
   return (
     <PageShell
@@ -73,7 +86,28 @@ export default async function AssignExercisePage({
       <div className="flex max-w-3xl flex-col gap-4">
         <p className="text-sm text-muted-foreground">{t("explain")}</p>
 
+        <nav aria-label={t("scopeLabel")} className="flex flex-wrap gap-2">
+          {(["group", "all"] as const).map((scope) => {
+            const active = scope === (wholeCatalog ? "all" : "group");
+            return (
+              <Link
+                key={scope}
+                href={scopeHref(scope)}
+                aria-current={active ? "true" : undefined}
+                className={`rounded-md border px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                  active
+                    ? "border-primary bg-primary/10 font-medium"
+                    : "border-input hover:bg-muted"
+                }`}
+              >
+                {t(`scope.${scope}`)}
+              </Link>
+            );
+          })}
+        </nav>
+
         <form method="get" className="flex flex-wrap gap-2">
+          {wholeCatalog && <input type="hidden" name="scope" value="all" />}
           <input
             type="search"
             name="q"
@@ -93,7 +127,23 @@ export default async function AssignExercisePage({
         {exercises.length === 0 ? (
           <EmptyState
             title={t("empty.title")}
-            description={search === "" ? t("empty.description") : t("empty.noMatch")}
+            description={
+              search !== ""
+                ? t("empty.noMatch")
+                : wholeCatalog
+                  ? t("empty.description")
+                  : t("empty.groupPool")
+            }
+            action={
+              !wholeCatalog ? (
+                <Link
+                  href={scopeHref("all")}
+                  className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t("scope.all")}
+                </Link>
+              ) : undefined
+            }
           />
         ) : (
           <>

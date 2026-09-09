@@ -1530,6 +1530,38 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     against `>`-prefixed markup, because the catalogue's own text is in the document and a plain
     substring search says "true" for a string that is nowhere rendered.
 
+- **[2026-09-10 01:40] G-010:** A course's own exercises are where assigning starts.
+  `getAssignableExercises()`, `app/[locale]/(app)/groups/[groupId]/assign/page.tsx`,
+  `e2e/assign-exercise.spec.ts`.
+  - _The write half has existed since T-008 and the read half never did._ Attaching and detaching an
+    exercise to a group are both actions in `lib/actions/exercise.ts`; asking "what does this course
+    hold?" was not a question this app could put to core-api, so T-001's picker started from the
+    whole instance catalog every time.
+  - **_`filters[groupsIds][]` is the group's ancestral closure, not its own attachments._** core-api
+    expands the id through `groupsIdsAncestralClosure` before matching
+    (`Exercises::getPreparedForPaginationGroupsFilter`), so a lab inherits its course's pool and a
+    course its faculty's. Read from the repository rather than guessed, then confirmed against the
+    seed: `Intro to Programming / Lab A` owns nothing and answers with its parent's 28. Reimplemented
+    as a plain membership test this would have been quietly wrong for every subgroup.
+  - _The scope is a URL, not a toggle._ `?scope=all` widens, the search carries whichever scope is
+    on, and the current one is marked with `aria-current` -- brief §10's deep-linkable state, and the
+    reason a narrowed picker can be sent to somebody.
+  - **_A course whose own pool is empty is a state, not an error._** The seed attaches every exercise
+    to one course, so `Large Lecture` has nothing of its own -- and the empty text has to say _that_
+    rather than "there are no exercises", with the way out beside it. Both halves are asserted.
+  - **_Two of my own measurement mistakes, both the same shape._** Checking the rendered page by
+    grepping its HTML said "true" for text that is nowhere on screen -- the message catalogue is
+    _in_ the document (PF-001 trims it per route but this route legitimately carries these strings),
+    and so is the RSC payload. The second attempt cut at the first `<script` and found nothing at
+    all. The DOM is the only honest view of a rendered page here, which is what the e2e harness is
+    for; I went back to it.
+  - _And a bug in my own spec that looked like a bug in the page:_ it built the assign URL from
+    `page.url()` before the group's page had been reached, producing `/groups/assign` -- core-api
+    answers a group id of "assign" with a 400, which the screen showed as "Something went wrong".
+    The helper now waits for the group's own URL, and takes the group as a parameter so the
+    empty-pool case walks the same path as the rest.
+  - _Observations:_ 4 e2e tests in that file (2 before).
+
 ### Current Status
 
 - **Phase:** Recon complete

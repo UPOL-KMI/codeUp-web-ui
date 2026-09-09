@@ -2817,12 +2817,18 @@
     "empty": {
       "title": "Není co zadat",
       "description": "Katalog je prázdný, nebo v něm není nic, co byste mohli zadat.",
-      "noMatch": "Hledání v katalogu nic nenašlo."
+      "noMatch": "Hledání v katalogu nic nenašlo.",
+      "groupPool": "Tenhle kurz zatím nemá vlastní úlohy. Celý katalog je na jedno kliknutí a přiřazením z něj se úloha ke kurzu připojí."
     },
     "errors": {
       "createFailed": "Úlohu se nepodařilo zadat."
     },
-    "noReferenceSolution": "Bez vzorového řešení"
+    "noReferenceSolution": "Bez vzorového řešení",
+    "scopeLabel": "Ze kterých úloh vybírat",
+    "scope": {
+      "group": "Úlohy tohoto kurzu",
+      "all": "Celý katalog"
+    }
   },
   "AssignmentSolutions": {
     "title": "Všechna odevzdání",

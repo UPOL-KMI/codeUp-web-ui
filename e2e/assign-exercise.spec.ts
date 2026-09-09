@@ -15,15 +15,16 @@ import { baseURL } from "./helpers/base-url";
  * The assignment is left invisible throughout -- core-api creates it that way and this test never
  * makes it public -- so no student ever sees it, even in the window it exists.
  */
-async function openAssignmentsTab(page: import("@playwright/test").Page) {
+async function openAssignmentsTab(
+  page: import("@playwright/test").Page,
+  group = "[seed] Intro to Programming",
+) {
   await page.goto("/en/groups");
-  await page
-    .getByRole("main")
-    .getByRole("link", { name: "[seed] Intro to Programming", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "[seed] Intro to Programming", level: 1 }),
-  ).toBeVisible();
+  await page.getByRole("main").getByRole("link", { name: group, exact: true }).click();
+  await expect(page.getByRole("heading", { name: group, level: 1 })).toBeVisible();
+  // Waited for, not assumed: reading `page.url()` before the group's own page has been reached
+  // builds `/groups/assign`, and core-api answers that with a 400 on a group id of "assign".
+  await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]{36}/);
   await page.goto(`${page.url().split("?")[0]}?tab=assignments`);
 }
 
@@ -64,6 +65,61 @@ test("assigns an exercise, lands on its settings, and removes it again", async (
   await dialog.getByRole("button", { name: "Confirm" }).click();
   await expect(page.getByText("The assignment was deleted.", { exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+\?tab=assignments$/);
+});
+
+test("starts from the course's own exercises and can widen to the whole catalog", async ({
+  page,
+}) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await openAssignmentsTab(page);
+  await page.getByRole("main").getByRole("link", { name: "Assign an exercise" }).click();
+
+  const main = page.getByRole("main");
+  const rows = main
+    .getByRole("listitem")
+    .filter({ has: page.getByRole("button", { name: "Assign" }) });
+
+  // The default is the course's own pool (G-010), and it is the scope that is marked current.
+  await expect(main.getByRole("link", { name: "This course's exercises" })).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+  const scoped = await rows.count();
+  expect(scoped).toBeGreaterThan(0);
+
+  // Widening is a URL of its own, so a picker can be linked to and survives a reload.
+  await main.getByRole("link", { name: "The whole catalog" }).click();
+  await expect(page).toHaveURL(/[?&]scope=all$/);
+  expect(await rows.count()).toBeGreaterThanOrEqual(scoped);
+
+  // The search keeps the scope rather than quietly dropping back to everything.
+  await main.getByPlaceholder("Search by name").fill("Echo");
+  await main.getByRole("button", { name: "Search" }).click();
+  await expect(page).toHaveURL(/[?&]scope=all/);
+});
+
+test("a course with no exercises of its own says so, and offers the way out", async ({ page }) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await openAssignmentsTab(page, "[seed] Large Lecture");
+  await page.getByRole("main").getByRole("link", { name: "Assign an exercise" }).click();
+  await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+\/assign$/);
+
+  const main = page.getByRole("main");
+  // The seed attaches every exercise to Intro to Programming, so this course's own pool is empty
+  // -- which is the state the empty text exists for, and the one that must not read as "there are
+  // no exercises at all".
+  await expect(main.getByText("This course has no exercises of its own yet.")).toBeVisible();
+
+  await main.getByRole("link", { name: "The whole catalog" }).first().click();
+  await expect(page).toHaveURL(/[?&]scope=all$/);
+  await expect(
+    main
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("button", { name: "Assign" }) })
+      .first(),
+  ).toBeVisible();
 });
 
 test("is neither offered to a student nor readable by one", async ({ page }) => {

@@ -176,9 +176,21 @@ export interface AssignableExercises {
   totalCount: number;
 }
 
+/**
+ * The exercises a group may be given (T-001), narrowed to the group's own pool where asked (G-010).
+ *
+ * **`filters[groupsIds][]` is not "attached to this group"; it is the group's *ancestral closure*.**
+ * core-api's `getPreparedForPaginationGroupsFilter` expands the id through
+ * `groupsIdsAncestralClosure` before matching, so a lab inherits whatever its course holds and a
+ * course whatever its faculty does -- read from the repository, then confirmed against the seed,
+ * where `Intro to Programming / Lab A` has no exercises of its own and answers with its parent's
+ * 28. That is the behaviour a teacher wants and would be surprising to reimplement as a plain
+ * membership test.
+ */
 export async function getAssignableExercises(
   locale: string,
   search: string,
+  groupId: string | null,
 ): Promise<AssignableExercises> {
   const envelope = await apiRead<ExerciseEnvelope>("/v1/exercises", {
     query: {
@@ -187,6 +199,8 @@ export async function getAssignableExercises(
       orderBy: "name",
       locale,
       ...(search !== "" && { "filters[search]": search }),
+      // An array, so the client appends the `[]` core-api expects rather than this spelling it.
+      ...(groupId !== null && { "filters[groupsIds]": [groupId] }),
     },
   });
 

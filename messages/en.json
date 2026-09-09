@@ -2817,12 +2817,18 @@
     "empty": {
       "title": "No exercises to assign",
       "description": "The catalog is empty, or nothing in it is yours to assign.",
-      "noMatch": "Nothing in the catalog matches that search."
+      "noMatch": "Nothing in the catalog matches that search.",
+      "groupPool": "This course has no exercises of its own yet. The whole catalog is one click away, and assigning from it attaches the exercise here."
     },
     "errors": {
       "createFailed": "The exercise could not be assigned."
     },
-    "noReferenceSolution": "No reference solution"
+    "noReferenceSolution": "No reference solution",
+    "scopeLabel": "Which exercises to choose from",
+    "scope": {
+      "group": "This course's exercises",
+      "all": "The whole catalog"
+    }
   },
   "AssignmentSolutions": {
     "title": "All submissions",
