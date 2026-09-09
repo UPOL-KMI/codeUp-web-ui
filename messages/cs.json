@@ -1823,7 +1823,29 @@
       },
       "pageTitle": "Vzorové řešení",
       "downloadArchive": "Stáhnout archiv",
-      "tooManyFiles": "Souborů je příliš mnoho na to, aby se tu zobrazily. V archivu jsou všechny."
+      "tooManyFiles": "Souborů je příliš mnoho na to, aby se tu zobrazily. V archivu jsou všechny.",
+      "runs": {
+        "resubmit": "Vyhodnotit znovu",
+        "resubmitDebug": "Vyhodnotit znovu (debug)",
+        "debug": "Debug",
+        "result": "Archiv výsledku",
+        "downloadResult": "Stáhnout archiv výsledku",
+        "deleteRun": "Smazat",
+        "notCurrent": "Toto není poslední vyhodnocení. Běhy níže jsou záznamem toho, co s tímto kódem úloha dělávala; poslední z nich je to, co dělá teď.",
+        "toast": {
+          "resubmitted": "Řešení bylo posláno k vyhodnocení.",
+          "deleted": "Vyhodnocení bylo smazáno."
+        },
+        "errors": {
+          "resubmitFailed": "Řešení se nepodařilo znovu vyhodnotit.",
+          "deleteFailed": "Vyhodnocení se nepodařilo smazat."
+        },
+        "confirmDelete": {
+          "title": "Smazat toto vyhodnocení?",
+          "description": "Běh i jeho archiv výsledku zmizí nadobro. Řešení a jeho ostatní běhy zůstanou. core-api odmítá smazat poslední běh, takže se tohle nabízí jen dokud zbývá další.",
+          "confirm": "Smazat vyhodnocení"
+        }
+      }
     },
     "errors": {
       "noFiles": "Nejdřív nahrajte soubory řešení.",
@@ -1832,7 +1854,8 @@
       "resubmitFailed": "Nepodařilo se poslat k vyhodnocení.",
       "deleteFailed": "Nepodařilo se smazat.",
       "preSubmitFailed": "Soubory se nepodařilo zkontrolovat.",
-      "submitFailed": "Nepodařilo se odevzdat."
+      "submitFailed": "Nepodařilo se odevzdat.",
+      "deleteSubmissionFailed": "Vyhodnocení se nepodařilo smazat."
     }
   },
   "Pipelines": {

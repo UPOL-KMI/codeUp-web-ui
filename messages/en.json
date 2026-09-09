@@ -1823,7 +1823,29 @@
       },
       "pageTitle": "Reference solution",
       "downloadArchive": "Download archive",
-      "tooManyFiles": "Too many files to show here. The archive has all of them."
+      "tooManyFiles": "Too many files to show here. The archive has all of them.",
+      "runs": {
+        "resubmit": "Evaluate again",
+        "resubmitDebug": "Evaluate again (debug)",
+        "debug": "Debug",
+        "result": "Result archive",
+        "downloadResult": "Download the result archive",
+        "deleteRun": "Delete",
+        "notCurrent": "This is not the last evaluation. The runs below are the record of what the exercise used to do to this code; the last one is what it does now.",
+        "toast": {
+          "resubmitted": "The solution was sent for evaluation.",
+          "deleted": "The evaluation was deleted."
+        },
+        "errors": {
+          "resubmitFailed": "The solution could not be evaluated again.",
+          "deleteFailed": "The evaluation could not be deleted."
+        },
+        "confirmDelete": {
+          "title": "Delete this evaluation?",
+          "description": "The run and its result archive go for good. The solution and its other runs stay. core-api refuses to delete the last one, so this is offered only while another remains.",
+          "confirm": "Delete evaluation"
+        }
+      }
     },
     "errors": {
       "noFiles": "Upload the solution's files first.",
@@ -1832,7 +1854,8 @@
       "resubmitFailed": "It could not be sent for evaluation.",
       "deleteFailed": "It could not be deleted.",
       "preSubmitFailed": "The files could not be checked.",
-      "submitFailed": "It could not be submitted."
+      "submitFailed": "It could not be submitted.",
+      "deleteSubmissionFailed": "The evaluation could not be deleted."
     }
   },
   "Pipelines": {

@@ -58,6 +58,43 @@ test("lists an exercise's reference solutions and opens one", async ({ page }) =
   await expect(main.getByText("Isolate init error", { exact: false })).toBeVisible();
 });
 
+test("keeps every run of a reference solution, and reads or removes one", async ({ page }) => {
+  // Writes on the instance and cleans up after itself: it evaluates the seeded solution a second
+  // time, because a history of one is no history and the seed makes exactly one run.
+  await signIn(page, SUPERADMIN, "/en/exercises?q=Echo");
+  const main = page.getByRole("main");
+
+  await main.getByRole("link", { name: "[seed] Echo Greeting" }).click();
+  await main.getByRole("link", { name: "Reference solutions" }).click();
+  const row = main.getByRole("row").filter({ hasText: "[seed] reference solution" }).first();
+  await row.getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/reference-solutions\/[0-9a-f-]+$/);
+
+  // One run, so there is nothing to choose between and core-api would refuse to delete it.
+  await expect(main.getByRole("heading", { name: "Earlier evaluations" })).toBeHidden();
+  await expect(main.getByRole("link", { name: "Download the result archive" })).toBeVisible();
+
+  // Debug is its own button, not a checkbox -- G-002's shape on the other kind of solution.
+  await main.getByRole("button", { name: "Evaluate again (debug)", exact: true }).click();
+  await expect(main.getByRole("heading", { name: "Earlier evaluations" })).toBeVisible();
+  const runs = main.getByRole("listitem").filter({ has: page.locator("time") });
+  await expect(runs).toHaveCount(2);
+  await expect(runs.first()).toContainText("Debug");
+
+  // The older run is a URL of its own, and the page says it is not the one that counts now.
+  await runs.last().getByRole("link").first().click();
+  await expect(page).toHaveURL(/[?&]submission=[0-9a-f-]+$/);
+  await expect(main.getByText("This is not the last evaluation")).toBeVisible();
+
+  // Deleting the run being shown has to leave the page on one that still exists.
+  await runs.first().getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Delete evaluation" }).click();
+
+  // Back to one run, so the history and its delete controls are gone again -- which is the rule
+  // core-api enforces (`checkDeleteSubmission` refuses the last one) rendered as an absence.
+  await expect(main.getByRole("heading", { name: "Earlier evaluations" })).toBeHidden();
+});
+
 test("submits a reference solution, and refuses files no language of the exercise matches", async ({
   page,
 }) => {

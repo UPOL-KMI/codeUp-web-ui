@@ -44,6 +44,27 @@ export async function setReferenceSolutionVisibility(
   }
 }
 
+/**
+ * Removing one evaluation of a reference solution, keeping the solution (G-014).
+ *
+ * **core-api refuses to delete the last one** (`checkDeleteSubmission`: fewer than two submissions
+ * is a `BadRequestException`, not a permission problem), so the screen offers this only where there
+ * is more than one run to choose between -- a rule that exists nowhere in the payload and had to be
+ * read off the presenter.
+ */
+export async function deleteReferenceSubmission(
+  submissionId: string,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    await apiDelete("/v1/reference-solutions/submission/{submissionId}", {
+      pathParams: { submissionId },
+    });
+    return { success: true, data: { id: submissionId } };
+  } catch (error) {
+    return failure(error, "deleteSubmissionFailed");
+  }
+}
+
 export async function resubmitReferenceSolution(
   solutionId: string,
   debug: boolean,

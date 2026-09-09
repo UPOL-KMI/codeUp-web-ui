@@ -13,6 +13,10 @@ import { EVALUATION_TONE, evaluationStatus } from "@/lib/status/evaluation";
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
+import {
+  DeleteReferenceSubmission,
+  ReferenceRunControls,
+} from "@/components/exercises/reference-run-controls";
 import { SourceFile } from "@/components/solutions/source-file";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
@@ -51,10 +55,16 @@ export async function generateMetadata({
  */
 export default async function ReferenceSolutionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ exerciseId: string; solutionId: string }>;
+  searchParams: Promise<{ submission?: string }>;
 }) {
-  const [{ exerciseId, solutionId }, locale] = await Promise.all([params, getLocale()]);
+  const [{ exerciseId, solutionId }, query, locale] = await Promise.all([
+    params,
+    searchParams,
+    getLocale(),
+  ]);
   const [t, tComments, solution] = await Promise.all([
     getTranslations("ReferenceSolutions.detail"),
     getTranslations("Comments"),
@@ -87,6 +97,22 @@ export default async function ReferenceSolutionPage({
         }),
       )
     : [];
+
+  // Which run is on screen. The newest by default -- it is the one that says whether the exercise
+  // works *now* -- and any other by `?submission=`, so a particular run can be linked to and comes
+  // back on a reload. An id that is not this solution's is a wrong address rather than a silent
+  // fallback: the alternative shows one run under another's URL (DEC-090's shape).
+  const selected =
+    query.submission === undefined
+      ? solution.lastSubmission
+      : (solution.submissions.find((entry) => entry.id === query.submission) ?? null);
+  if (query.submission !== undefined && selected === null) notFound();
+
+  const isCurrentRun = selected === null || selected.id === solution.lastSubmission?.id;
+  const solutionPath = `/exercises/${exerciseId}/reference-solutions/${solutionId}`;
+  // core-api refuses to delete the last run (`checkDeleteSubmission`), so the control is offered
+  // only where there is a second one to fall back to.
+  const canDeleteRuns = solution.can.deleteEvaluation === true && solution.submissions.length > 1;
 
   const status = evaluationStatus({ lastSubmission: solution.lastSubmission, maxPoints: 1 });
 
@@ -179,11 +205,27 @@ export default async function ReferenceSolutionPage({
           <h2 id="reference-solution-evaluation" className="text-base font-semibold tracking-tight">
             {t("evaluation")}
           </h2>
-          {solution.lastSubmission ? (
-            <EvaluationResults
-              solution={solution.lastSubmission}
-              environment={solution.environmentId}
-            />
+          <ReferenceRunControls
+            solutionId={solutionId}
+            canResubmit={solution.can.evaluate === true}
+          />
+          {!isCurrentRun && (
+            <p className="rounded-lg border border-warning bg-warning/10 p-3 text-sm">
+              {t("runs.notCurrent")}
+            </p>
+          )}
+          {selected ? (
+            <>
+              <EvaluationResults solution={selected} environment={solution.environmentId} />
+              <div>
+                <a
+                  href={`/api/reference-solutions/submissions/${selected.id}/result`}
+                  className="inline-flex rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t("runs.downloadResult")}
+                </a>
+              </div>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">{t("neverEvaluated")}</p>
           )}
@@ -198,13 +240,38 @@ export default async function ReferenceSolutionPage({
             <ul className="flex flex-col divide-y divide-border rounded-lg border border-border text-sm">
               {solution.submissions.map((submission) => {
                 const state = evaluationStatus({ lastSubmission: submission, maxPoints: 1 });
+                const current = submission.id === selected?.id;
                 return (
                   <li
                     key={submission.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
                   >
-                    <DateTime unixSeconds={submission.submittedAt} withSeconds />
-                    <Badge tone={EVALUATION_TONE[state]}>{t(`status.${state}`)}</Badge>
+                    <Link
+                      href={`${solutionPath}?submission=${submission.id}`}
+                      aria-current={current ? "true" : undefined}
+                      className={`hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                        current ? "font-semibold" : ""
+                      }`}
+                    >
+                      <DateTime unixSeconds={submission.submittedAt} withSeconds />
+                    </Link>
+                    <span className="flex flex-wrap items-center gap-2">
+                      {submission.isDebug && <Badge tone="info">{t("runs.debug")}</Badge>}
+                      <Badge tone={EVALUATION_TONE[state]}>{t(`status.${state}`)}</Badge>
+                      <a
+                        href={`/api/reference-solutions/submissions/${submission.id}/result`}
+                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t("runs.result")}
+                      </a>
+                      {canDeleteRuns && (
+                        <DeleteReferenceSubmission
+                          submissionId={submission.id}
+                          selected={current}
+                          solutionPath={solutionPath}
+                        />
+                      )}
+                    </span>
                   </li>
                 );
               })}

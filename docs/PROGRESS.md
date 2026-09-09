@@ -1384,6 +1384,42 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     G-014, not by any check we have -- `cache()` dedupes within a render only when it is the _same_
     function, which is exactly what these two were not.
 
+- **[2026-09-09 15:05] G-014:** The runs behind a reference solution, and what can be done to one.
+  `app/[locale]/(app)/exercises/[exerciseId]/reference-solutions/[solutionId]/page.tsx`,
+  `components/exercises/reference-run-controls.tsx`, `deleteReferenceSubmission()`,
+  `app/api/reference-solutions/submissions/[submissionId]/result/route.ts`,
+  `e2e/reference-solutions.spec.ts`.
+  - _The selector cost no round trip._ `getReferenceSolution()` already fetches **every** submission
+    with its full evaluation -- T-011 built the history list out of it and then rendered a date and
+    a badge. `?submission=` picks from what is already on the page, so a particular run is a URL, it
+    survives a reload, and a link to it can be sent to somebody.
+  - **_An id that is not this solution's is `notFound()`, not a silent fall back to the last run._**
+    DEC-090's shape again: showing one run under another's URL is worse than saying the address is
+    wrong. Verified live with a zero uuid.
+  - **_core-api refuses to delete the last run_** -- `checkDeleteSubmission` throws a
+    `BadRequestException` when fewer than two exist, which is **not** a permission problem and which
+    no payload announces. So the control is gated on `deleteEvaluation` **and** a second run, and
+    the history section (and with it every delete button) disappears again the moment one is left.
+    Read off the presenter, then watched happen: deleting the run this session made took the whole
+    section with it.
+  - **_A reference resubmit answers with one channel per hardware group_**, not the single
+    `webSocketChannel` a student's does (`finishSubmission` loops over `getHardwareGroups`). S-016's
+    live-progress island watches one; following one of several would be arbitrary, so this screen
+    refreshes and the new run appears in its history. Recorded rather than worked around -- on a
+    deployment with several hardware groups it is a real design question.
+  - _The result archive is gated on `viewDetail`, not on `downloadResultArchive`_, because a
+    reference solution has no such hint; the legacy app makes exactly this distinction at
+    `SolutionDetail.js:237` by reading a different hint for the two kinds of solution.
+  - _Debug was already accepted and never offered._ `resubmitReferenceSolution(id, debug)` has taken
+    the flag since T-011 and every caller passed `false`. It is a second button rather than a
+    checkbox, G-002's reason: a checkbox left ticked from last time is a surprise.
+  - _Verified live end to end_, and the instance is left as it was found: a debug run was made, the
+    history appeared, the older run was selected by URL and said it was not the current one, the run
+    was deleted and the section vanished. The spec does the same and cleans up after itself --
+    checked afterwards that the solution is back to its single seeded submission.
+  - _Observations:_ 4 e2e tests in that file (3 before). **G-004's remaining half is now the same
+    screen on the student's side**, and this is the shape to copy.
+
 ### Current Status
 
 - **Phase:** Recon complete
