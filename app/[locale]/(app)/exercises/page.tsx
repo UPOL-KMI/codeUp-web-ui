@@ -3,10 +3,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import {
   CATALOG_PAGE_SIZE,
+  getExerciseAuthors,
   getExerciseCatalog,
   getExerciseTags,
   type ArchivedScope,
 } from "@/lib/api/exercises";
+import { getCurrentUser } from "@/lib/api/current-user";
 import { getMyGroups } from "@/lib/api/groups";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
@@ -55,6 +57,7 @@ export default async function ExercisesPage({
     archived?: string;
     env?: string;
     tag?: string;
+    author?: string;
     page?: string;
   }>;
 }) {
@@ -64,30 +67,61 @@ export default async function ExercisesPage({
   const archived = ARCHIVED_SCOPES.find((scope) => scope === query.archived) ?? "default";
   const environments = query.env ? [query.env] : [];
   const tags = query.tag ? [query.tag] : [];
+  const authors = query.author ? [query.author] : [];
   const page = Math.max(0, Number(query.page ?? "0") || 0);
 
-  const [t, catalog, allEnvironments, allTags, mine, breadcrumbs] = await Promise.all([
-    getTranslations("Exercises"),
-    getExerciseCatalog({ search, archived, environments, tags, page }, locale),
-    getRuntimeEnvironments(),
-    getExerciseTags(),
-    // Where a new exercise could go: core-api's `createExercise` wants a group the reader
-    // supervises or administers, which is exactly this list (T-008).
-    getMyGroups(locale),
-    resolveBreadcrumbsForNamespace("Exercises", locale),
-  ]);
+  const [t, catalog, allEnvironments, allTags, allAuthors, viewer, mine, breadcrumbs] =
+    await Promise.all([
+      getTranslations("Exercises"),
+      getExerciseCatalog({ search, archived, environments, tags, authors, page }, locale),
+      getRuntimeEnvironments(),
+      getExerciseTags(),
+      getExerciseAuthors(),
+      getCurrentUser(),
+      // Where a new exercise could go: core-api's `createExercise` wants a group the reader
+      // supervises or administers, which is exactly this list (T-008).
+      getMyGroups(locale),
+      resolveBreadcrumbsForNamespace("Exercises", locale),
+    ]);
 
   // Whether anything is narrowing the list, which decides what "nothing here" means: an empty
   // catalog and a filter that matched nothing are different sentences.
   const narrowed =
-    search !== "" || archived !== "default" || environments.length > 0 || tags.length > 0;
+    search !== "" ||
+    archived !== "default" ||
+    environments.length > 0 ||
+    tags.length > 0 ||
+    authors.length > 0;
   const lastPage = Math.max(0, Math.ceil(catalog.totalCount / CATALOG_PAGE_SIZE) - 1);
+
+  /** The same view with one filter swapped, keeping the rest and dropping the page. */
+  const filterHref = (change: { author: string | null }) => {
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (archived !== "default") params.set("archived", archived);
+    if (environments[0]) params.set("env", environments[0]);
+    if (tags[0]) params.set("tag", tags[0]);
+    if (change.author !== null) params.set("author", change.author);
+    const serialized = params.toString();
+    return serialized ? `/exercises?${serialized}` : "/exercises";
+  };
+
+  // Offered only to somebody who has actually written one: to everybody else it is a link to an
+  // empty list, which is a worse answer than no link.
+  const viewerWritesExercises = allAuthors.some((author) => author.id === viewer.id);
+  const mineHref = !viewerWritesExercises
+    ? null
+    : authors[0] === viewer.id
+      ? filterHref({ author: null })
+      : filterHref({ author: viewer.id });
+
   const pageHref = (target: number) => {
     const params = new URLSearchParams();
     if (search) params.set("q", search);
     if (archived !== "default") params.set("archived", archived);
     if (environments[0]) params.set("env", environments[0]);
     if (tags[0]) params.set("tag", tags[0]);
+    if (authors[0]) params.set("author", authors[0]);
     if (target > 0) params.set("page", String(target));
     const serialized = params.toString();
     return serialized ? `/exercises?${serialized}` : "/exercises";
@@ -147,6 +181,24 @@ export default async function ExercisesPage({
             </label>
           )}
 
+          {allAuthors.length > 0 && (
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              {t("filters.author")}
+              <select
+                name="author"
+                defaultValue={authors[0] ?? ""}
+                className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">{t("filters.anyAuthor")}</option>
+                {allAuthors.map((author) => (
+                  <option key={author.id} value={author.id}>
+                    {author.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             {t("filters.archived")}
             <select
@@ -168,6 +220,18 @@ export default async function ExercisesPage({
           >
             {t("filters.apply")}
           </button>
+
+          {/* The legacy app's one click, and the query an author actually makes. A link rather
+              than a third state of the select: it is not a filter to combine but a destination,
+              and it clears the page so the reader lands on the first of their own. */}
+          {mineHref !== null && (
+            <Link
+              href={mineHref}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {authors[0] === viewer.id ? t("filters.everyone") : t("filters.mine")}
+            </Link>
+          )}
         </form>
 
         {catalog.items.length === 0 ? (

@@ -53,6 +53,47 @@ test("pages through what the query matched", async ({ page }) => {
   await expect(main.getByRole("link", { name: "Previous" })).toHaveCount(0);
 });
 
+test("narrows to one author, and offers the author their own in one click", async ({ page }) => {
+  // The seed splits the catalog cleanly between two authors, which is what makes both halves of
+  // this assertable: the filter's total has to be smaller than the unfiltered one and larger than
+  // zero, not merely different (G-018).
+  await signIn(page, SUPERVISOR, "/en/exercises");
+  const main = page.getByRole("main");
+
+  const countOf = async () =>
+    Number(
+      (await main.getByText(/^Showing \d+–\d+ of \d+\.$/).innerText()).match(/of (\d+)\./)![1],
+    );
+  const everyone = await countOf();
+
+  // "Only mine" is a link, not a third state of the select: it is a destination rather than a
+  // filter to combine, and it drops the page so the reader lands on the first of their own.
+  await main.getByRole("link", { name: "Only mine" }).click();
+  await expect(page).toHaveURL(/[?&]author=[0-9a-f-]+/);
+  const mine = await countOf();
+  expect(mine).toBeGreaterThan(0);
+  expect(mine).toBeLessThan(everyone);
+
+  // Every row on screen is now that author's, which is the claim the filter makes. The fifth
+  // column, not the second: name, difficulty, environments, tags, author.
+  const authorCells = main.locator("tbody tr td:nth-child(5)");
+  for (const text of await authorCells.allInnerTexts()) {
+    expect(text.trim()).toBe("Sam Supervisor");
+  }
+
+  // The way back is the same control, and it says so.
+  await expect(main.getByRole("link", { name: "Only mine" })).toHaveCount(0);
+  await main.getByRole("link", { name: "Everyone's" }).click();
+  await expect(page).not.toHaveURL(/[?&]author=/);
+  expect(await countOf()).toBe(everyone);
+
+  // The select carries the same filter for somebody who is not the author they want.
+  await main.getByLabel("Author").selectOption({ label: "Sam Supervisor" });
+  await main.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL(/[?&]author=[0-9a-f-]+/);
+  expect(await countOf()).toBe(mine);
+});
+
 test("keeps archived exercises out of the way until they are asked for", async ({ page }) => {
   await signIn(page, SUPERVISOR, "/en/exercises?q=Retired");
   const main = page.getByRole("main");

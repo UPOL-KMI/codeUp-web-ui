@@ -1589,6 +1589,28 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     look alike from the outside; the difference is whether some test depends on it, and that is
     written down nowhere.
 
+- **[2026-09-10 03:10] G-018:** "Show me mine" is a question the catalog can now answer.
+  `getExerciseAuthors()`, `filters[authorsIds][]` in `getExerciseCatalog()`,
+  `app/[locale]/(app)/exercises/page.tsx`, `e2e/exercise-catalog.spec.ts`.
+  - _The authors come from their own endpoint, not from the rows on screen._ `/v1/exercises/authors`
+    exists for exactly this; deriving the options from the page would give a filter whose choices
+    change as you page through it, since the catalog is paginated and 20 rows are not 28 exercises.
+  - **_"Only mine" is a link, not a third state of the select._** It is a destination rather than a
+    filter to combine, and it drops the page so the reader lands on the first of their own; the way
+    back is the same control, relabelled. Offered only to somebody who has actually written an
+    exercise -- to everybody else it is a link to an empty list, which is a worse answer than no
+    link.
+  - _Verified against a fixture that makes both halves assertable:_ the seed splits the catalog 4 /
+    24 between two authors, so the filtered total has to be **smaller than everything and larger
+    than zero** rather than merely different, and every author cell on screen is checked.
+  - **_A defect fell out of getting the column index wrong._** Reading the second column instead of
+    the fifth returned **`Exercises.difficulty.`** -- `exercise-table.tsx` and `exercise-picker.tsx`
+    both do `t(\`difficulty.${exercise.difficulty}\`)`, and core-api serves `''`for an exercise
+nobody set one on: 4 of this instance's 28. The catalog shows a reader the key path and the
+server logs a`MISSING_MESSAGE` per row. Filed as **G-031b** rather than fixed here, since it is
+    two call sites and its own sentence.
+  - _Observations:_ **291 e2e tests pass** (289 before), 5 of them in that file (4 before).
+
 ### Current Status
 
 - **Phase:** Recon complete

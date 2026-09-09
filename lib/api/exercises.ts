@@ -72,6 +72,8 @@ export interface ExerciseQuery {
   archived: ArchivedScope;
   environments: string[];
   tags: string[];
+  /** One author, or none. core-api accepts several; the catalog offers one, as the legacy app does. */
+  authors: string[];
   /** Zero-based. */
   page: number;
 }
@@ -127,6 +129,7 @@ export async function getExerciseCatalog(
       ...(query.archived !== "default" && { "filters[archived]": query.archived }),
       ...(query.environments.length > 0 && { "filters[runtimeEnvironments]": query.environments }),
       ...(query.tags.length > 0 && { "filters[tags]": query.tags }),
+      ...(query.authors.length > 0 && { "filters[authorsIds]": query.authors }),
     },
   });
 
@@ -144,6 +147,22 @@ export async function getExerciseCatalog(
     pageSize: CATALOG_PAGE_SIZE,
     authors: new Map(people.map((person) => [person.id, person.fullName])),
   };
+}
+
+/**
+ * Everybody who has written an exercise this reader may see, for the catalog's own filter (G-018).
+ *
+ * A separate endpoint rather than a distinct-over-the-page: the catalog is paginated, so the
+ * authors of *this page* are not the authors of the catalog, and a filter offering only the names
+ * that happen to be on screen would be a filter that changes as you page through it.
+ */
+export async function getExerciseAuthors(): Promise<{ id: string; name: string }[]> {
+  const authors =
+    await apiRead<{ id: string; fullName?: string; name?: unknown }[]>("/v1/exercises/authors");
+  return authors
+    .map((author) => ({ id: author.id, name: author.fullName ?? "" }))
+    .filter((author) => author.name !== "")
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** Every tag anybody has put on an exercise, for the catalog's own filter. */

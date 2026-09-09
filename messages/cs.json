@@ -1178,7 +1178,11 @@
         "all": "Zahrnuté",
         "only": "Jen archivované"
       },
-      "apply": "Hledat"
+      "apply": "Hledat",
+      "author": "Autor",
+      "anyAuthor": "Kdokoliv",
+      "mine": "Jen moje",
+      "everyone": "Od všech"
     },
     "pagination": {
       "label": "Stránky katalogu",

@@ -1178,7 +1178,11 @@
         "all": "Included",
         "only": "Only archived"
       },
-      "apply": "Search"
+      "apply": "Search",
+      "author": "Author",
+      "anyAuthor": "Anyone",
+      "mine": "Only mine",
+      "everyone": "Everyone's"
     },
     "pagination": {
       "label": "Catalog pages",
