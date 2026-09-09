@@ -149,6 +149,26 @@ test("a supervisor's review reaches the student only when it is closed", async (
   await supervisorPage.getByRole("button", { name: "Add comment" }).click();
   await expect(supervisorMain.getByText("[e2e] Use a constant for the greeting.")).toBeVisible();
 
+  // The other half of the review surface (the solution as a whole, not a line), and the one that
+  // carries markdown: a reviewer's emphasis, list, link and fenced snippet are rendered rather
+  // than printed as the characters they were typed as (G-027). It is rendered on the *server* --
+  // `Markdown` is async and this whole path is a client island -- so what this proves is that the
+  // page's own render reached the island.
+  await supervisorMain.getByRole("button", { name: "Add a comment about the solution" }).click();
+  await supervisorPage
+    .getByPlaceholder("Write a comment on this line")
+    .fill(
+      "[e2e] **Prefer** `enumerate`.\n\n- shorter\n\n```python\nfor i, x in enumerate(xs):\n    pass\n```",
+    );
+  await supervisorPage.getByRole("button", { name: "Add comment" }).click();
+
+  const rendered = supervisorMain.locator('[data-slot="markdown"]').filter({ hasText: "Prefer" });
+  await expect(rendered).toBeVisible();
+  await expect(rendered.locator("strong")).toHaveText("Prefer");
+  await expect(rendered.locator("li")).toHaveText("shorter");
+  await expect(rendered.locator(".shiki")).toHaveCount(1);
+  await expect(rendered).not.toContainText("**Prefer**");
+
   // Still open: the author must see nothing at all.
   await studentPage.goto(sourcesUrl);
   await expect(

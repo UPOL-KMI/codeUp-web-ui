@@ -25,6 +25,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
+import { Markdown } from "@/components/markdown/markdown";
 import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
@@ -92,6 +93,14 @@ export default async function SolutionSourcesPage({
   );
   const canModerate = solution.groupPrimaryAdminIds.includes(currentUser.id);
 
+  // A review comment is authored markdown and is rendered as such (G-027). It has to happen here,
+  // on the server: `Markdown` is an async Server Component and every component between this page
+  // and the comment is a client island, because a comment thread appears *between* two lines of
+  // code. One render per comment, handed down by id.
+  const bodies = Object.fromEntries(
+    comments.map((comment) => [comment.id, <Markdown key={comment.id} source={comment.text} />]),
+  );
+
   const displayable = canDisplayFiles(files);
 
   return (
@@ -151,6 +160,7 @@ export default async function SolutionSourcesPage({
         <ReviewSummary
           solutionId={solutionId}
           comments={grouped.get("") ?? []}
+          bodies={bodies}
           canComment={canComment}
           canModerate={canModerate}
           currentUserId={currentUser.id}
@@ -188,6 +198,7 @@ export default async function SolutionSourcesPage({
                   solutionId={solutionId}
                   files={files}
                   comments={grouped}
+                  bodies={bodies}
                   canComment={canComment}
                   canModerate={canModerate}
                   currentUserId={currentUser.id}
@@ -240,6 +251,7 @@ async function SourceFileList({
   solutionId,
   files,
   comments,
+  bodies,
   canComment,
   canModerate,
   currentUserId,
@@ -248,6 +260,7 @@ async function SourceFileList({
   solutionId: string;
   files: SolutionFileEntry[];
   comments: Map<string, ReviewComment[]>;
+  bodies: Record<string, React.ReactNode>;
   canComment: boolean;
   canModerate: boolean;
   currentUserId: string;
@@ -274,6 +287,7 @@ async function SourceFileList({
           content={contents[index]?.content ?? null}
           contentError={contents[index]?.error}
           comments={comments.get(file.name) ?? []}
+          bodies={bodies}
           canComment={canComment}
           canModerate={canModerate}
           currentUserId={currentUserId}

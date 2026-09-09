@@ -19,6 +19,7 @@ import { ReviewCommentForm, ReviewCommentItem } from "@/components/solutions/rev
 export function ReviewSummary({
   solutionId,
   comments,
+  bodies,
   canComment,
   canModerate,
   currentUserId,
@@ -26,6 +27,8 @@ export function ReviewSummary({
 }: {
   solutionId: string;
   comments: ReviewComment[];
+  /** Each comment's markdown, rendered on the server -- see `review-comment.tsx` (G-027). */
+  bodies: Record<string, React.ReactNode>;
   canComment: boolean;
   canModerate: boolean;
   currentUserId: string;
@@ -50,6 +53,7 @@ export function ReviewSummary({
             key={comment.id}
             solutionId={solutionId}
             comment={comment}
+            body={bodies[comment.id]}
             canModify={canComment && (canModerate || comment.authorId === currentUserId)}
             reviewClosed={reviewClosed}
           />

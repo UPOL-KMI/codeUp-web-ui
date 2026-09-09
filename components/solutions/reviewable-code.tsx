@@ -38,6 +38,8 @@ export interface ReviewableCodeProps {
   rootStyle: Record<string, string>;
   idPrefix: string;
   comments: ReviewComment[];
+  /** Each comment's markdown, rendered on the server -- see `review-comment.tsx` (G-027). */
+  bodies: Record<string, React.ReactNode>;
   canComment: boolean;
   canModerate: boolean;
   currentUserId: string;
@@ -51,6 +53,7 @@ export function ReviewableCode({
   rootStyle,
   idPrefix,
   comments,
+  bodies,
   canComment,
   canModerate,
   currentUserId,
@@ -103,6 +106,7 @@ export function ReviewableCode({
                     key={comment.id}
                     solutionId={solutionId}
                     comment={comment}
+                    body={bodies[comment.id]}
                     canModify={canComment && (canModerate || comment.authorId === currentUserId)}
                     reviewClosed={reviewClosed}
                   />

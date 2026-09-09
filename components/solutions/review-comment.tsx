@@ -23,6 +23,15 @@ import { useToast } from "@/components/toast/toast-provider";
 /**
  * One review comment, and the form that writes one (S-018).
  *
+ * **The body is markdown and is rendered on the server, not here (G-027).** A reviewer's
+ * emphasis, lists, links and fenced snippets arrived as literal asterisks and backticks until this
+ * ticket, and the obvious fix -- `<Markdown source={...} />` in place of the `<p>` -- is not
+ * available: `Markdown` is `async`, which only a Server Component may be, and every component on
+ * the review path is a client island because a comment thread has to appear *between* two lines of
+ * code. So the page renders one `<Markdown>` per comment and passes them down as `body`, and every
+ * write here already calls `router.refresh()`, which re-runs that render -- there is no state in
+ * which a comment is on screen without its body having been through it.
+ *
  * The form serves both "new" and "edit" -- they differ only in which action they call, and having
  * one component means the issue flag and the notification suppressor cannot drift apart between
  * the two. `suppressNotification` is offered **only while the review is closed**, because that is
@@ -128,11 +137,19 @@ export function ReviewCommentForm({
 export function ReviewCommentItem({
   solutionId,
   comment,
+  body,
   canModify,
   reviewClosed,
 }: {
   solutionId: string;
   comment: ReviewComment;
+  /**
+   * The comment's text, rendered as the markdown it is authored in (G-027). Built on the server
+   * and handed down, because `Markdown` is an async Server Component and everything on this path
+   * is a client island -- see this file's own note. Absent, the text renders as itself, which is
+   * what every comment did before this and what a comment added but not yet re-fetched shows.
+   */
+  body?: React.ReactNode;
   /** Whether *this* reader may edit or delete *this* comment -- core-api decides again on the call. */
   canModify: boolean;
   reviewClosed: boolean;
@@ -185,7 +202,7 @@ export function ReviewCommentItem({
         </time>
         {comment.issue && <Badge tone="warning">{t("comment.issueBadge")}</Badge>}
       </header>
-      <p className="whitespace-pre-wrap">{comment.text}</p>
+      {body ?? <p className="whitespace-pre-wrap">{comment.text}</p>}
       {canModify && (
         <div className="mt-2 flex flex-wrap gap-2">
           <button

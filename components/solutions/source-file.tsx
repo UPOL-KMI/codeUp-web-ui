@@ -34,6 +34,8 @@ export interface SourceFileProps {
   content: FileContent | null;
   contentError?: string;
   comments: ReviewComment[];
+  /** Each comment's markdown, rendered on the server -- see `review-comment.tsx` (G-027). */
+  bodies: Record<string, React.ReactNode>;
   canComment: boolean;
   canModerate: boolean;
   currentUserId: string;
@@ -46,6 +48,7 @@ export async function SourceFile({
   content,
   contentError,
   comments,
+  bodies,
   canComment,
   canModerate,
   currentUserId,
@@ -101,6 +104,7 @@ export async function SourceFile({
           rootStyle={rootStyle}
           idPrefix={`${anchor}-`}
           comments={comments}
+          bodies={bodies}
           canComment={canComment}
           canModerate={canModerate}
           currentUserId={currentUserId}

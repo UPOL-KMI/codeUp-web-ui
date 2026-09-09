@@ -1299,6 +1299,41 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     here. The rest of G-004 -- the runs behind a solution, the `?submission=` selector, the result
     archive -- is still open and is a screen.
 
+- **[2026-09-09 14:10] G-027:** A review reads like a code review, not like a terminal dump.
+  `components/solutions/review-comment.tsx`, `review-summary.tsx`, `reviewable-code.tsx`,
+  `source-file.tsx`, `app/[locale]/(app)/solutions/[solutionId]/sources/page.tsx`,
+  `e2e/solution-sources.spec.ts`.
+  - **_It is not the one-line change the ticket and RETROSPECTIVE §6.6 both promised_**, and the
+    reason is worth more than the fix. `<Markdown source={...} />` in place of the `<p>` does not
+    compile: `Markdown` is `async` -- it awaits D-009's highlighter -- and only a Server Component
+    may be async. Every component on the review path is a **client island**, because a comment
+    thread has to appear _between two lines of code_, which is the one thing server-rendered HTML
+    cannot be given to a child of (`reviewable-code.tsx` says so in as many words).
+  - _So the markdown moved rather than the tag._ The page renders one `<Markdown>` per comment and
+    passes them down by id through `ReviewSummary`, `SourceFile` and `ReviewableCode`; the item
+    takes a `body` slot and falls back to the plain text it rendered before. **DEC-121**, and it is
+    the rule for the next one too -- G-028's markdown preview has the same shape.
+  - **_The refresh discipline was already there, which is what makes it correct rather than merely
+    working._** Every write in `review-comment.tsx` calls `router.refresh()`, so the server
+    re-renders and the new body comes with it. Verified live rather than reasoned about: a comment
+    was edited in the browser and `## After the edit` became an `<h2>`, with a GFM table beside it,
+    without a reload.
+  - _The alternative was rendering markdown in the browser_, and it was refused: react-markdown,
+    remark, KaTeX and Shiki in the bundle, on the screen a teacher reads most, while PF-001 is open
+    about exactly that kind of weight.
+  - _Verified live before the spec existed:_ a comment carrying emphasis, inline code, a list, a
+    link and a fenced python block rendered as `<strong>`, `<code>`, `<li>`, a real `<a href>` and
+    one Shiki block -- and `**enumerate**` appeared nowhere as text. Written through the API,
+    read in the browser, deleted afterwards.
+  - **_Two failed runs of my own spec left the instance dirty, both times._** The review test starts
+    a review and erases it at the end; a failure in between leaves the review open, and the next run
+    then times out looking for a "Start review" button that has become "Close review". Erased by
+    hand through core-api both times. The suite has this shape elsewhere too -- it is the same thing
+    that made `solutions.spec.ts` fail earlier today after the worker was down for one run.
+  - _Observations:_ 4 e2e tests in that file pass, the review one now covering both halves of the
+    review surface -- the line comment and the solution-level one, which is the path that carries
+    the markdown assertions.
+
 ### Current Status
 
 - **Phase:** Recon complete
