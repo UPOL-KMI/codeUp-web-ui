@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { ApiError } from "@/lib/api/client";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getReferenceSolution } from "@/lib/api/reference-solutions";
+import {
+  canDisplayFiles,
+  getFileContent,
+  getReferenceSolutionFiles,
+  type FileContent,
+} from "@/lib/api/solution-files";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { EVALUATION_TONE, evaluationStatus } from "@/lib/status/evaluation";
@@ -11,6 +18,7 @@ import { EVALUATION_TONE, evaluationStatus } from "@/lib/status/evaluation";
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { EvaluationResults } from "@/components/solutions/evaluation-results";
+import { SourceFile } from "@/components/solutions/source-file";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
@@ -38,9 +46,13 @@ export async function generateMetadata({
  * the configuration changes, and the history is the record of what the exercise used to do to the
  * same code -- which is the evidence an author wants when a change broke something.
  *
- * The files are named and downloadable through the same route S-017 built for a student's, because
- * the answer is the point of a reference solution and hiding it behind a separate screen would be
- * a step for nothing.
+ * **The files are read here, not behind a second screen (G-013).** The answer is the point of a
+ * reference solution -- an exercise cannot be assigned without one (DEC-097) -- and until this
+ * ticket the author of an exercise could not read the solution that proves it works: the list was
+ * a name and a size in a `<span>`, and this comment claimed the opposite. They render through
+ * S-017's own `SourceFile`, under S-017's own ceiling (`canDisplayFiles`), and past it the archive
+ * is what is offered instead. A student's solution gets a `/sources` route of its own because it
+ * carries a review; this one has none, so a route would be a click for nothing.
  */
 export default async function ReferenceSolutionPage({
   params,
@@ -58,10 +70,27 @@ export default async function ReferenceSolutionPage({
   // pair is a wrong address rather than a refusal -- the same reading S-015 gives one.
   if (solution.exerciseId !== exerciseId) notFound();
 
-  const [exercise, breadcrumbs] = await Promise.all([
+  const [exercise, breadcrumbs, files] = await Promise.all([
     getExerciseDetail(exerciseId, locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/reference-solutions/${solutionId}`, locale),
+    getReferenceSolutionFiles(solutionId),
   ]);
+
+  // S-017's ceiling, for S-017's reason: past 32 files or a megabyte, highlighting them all costs
+  // far more than the reader is asking for, and the archive is the honest answer.
+  const readable = files.length > 0 && canDisplayFiles(files);
+  const contents = readable
+    ? await Promise.all(
+        files.map(async (file): Promise<{ content: FileContent | null; error?: string }> => {
+          try {
+            return { content: await getFileContent(file.fileId, file.entry) };
+          } catch (error) {
+            // One unreadable file must not cost the reader the others.
+            return { content: null, error: error instanceof ApiError ? error.message : undefined };
+          }
+        }),
+      )
+    : [];
 
   const status = evaluationStatus({ lastSubmission: solution.lastSubmission, maxPoints: 1 });
 
@@ -104,19 +133,49 @@ export default async function ReferenceSolutionPage({
           <h2 id="reference-solution-files" className="text-base font-semibold tracking-tight">
             {t("files")}
           </h2>
-          {solution.files.length === 0 ? (
+          {files.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("noFiles")}</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-border rounded-lg border border-border text-sm">
-              {solution.files.map((file) => (
-                <li key={file.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                  <span className="truncate font-mono">{file.name}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatBytes(file.size)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <div>
+                <a
+                  href={`/api/reference-solutions/${solutionId}/download`}
+                  className="inline-flex rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  {t("downloadArchive")}
+                </a>
+              </div>
+              {readable ? (
+                <div className="flex flex-col gap-4">
+                  {files.map((file, index) => (
+                    <SourceFile
+                      key={file.name}
+                      solutionId={solutionId}
+                      file={file}
+                      content={contents[index]?.content ?? null}
+                      contentError={contents[index]?.error}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">{t("tooManyFiles")}</p>
+                  <ul className="flex flex-col divide-y divide-border rounded-lg border border-border text-sm">
+                    {files.map((file) => (
+                      <li
+                        key={file.name}
+                        className="flex items-center justify-between gap-3 px-3 py-2"
+                      >
+                        <span className="truncate font-mono">{file.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatBytes(file.size)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </>
           )}
         </section>
 

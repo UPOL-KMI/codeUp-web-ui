@@ -1821,7 +1821,9 @@
         "incorrect": "No test passed",
         "not-scored": "Evaluated"
       },
-      "pageTitle": "Reference solution"
+      "pageTitle": "Reference solution",
+      "downloadArchive": "Download archive",
+      "tooManyFiles": "Too many files to show here. The archive has all of them."
     },
     "errors": {
       "noFiles": "Upload the solution's files first.",

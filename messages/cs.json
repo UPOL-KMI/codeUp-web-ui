@@ -1821,7 +1821,9 @@
         "incorrect": "Neprošel žádný test",
         "not-scored": "Vyhodnoceno"
       },
-      "pageTitle": "Vzorové řešení"
+      "pageTitle": "Vzorové řešení",
+      "downloadArchive": "Stáhnout archiv",
+      "tooManyFiles": "Souborů je příliš mnoho na to, aby se tu zobrazily. V archivu jsou všechny."
     },
     "errors": {
       "noFiles": "Nejdřív nahrajte soubory řešení.",

@@ -27,12 +27,8 @@ export function fileAnchorId(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
-export interface SourceFileProps {
-  solutionId: string;
-  file: SolutionFileEntry;
-  /** Null when core-api could not produce the content -- the file is still listed, with the reason. */
-  content: FileContent | null;
-  contentError?: string;
+/** Everything the reviewable variant of this file needs, and nothing a plain reading of it does. */
+export interface SourceFileReview {
   comments: ReviewComment[];
   /** Each comment's markdown, rendered on the server -- see `review-comment.tsx` (G-027). */
   bodies: Record<string, React.ReactNode>;
@@ -42,17 +38,25 @@ export interface SourceFileProps {
   reviewClosed: boolean;
 }
 
+export interface SourceFileProps {
+  solutionId: string;
+  file: SolutionFileEntry;
+  /** Null when core-api could not produce the content -- the file is still listed, with the reason. */
+  content: FileContent | null;
+  contentError?: string;
+  /**
+   * Omitted where the file has no review and never will: a **reference** solution's (G-013), which
+   * core-api gives no review of at all. The alternative was six dummy props at that call site.
+   */
+  review?: SourceFileReview;
+}
+
 export async function SourceFile({
   solutionId,
   file,
   content,
   contentError,
-  comments,
-  bodies,
-  canComment,
-  canModerate,
-  currentUserId,
-  reviewClosed,
+  review,
 }: SourceFileProps) {
   const [t, code] = await Promise.all([getTranslations("Sources"), getTranslations("Code")]);
   const anchor = fileAnchorId(file.name);
@@ -80,7 +84,7 @@ export async function SourceFile({
   }
 
   const { lines, rootStyle, highlighted } = await highlightToLines(content.content, language);
-  const interactive = canComment || comments.length > 0;
+  const interactive = review !== undefined && (review.canComment || review.comments.length > 0);
 
   return (
     <figure id={anchor} className="flex flex-col overflow-hidden rounded-lg border border-border">
@@ -103,12 +107,12 @@ export async function SourceFile({
           lines={lines}
           rootStyle={rootStyle}
           idPrefix={`${anchor}-`}
-          comments={comments}
-          bodies={bodies}
-          canComment={canComment}
-          canModerate={canModerate}
-          currentUserId={currentUserId}
-          reviewClosed={reviewClosed}
+          comments={review.comments}
+          bodies={review.bodies}
+          canComment={review.canComment}
+          canModerate={review.canModerate}
+          currentUserId={review.currentUserId}
+          reviewClosed={review.reviewClosed}
         />
       ) : (
         <CodeBlock rootStyle={rootStyle}>

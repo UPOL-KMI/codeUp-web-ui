@@ -54,13 +54,12 @@ export function canDisplayFiles(files: SolutionFileEntry[]): boolean {
   return files.reduce((total, file) => total + file.size, 0) < MAX_DISPLAYED_BYTES;
 }
 
-export const getSolutionFiles = cache(async function getSolutionFiles(
-  solutionId: string,
-): Promise<SolutionFileEntry[]> {
-  const payload = await apiRead<SolutionFilePayload[]>("/v1/assignment-solutions/{id}/files", {
-    pathParams: { id: solutionId },
-  });
-
+/**
+ * core-api builds both listings with the same `SolutionFilesViewFactory`, so a reference
+ * solution's files arrive in exactly this shape, archives included -- read from the presenter
+ * rather than assumed (G-013).
+ */
+function expand(payload: SolutionFilePayload[]): SolutionFileEntry[] {
   const files: SolutionFileEntry[] = [];
   for (const file of payload) {
     if (file.zipEntries) {
@@ -88,6 +87,31 @@ export const getSolutionFiles = cache(async function getSolutionFiles(
   }
 
   return files.sort((a, b) => a.name.localeCompare(b.name, "en"));
+}
+
+export const getSolutionFiles = cache(async function getSolutionFiles(
+  solutionId: string,
+): Promise<SolutionFileEntry[]> {
+  return expand(
+    await apiRead<SolutionFilePayload[]>("/v1/assignment-solutions/{id}/files", {
+      pathParams: { id: solutionId },
+    }),
+  );
+});
+
+/**
+ * The files a **reference** solution is made of (G-013). Gated by core-api on the same
+ * `canViewDetail` that discloses the solution at all (`checkFiles` in
+ * `ReferenceExerciseSolutionsPresenter`), so a reader who has the screen has these.
+ */
+export const getReferenceSolutionFiles = cache(async function getReferenceSolutionFiles(
+  solutionId: string,
+): Promise<SolutionFileEntry[]> {
+  return expand(
+    await apiRead<SolutionFilePayload[]>("/v1/reference-solutions/{id}/files", {
+      pathParams: { id: solutionId },
+    }),
+  );
 });
 
 export interface FileContent {

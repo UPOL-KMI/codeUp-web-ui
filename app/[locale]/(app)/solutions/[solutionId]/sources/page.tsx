@@ -286,12 +286,14 @@ async function SourceFileList({
           file={file}
           content={contents[index]?.content ?? null}
           contentError={contents[index]?.error}
-          comments={comments.get(file.name) ?? []}
-          bodies={bodies}
-          canComment={canComment}
-          canModerate={canModerate}
-          currentUserId={currentUserId}
-          reviewClosed={reviewClosed}
+          review={{
+            comments: comments.get(file.name) ?? [],
+            bodies,
+            canComment,
+            canModerate,
+            currentUserId,
+            reviewClosed,
+          }}
         />
       ))}
     </div>

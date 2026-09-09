@@ -41,8 +41,17 @@ test("lists an exercise's reference solutions and opens one", async ({ page }) =
   await expect(page).toHaveURL(/\/reference-solutions\/[0-9a-f-]+$/);
   await expect(main.getByRole("heading", { level: 1 })).toContainText("[seed] reference solution");
 
-  // The submitted file, and the same evaluation component the solution screen renders.
+  // The submitted file, read rather than merely named (G-013): until that ticket this screen
+  // listed a name and a size, so the author of an exercise could not read the solution that
+  // proves it works. Rendered through S-017's own viewer, so it is highlighted server-side.
   await expect(main.getByText("solution.py")).toBeVisible();
+  await expect(main.locator("figure").filter({ hasText: "solution.py" })).toContainText(
+    'print("Hello, ReCodEx!")',
+  );
+  await expect(main.getByRole("link", { name: "Download archive" })).toHaveAttribute(
+    "href",
+    /^\/api\/reference-solutions\/[0-9a-f-]+\/download$/,
+  );
   await expect(main.getByRole("heading", { name: "What the pipeline did" })).toBeVisible();
   // This machine cannot evaluate, so the honest state is an infrastructure failure -- and the
   // screen must say it is not the reader's fault rather than dressing it up as a test result.

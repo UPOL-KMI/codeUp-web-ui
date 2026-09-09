@@ -1334,6 +1334,44 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     review surface -- the line comment and the solution-level one, which is the path that carries
     the markdown assertions.
 
+- **[2026-09-09 14:35] G-013:** An exercise's author can read the solution that proves it works.
+  `getReferenceSolutionFiles()` in `lib/api/solution-files.ts`,
+  `app/api/reference-solutions/[solutionId]/download/route.ts`, the detail screen,
+  `components/solutions/source-file.tsx`, `e2e/reference-solutions.spec.ts`.
+  - **_The doc comment was the bug report._** T-011's own page said "the files are named and
+    downloadable through the same route S-017 built for a student's" over a list of
+    non-interactive `<span>`s -- a name, a size, and no way to reach either. RETROSPECTIVE §6.6
+    files it under the thing this project keeps doing: a screen that reads well and cannot be acted
+    on, described as though it could.
+  - _Nothing new had to be invented, which is the point of the rank._ core-api builds both file
+    listings with the **same** `SolutionFilesViewFactory` (read from
+    `ReferenceExerciseSolutionsPresenter::actionFiles`, not assumed), so the ZIP expansion S-017
+    wrote applies unchanged and became a shared `expand()`. The archive route is the student one
+    with a different path.
+  - **_No permission hint to check, and that is core-api's answer rather than an omission._** Both
+    `checkFiles` and `checkDownloadSolutionArchive` test `canViewDetail` -- the grant that discloses
+    the solution at all. A reader who has this screen has its files; one who does not never reaches
+    it. Verified from both sides: the superadmin (whose solutions these are -- they are private)
+    gets the archive, `application/zip`, `PK` bytes and all; a supervisor is refused **403** by
+    core-api and the route forwards it; no session is **401** before core-api is asked.
+  - **_The files are read where they are listed, not behind a second screen._** A student's
+    solution has a `/sources` route because it carries a **review**; a reference solution has none,
+    so a route would be a click for nothing. S-017's `canDisplayFiles` ceiling comes along with the
+    viewer -- past 32 files or a megabyte the list and the archive are what is offered, which is
+    the same bargain the student's page makes.
+  - _`SourceFile`'s six review props became one optional `review` object._ The new call site has no
+    review and never will, and six dummy props at it would have been a lie about what the component
+    needs. `interactive` now reads as what it means: a review exists and somebody may act on it.
+  - _Per-file download is deliberately not carried across._ Legacy offers one; this app's own
+    student viewer does not, and the file is on screen with the archive one click away. Recorded
+    here rather than in `DROPPED.md` because the capability is not lost, only merged.
+  - _Verified live_ against the seeded reference solution: `solution.py` renders as highlighted
+    source, the archive downloads as a real ZIP, and the student's own sources page still works
+    after the props refactor.
+  - _Observations:_ **286 e2e tests passed** on the full run after rank 6 (284 before it), and the
+    two specs touched here pass. One inventory row (`referenceSolutionEvaluations`) stays partial
+    until G-014.
+
 ### Current Status
 
 - **Phase:** Recon complete
