@@ -134,6 +134,53 @@ export async function solutionSubmissionIds(solutionId: string): Promise<string[
   return solution.submissions;
 }
 
+/**
+ * Make an evaluation failure of this suite's own, and hand back the job id the screen shows it by
+ * (PF-006).
+ *
+ * **Written because the suite was quietly draining a shared queue.** The resolve test used to take
+ * whatever unresolved failure was oldest, on the reasoning that this instance mints a fresh one
+ * every time the submit spec runs -- which stopped being true when that spec started deleting the
+ * solution it submits, because deleting a solution takes its failures with it. Resolving is
+ * permanent (core-api has no un-resolve), so the queue drained by one per run until it was empty
+ * and three tests went red for a reason that had nothing to do with them.
+ *
+ * A re-run of a seeded solution is the cheapest honest way to mint one: this host's sandbox cannot
+ * run at all (DEC-031), so every job fails within a second. The caller deletes the submission
+ * afterwards, which takes the failure with it.
+ */
+export async function mintSubmissionFailure(): Promise<{ submissionId: string; jobId: string }> {
+  const token = await coreApiToken();
+  const { id } = await firstSeededSolution();
+  const before = new Set(await solutionSubmissionIds(id));
+
+  const response = await fetch(`${coreApiBase}/assignment-solutions/${id}/resubmit`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ debug: false }),
+  });
+  if (!response.ok) throw new Error(`could not resubmit: HTTP ${response.status}`);
+
+  // The job is rejected by the sandbox rather than queued, but core-api records the failure a
+  // moment after answering the resubmit -- so this waits for the row rather than assuming it.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const added = (await solutionSubmissionIds(id)).filter((one) => !before.has(one));
+    const submissionId = added[0];
+    if (submissionId !== undefined) {
+      const failures = await coreApi<
+        { id: string; description: string; resolvedAt: number | null }[]
+      >("/submission-failures", token);
+      // The job id core-api names in the description **is** the submission's own id, which is what
+      // makes the row findable on a screen where every failure reads alike.
+      if (failures.some((failure) => failure.description.includes(submissionId))) {
+        return { submissionId, jobId: submissionId };
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error("no submission failure appeared for the re-run");
+}
+
 /** Delete one evaluation run of a solution, for a spec that caused an extra one (G-002). */
 export async function deleteSubmissionIfPresent(submissionId: string): Promise<void> {
   const token = await coreApiToken();

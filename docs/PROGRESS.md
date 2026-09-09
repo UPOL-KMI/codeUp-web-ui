@@ -1562,6 +1562,33 @@ $licence->isValid()`, so **`false` is falsy, takes the else branch, and writes b
     empty-pool case walks the same path as the rest.
   - _Observations:_ 4 e2e tests in that file (2 before).
 
+- **[2026-09-10 02:30] PF-006:** Two tests stopped consuming a queue they were not replacing.
+  `e2e/helpers/core-api.ts` (`mintSubmissionFailure()`), `e2e/submission-failures.spec.ts`.
+  - **_The mechanism was not what I assumed when filing it._** I wrote that `assignments.spec.ts`
+    leaks a solution every run. It does not -- it deletes the one it submits, and has since
+    somebody fixed exactly that. **That fix is what broke this**: deleting a solution takes its
+    failures with it, so the instance stopped minting the fresh failure
+    `submission-failures.spec.ts` was quietly consuming one of per run. The queue drained to zero
+    and two tests in that file began reading an ordinary state of this instance as a broken screen.
+  - _A test that consumes shared state has to replace it._ `mintSubmissionFailure()` re-runs a
+    seeded solution and waits for the failure DEC-031's sandbox guarantees; the caller deletes the
+    submission in a `finally`, which takes the failure with it. The instance is left exactly as it
+    was found -- checked: the solution is back to its single seeded run.
+  - _The resolve test also stopped being positional._ It used to sort by date and take the oldest
+    row, which is a test of whatever ran last; it now finds **its own** row by the job id core-api
+    puts in the description, which is the submission's own id.
+  - **_Two things the drained queue taught, both of which cost a red run to see._** Resolving the
+    last open failure empties the queue, and an empty queue renders the empty _state_ rather than
+    the table -- so there is no filter box left to type into, and the assertion had to become the
+    row's absence instead. And an assertion that waits for a string already on screen does not
+    retry, where waiting for a count does.
+  - _Verified from a deliberately drained queue_ -- every unresolved failure resolved by hand
+    first, which is the state that reddened three tests earlier today. All four pass from it.
+  - _Observations:_ this is the second time today a "clean up the residue" instinct was wrong. The
+    66 solutions I removed this afternoon were load-bearing for this very spec. Residue and fixture
+    look alike from the outside; the difference is whether some test depends on it, and that is
+    written down nowhere.
+
 ### Current Status
 
 - **Phase:** Recon complete
