@@ -32,6 +32,7 @@ import { ExamTable } from "@/components/groups/exam-table";
 import { GroupInfo } from "@/components/groups/group-info";
 import { GroupTabs, type GroupTab } from "@/components/groups/group-tabs";
 import { InvitationManager } from "@/components/groups/invitation-manager";
+import { MailStudents } from "@/components/groups/mail-students";
 import { MemberManager } from "@/components/groups/member-manager";
 import { MembershipButton } from "@/components/groups/membership-button";
 import { PointsMatrixTable } from "@/components/groups/points-matrix";
@@ -472,6 +473,11 @@ async function StudentsTab({ groupId }: { groupId: string }) {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* G-011. On the group's own `sendEmail` hint -- which, unlike almost every other group
+          write, carries no "not archived" condition, so a finished course can still be written
+          to. The addresses ride along with the roster's own read; see `MailStudents`. */}
+      {group.can.sendEmail === true && <MailStudents students={students} />}
+
       <StudentTable
         students={students}
         groupId={groupId}

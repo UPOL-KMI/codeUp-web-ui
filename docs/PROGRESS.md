@@ -4560,6 +4560,36 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     product at the end of the spec, and through core-api in the file's `afterEach` if that never
     runs -- the discipline PF-007 says `exercise-edit.spec.ts` is missing.
 
+- **[2026-09-10 07:55] G-011:** Mailing the whole class, and the truncation the legacy link does not
+  mention. `components/groups/mail-students.tsx`, `lib/format/mailto.ts` + unit tests,
+  `lib/api/group-detail.ts`, `e2e/mail-students.spec.ts`.
+  - _The addresses were already on the page and were being thrown away._ The roster's batched
+    `/v1/users/list` answers with `privateData.email` wherever the reader may read it -- T-007's
+    export has been reading exactly that since it shipped -- and `fetchStudentNames` was mapping the
+    response down to names. It now keeps both (`fetchStudentPeople`), so the mail control costs no
+    request of its own and the points matrix, which shares the memoized read, is unaffected.
+  - **_A plain `mailto:?bcc=` link, no JavaScript_**, for the reason DEC-095 gives for the CSV
+    export: handing the reader's own mail client a URL is something HTML does. Blind copy, never
+    `to` -- a class of thirty in `To` discloses every student's address to every other student.
+  - **_The trap is that a long recipient list is truncated rather than refused_** (DEC-124). There is
+    no limit in the `mailto:` specification and there is one in nearly every handler that opens the
+    link -- around two thousand characters, which a course of a hundred passes. So the link is
+    measured, the screen says so where it is over, and the addresses sit beside it as copyable text,
+    which is also the answer for a teacher who wants a mailing list rather than one message.
+  - _Two more things said in words rather than left to be discovered:_ the count of students whose
+    address core-api **did not** disclose (mailing 28 of the 30 the table shows is a near-miss
+    nobody notices), and, where none was disclosed, a sentence instead of a dead link.
+  - _`sendEmail` alone gates it_, not the legacy screen's `viewStudents` **and** `sendEmail`: this
+    only renders inside the Students tab, which is built from that hint. Worth recording what the
+    ACL does _not_ ask for -- `sendEmail` is the one group write with no `group.isNotArchived`
+    condition, so a finished course can still be written to, deliberately and as in legacy.
+  - **_Observations: not verified live, and that is an environment fact rather than a caveat about
+    the code._** This instance's `[seed]` fixtures have drifted -- the seeded group is now named
+    `[seed] Intro to Programming / Lab A`, and the instance carries real groups beside it -- so the
+    spec's group-navigation helper finds nothing. **`points-export.spec.ts` fails identically on the
+    same helper**, which is what says the cause is the fixtures and not this ticket. Re-run both
+    after `pnpm seed`. 217 unit tests (209 before), typecheck/lint/format/build clean.
+
 ### Current Status
 
 - **Phase:** **Parity Sweep & Polish (Phase 7) is complete, and with it every ticket of the original

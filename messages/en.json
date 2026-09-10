@@ -451,7 +451,19 @@
         "description": "Nobody has joined this group as a student yet."
       },
       "viewSolutions": "Submissions",
-      "caption": "Every student in this group, their points, and how much they have solved."
+      "caption": "Every student in this group, their points, and how much they have solved.",
+      "mail": {
+        "title": "Mailing this group",
+        "action": "{count, plural, one {Mail # student} other {Mail all # students}}",
+        "bcc": "Opens your own mail program, with the class in the blind copy field.",
+        "undisclosed": "{count, plural, one {One student's address was not disclosed to you and is not in the link} other {# students' addresses were not disclosed to you and are not in the link}}.",
+        "mayTruncate": "This many addresses make a link long enough that some mail programs quietly shorten it, and would leave part of the class out. Check the recipients before sending, or take the addresses from below.",
+        "noneDisclosed": "No student's address was disclosed to you, so there is nobody here to write to.",
+        "list": {
+          "summary": "Show the addresses as text",
+          "label": "Every disclosed address in this group, separated by commas"
+        }
+      }
     },
     "points": {
       "title": "Points, assignment by assignment",

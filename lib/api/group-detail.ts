@@ -361,6 +361,8 @@ export async function getGroupAssignments(
 export interface GroupStudent {
   id: string;
   fullName: string;
+  /** Present only where core-api disclosed the person's private data to this reader (G-011). */
+  email: string | null;
   gained: number;
   total: number;
   hasLimit: boolean;
@@ -384,13 +386,29 @@ const fetchStudentStats = cache(async function fetchStudentStats(
   });
 });
 
-const fetchStudentNames = cache(async function fetchStudentNames(
+interface StudentPerson {
+  fullName: string;
+  email: string | null;
+}
+
+/**
+ * `privateData.email` rides along because it costs nothing: this response already carries it
+ * wherever the reader may read it, and the address list G-011's mail control needs was being
+ * discarded here. core-api decides the disclosure per person, so a null address is an answer --
+ * "not disclosed to you" -- rather than a person without an address.
+ */
+const fetchStudentPeople = cache(async function fetchStudentPeople(
   idKey: string,
-): Promise<Map<string, string>> {
-  const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
-    ids: idKey.split(","),
-  });
-  return new Map(people.map((person) => [person.id, person.fullName]));
+): Promise<Map<string, StudentPerson>> {
+  const people = await apiPost<
+    { id: string; fullName: string; privateData?: { email?: string } }[]
+  >("/v1/users/list", { ids: idKey.split(",") });
+  return new Map(
+    people.map((person) => [
+      person.id,
+      { fullName: person.fullName, email: person.privateData?.email ?? null },
+    ]),
+  );
 });
 
 const studentIdKey = (stats: GroupStudentStats[]) =>
@@ -400,12 +418,13 @@ export async function getGroupStudents(groupId: string): Promise<GroupStudent[]>
   const stats = await fetchStudentStats(groupId);
   if (stats.length === 0) return [];
 
-  const names = await fetchStudentNames(studentIdKey(stats));
+  const people = await fetchStudentPeople(studentIdKey(stats));
 
   return stats
     .map((row) => ({
       id: row.userId,
-      fullName: names.get(row.userId) ?? "",
+      fullName: people.get(row.userId)?.fullName ?? "",
+      email: people.get(row.userId)?.email ?? null,
       gained: row.points.gained,
       total: row.points.total,
       hasLimit: row.hasLimit,
@@ -477,7 +496,7 @@ export async function getGroupPointsMatrix(groupId: string, locale: string): Pro
     solvers.map((solver) => [`${solver.solverId}:${solver.assignmentId}`, solver.lastAttemptIndex]),
   );
 
-  const names = await fetchStudentNames(studentIdKey(stats));
+  const people = await fetchStudentPeople(studentIdKey(stats));
 
   const columns = assignments
     .map((assignment) => ({
@@ -491,7 +510,7 @@ export async function getGroupPointsMatrix(groupId: string, locale: string): Pro
   const rows = stats
     .map((row) => ({
       userId: row.userId,
-      fullName: names.get(row.userId) ?? "",
+      fullName: people.get(row.userId)?.fullName ?? "",
       gained: row.points.gained,
       total: row.points.total,
       cells: Object.fromEntries(

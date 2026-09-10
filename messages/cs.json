@@ -451,7 +451,19 @@
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
       },
       "viewSolutions": "Odevzdání",
-      "caption": "Všichni studenti této skupiny, jejich body a počet vyřešených zadání."
+      "caption": "Všichni studenti této skupiny, jejich body a počet vyřešených zadání.",
+      "mail": {
+        "title": "Hromadný e-mail skupině",
+        "action": "{count, plural, one {Napsat # studentovi} few {Napsat všem # studentům} other {Napsat všem # studentům}}",
+        "bcc": "Otevře váš e-mailový program, se skupinou ve skryté kopii.",
+        "undisclosed": "{count, plural, one {Adresa jednoho studenta vám nebyla zpřístupněna a v odkazu není} few {Adresy # studentů vám nebyly zpřístupněny a v odkazu nejsou} other {Adresy # studentů vám nebyly zpřístupněny a v odkazu nejsou}}.",
+        "mayTruncate": "Takové množství adres dá odkaz dost dlouhý na to, aby ho některé e-mailové programy bez varování zkrátily a část skupiny vynechaly. Před odesláním zkontrolujte příjemce, nebo si adresy vezměte níže.",
+        "noneDisclosed": "Nebyla vám zpřístupněna adresa žádného studenta, není tedy komu napsat.",
+        "list": {
+          "summary": "Zobrazit adresy jako text",
+          "label": "Všechny zpřístupněné adresy v této skupině, oddělené čárkami"
+        }
+      }
     },
     "points": {
       "title": "Body po jednotlivých zadáních",
