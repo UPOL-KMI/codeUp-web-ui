@@ -28,17 +28,6 @@ export const structureSchema = z.object({
 
 export type StructureValues = z.infer<typeof structureSchema>;
 
-export const PIPELINE_PARAMETERS = [
-  "isCompilationPipeline",
-  "isExecutionPipeline",
-  "judgeOnlyPipeline",
-  "producesStdout",
-  "producesFiles",
-  "hasEntryPoint",
-  "hasExtraFiles",
-  "hasSuccessExitCodes",
-] as const;
-
 export const pipelineSettingsSchema = z.object({
   version: z.number().int(),
   name: z.string().trim().min(2),

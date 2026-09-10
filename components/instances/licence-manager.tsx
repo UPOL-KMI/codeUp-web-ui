@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { createLicence, deleteLicence } from "@/lib/actions/instances";
-import { licenceSchema, type LicenceValues } from "@/lib/actions/instances.schema";
+import type { LicenceValues } from "@/lib/actions/instances.schema";
 import type { Licence } from "@/lib/api/instances";
 import { DATE_ONLY_FORMAT } from "@/lib/format/date-time";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
@@ -64,7 +64,7 @@ export function LicenceManager({
   const [pending, setPending] = useState(false);
 
   const { form, onSubmit, isPending } = useServerActionForm<LicenceValues, { id: string }>({
-    schema: licenceSchema,
+    schema: () => import("@/lib/actions/instances.schema").then((module) => module.licenceSchema),
     defaultValues: { note: "", validUntil: "" },
     action: (values) => createLicence(instanceId, values),
     onSuccess: () => {

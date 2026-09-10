@@ -4,10 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateAssignmentTexts } from "@/lib/actions/assignment";
-import {
-  assignmentTextsSchema,
-  type AssignmentTextsValues,
-} from "@/lib/actions/assignment-texts.schema";
+import { type AssignmentTextsValues } from "@/lib/actions/assignment-texts.schema";
 import type { AssignmentSettings } from "@/lib/api/assignment-edit";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -54,7 +51,10 @@ export function AssignmentTextsForm({ assignment }: { assignment: AssignmentSett
     AssignmentTextsValues,
     { assignmentId: string }
   >({
-    schema: assignmentTextsSchema,
+    schema: () =>
+      import("@/lib/actions/assignment-texts.schema").then(
+        (module) => module.assignmentTextsSchema,
+      ),
     defaultValues: { texts: assignment.texts },
     action: (values) => updateAssignmentTexts(assignment.id, assignment.version, values),
     onSuccess: () => {

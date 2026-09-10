@@ -4,7 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateExerciseEnvironments } from "@/lib/actions/exercise-config";
-import { environmentsSchema, type EnvironmentsValues } from "@/lib/actions/exercise-config.schema";
+import type { EnvironmentsValues } from "@/lib/actions/exercise-config.schema";
 import { isStandaloneEnvironment } from "@/lib/exercise-config/environments";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -42,7 +42,8 @@ export function EnvironmentsForm({
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<EnvironmentsValues, { count: number }>({
-    schema: environmentsSchema,
+    schema: () =>
+      import("@/lib/actions/exercise-config.schema").then((module) => module.environmentsSchema),
     defaultValues: { environments: selected },
     action: (values) => updateExerciseEnvironments(exerciseId, values),
     onSuccess: () => {

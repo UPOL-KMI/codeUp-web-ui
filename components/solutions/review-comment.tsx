@@ -5,10 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { deleteReviewComment, updateReviewComment } from "@/lib/actions/solution-review";
-import {
-  reviewCommentSchema,
-  type ReviewCommentValues,
-} from "@/lib/actions/solution-review.schema";
+import { type ReviewCommentValues } from "@/lib/actions/solution-review.schema";
 import type { ReviewComment } from "@/lib/api/solution-review";
 import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
 import type { ActionResult } from "@/lib/forms/action-result";
@@ -64,7 +61,8 @@ export function ReviewCommentForm({
   const textId = useId();
 
   const { form, onSubmit, isPending } = useServerActionForm<ReviewCommentValues, { id: string }>({
-    schema: reviewCommentSchema,
+    schema: () =>
+      import("@/lib/actions/solution-review.schema").then((module) => module.reviewCommentSchema),
     defaultValues: {
       text: defaultValues?.text ?? "",
       issue: defaultValues?.issue ?? false,

@@ -4,8 +4,8 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateExercise } from "@/lib/actions/exercise";
-import { DIFFICULTIES, type ExerciseSettingsValues } from "@/lib/actions/exercise.schema";
-import { exerciseSettingsSchema } from "@/lib/actions/exercise.schema";
+import type { ExerciseSettingsValues } from "@/lib/actions/exercise.schema";
+import { DIFFICULTIES } from "@/lib/exercises/difficulty";
 import type { ExerciseDetail } from "@/lib/api/exercise-detail";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -50,7 +50,8 @@ export function ExerciseForm({
 
   const { form, onSubmit, isPending } = useServerActionForm<ExerciseSettingsValues, { id: string }>(
     {
-      schema: exerciseSettingsSchema,
+      schema: () =>
+        import("@/lib/actions/exercise.schema").then((module) => module.exerciseSettingsSchema),
       defaultValues: {
         version: exercise.version,
         texts: editedLocales.map((locale) => {

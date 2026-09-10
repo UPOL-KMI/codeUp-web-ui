@@ -8,10 +8,7 @@ import {
   submitSolution,
   type SubmittedSolution,
 } from "@/lib/actions/submit-solution";
-import {
-  submitSolutionSchema,
-  type SubmitSolutionValues,
-} from "@/lib/actions/submit-solution.schema";
+import { type SubmitSolutionValues } from "@/lib/actions/submit-solution.schema";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import type { UploadedFile } from "@/lib/upload/chunked-upload";
 
@@ -64,7 +61,8 @@ export function SubmitForm({
     SubmitSolutionValues,
     SubmittedSolution
   >({
-    schema: submitSolutionSchema,
+    schema: () =>
+      import("@/lib/actions/submit-solution.schema").then((module) => module.submitSolutionSchema),
     defaultValues: { files: [], runtimeEnvironmentId: "", note: "" },
     action: (values) => submitSolution(assignmentId, values),
     // The monitor channel travels in the URL because that is the only place it can: core-api

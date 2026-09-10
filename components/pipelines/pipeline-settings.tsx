@@ -9,7 +9,7 @@ import {
   updatePipelineEnvironments,
   updatePipelineSettings,
 } from "@/lib/actions/pipeline";
-import { PIPELINE_PARAMETERS } from "@/lib/actions/pipeline.schema";
+import { PIPELINE_PARAMETERS } from "@/lib/pipelines/parameters";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";

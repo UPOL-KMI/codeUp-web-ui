@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { changePassword } from "@/lib/actions/account";
-import { passwordSchema, type PasswordValues } from "@/lib/actions/account.schema";
+import type { PasswordValues } from "@/lib/actions/account.schema";
 import {
   createLocalLogin,
   invalidateUserTokens,
@@ -59,7 +59,7 @@ export function AdminPasswordForm({ account }: { account: AccountSettings }) {
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<PasswordValues, { userId: string }>({
-    schema: passwordSchema,
+    schema: () => import("@/lib/actions/account.schema").then((module) => module.passwordSchema),
     defaultValues: { oldPassword: "", password: "", passwordConfirm: "" },
     action: (values) => changePassword(account.id, { ...values, oldPassword: "" }),
     onSuccess: () => {

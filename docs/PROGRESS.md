@@ -4796,15 +4796,17 @@ A`, path and all, so that name is the seed's own doing. What is actually wrong i
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-011** -- mailing the whole class, the last of the ranked teacher controls.
-  **G-007 is done**, and with it the last of the rank-9 group but G-011: an assignment now carries
-  its own text, overridable for one class, with the warning that a re-sync silently replaces it.
-  Then the rest of the G block in the order `BACKLOG.md` lists it -- what is left is the pipeline
-  trio (G-015 files, G-017 import/export), the restricted-token form (G-020), and the smaller
-  controls (G-012, G-019, G-022, G-023, G-025, G-026, G-028, G-030). **G-031b, G-031, G-021 and
-  G-016 went with G-007** in the same session: a difficulty that rendered a message key, the FAQ
-  unreachable from inside the app, "sign out everywhere" that only an administrator could do to
-  you, and a pipeline that could only be made by copying one.
+- **Next ticket: none.** As of 2026-09-10 **every G row and every PF row is closed**, and the
+  ranking `RETROSPECTIVE.md` §6 filed is exhausted. The last six to land were G-026 and G-030 (the
+  end of the parity block), then PF-002, PF-005, PF-003 and PF-004 (the end of the measured
+  performance block). What is left in `BACKLOG.md` is **X-001**, the GitHub Classroom importer,
+  filed on the operator's question and deliberately not started, and **F-028**, which waits on
+  upstream releases rather than on a session.
+  **One thing is owed before this state is believed: PF-004's e2e run.** The local core-api, and
+  the Docker daemon with it, stopped responding partway through that ticket's suite run -- so it
+  has `typecheck`, `lint`, `format`, `build`, 250 unit tests and four measured production builds
+  behind it, and **not** a full `pnpm test:e2e`. Everything that ran before the stack went down
+  passed, including the two specs that exercise it most directly. Run the suite first thing.
   **Two things to carry into that work rather than rediscover.** First, each of Phase 7's passes is a
   snapshot: a screen built for G-001 will not have been contrast-checked, will not have a `<title>`,
   and will not have had its Czech read, so apply those rules while building instead of re-running the
@@ -5200,3 +5202,37 @@ An **85–90% cut**, and the document completes no later than it did: the shell'
 **Two specs failed on the full run and passed alone, and the pair is worth one note rather than two.** `landing.spec.ts` looking for the instance name on `/` (the third sighting, cause already recorded under PF-005) and **PF-005's own new refusal test**, which rendered the error boundary instead of the Not found page. That second one is not purely environmental and is an **amendment to PF-005**: with the breadcrumb chain resolved sequentially, `resolveBreadcrumbs` finished — and its `notFound()` was thrown — before `ProfileView` issued a single read. Concurrently the two race, so a core-api that is slow enough to fail the profile read can surface a transport error where the reader used to get Not found. It is the same trade that row records ("a crumb that would have been refused no longer stops the later ones being issued"), one consequence further on: under load the _answer_ can change, not only the number of requests. Both specs pass on their own every time, and the fix is not in this app.
 
 **Next ticket:** **PF-004**, the last open row in the project. It is not an implementation ticket yet: Zod 4 classic is not tree-shakable through the `z` namespace, so the two ways out are moving validation server-side (losing instant client feedback) or replacing the resolver — a decision before a change, which is what that row asks for.
+
+---
+
+### 2026-09-10 — PF-004: Zod's runtime is the largest client chunk
+
+**Ticket:** PF-004
+**Status:** done — **but its e2e verification is owed**, see the end of this entry
+
+**What was built:** `lib/forms/use-server-action-form.ts` (a schema _loader_ and a lazy resolver), the eighteen call sites that pass one, `lib/exercises/difficulty.ts` and `lib/pipelines/parameters.ts`, and **DEC-132**. **With this every G and PF row in the backlog is closed.**
+
+**This row asked for a decision before an implementation, and the answer is neither of the two options it named.** Both were weighed rather than dismissed:
+
+- **Move validation server-side.** Removes Zod from the client outright, and costs the instant feedback eighteen forms are built on — a password mismatch, a second deadline before the first, "fill in the text, or give an address where it can be read". The brief chose "React Hook Form + Zod (shared schema)" for exactly that feedback, and every one of those messages would become a round trip.
+- **Rewrite the schemas in `zod/mini`.** Keeps the feedback and does cut the runtime — and costs twenty schema modules rewritten into a functional API. Readability is load-bearing in those files: each one carries core-api's own rules in prose beside the rule it restates.
+
+**Neither is necessary, because what this row measured is _when_ Zod loads, not that it loads.** A schema imported from a `"use client"` form is in that route's initial chunk group, so the page waits for 52 kB of it before painting. `useServerActionForm` now takes `() => import("./thing.schema").then((m) => m.thing)`: the specifier stays static so the bundler still splits it, the form imports only the _type_ (erased), and the resolver awaits the loader. **Nothing about when validation runs changes** — the resolver is always present and always used; it just fetches its chunk the first time, and a `useEffect` warms it on mount, so it is there long before anybody has typed a field.
+
+**Measured on real builds, initial script set per route:**
+
+| route              | raw before | raw after | brotli before | brotli after |
+| ------------------ | ---------- | --------- | ------------- | ------------ |
+| `/profile/edit`    | 1,040,718  | 753,819   | 258,602       | 205,501      |
+| `/system-messages` | 1,036,362  | 749,704   | 258,028       | 204,984      |
+| `/admin/instances` | 1,028,376  | 741,893   | 256,325       | 203,333      |
+| `/exercises`       | 678,583    | 678,583   | 183,307       | 183,307      |
+| `/dashboard`       | 688,510    | 688,510   | 186,258       | 186,258      |
+
+**About a fifth of the JavaScript a form route waited for**, and nothing at all on the routes with no form — which is the shape that says the change did what it claims rather than moving weight around.
+
+**The catch is worth knowing before somebody trips on it.** A schema module may no longer export anything a client component needs as a **value**: one such import anchors the whole runtime again, however carefully the schema itself is loaded. Two already did — `DIFFICULTIES` and `PIPELINE_PARAMETERS` — and both moved to modules of their own, the same shape `lib/api/user-roles.ts` already had for `server-only`.
+
+**What was run, and what was not.** `typecheck`, `lint`, `format`, `build` and 250 unit tests are clean, and the bundle numbers above come from four real production builds. **The full e2e suite could not be completed: the local core-api stopped responding partway through the run and the Docker daemon with it** — `docker ps` hangs, `GET /v1/instances` times out. Everything that ran before the stack went down passed, including the two specs that exercise this change most directly: `account.spec.ts`'s "refuses a new password that was typed differently twice" and `assignment-edit.spec.ts`'s "refuses a language that is named but says nothing" are both **client-side Zod validation through the new lazy resolver**, and both are green. That is good evidence and it is not the suite. **Re-run `pnpm test:e2e` once the stack is back before treating this row as verified.**
+
+**Next ticket:** none open. `X-001` (the GitHub Classroom importer) is filed and deliberately not started; `RETROSPECTIVE.md` §6's ranking is exhausted.

@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { createInstance } from "@/lib/actions/instances";
-import { createInstanceSchema, type CreateInstanceValues } from "@/lib/actions/instances.schema";
+import type { CreateInstanceValues } from "@/lib/actions/instances.schema";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
@@ -30,7 +30,8 @@ export function CreateInstance() {
   const [open, setOpen] = useState(false);
 
   const { form, onSubmit, isPending } = useServerActionForm<CreateInstanceValues, { id: string }>({
-    schema: createInstanceSchema,
+    schema: () =>
+      import("@/lib/actions/instances.schema").then((module) => module.createInstanceSchema),
     defaultValues: { name: "", description: "", isOpen: false },
     action: createInstance,
     onSuccess: (created) => {

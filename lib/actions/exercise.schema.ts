@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DIFFICULTIES } from "@/lib/exercises/difficulty";
+
 /**
  * An exercise's basic settings, shared by the form and the Server Action that re-validates them
  * (T-008). Its own module, apart from the `"use server"` file, per D-004's rule.
@@ -7,12 +9,9 @@ import { z } from "zod";
  * The rules restated here are core-api's own (`ExercisesPresenter::actionUpdateDetail`): the
  * localized texts may not be empty and each entry needs a locale, a name and a text; the two
  * solution limits are whole numbers or nothing at all ("no limit"). Difficulty is a closed set of
- * three, which the API documents as a string and this app refuses to widen.
+ * three, which the API documents as a string and this app refuses to widen -- the list itself
+ * lives in `lib/exercises/difficulty.ts`, so a form can read it without pulling Zod in (PF-004).
  */
-export const DIFFICULTIES = ["easy", "medium", "hard"] as const;
-
-export type Difficulty = (typeof DIFFICULTIES)[number];
-
 export const exerciseTextSchema = z.object({
   locale: z.string().min(2),
   name: z.string().trim(),
