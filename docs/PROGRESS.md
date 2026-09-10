@@ -5225,3 +5225,33 @@ A unit test caught `paletteCss` deduplicating by **rule text** instead of by **c
 **What was run:** all five CI commands green, 263 unit tests (7 new).
 
 **Next ticket:** **PF-004** — Zod's runtime, 17% of all client JS. Its own row says it "needs a decision before an implementation", and that decision is a UX trade rather than a technical one, so it is the next thing to put to the operator rather than to start.
+
+---
+
+### 2026-09-10 — PF-004: Zod's runtime is the largest client chunk
+
+**Ticket:** PF-004  
+**Status:** done. **With it every measured performance item is closed**, and the only thing left in the backlog is X-001, which is an idea rather than a ticket.
+
+**The row offered two ways out and both were bad; there was a third it did not know about.** It said "move validation server-side and lose instant client feedback, or replace the resolver", and put the decision to the operator because that is a UX trade. The answer is **`zod/mini`, already present inside the installed Zod 4.4.3** — the same validation engine behind a tree-shakable function API. Client-side validation is _kept_, no dependency was added beyond the types-only `@standard-schema/spec`, and the brief's stated stack is unchanged.
+
+**Measured before committing to the rewrite, which is what the operator asked for.** An esbuild probe of exactly the constructs these 20 schema files use — every `z.*` and every chained method, counted first — came out at **327,715 raw / 54,134 brotli for classic against 23,260 / 6,641 for mini**. The classic figure landed within 15% of the real chunk, which is what made the probe worth trusting. A first pass at estimating from `node_modules` file sizes had suggested a much smaller win and was wrong, because it counted `v4/core` (220 kB, shared by both variants) as unavoidable — the point of mini is that the core _is_ shakeable when reached through functions rather than methods. Worth remembering: for a tree-shaking question, file sizes are not evidence.
+
+**Delivered, against the real build:**
+
+|                   | raw        | brotli     |
+| ----------------- | ---------- | ---------- |
+| the classic chunk | 283,397    | 52,108     |
+| the mini chunk    | **45,031** | **10,900** |
+
+**41 kB brotli off twelve of forty-six routes, and total client JS 1,834,168 → 1,593,673 raw (−13.1%).** No chunk carries `ZodCIDRv6` or `ZodJWT` any more, which is how the row identified the waste in the first place.
+
+**`useServerActionForm` no longer names a validator.** It takes a `StandardSchemaV1` and uses `standardSchemaResolver`; mini exposes `~standard` (v1, vendor `zod`), so that file changed by one import and one cast comment. `@standard-schema/spec` had to be _declared_ rather than used transitively — pnpm's strict `node_modules` is the reason the brief chose it, and a phantom dependency here would have been exactly what it exists to prevent.
+
+**What the conversion actually cost, and where it tried to go wrong.** Twenty files, mechanical, and `typecheck` caught every single miss: eleven unbalanced parens where a wrapped `superRefine` opened two brackets and the old closer shut one, one file whose two **chained** `.refine()`s had to become a single `.check(a, b)` (chaining them produced nested nonsense), and three nested or multi-line chains a line-oriented rewrite could not see. **The real trap is `.min`/`.max`**: they mean `minLength` on a string or an array and `minimum` on a number, and only the base type says which — a converter that guessed would have silently changed what every numeric field accepts. `lib/actions/group-settings.schema.test.ts` was written **before** converting anything, to pin trimming, both numeric bounds and all three custom refinements, because a check attached to the wrong node typechecks perfectly and fails only in front of a user.
+
+**Verified live where it matters.** The two specs that assert _client-side_ validation both pass: `group-create`'s "refuses the name that is blank in every language, without asking core-api" and `account`'s mismatched-password test. `group-settings.spec.ts` fails three tests, and those are the half-seeded instance rather than this change — confirmed the same way as before, by stashing the work and re-running them against the committed code, where they fail identically.
+
+**All five CI checks green, 270 unit tests (7 new).**
+
+**Next:** nothing measured remains. **X-001** (the GitHub Classroom importer) is the only open item and is an _idea_ — it is beyond parity, the operator asked about it, and its own write-up says it waits until the sweep has said what is finished. The sweep has now said so: every G ticket and every PF ticket is closed.

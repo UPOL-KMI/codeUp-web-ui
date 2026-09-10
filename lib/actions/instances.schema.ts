@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * What an administrator types about an instance and its licences (AD-004/AD-008). Its own module
@@ -11,17 +11,17 @@ import { z } from "zod";
  * else moves the date.
  */
 export const createInstanceSchema = z.object({
-  name: z.string().trim().min(2, "tooShort"),
-  description: z.string().trim(),
+  name: z.string().check(z.trim(), z.minLength(2, "tooShort")),
+  description: z.string().check(z.trim()),
   isOpen: z.boolean(),
 });
 
 export type CreateInstanceValues = z.infer<typeof createInstanceSchema>;
 
 export const licenceSchema = z.object({
-  note: z.string().trim().min(2, "tooShort").max(255, "tooLong"),
+  note: z.string().check(z.trim(), z.minLength(2, "tooShort"), z.maxLength(255, "tooLong")),
   /** `datetime-local`, converted to unix seconds by the action. */
-  validUntil: z.string().min(1, "required"),
+  validUntil: z.string().check(z.minLength(1, "required")),
 });
 
 export type LicenceValues = z.infer<typeof licenceSchema>;

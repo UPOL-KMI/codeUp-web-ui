@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { EXAM_LOCK_TYPES } from "@/lib/status/exam";
 import { fromDateTimeLocal } from "@/lib/format/datetime-local";
@@ -25,18 +25,21 @@ export const EXAM_NOW_TOLERANCE_SECONDS = 60;
 export const examPeriodSchema = z
   .object({
     /** Absent when the exam has already begun -- core-api refuses to move a beginning that has passed. */
-    begin: z.number().int().positive().nullable(),
-    end: z.number().int().positive(),
-    lockType: z.enum(EXAM_LOCK_TYPES).nullable(),
+    begin: z.nullable(z.number().check(z.int(), z.positive())),
+    end: z.number().check(z.int(), z.positive()),
+    lockType: z.nullable(z.enum(EXAM_LOCK_TYPES)),
   })
-  .refine((values) => values.begin === null || values.begin < values.end, {
-    path: ["end"],
-    message: "endBeforeBegin",
-  })
-  .refine((values) => values.begin === null || values.end - values.begin <= EXAM_MAX_SECONDS, {
-    path: ["end"],
-    message: "tooLong",
-  });
+  // Two refinements in one `check`, not two chained `check`s: mini takes them as a list (PF-004).
+  .check(
+    z.refine((values) => values.begin === null || values.begin < values.end, {
+      path: ["end"],
+      message: "endBeforeBegin",
+    }),
+    z.refine((values) => values.begin === null || values.end - values.begin <= EXAM_MAX_SECONDS, {
+      path: ["end"],
+      message: "tooLong",
+    }),
+  );
 
 export type ExamPeriodValues = z.infer<typeof examPeriodSchema>;
 
@@ -60,46 +63,48 @@ export const examFormSchema = z
     end: z.string(),
     lockType: z.enum(EXAM_LOCK_TYPES),
   })
-  .superRefine((values, ctx) => {
-    const begin = values.beginImmediately ? nowSeconds() : fromDateTimeLocal(values.begin);
-    if (begin === null) {
-      ctx.addIssue({ code: "custom", path: ["begin"], message: "beginInvalid" });
-    }
+  .check(
+    z.superRefine((values, ctx) => {
+      const begin = values.beginImmediately ? nowSeconds() : fromDateTimeLocal(values.begin);
+      if (begin === null) {
+        ctx.addIssue({ code: "custom", path: ["begin"], message: "beginInvalid" });
+      }
 
-    const length = values.endRelative ? hoursMinutesToSeconds(values.length) : null;
-    if (values.endRelative && length === null) {
-      ctx.addIssue({ code: "custom", path: ["length"], message: "lengthInvalid" });
-    }
+      const length = values.endRelative ? hoursMinutesToSeconds(values.length) : null;
+      if (values.endRelative && length === null) {
+        ctx.addIssue({ code: "custom", path: ["length"], message: "lengthInvalid" });
+      }
 
-    const end = values.endRelative
-      ? begin !== null && length !== null
-        ? begin + length
-        : null
-      : fromDateTimeLocal(values.end);
-    if (!values.endRelative && end === null) {
-      ctx.addIssue({ code: "custom", path: ["end"], message: "endInvalid" });
-    }
+      const end = values.endRelative
+        ? begin !== null && length !== null
+          ? begin + length
+          : null
+        : fromDateTimeLocal(values.end);
+      if (!values.endRelative && end === null) {
+        ctx.addIssue({ code: "custom", path: ["end"], message: "endInvalid" });
+      }
 
-    if (end !== null && end < nowSeconds() - EXAM_NOW_TOLERANCE_SECONDS) {
-      ctx.addIssue({
-        code: "custom",
-        path: [values.endRelative ? "length" : "end"],
-        message: "endInPast",
-      });
-    }
-
-    if (begin !== null && end !== null) {
-      if (begin >= end) {
-        ctx.addIssue({ code: "custom", path: ["end"], message: "endBeforeBegin" });
-      } else if (end - begin > EXAM_MAX_SECONDS) {
+      if (end !== null && end < nowSeconds() - EXAM_NOW_TOLERANCE_SECONDS) {
         ctx.addIssue({
           code: "custom",
           path: [values.endRelative ? "length" : "end"],
-          message: "tooLong",
+          message: "endInPast",
         });
       }
-    }
-  });
+
+      if (begin !== null && end !== null) {
+        if (begin >= end) {
+          ctx.addIssue({ code: "custom", path: ["end"], message: "endBeforeBegin" });
+        } else if (end - begin > EXAM_MAX_SECONDS) {
+          ctx.addIssue({
+            code: "custom",
+            path: [values.endRelative ? "length" : "end"],
+            message: "tooLong",
+          });
+        }
+      }
+    }),
+  );
 
 export type ExamFormValues = z.infer<typeof examFormSchema>;
 

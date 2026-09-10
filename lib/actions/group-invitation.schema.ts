@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * An invitation link, as the form collects it (T-018). Its own module apart from the
@@ -11,20 +11,22 @@ import { z } from "zod";
  */
 export const invitationSchema = z
   .object({
-    note: z.string().trim().max(1024),
+    note: z.string().check(z.trim(), z.maxLength(1024)),
     /** `datetime-local` value, or empty for a link that never expires. */
     expiresAt: z.string(),
   })
-  .superRefine((values, ctx) => {
-    if (values.expiresAt === "") return;
-    const parsed = Date.parse(values.expiresAt);
-    if (Number.isNaN(parsed)) {
-      ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "invalidDate" });
-      return;
-    }
-    if (parsed <= Date.now()) {
-      ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "pastDate" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      if (values.expiresAt === "") return;
+      const parsed = Date.parse(values.expiresAt);
+      if (Number.isNaN(parsed)) {
+        ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "invalidDate" });
+        return;
+      }
+      if (parsed <= Date.now()) {
+        ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "pastDate" });
+      }
+    }),
+  );
 
 export type InvitationValues = z.infer<typeof invitationSchema>;

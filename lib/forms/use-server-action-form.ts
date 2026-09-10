@@ -3,13 +3,20 @@
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import type { DefaultValues, FieldValues, Path, Resolver, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { ZodType } from "zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import type { ActionResult } from "./action-result";
 
 export interface UseServerActionFormOptions<TFieldValues extends FieldValues, Result> {
-  schema: ZodType<TFieldValues>;
+  /**
+   * Any Standard Schema, which in this repo means a `zod/mini` schema (PF-004).
+   *
+   * Typed against the *spec* rather than against Zod so the resolver never has to care which
+   * validator produced it -- and so the switch from `zod` to `zod/mini`, which cut 45 kB brotli
+   * off twelve routes, needed no change here beyond the import.
+   */
+  schema: StandardSchemaV1<TFieldValues>;
   defaultValues: DefaultValues<TFieldValues>;
   /** The Server Action itself (an imported `"use server"` function) -- called directly as a
    *  function, not via `<form action>`, since React Hook Form already owns form submission. */
@@ -49,8 +56,8 @@ export interface UseServerActionFormResult<TFieldValues extends FieldValues> {
  * **The `schema` passed here cannot live in the same file as the `"use server"` action** -- found
  * live, not from a doc: a `"use server"` file's compiler pass only handles (async) function
  * exports; a plain `z.object(...)` co-located there is silently replaced with something
- * `zodResolver` rejects at runtime ("Invalid input: not a Zod schema", confirmed reproducing and
- * fixing this during D-004's own verification). Put the schema in its own plain module and import
+ * the resolver rejects at runtime ("Invalid input: not a Zod schema", confirmed
+ * reproducing and fixing this during D-004's own verification). Put the schema in its own plain module and import
  * it from both the client form and the action file -- which is what "shared schema" in the brief's
  * own phrasing meant anyway.
  */
@@ -61,13 +68,13 @@ export function useServerActionForm<TFieldValues extends FieldValues, Result>({
   onSuccess,
 }: UseServerActionFormOptions<TFieldValues, Result>): UseServerActionFormResult<TFieldValues> {
   const form = useForm<TFieldValues>({
-    // Cast: TypeScript can't unify zodResolver's own generic constraints with this function's
-    // generic TFieldValues (a known variance limitation when one generic function calls another
-    // through a schema-derived type, not a real runtime mismatch -- schema is ZodType<TFieldValues>
-    // by this function's own signature, so the resolver it produces genuinely does validate into
-    // TFieldValues).
+    // Cast for the same variance limitation the `zodResolver` version had: TypeScript cannot
+    // unify the resolver's own generics with this function's `TFieldValues` when one generic
+    // function calls another through a schema-derived type. `schema` is
+    // `StandardSchemaV1<TFieldValues>` by this function's signature, so what it produces does
+    // validate into `TFieldValues`.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see comment above
-    resolver: zodResolver(schema as any) as unknown as Resolver<TFieldValues>,
+    resolver: standardSchemaResolver(schema as any) as unknown as Resolver<TFieldValues>,
     defaultValues,
   });
   const [isPending, startTransition] = useTransition();

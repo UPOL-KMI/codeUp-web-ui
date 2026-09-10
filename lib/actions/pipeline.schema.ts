@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * What the pipeline editor sends (T-015/T-016). Its own module, not the `"use server"` one, for
@@ -8,19 +8,19 @@ import { z } from "zod";
 const portSchema = z.object({ type: z.string(), value: z.string() });
 
 export const structureSchema = z.object({
-  version: z.number().int(),
+  version: z.number().check(z.int()),
   boxes: z.array(
     z.object({
-      name: z.string().trim().min(1),
-      type: z.string().min(1),
+      name: z.string().check(z.trim(), z.minLength(1)),
+      type: z.string().check(z.minLength(1)),
       portsIn: z.record(z.string(), portSchema),
       portsOut: z.record(z.string(), portSchema),
     }),
   ),
   variables: z.array(
     z.object({
-      name: z.string().trim().min(1),
-      type: z.string().min(1),
+      name: z.string().check(z.trim(), z.minLength(1)),
+      type: z.string().check(z.minLength(1)),
       value: z.union([z.string(), z.array(z.string())]),
     }),
   ),
@@ -40,8 +40,8 @@ export const PIPELINE_PARAMETERS = [
 ] as const;
 
 export const pipelineSettingsSchema = z.object({
-  version: z.number().int(),
-  name: z.string().trim().min(2),
+  version: z.number().check(z.int()),
+  name: z.string().check(z.trim(), z.minLength(2)),
   description: z.string(),
   parameters: z.record(z.string(), z.boolean()),
 });

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * What the configuration screen's three forms send (T-009). Separate from the action file because
@@ -23,21 +23,27 @@ export const testsSchema = z.object({
     .array(
       z.object({
         /** Absent for a test being added; core-api mints the id. */
-        id: z.number().nullable(),
-        name: z.string().trim().min(1).max(64).regex(TEST_NAME_PATTERN),
-        weight: z.number().int().min(0).max(10000),
+        id: z.nullable(z.number()),
+        name: z
+          .string()
+          .check(z.trim(), z.minLength(1), z.maxLength(64), z.regex(TEST_NAME_PATTERN)),
+        weight: z.number().check(z.int(), z.minimum(0), z.maximum(10000)),
       }),
     )
-    .min(1)
-    .refine((tests) => new Set(tests.map((test) => test.name.trim())).size === tests.length, {
-      message: "duplicate",
-    }),
+    .check(
+      z.minLength(1),
+      z.refine(
+        (tests: { name: string }[]) =>
+          new Set(tests.map((test) => test.name.trim())).size === tests.length,
+        { message: "duplicate" },
+      ),
+    ),
 });
 
 export type TestsValues = z.infer<typeof testsSchema>;
 
 export const environmentsSchema = z.object({
-  environments: z.array(z.string()).min(1),
+  environments: z.array(z.string()).check(z.minLength(1)),
 });
 
 export type EnvironmentsValues = z.infer<typeof environmentsSchema>;

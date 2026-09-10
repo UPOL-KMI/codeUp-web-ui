@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { DATE_FORMAT_LOCALES, DEFAULT_PAGES } from "@/lib/api/ui-preferences";
 
@@ -12,11 +12,11 @@ import { DATE_FORMAT_LOCALES, DEFAULT_PAGES } from "@/lib/api/ui-preferences";
  * learn something the form already knows.
  */
 export const profileSchema = z.object({
-  titlesBeforeName: z.string().trim().max(64),
-  firstName: z.string().trim().min(2, "tooShort"),
-  lastName: z.string().trim().min(2, "tooShort"),
-  titlesAfterName: z.string().trim().max(64),
-  email: z.string().trim().email("invalidEmail"),
+  titlesBeforeName: z.string().check(z.trim(), z.maxLength(64)),
+  firstName: z.string().check(z.trim(), z.minLength(2, "tooShort")),
+  lastName: z.string().check(z.trim(), z.minLength(2, "tooShort")),
+  titlesAfterName: z.string().check(z.trim(), z.maxLength(64)),
+  email: z.string().check(z.trim(), z.email("invalidEmail")),
   gravatarUrlEnabled: z.boolean(),
 });
 
@@ -26,18 +26,20 @@ export const passwordSchema = z
   .object({
     /** Empty is allowed only for an account whose local password has never been set. */
     oldPassword: z.string(),
-    password: z.string().min(1, "required"),
-    passwordConfirm: z.string().min(1, "required"),
+    password: z.string().check(z.minLength(1, "required")),
+    passwordConfirm: z.string().check(z.minLength(1, "required")),
   })
-  .refine((values) => values.password === values.passwordConfirm, {
-    path: ["passwordConfirm"],
-    message: "mismatch",
-  });
+  .check(
+    z.refine((values) => values.password === values.passwordConfirm, {
+      path: ["passwordConfirm"],
+      message: "mismatch",
+    }),
+  );
 
 export type PasswordValues = z.infer<typeof passwordSchema>;
 
 export const settingsSchema = z.object({
-  defaultLanguage: z.string().min(2),
+  defaultLanguage: z.string().check(z.minLength(2)),
   flags: z.record(z.string(), z.boolean()),
 });
 

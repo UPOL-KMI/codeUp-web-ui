@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * An assignment's settings, as the form collects them and the Server Action re-validates them
@@ -19,41 +19,43 @@ export const assignmentSettingsSchema = z
     isExam: z.boolean(),
     /** Empty means visible as soon as it is public. */
     visibleFrom: z.string(),
-    firstDeadline: z.string().min(1, "required"),
-    maxPointsFirst: z.number().int().min(0),
+    firstDeadline: z.string().check(z.minLength(1, "required")),
+    maxPointsFirst: z.number().check(z.int(), z.minimum(0)),
     allowSecondDeadline: z.boolean(),
     secondDeadline: z.string(),
-    maxPointsSecond: z.number().int().min(0),
+    maxPointsSecond: z.number().check(z.int(), z.minimum(0)),
     interpolatePoints: z.boolean(),
-    pointsThreshold: z.number().int().min(0).max(100),
-    submissionsCountLimit: z.number().int().min(1),
-    solutionFilesLimit: z.number().int().min(1).nullable(),
-    solutionSizeLimit: z.number().int().min(1).nullable(),
+    pointsThreshold: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
+    submissionsCountLimit: z.number().check(z.int(), z.minimum(1)),
+    solutionFilesLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
+    solutionSizeLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
     disabledEnvironments: z.array(z.string()),
     canViewLimitRatios: z.boolean(),
     canViewMeasuredValues: z.boolean(),
     canViewJudgeStdout: z.boolean(),
     canViewJudgeStderr: z.boolean(),
-    hints: z.array(z.object({ locale: z.string().min(2), hint: z.string() })),
+    hints: z.array(z.object({ locale: z.string().check(z.minLength(2)), hint: z.string() })),
     /** Only meaningful while the assignment is becoming public for the first time. */
     sendNotification: z.boolean(),
   })
-  .superRefine((values, ctx) => {
-    if (Number.isNaN(Date.parse(values.firstDeadline))) {
-      ctx.addIssue({ code: "custom", path: ["firstDeadline"], message: "invalidDate" });
-    }
-    if (values.visibleFrom !== "" && Number.isNaN(Date.parse(values.visibleFrom))) {
-      ctx.addIssue({ code: "custom", path: ["visibleFrom"], message: "invalidDate" });
-    }
-    if (!values.allowSecondDeadline) return;
+  .check(
+    z.superRefine((values, ctx) => {
+      if (Number.isNaN(Date.parse(values.firstDeadline))) {
+        ctx.addIssue({ code: "custom", path: ["firstDeadline"], message: "invalidDate" });
+      }
+      if (values.visibleFrom !== "" && Number.isNaN(Date.parse(values.visibleFrom))) {
+        ctx.addIssue({ code: "custom", path: ["visibleFrom"], message: "invalidDate" });
+      }
+      if (!values.allowSecondDeadline) return;
 
-    if (values.secondDeadline === "" || Number.isNaN(Date.parse(values.secondDeadline))) {
-      ctx.addIssue({ code: "custom", path: ["secondDeadline"], message: "required" });
-      return;
-    }
-    if (Date.parse(values.secondDeadline) <= Date.parse(values.firstDeadline)) {
-      ctx.addIssue({ code: "custom", path: ["secondDeadline"], message: "beforeFirst" });
-    }
-  });
+      if (values.secondDeadline === "" || Number.isNaN(Date.parse(values.secondDeadline))) {
+        ctx.addIssue({ code: "custom", path: ["secondDeadline"], message: "required" });
+        return;
+      }
+      if (Date.parse(values.secondDeadline) <= Date.parse(values.firstDeadline)) {
+        ctx.addIssue({ code: "custom", path: ["secondDeadline"], message: "beforeFirst" });
+      }
+    }),
+  );
 
 export type AssignmentSettingsValues = z.infer<typeof assignmentSettingsSchema>;

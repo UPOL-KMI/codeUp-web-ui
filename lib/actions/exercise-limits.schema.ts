@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * What the limits screen sends (T-010). Numbers travel as the strings they were typed as and are
@@ -13,7 +13,7 @@ export const hardwareGroupsSchema = z.object({
 export type HardwareGroupsValues = z.infer<typeof hardwareGroupsSchema>;
 
 export const limitsSchema = z.object({
-  hardwareGroupId: z.string().min(1),
+  hardwareGroupId: z.string().check(z.minLength(1)),
   preciseTime: z.boolean(),
   cells: z.record(
     z.string(),

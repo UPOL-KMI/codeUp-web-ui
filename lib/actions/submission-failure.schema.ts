@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * Resolving a submission failure (T-019), shared by the dialog and the Server Action that
@@ -8,7 +8,7 @@ import { z } from "zod";
  * so the reader is told before the round trip, not instead of it.
  */
 export const resolveFailureSchema = z.object({
-  note: z.string().trim().max(255),
+  note: z.string().check(z.trim(), z.maxLength(255)),
   sendEmail: z.boolean(),
 });
 

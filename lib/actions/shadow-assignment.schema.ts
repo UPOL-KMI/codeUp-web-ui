@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * A shadow assignment's own settings (G-009), as the form collects them and the Server Action
@@ -16,30 +16,34 @@ import { z } from "zod";
  * texts given" rule reached before it has to answer it.
  */
 export const shadowTextSchema = z.object({
-  locale: z.string().min(2),
-  name: z.string().trim(),
+  locale: z.string().check(z.minLength(2)),
+  name: z.string().check(z.trim()),
   text: z.string(),
-  link: z
-    .string()
-    .trim()
-    .refine((value) => value === "" || /^https?:\/\/\S+$/i.test(value), { message: "badLink" }),
+  link: z.string().check(
+    z.trim(),
+    z.refine((value: string) => value === "" || /^https?:\/\/\S+$/i.test(value), {
+      message: "badLink",
+    }),
+  ),
 });
 
 export const shadowAssignmentSchema = z
   .object({
-    texts: z.array(shadowTextSchema).min(1),
-    maxPoints: z.number().int().min(0),
+    texts: z.array(shadowTextSchema).check(z.minLength(1)),
+    maxPoints: z.number().check(z.int(), z.minimum(0)),
     isBonus: z.boolean(),
     isPublic: z.boolean(),
     /** Unix seconds, or null for "no deadline" -- which core-api treats as the same thing. */
-    deadline: z.number().int().nullable(),
+    deadline: z.nullable(z.number().check(z.int())),
     /** core-api defaults this to true when the field is absent, so it is always sent. */
     sendNotification: z.boolean(),
   })
-  .superRefine((values, ctx) => {
-    if (!values.texts.some((text) => text.name.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      if (!values.texts.some((text) => text.name.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
+      }
+    }),
+  );
 
 export type ShadowAssignmentValues = z.infer<typeof shadowAssignmentSchema>;

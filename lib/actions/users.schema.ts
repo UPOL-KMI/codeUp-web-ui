@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { USER_ROLES } from "@/lib/api/user-roles";
 
@@ -14,18 +14,20 @@ import { USER_ROLES } from "@/lib/api/user-roles";
  */
 export const createUserSchema = z
   .object({
-    firstName: z.string().trim().min(2, "tooShort"),
-    lastName: z.string().trim().min(2, "tooShort"),
-    email: z.string().trim().email("invalidEmail"),
-    password: z.string().min(1, "required"),
-    passwordConfirm: z.string().min(1, "required"),
+    firstName: z.string().check(z.trim(), z.minLength(2, "tooShort")),
+    lastName: z.string().check(z.trim(), z.minLength(2, "tooShort")),
+    email: z.string().check(z.trim(), z.email("invalidEmail")),
+    password: z.string().check(z.minLength(1, "required")),
+    passwordConfirm: z.string().check(z.minLength(1, "required")),
     /** Sent on the second attempt, once the administrator has seen who else has that name. */
     ignoreNameCollision: z.boolean(),
   })
-  .refine((values) => values.password === values.passwordConfirm, {
-    path: ["passwordConfirm"],
-    message: "mismatch",
-  });
+  .check(
+    z.refine((values) => values.password === values.passwordConfirm, {
+      path: ["passwordConfirm"],
+      message: "mismatch",
+    }),
+  );
 
 export type CreateUserValues = z.infer<typeof createUserSchema>;
 
