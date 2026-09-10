@@ -32,7 +32,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages.types",
     "Toast",
   ],
-  "/accept-invitation": ["AcceptInvitation", "Error", "Nav.locale", "Toast"],
+  "/accept-invitation": ["AcceptInvitation", "Consent", "Error", "Nav.locale", "Toast"],
   "/admin": [
     "Dialog",
     "Error",
@@ -422,7 +422,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages.types",
     "Toast",
   ],
-  "/register": ["Error", "Nav.locale", "Register", "Toast"],
+  "/register": ["Consent", "Error", "Nav.locale", "Register", "Toast"],
   "/shadow-assignments/[shadowId]": [
     "Dialog",
     "Error",

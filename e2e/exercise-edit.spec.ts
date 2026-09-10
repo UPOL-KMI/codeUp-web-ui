@@ -165,7 +165,10 @@ test("previews an exercise text through the renderer a student will see", async 
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
   expect(trackExercise(page.url())).not.toBeNull();
 
-  const field = main.locator("#\\texts\\.0\\.text");
+  // Rooted at `page`, not at `main`: this locator is also used as `has:` below, and Playwright
+  // re-queries an inner locator's whole selector chain *relative to the outer element* -- a chain
+  // beginning with `main` matches nothing inside a tab panel.
+  const field = page.locator("#\\texts\\.0\\.text");
   await field.fill("## Sort it\n\nGiven $n$ numbers.\n\n<script>alert(1)</script>");
 
   // The tabs belong to this field, not to the second locale's -- scoped through the panel the

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import { ConsentCheckbox } from "@/components/auth/consent-checkbox";
 
 /**
  * Setting the password that finishes an emailed invitation (S-024).
@@ -16,12 +17,23 @@ import { useRouter } from "@/i18n/navigation";
  *
  * The two passwords are compared here *and* by core-api (`400-102`). The local check is not the
  * authority; it is what stops a typo from costing a round trip.
+ *
+ * **The consent tick is asked here as well as on the registration form, which the legacy app does
+ * not do** (G-026, DEC-129). This submit is what creates the account:
+ * `RegistrationPresenter::actionAcceptInvitation` looks the address up and, finding no login,
+ * builds the `User` entity on the spot. The teacher who sent the invitation typed the name; the
+ * person reading this page is the one whose data it is, and this screen is the first time they are
+ * asked anything at all. Where a login already exists the call only signs them in and enrols them,
+ * and this page cannot tell the two apart -- so the tick is asked of a returning reader too, which
+ * is the cheaper of the two mistakes.
  */
 export function AcceptInvitationForm({ token }: { token: string }) {
   const t = useTranslations("AcceptInvitation");
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [consentMissing, setConsentMissing] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +44,10 @@ export function AcceptInvitationForm({ token }: { token: string }) {
     event.preventDefault();
     if (password !== passwordConfirm) {
       setError(t("errors.mismatch"));
+      return;
+    }
+    if (!consent) {
+      setConsentMissing(true);
       return;
     }
 
@@ -82,6 +98,15 @@ export function AcceptInvitationForm({ token }: { token: string }) {
           className={input}
         />
       </label>
+
+      <ConsentCheckbox
+        checked={consent}
+        onChange={(value) => {
+          setConsent(value);
+          if (value) setConsentMissing(false);
+        }}
+        error={consentMissing}
+      />
 
       {error && (
         <p

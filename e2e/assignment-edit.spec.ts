@@ -5,6 +5,15 @@ import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 
 /**
+ * Every test in this file edits **the same seeded assignment**, and every save core-api accepts
+ * carries its optimistic lock and increments it -- so two of them running side by side refuse each
+ * other with `400-010`. The config's `fullyParallel` would do exactly that; `mode: "default"` runs
+ * this file's tests one after another instead. Found the hard way: G-007's two saving tests passed
+ * the first time and raced on the next run, on an assignment already at version 147.
+ */
+test.describe.configure({ mode: "default" });
+
+/**
  * An assignment's settings (T-002).
  *
  * Every change here is put back before the test ends, so the seeded assignment every other spec

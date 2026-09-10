@@ -42,9 +42,9 @@ test("shows who was invited, and asks only for a password", async ({ page }) => 
   await expect(main.getByLabel("Password", { exact: true })).toBeVisible();
   await expect(main.getByRole("button", { name: "Create the account and sign in" })).toBeEnabled();
   // The invited person's own details are stated, not offered for editing: core-api put them in
-  // the token, and the only inputs on the page are the two passwords.
-  await expect(main.locator("input")).toHaveCount(2);
-  await expect(main.locator('input:not([type="password"])')).toHaveCount(0);
+  // the token, and the only things to fill in are the two passwords and G-026's consent tick.
+  await expect(main.locator("input")).toHaveCount(3);
+  await expect(main.locator('input:not([type="password"]):not([type="checkbox"])')).toHaveCount(0);
 });
 
 test("catches two different passwords before asking core-api", async ({ page }) => {
@@ -56,6 +56,32 @@ test("catches two different passwords before asking core-api", async ({ page }) 
   await main.getByRole("button", { name: "Create the account and sign in" }).click();
 
   await expect(main.getByRole("alert")).toHaveText("The two passwords do not match.");
+});
+
+test("will not create the account until the data-processing tick is given", async ({ page }) => {
+  // G-026. This submit is what creates the account -- actionAcceptInvitation builds the User
+  // entity when it finds no login for the address -- so the consent is asked here as well as on
+  // the registration form, which the legacy app does not do (DEC-129).
+  await page.goto(`/en/accept-invitation?${invitationFor()}`);
+
+  const main = page.getByRole("main");
+  const consent = main.getByRole("checkbox");
+  await expect(consent).not.toBeChecked();
+
+  await main.getByLabel("Password", { exact: true }).fill("a-good-password");
+  await main.getByLabel("Password again").fill("a-good-password");
+  await main.getByRole("button", { name: "Create the account and sign in" }).click();
+
+  // Nothing was sent: the refusal is beside the box rather than in the form's own alert, and no
+  // session came back.
+  await expect(main.getByRole("alert")).toHaveText(
+    "Your agreement is needed before an account can be created.",
+  );
+  expect(await page.context().cookies()).toEqual([]);
+
+  // Ticking it clears the refusal without a second submit.
+  await consent.check();
+  await expect(main.getByRole("alert")).toHaveCount(0);
 });
 
 test("offers no form once the invitation has expired", async ({ page }) => {

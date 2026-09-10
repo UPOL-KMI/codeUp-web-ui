@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import { ConsentCheckbox } from "./consent-checkbox";
 
 /**
  * Creating an account (A-003).
@@ -21,6 +22,11 @@ import { useRouter } from "@/i18n/navigation";
  *
  * On success the account exists **and is signed in**: core-api returns an access token with the
  * new user, and the route turns it into the session the same way login does.
+ *
+ * **The consent tick is the one field here that exists for a legal reason rather than a functional
+ * one** (G-026), and it goes nowhere: core-api has no field for it, so it gates the request the
+ * way the legacy form does. Unlike the three conditions that disable the button, it answers with a
+ * sentence -- a reader who has not ticked it needs to be told which box, not handed a dead button.
  */
 export function RegisterForm({ instances }: { instances: { id: string; name: string }[] }) {
   const t = useTranslations("Register");
@@ -36,6 +42,8 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
   const [emailIsFree, setEmailIsFree] = useState<boolean | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [collision, setCollision] = useState<string[] | null>(null);
+  const [consent, setConsent] = useState(false);
+  const [consentMissing, setConsentMissing] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +69,10 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
 
   async function submit(event: React.FormEvent, ignoreNameCollision = false) {
     event.preventDefault();
+    if (!consent) {
+      setConsentMissing(true);
+      return;
+    }
     setPending(true);
     setError(null);
 
@@ -232,6 +244,15 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
           </select>
         </label>
       )}
+
+      <ConsentCheckbox
+        checked={consent}
+        onChange={(value) => {
+          setConsent(value);
+          if (value) setConsentMissing(false);
+        }}
+        error={consentMissing}
+      />
 
       <button
         type="submit"

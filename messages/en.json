@@ -117,6 +117,10 @@
       "mismatch": "The two passwords differ."
     }
   },
+  "Consent": {
+    "agree": "I agree that my personal data will be processed by ReCodEx in accordance with its GDPR policy.",
+    "required": "Your agreement is needed before an account can be created."
+  },
   "ForgotPassword": {
     "title": "Reset password",
     "explain": "Give the address you sign in with and we will send a link that lets you choose a new password.",

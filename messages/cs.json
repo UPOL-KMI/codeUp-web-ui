@@ -117,6 +117,10 @@
       "mismatch": "Hesla se neshodují."
     }
   },
+  "Consent": {
+    "agree": "Souhlasím se zpracováním osobních údajů systémem ReCodEx v souladu s jeho zásadami podle GDPR.",
+    "required": "Bez vašeho souhlasu nelze účet vytvořit."
+  },
   "ForgotPassword": {
     "title": "Obnovení hesla",
     "explain": "Zadejte adresu, kterou se přihlašujete, a pošleme vám odkaz, kterým si zvolíte nové heslo.",
