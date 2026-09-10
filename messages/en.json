@@ -2883,7 +2883,8 @@
       "errors": {
         "failed": "They could not be run again."
       }
-    }
+    },
+    "downloadBest": "Download everyone’s best"
   },
   "GroupUserSolutions": {
     "title": "Submissions in this group",

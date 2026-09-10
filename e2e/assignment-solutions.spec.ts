@@ -70,6 +70,37 @@ test("filters and sorts without leaving the URL behind", async ({ page }) => {
   await expect(main.getByRole("row").filter({ hasText: "Alice Student" })).toHaveCount(0);
 });
 
+test("offers a teacher the class's work as one archive", async ({ page }) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await openSeededAssignment(page);
+  const main = page.getByRole("main");
+  await main.getByRole("link", { name: "All submissions" }).click();
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/solutions$/);
+
+  // The link is offered on `viewAssignmentSolutions` -- the hint that means "may read other
+  // people's attempts" -- rather than on whatever would make the request succeed: core-api gates
+  // the endpoint on the assignment's own `canViewDetail`, which a student holds, and then filters
+  // the archive's contents per student. A student would get an archive of their own work, which is
+  // not what this button offers (G-006).
+  const download = main.getByRole("link", { name: "Download everyone’s best" });
+  await expect(download).toHaveAttribute(
+    "href",
+    /^\/api\/assignments\/[0-9a-f-]+\/best-solutions$/,
+  );
+
+  // What comes back cannot be asserted as a ZIP here: "the best solution" is decided by points and
+  // no evaluation on this host produces any (DEC-031), so core-api builds no archive and answers
+  // `Content-Length: 0`. The app turns that into an honest refusal rather than a nought-byte file.
+  const response = await page.request.get((await download.getAttribute("href"))!);
+  expect([200, 409]).toContain(response.status());
+  if (response.status() === 409) {
+    expect(await response.json()).toMatchObject({ error: "There is nothing to download." });
+  } else {
+    expect(response.headers()["content-type"]).toContain("zip");
+  }
+});
+
 test("opens the solution behind a row", async ({ page }) => {
   const cookie = await loginAndGetCookie(SUPERADMIN);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);

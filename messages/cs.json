@@ -2883,7 +2883,8 @@
       "errors": {
         "failed": "Řešení se nepodařilo spustit znovu."
       }
-    }
+    },
+    "downloadBest": "Stáhnout nejlepší od všech"
   },
   "GroupUserSolutions": {
     "title": "Odevzdání v této skupině",

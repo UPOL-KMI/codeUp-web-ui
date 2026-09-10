@@ -1611,6 +1611,29 @@ server logs a`MISSING_MESSAGE` per row. Filed as **G-031b** rather than fixed he
     two call sites and its own sentence.
   - _Observations:_ **291 e2e tests pass** (289 before), 5 of them in that file (4 before).
 
+- **[2026-09-10 04:00] G-006:** A class's work, offline, in one archive.
+  `app/api/assignments/[assignmentId]/best-solutions/route.ts`, T-003's screen,
+  `lib/http/stream-download.ts`, `e2e/assignment-solutions.spec.ts`.
+  - **_The hint the button is offered on is not the one core-api checks, and that is deliberate._**
+    `checkDownloadBestSolutionsArchive` tests the assignment's own `canViewDetail`, which a student
+    holds for their own assignment; the archive's _contents_ are then filtered per student
+    (`canViewSubmissions` plus each solution's `canViewDetail`). So a student calling it meets no
+    403 -- they get an archive of their own work. A button labelled "everyone's best" must therefore
+    be gated on `viewAssignmentSolutions`, the hint that means "may read other people's attempts",
+    rather than on whatever would make the request succeed.
+  - **_core-api answers `Content-Length: 0` on this host, every time._** "Best" is decided by
+    points and no evaluation here produces any (DEC-031), so `findBestSolution` returns null for
+    every student and the archive is never built. A nought-byte `.zip` is a file that cannot be
+    opened, so `streamFromCoreApi` now reads an explicit zero length as "no file" and answers
+    **409 "There is nothing to download."** -- a real empty ZIP is 22 bytes, and a streamed response
+    carries no length at all, so neither is caught by this.
+  - _What is verified here and what is not:_ the route streams, forwards core-api's refusals, and
+    401s without a session -- all checked live, alongside a real solution archive that still comes
+    back `200 application/zip`. The **populated** archive has never been seen and cannot be on this
+    box; it joins the standing list.
+  - _Observations:_ **292 e2e tests pass** (291 before). The spec asserts the link's address and
+    accepts either answer from the route, since a cgroup v1 host would give the other one.
+
 ### Current Status
 
 - **Phase:** Recon complete

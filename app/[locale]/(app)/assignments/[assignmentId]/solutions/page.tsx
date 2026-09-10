@@ -65,6 +65,14 @@ export default async function AssignmentSolutionsPage({
           >
             {t("backToAssignment")}
           </Link>
+          {solutions.length > 0 && (
+            <a
+              href={`/api/assignments/${assignmentId}/best-solutions`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("downloadBest")}
+            </a>
+          )}
           {assignment.can.resubmitSubmissions === true && solutions.length > 0 && (
             <ResubmitAll assignmentId={assignmentId} />
           )}

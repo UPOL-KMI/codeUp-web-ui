@@ -38,15 +38,33 @@ export async function streamFromCoreApi(path: string, fallbackFilename: string):
   });
 
   const contentType = response.headers.get("content-type") ?? "";
-  if (response.status !== 200 || contentType.includes("json") || !response.body) {
+  // An explicit `Content-Length: 0` means core-api built no archive at all -- an empty ZIP is 22
+  // bytes, not none -- and handing the browser a nought-byte `.zip` is a file that cannot be
+  // opened. G-006 meets this on every request here, because "the best solution" of a student is
+  // decided by points and no evaluation on this host produces any (DEC-031). A streamed response
+  // carries no length at all, so only the explicit zero is read this way.
+  const empty = response.headers.get("content-length") === "0";
+  if (response.status !== 200 || contentType.includes("json") || empty || !response.body) {
     const envelope = contentType.includes("json")
       ? ((await response.json().catch(() => null)) as { error?: { message?: string } } | null)
       : null;
     return NextResponse.json(
-      { error: envelope?.error?.message ?? "The file could not be downloaded." },
+      {
+        error:
+          envelope?.error?.message ??
+          (empty ? "There is nothing to download." : "The file could not be downloaded."),
+      },
       // A 2xx that is not a file is not a success as far as the browser is concerned; 409 says
       // "not in a state that can answer this" without inventing a server error.
-      { status: response.status === 200 ? 502 : response.status < 300 ? 409 : response.status },
+      {
+        status: empty
+          ? 409
+          : response.status === 200
+            ? 502
+            : response.status < 300
+              ? 409
+              : response.status,
+      },
     );
   }
 
