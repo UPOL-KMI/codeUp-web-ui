@@ -3605,8 +3605,15 @@
     },
     "unpaired": {
       "title": "Files in only one of them",
-      "explain": "Files are lined up by name, so these had nothing to be compared against.",
-      "onlyIn": "{name} -- only in {side}"
+      "explain": "Files are lined up by name. These had nothing to be compared against — pair them by hand if the same file is called something else on the other side.",
+      "onlyIn": "{name} -- only in {side}",
+      "pairHint": "Choosing a file here adds the pairing to this page's address, so the comparison stays a link.",
+      "compareWith": "compare with",
+      "compareWithFile": "Compare {name} with",
+      "choose": "choose a file",
+      "pair": "Pair them",
+      "pairedByHand": "{left} ↔ {right}, paired by hand",
+      "undo": "undo"
     },
     "others": {
       "title": "Compare with another attempt instead"

@@ -3605,8 +3605,15 @@
     },
     "unpaired": {
       "title": "Soubory jen v jednom z nich",
-      "explain": "Soubory se párují podle názvu, takže tyto neměly s čím být porovnány.",
-      "onlyIn": "{name} – jen v {side}"
+      "explain": "Soubory se párují podle názvu. Tyhle neměly s čím být porovnány — spárujte je ručně, pokud se stejný soubor na druhé straně jmenuje jinak.",
+      "onlyIn": "{name} – jen v {side}",
+      "pairHint": "Vybraný soubor se přidá do adresy stránky, takže porovnání zůstane odkazem.",
+      "compareWith": "porovnat s",
+      "compareWithFile": "Porovnat {name} s",
+      "choose": "vyberte soubor",
+      "pair": "Spárovat",
+      "pairedByHand": "{left} ↔ {right}, spárováno ručně",
+      "undo": "zrušit"
     },
     "others": {
       "title": "Porovnat místo toho s jiným pokusem"

@@ -5075,3 +5075,28 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **Also: `pnpm format` had eleven files to fix** before this ticket touched anything — `format:check` fails on `HEAD` (`shadow-assignment-form.tsx`, `markdown-preview-tabs.tsx`, `structure-editor.tsx`, `structure-file.ts` and its test, `sidebar-nav.tsx`, and five docs). Committed here as its own formatting pass rather than folded in, since none of it is G-026.
 
 **Next ticket:** G-030 — mapping two solutions' files by hand, the last open G row. Note the row's own escape clause: G-005 already says plainly which files it could not pair, so nothing is hidden without this. **PF-002 is the other candidate and is now unblocked** — DEC-126 removed the 5-second penalty that made it unmeasurable, and the restructuring it needs is already written and stashed ("PF-002: synchronous AppShell").
+
+---
+
+### 2026-09-10 — G-030: Mapping two solutions' files by hand
+
+**Ticket:** G-030
+**Status:** done
+
+**What was built:** overrides in `pairFilesByName` (+4 unit tests), `components/solutions/pair-files-by-hand.tsx`, `?pair=` on the diff route, `Diff.unpaired` in both locales, **DEC-130**, and two tests in `e2e/solution-diff.spec.ts`. **With this the `solutions` inventory row closes and the G block is empty.**
+
+**The one decision here is where the mapping lives, and legacy's answer could not be copied.** The legacy app keeps it in `localStorage`, keyed per solution pair. This app cannot: the pairing decides **which files the server fetches, reads and tokenises** — code is highlighted on the server (DEC-012) — so a mapping only the browser knows about cannot reach the thing that acts on it without moving the whole viewer client-side. It goes in the URL instead, `?pair=left::right`, repeatable.
+
+**That is the better answer anyway, for the reason G-005 already gave.** A comparison somebody set up by hand is exactly the sort of thing worth sending to a colleague, which is why both solution ids are in the path rather than behind a picker. What is given up against legacy is that the mapping does not follow the reader to their next visit; what is gained is that it follows the link.
+
+**The control needs no JavaScript.** One `GET` form per unpaired file, whose select carries whole `left::right` values and whose hidden fields carry the pairings already made — so a second pairing keeps the first, and the browser alone writes the address. T-020's trade for the exercise catalog, restated. Undoing one is a link carrying every _other_ pairing, which is the whole of what the legacy dialog's "unmap" button does and needs no dialog.
+
+**A pairing naming a file neither side has is ignored, not refused.** It arrives in a URL, where a stale link or a typo is an ordinary thing to meet, and the honest answer is the pairing the names give.
+
+**The fixture was already in the seed and nobody had noticed.** `[seed] zip archive` submits a real `solution.zip` (S-017), and core-api reports its contents as `solution.zip#main.py` and `solution.zip#greeting.py` — so that attempt shares **no filename** with any other attempt at the same assignment. Diffing it against `[seed] correct` is precisely the case this control exists for, needs nothing created, and is what the new spec runs against.
+
+**One accessibility note worth keeping.** The select is named by `aria-label` after the file it is about ("Compare helper.py with"), not by a wrapping `<label>` — three of these on one screen with the same two visible words would be three controls a screen reader cannot tell apart, and a wrapping label would override the useful name. The visible words are a fragment of the accessible name, which is the rule that actually applies.
+
+**What was run:** `typecheck`, `lint`, `format`, `build`, **250 unit tests** (4 new) clean, and the full e2e suite. Verified against the seeded ZIP attempt: the three files listed as unpaired, `solution.py` paired with `solution.zip#main.py` from the select, the address gaining `?pair=solution.py%3A%3Asolution.zip%23main.py`, the diff heading reading `solution.py ↔ solution.zip#main.py` with the ZIP entry's own first line in the table, the remaining entry still listed, and "undo" putting the page back exactly as it was.
+
+**Next ticket:** **PF-002** — the shell blocking every page's own fetching. It is the only item left with a measured cost, it is unblocked (DEC-126 removed the 5-second `.local` mDNS penalty that made it unmeasurable), and the restructuring it needs is already written and stashed as "PF-002: synchronous AppShell". Re-measure before trusting any number in that row: all of them were taken through the penalty. After it, PF-005 is three lines and PF-003 is a measured 81% cut; PF-004 needs a decision before an implementation.

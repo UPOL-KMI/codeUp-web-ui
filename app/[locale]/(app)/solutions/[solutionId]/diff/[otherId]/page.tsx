@@ -10,12 +10,13 @@ import {
   type SolutionFileEntry,
 } from "@/lib/api/solution-files";
 import { getSolutionDetail } from "@/lib/api/solution";
-import { pairFilesByName } from "@/lib/code/diff";
+import { pairFilesByName, type FilePairingOverride } from "@/lib/code/diff";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { DiffView } from "@/components/solutions/diff-view";
+import { PairFilesByHand } from "@/components/solutions/pair-files-by-hand";
 import { EmptyState } from "@/components/state/empty-state";
 
 export async function generateMetadata({
@@ -37,6 +38,13 @@ export async function generateMetadata({
  * shape (`/diff/:secondSolutionId`) and it is what makes "look at these two" something a teacher
  * can send to a colleague. Swapping sides is the same route with the ids the other way round.
  *
+ * **When the names differ, the reader says which goes with which (G-030), and the mapping is in
+ * the address** -- `?pair=helper.py::utils.py`, repeatable. `localStorage` is where the legacy app
+ * keeps it, and it cannot be where this app does: the pairing decides what the *server* fetches
+ * and tokenises, so it has to arrive with the request. Putting it in the URL is also the better
+ * answer for the same reason the two solution ids are in the path -- a comparison somebody set up
+ * by hand is a link they can send (DEC-130).
+ *
  * **Reviews are deliberately absent**, as they are in the legacy diff. A review is written against
  * one solution's lines; interleaved into an aligned two-file view its anchors would point at rows
  * that may belong to the other file, and a comment shown against the wrong line is worse than one
@@ -44,10 +52,17 @@ export async function generateMetadata({
  */
 export default async function SolutionDiffPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ solutionId: string; otherId: string }>;
+  searchParams: Promise<{ pair?: string | string[] }>;
 }) {
-  const [{ solutionId, otherId }, locale] = await Promise.all([params, getLocale()]);
+  const [{ solutionId, otherId }, query, locale] = await Promise.all([
+    params,
+    searchParams,
+    getLocale(),
+  ]);
+  const overrides = readPairings(query.pair);
   const [t, left, right] = await Promise.all([
     getTranslations("Diff"),
     getSolutionDetail(solutionId, locale),
@@ -69,13 +84,16 @@ export default async function SolutionDiffPage({
   ]);
 
   const tooBig = !canDisplayFiles(leftFiles) || !canDisplayFiles(rightFiles);
-  const { pairs, onlyLeft, onlyRight } = pairFilesByName(leftFiles, rightFiles);
+  const { pairs, onlyLeft, onlyRight } = pairFilesByName(leftFiles, rightFiles, overrides);
 
   const contents = tooBig
     ? []
     : await Promise.all(
         pairs.map(async (pair) => ({
           name: pair.left.name,
+          // Named on both sides only where the two differ -- on an ordinary pair the second name
+          // would be the first one repeated.
+          otherName: pair.right.name === pair.left.name ? null : pair.right.name,
           left: await readOrEmpty(pair.left),
           right: await readOrEmpty(pair.right),
         })),
@@ -123,7 +141,7 @@ export default async function SolutionDiffPage({
           contents.map((file) => (
             <DiffView
               key={file.name}
-              name={file.name}
+              name={file.otherName === null ? file.name : `${file.name} ↔ ${file.otherName}`}
               leftContent={file.left}
               rightContent={file.right}
               leftLabel={leftLabel}
@@ -132,25 +150,15 @@ export default async function SolutionDiffPage({
           ))
         )}
 
-        {(onlyLeft.length > 0 || onlyRight.length > 0) && (
-          <section aria-labelledby="diff-unpaired" className="flex flex-col gap-2">
-            <h2 id="diff-unpaired" className="text-base font-semibold tracking-tight">
-              {t("unpaired.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground">{t("unpaired.explain")}</p>
-            <ul className="flex flex-col gap-1 text-sm">
-              {onlyLeft.map((file) => (
-                <li key={`l-${file.name}`} className="font-mono">
-                  {t("unpaired.onlyIn", { name: file.name, side: leftLabel })}
-                </li>
-              ))}
-              {onlyRight.map((file) => (
-                <li key={`r-${file.name}`} className="font-mono">
-                  {t("unpaired.onlyIn", { name: file.name, side: rightLabel })}
-                </li>
-              ))}
-            </ul>
-          </section>
+        {(onlyLeft.length > 0 || onlyRight.length > 0 || overrides.length > 0) && (
+          <PairFilesByHand
+            basePath={`/solutions/${solutionId}/diff/${otherId}`}
+            onlyLeft={onlyLeft.map((file) => file.name)}
+            onlyRight={onlyRight.map((file) => file.name)}
+            overrides={overrides}
+            leftLabel={leftLabel}
+            rightLabel={rightLabel}
+          />
         )}
 
         {others.length > 0 && (
@@ -175,6 +183,22 @@ export default async function SolutionDiffPage({
       </div>
     </PageShell>
   );
+}
+
+/**
+ * The pairings a reader made, read out of `?pair=left::right` (G-030). Anything that is not one
+ * name, two colons and another name is dropped -- this is a URL, so it is whatever somebody typed
+ * or whatever a link they were sent still says, and the fallback is the pairing the names give.
+ */
+function readPairings(value: string | string[] | undefined): FilePairingOverride[] {
+  const raw = value === undefined ? [] : Array.isArray(value) ? value : [value];
+  return raw.flatMap((entry) => {
+    const separator = entry.indexOf("::");
+    if (separator <= 0) return [];
+    const left = entry.slice(0, separator);
+    const right = entry.slice(separator + 2);
+    return right === "" ? [] : [{ left, right }];
+  });
 }
 
 /** A file this app cannot read is compared as empty rather than failing the whole page (F-030). */

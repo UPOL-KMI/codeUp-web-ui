@@ -91,3 +91,68 @@ test("is not offered to a student on their own solution", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Compare with another attempt" })).toHaveCount(0);
 });
+
+test("pairs two files whose names differ, on the reader's word, and undoes it", async ({
+  page,
+}) => {
+  // G-030. The fixture is the seed's own: `[seed] zip archive` submits `solution.zip`, whose
+  // entries core-api reports as `solution.zip#main.py`, so this pair of attempts shares no
+  // filename at all -- which is the case the whole control exists for.
+  const attempts = await seededAttemptsOfOneAuthor();
+  const plain = attempts.find((row) => row.note.endsWith("correct"));
+  const zipped = attempts.find((row) => row.note.endsWith("zip archive"));
+  expect(plain, "the seed submits a plain solution").toBeDefined();
+  expect(zipped, "the seed submits one solution as a ZIP (S-017)").toBeDefined();
+
+  await signIn(page, SUPERADMIN, `/en/solutions/${plain!.id}/diff/${zipped!.id}`);
+  const main = page.getByRole("main");
+
+  // Nothing lines up by name, so the screen says so rather than guessing.
+  await expect(main.getByRole("heading", { name: "No file appears in both" })).toBeVisible();
+  const unpaired = main.getByRole("region", { name: "Files in only one of them" });
+  // Scoped to the list rather than the section: the same names are also the select's options,
+  // which are hidden until it is opened.
+  const listed = (name: string) => unpaired.getByRole("listitem").filter({ hasText: name });
+  await expect(listed("solution.py -- only in").first()).toBeVisible();
+  await expect(listed("solution.zip#main.py").first()).toBeVisible();
+
+  await unpaired
+    .getByLabel("Compare solution.py with")
+    .selectOption("solution.py::solution.zip#main.py");
+  await unpaired.getByRole("button", { name: "Pair them" }).click();
+
+  // The pairing is in the address, which is what makes a hand-made comparison a link.
+  await expect(page).toHaveURL(/\?pair=solution\.py%3A%3Asolution\.zip%23main\.py$/);
+  await expect(
+    main.getByRole("heading", { name: "solution.py ↔ solution.zip#main.py" }),
+  ).toBeVisible();
+  // ...and the two really were compared: the ZIP entry's own first line is on screen.
+  await expect(main.getByRole("table").getByText("from greeting import GREETING")).toBeVisible();
+  await expect(main.getByText("paired by hand", { exact: false })).toBeVisible();
+
+  // The other entry is still unpaired, and the file that was paired has left the list.
+  const after = main.getByRole("region", { name: "Files in only one of them" });
+  await expect(
+    after.getByRole("listitem").filter({ hasText: "solution.zip#greeting.py" }).first(),
+  ).toBeVisible();
+  await expect(after.getByLabel("Compare solution.py with")).toHaveCount(0);
+
+  await after.getByRole("link", { name: "undo" }).click();
+  await expect(page).toHaveURL(new RegExp(`/en/solutions/${plain!.id}/diff/${zipped!.id}$`));
+  await expect(main.getByRole("heading", { name: "No file appears in both" })).toBeVisible();
+});
+
+test("ignores a pairing in the address that names a file neither side has", async ({ page }) => {
+  const attempts = await seededAttemptsOfOneAuthor();
+  const [first, second] = attempts;
+  await signIn(
+    page,
+    SUPERADMIN,
+    `/en/solutions/${first!.id}/diff/${second!.id}?pair=gone.py%3A%3Aalso-gone.py`,
+  );
+
+  // A stale link is an ordinary thing to be sent, so the page falls back to pairing by name
+  // rather than answering with an error.
+  const main = page.getByRole("main");
+  await expect(main.getByRole("heading", { name: "solution.py" })).toBeVisible();
+});

@@ -106,3 +106,47 @@ describe("pairFilesByName", () => {
     expect(result.onlyLeft).toHaveLength(1);
   });
 });
+
+describe("pairFilesByName, with pairings the reader made (G-030)", () => {
+  const left = [{ name: "main.py" }, { name: "helper.py" }];
+  const right = [{ name: "main.py" }, { name: "utils.py" }];
+
+  it("pairs two files whose names differ, and marks the pair as hand-made", () => {
+    const result = pairFilesByName(left, right, [{ left: "helper.py", right: "utils.py" }]);
+    expect(result.pairs).toEqual([
+      { left: { name: "helper.py" }, right: { name: "utils.py" }, byHand: true },
+      { left: { name: "main.py" }, right: { name: "main.py" } },
+    ]);
+    expect(result.onlyLeft).toEqual([]);
+    expect(result.onlyRight).toEqual([]);
+  });
+
+  it("takes both files out of the way of the names, so an override cannot be paired twice", () => {
+    // `main.py` on the left is spoken for, so the `main.py` on the right has nothing left to
+    // match and is reported as unpaired rather than quietly pairing with `helper.py`.
+    const result = pairFilesByName(left, right, [{ left: "main.py", right: "utils.py" }]);
+    expect(result.pairs).toEqual([
+      { left: { name: "main.py" }, right: { name: "utils.py" }, byHand: true },
+    ]);
+    expect(result.onlyLeft).toEqual([{ name: "helper.py" }]);
+    expect(result.onlyRight).toEqual([{ name: "main.py" }]);
+  });
+
+  it("ignores a pairing naming a file neither side has, rather than failing the page", () => {
+    const result = pairFilesByName(left, right, [{ left: "gone.py", right: "utils.py" }]);
+    expect(result.pairs).toEqual([{ left: { name: "main.py" }, right: { name: "main.py" } }]);
+    expect(result.onlyLeft).toEqual([{ name: "helper.py" }]);
+    expect(result.onlyRight).toEqual([{ name: "utils.py" }]);
+  });
+
+  it("keeps the first of two pairings that claim the same file", () => {
+    const result = pairFilesByName(left, right, [
+      { left: "helper.py", right: "utils.py" },
+      { left: "helper.py", right: "main.py" },
+    ]);
+    expect(result.pairs).toEqual([
+      { left: { name: "helper.py" }, right: { name: "utils.py" }, byHand: true },
+      { left: { name: "main.py" }, right: { name: "main.py" } },
+    ]);
+  });
+});

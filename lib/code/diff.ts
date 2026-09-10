@@ -106,22 +106,51 @@ export function diffLines(left: string, right: string): DiffSummary {
  *
  * A ZIP entry's `name` already carries its archive (`archive.zip#src/main.c`), so entries pair on
  * the same rule with no special case.
+ *
+ * **A reader can say "compare this one against that one" (G-030), and those pairings win.** They
+ * are applied before the names are looked at, so mapping `main.py` to `solution.py` also takes
+ * both of them out of the way of anything else that might have matched either. A mapping naming a
+ * file neither side has is ignored rather than an error: it arrives in the URL, where a stale link
+ * or a typo is an ordinary thing to meet, and the honest answer to one is the pairing the names
+ * give.
  */
 export interface FilePairing<T extends { name: string }> {
-  pairs: { left: T; right: T }[];
+  pairs: { left: T; right: T; byHand?: true }[];
   onlyLeft: T[];
   onlyRight: T[];
+}
+
+/** One reader-made pairing: the name on the left, the name it is to be compared against. */
+export interface FilePairingOverride {
+  left: string;
+  right: string;
 }
 
 export function pairFilesByName<T extends { name: string }>(
   left: readonly T[],
   right: readonly T[],
+  overrides: readonly FilePairingOverride[] = [],
 ): FilePairing<T> {
+  const leftByName = new Map(left.map((file) => [file.name, file]));
   const rightByName = new Map(right.map((file) => [file.name, file]));
-  const pairs: { left: T; right: T }[] = [];
-  const onlyLeft: T[] = [];
+  const pairs: { left: T; right: T; byHand?: true }[] = [];
 
+  // The reader's own pairings first, each consuming both files. A duplicate naming a file already
+  // spoken for is skipped rather than replacing the earlier one -- first wins, so the order in the
+  // URL is the order on screen.
+  for (const override of overrides) {
+    const one = leftByName.get(override.left);
+    const other = rightByName.get(override.right);
+    if (one === undefined || other === undefined) continue;
+    pairs.push({ left: one, right: other, byHand: true });
+    leftByName.delete(override.left);
+    rightByName.delete(override.right);
+  }
+
+  const onlyLeft: T[] = [];
+  // Iterated over `left` rather than over the map, so what survives keeps the order it arrived in.
   for (const file of left) {
+    if (!leftByName.has(file.name)) continue;
     const match = rightByName.get(file.name);
     if (match === undefined) {
       onlyLeft.push(file);
@@ -131,5 +160,5 @@ export function pairFilesByName<T extends { name: string }>(
     }
   }
 
-  return { pairs, onlyLeft, onlyRight: [...rightByName.values()] };
+  return { pairs, onlyLeft, onlyRight: right.filter((file) => rightByName.has(file.name)) };
 }
