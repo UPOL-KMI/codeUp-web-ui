@@ -92,6 +92,37 @@ export async function deleteExerciseIfPresent(exerciseId: string): Promise<void>
   }).catch(() => undefined);
 }
 
+/**
+ * Delete every system message whose text this suite wrote, whatever run left it there.
+ *
+ * **Swept by text rather than tracked by id, which is the opposite of `deleteExerciseIfPresent`
+ * above, and the difference is what the message *is*.** An orphaned exercise is invisible until
+ * somebody opens the catalog; an orphaned broadcast is rendered above `{children}` on every
+ * authenticated page for every persona, so one survivor puts a banner inside `<main>` and fails
+ * every other spec that reads it. Twenty-five had accumulated before anybody counted, from runs
+ * whose own teardown never got to run, and they turned the whole suite red at once.
+ *
+ * Sweeping is safe here where it was not for exercises: these carry `e2e ` in the text the spec
+ * itself wrote, so an orphan is identifiable, and no real deployment message begins that way.
+ * `/notifications/all` is the management list -- every message that exists, not just the ones
+ * currently live -- so a queued or expired orphan is caught too.
+ */
+export async function deleteE2eSystemMessages(): Promise<void> {
+  const token = await coreApiToken();
+  const all = await coreApi<{ id: string; localizedTexts: { text: string }[] }[]>(
+    "/notifications/all",
+    token,
+  ).catch(() => []);
+
+  for (const message of all) {
+    if (!message.localizedTexts.some((text) => text.text.startsWith("e2e "))) continue;
+    await fetch(`${coreApiBase}/notifications/${message.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => undefined);
+  }
+}
+
 async function coreApiToken(): Promise<string> {
   const response = await fetch(`${coreApiBase}/login`, {
     method: "POST",

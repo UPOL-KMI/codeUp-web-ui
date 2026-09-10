@@ -4,6 +4,7 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
+import { deleteE2eSystemMessages } from "./helpers/core-api";
 import { baseURL } from "./helpers/base-url";
 
 /**
@@ -11,10 +12,18 @@ import { baseURL } from "./helpers/base-url";
  * screen that has to show it.
  *
  * **A live message is visible to every persona in the suite**, which is the whole point of a
- * broadcast and also the hazard: one left behind by a failed run would put a banner above every
- * assertion in every other spec. So the test that publishes one removes it in a `finally`, and
- * writes it with a window that has already opened -- a queued message proves nothing about the
- * shell.
+ * broadcast and also the hazard: one left behind by a failed run puts a banner *inside* `<main>` on
+ * every page, so every spec that reads `getByRole("main")` fails at once. That is not theoretical --
+ * twenty-five orphans had accumulated before anybody counted them.
+ *
+ * So there are two layers, and the second is the one that matters. Each test still removes its own
+ * message in a `finally`, which is the ordinary path and leaves nothing to sweep. But **a Playwright
+ * timeout skips `finally`** -- the lesson PF-007 wrote down for exercises and this file had not
+ * learned -- so an `afterEach` hook sweeps every `e2e `-prefixed message straight through core-api
+ * as well. It needs no page, so it survives the failures that killed the `finally`.
+ *
+ * Messages are written with a window that has already opened -- a queued message proves nothing
+ * about the shell.
  *
  * The reader's "seen up to" timestamp is per account and is left as found: the dismissal test uses
  * the **supervisor**, whose banner state no other spec looks at, rather than the student whose
@@ -24,6 +33,13 @@ import { baseURL } from "./helpers/base-url";
  * live broadcast up for part of their run, and they run in parallel with each other -- the banner
  * is shared state, so each test may only assert about its own message.
  */
+// Registered once for the file (PF-007's pattern). In the ordinary case every test has already
+// removed its own message and this finds nothing to do; it exists for the run that dies before its
+// `finally`, which is how twenty-five of them got there.
+test.afterEach(async () => {
+  await deleteE2eSystemMessages();
+});
+
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
