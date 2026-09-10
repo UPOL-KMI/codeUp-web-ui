@@ -12,6 +12,7 @@ import {
   PasswordForm,
   ProfileForm,
   SettingsForm,
+  SignOutEverywhere,
 } from "@/components/users/account-forms";
 import { PageShell } from "@/components/page-shell";
 
@@ -36,7 +37,9 @@ export async function generateMetadata({
  *
  * The password form is separate from the profile form on purpose: a successful password change
  * invalidates every token this user holds, so it ends with a sign-out. Nobody should lose their
- * session for correcting a name.
+ * session for correcting a name. G-021's "sign out everywhere" does the same thing deliberately
+ * and without changing the password -- it is the thing to reach for after losing a laptop, and
+ * until it was here only an administrator could do it to you.
  */
 export default async function AccountSettingsPage() {
   const [locale, viewer] = await Promise.all([getLocale(), getCurrentUser()]);
@@ -85,6 +88,13 @@ export default async function AccountSettingsPage() {
             {t("settings.title")}
           </h2>
           <SettingsForm account={account} locales={routing.locales} flags={NOTIFICATION_FLAGS} />
+        </section>
+
+        <section aria-labelledby="account-sessions">
+          <h2 id="account-sessions" className="mb-3 text-base font-semibold tracking-tight">
+            {t("sessions.title")}
+          </h2>
+          <SignOutEverywhere userId={account.id} />
         </section>
 
         <section aria-labelledby="account-calendars">

@@ -4498,6 +4498,68 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     names moved to one `AssignmentEdit.language` map shared by both forms, so an unknown locale
     renders its code rather than a message key.
 
+- **[2026-09-10 05:50] G-031b:** The exercise nobody set a difficulty on stops naming a message key.
+  `components/exercises/exercise-table.tsx`, `components/assignments/exercise-picker.tsx`,
+  `components/exercises/exercise-detail.tsx`, `e2e/exercise-edit.spec.ts`.
+  - _Three call sites, not the two the filing named._ `exercise-detail.tsx` does the same thing with
+    `difficulties.` and was missed when G-018's spec found this in the catalog. All three now ask
+    `t.has()` first and fall back to "Not set".
+  - **_The check had to be arranged, not found._** The four exercises on this instance with no
+    difficulty are leftovers of earlier `exercise-edit` runs rather than seeded fixtures, so
+    asserting against them would pass here and nowhere else. `exercise-edit.spec.ts` reads the
+    fallback off the exercise it creates -- and it has to read it **before the first save**, because
+    this app's settings form sends `easy` when core-api sent nothing. The catalog's own spec keeps
+    the cheap half: the key path never appears on the page.
+  - _Observations:_ **those four leftovers are a finding of their own** and are filed as **PF-007**.
+    `exercise-edit.spec.ts` deletes the exercise it creates at the end of the test rather than in a
+    `finally`, so every failed run since it was written has left one behind, named after its author
+    and visible to anyone browsing the catalog. `group-create.spec.ts` has the pattern to copy.
+    **296 e2e tests pass** (295 before).
+
+- **[2026-09-10 06:05] G-031:** The FAQ is reachable from inside the app.
+  `components/app-shell/sidebar-nav.tsx`, `e2e/app-shell.spec.ts`.
+  - _At the foot of the sidebar beside the language switch, not as a seventh `IA.md` §3.1 section._
+    The page is public and lives outside this shell -- a visitor with no account reads it from the
+    landing page -- so it is chrome pointing out of the app rather than part of the app's own
+    structure. A signed-in reader could previously reach it only by going back to the front door.
+  - _Observations:_ **297 e2e tests pass** (296 before).
+
+- **[2026-09-10 06:25] G-021:** Signing yourself out of every session.
+  `components/users/account-forms.tsx` (`SignOutEverywhere`), `app/[locale]/(app)/profile/edit`,
+  `e2e/account.spec.ts`.
+  - _AD-002 gave an administrator this button for somebody else's account and nobody had it for
+    their own_ -- so the person who has actually lost a laptop, the only one who knows it, had to
+    ask an administrator to act for them. One call, against one's own id.
+  - **_It ends this session too, and the screen does not hide that._** core-api stamps a token
+    validity threshold rather than revoking a list, so the cookie in this browser dies with all the
+    others; the control therefore clears it through the app's own logout route and lands on
+    `/login`, exactly as the password form above it does. Skipping that would leave the reader
+    looking at a screen whose next click is a 401.
+  - **_Its spec signs in as `seed.filler.25`, not as the seeded student._** The call is
+    account-wide and this suite runs two workers: invalidating `STUDENT`'s tokens would kill the
+    token whichever spec is running beside it is holding. No other spec signs in as a filler.
+  - _Observations:_ **298 e2e tests pass** (297 before). The confirmation is Radix's `AlertDialog`,
+    so its role is `alertdialog` and a spec reaching for `dialog` finds nothing -- which is exactly
+    how this one failed on its first run.
+
+- **[2026-09-10 06:50] G-016:** A new pipeline, without one to copy.
+  `components/pipelines/create-pipeline.tsx`, `app/[locale]/(app)/pipelines/page.tsx`,
+  `lib/api/current-user.ts` (`canCreatePipeline`), `e2e/pipeline-edit.spec.ts`.
+  - _`createPipeline()` shipped with T-013 and nothing ever called it._ Forking was the only route
+    to a new pipeline, which is no route at all on the instance that has none -- the one place a
+    new pipeline is actually needed.
+  - **_There is no list-level create hint to gate the button on._** `permissionHints` are attached
+    **per pipeline** by the view factory, and the list envelope carries none -- so this is a role
+    check (`permissions.neon` grants `pipeline.create` from `empowered-supervisor` up), the same
+    shape and the same disclaimer as `canSeeAdminSection`: core-api's own `canCreate()` on every
+    call is the boundary, and the spec checks that a plain supervisor is offered nothing.
+  - _The `global` flag is not offered_, matching the legacy button. A global pipeline is part of a
+    runtime package, imported rather than drawn by hand, and it cannot be changed afterwards -- not
+    something to put behind an unlabelled click.
+  - _Observations:_ **299 e2e tests pass** (298 before). The new pipeline is deleted through the
+    product at the end of the spec, and through core-api in the file's `afterEach` if that never
+    runs -- the discipline PF-007 says `exercise-edit.spec.ts` is missing.
+
 ### Current Status
 
 - **Phase:** **Parity Sweep & Polish (Phase 7) is complete, and with it every ticket of the original
@@ -4558,8 +4620,12 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
 - **Next ticket:** **G-011** -- mailing the whole class, the last of the ranked teacher controls.
   **G-007 is done**, and with it the last of the rank-9 group but G-011: an assignment now carries
   its own text, overridable for one class, with the warning that a re-sync silently replaces it.
-  Then the rest of the G block in the order `BACKLOG.md` lists it -- the pipeline trio, the
-  restricted-token form, and the smaller controls.
+  Then the rest of the G block in the order `BACKLOG.md` lists it -- what is left is the pipeline
+  trio (G-015 files, G-017 import/export), the restricted-token form (G-020), and the smaller
+  controls (G-012, G-019, G-022, G-023, G-025, G-026, G-028, G-030). **G-031b, G-031, G-021 and
+  G-016 went with G-007** in the same session: a difficulty that rendered a message key, the FAQ
+  unreachable from inside the app, "sign out everywhere" that only an administrator could do to
+  you, and a pipeline that could only be made by copying one.
   **Two things to carry into that work rather than rediscover.** First, each of Phase 7's passes is a
   snapshot: a screen built for G-001 will not have been contrast-checked, will not have a `<title>`,
   and will not have had its Czech read, so apply those rules while building instead of re-running the
@@ -4580,7 +4646,13 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   (`areLocalizedTextsInSync` compares created-at, so saving makes the assignment's copy the newer
   one), which is why the warning is a permanent part of that form and not a toast. It also found
   that an assignment's text never resolved its `%%key%%` file links: `linkMapFromPayload()` was
-  written for it, never called, and written for the wrong payload shape.
+  written for it, never called, and written for the wrong payload shape. And **G-031b, G-031,
+  G-021 and G-016**, four controls that each cost one button or one line over an endpoint this
+  repo already types. Two of them are worth remembering for the shape rather than the fix: the
+  unset difficulty could only be checked against an exercise the spec **creates**, because this
+  app's own settings form sends `easy` on the first save, and G-016 has **no list-level permission
+  hint to gate on at all** -- core-api attaches `permissionHints` per pipeline and the list
+  envelope carries none -- so it is a role check with core-api's `canCreate()` as the boundary.
 - **Closed in the previous session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
   address only once, because anonymisation appends one fixed suffix to a column whose unique index
   covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.

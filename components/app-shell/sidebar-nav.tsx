@@ -100,9 +100,20 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         </div>
       ))}
       {/* A-008. At the foot of the sidebar rather than in the page header: it is a preference,
-          not an action on whatever is on screen. */}
-      <div className="mt-2 border-t border-border pt-3">
+          not an action on whatever is on screen. The FAQ (G-031) keeps it company for the same
+          reason and one of its own: the page lives outside this shell -- it is public, and a
+          visitor with no account reads it from the landing page -- so it is chrome pointing out of
+          the app rather than a seventh section of `IA.md` §3.1's sidebar. Until this link existed,
+          a signed-in reader could reach it only by going back to the front door. */}
+      <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
         <LocaleSwitch />
+        <Link
+          href="/faq"
+          onClick={() => setMobileOpen(false)}
+          className="rounded-md px-2 py-1.5 text-sm text-foreground outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {t("faq")}
+        </Link>
       </div>
     </nav>
   );

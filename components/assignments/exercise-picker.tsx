@@ -30,6 +30,11 @@ export function ExercisePicker({
   groupId: string;
 }) {
   const t = useTranslations("AssignExercise");
+  // core-api serves an empty difficulty for an exercise nobody set one on, and next-intl answers a
+  // missing key with the key path -- so the catalog used to show readers `difficulty.` and log a
+  // `MISSING_MESSAGE` per row (G-031b).
+  const difficulty = (value: string) =>
+    t.has(`difficulty.${value}`) ? t(`difficulty.${value}`) : t("difficulty.unset");
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +77,7 @@ export function ExercisePicker({
               <span className="flex min-w-0 flex-col gap-1">
                 <span className="font-medium">{exercise.name || t("untitled")}</span>
                 <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t(`difficulty.${exercise.difficulty}`)}</span>
+                  <span>{difficulty(exercise.difficulty)}</span>
                   {exercise.environments.length > 0 && (
                     <span>{exercise.environments.join(", ")}</span>
                   )}

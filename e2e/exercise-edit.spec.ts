@@ -36,6 +36,14 @@ test("creates an exercise, configures it, and removes it again", async ({ page }
   await expect(main.getByRole("heading", { name: "Exercise settings", level: 1 })).toBeVisible();
   const editUrl = page.url();
 
+  // G-031b, and this is the only moment it can be checked: core-api creates an exercise with no
+  // difficulty at all, and the save below gives it one. The catalog used to print the message key
+  // `difficulty.` in that cell.
+  await page.goto("/en/exercises?q=Exercise+by");
+  await expect(main).not.toContainText("difficulty.");
+  await expect(main.getByRole("cell", { name: "Not set", exact: true }).first()).toBeVisible();
+  await page.goto(editUrl);
+
   // Every locale is edited at once; the one left blank is dropped rather than saved empty.
   await main.getByLabel("Name").first().fill("[e2e] Sorting Hat");
   await main.getByLabel("Text").first().fill("Sort the input **ascending**.");

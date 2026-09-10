@@ -1156,7 +1156,8 @@
     "difficulty": {
       "easy": "Lehká",
       "medium": "Střední",
-      "hard": "Těžká"
+      "hard": "Těžká",
+      "unset": "Neurčeno"
     },
     "flags": {
       "archived": "Archivovaná",
@@ -1226,7 +1227,8 @@
     "difficulties": {
       "easy": "Lehká",
       "medium": "Střední",
-      "hard": "Těžká"
+      "hard": "Těžká",
+      "unset": "Neurčeno"
     },
     "environments": "Jazyky",
     "noEnvironments": "Žádný nevybrán",
@@ -1933,7 +1935,9 @@
     },
     "pagination": "Stránky",
     "previous": "Předchozí",
-    "next": "Další"
+    "next": "Další",
+    "create": "Nová pipeline",
+    "creating": "Vytvářím…"
   },
   "Pipeline": {
     "edit": "Upravit pipelinu",
@@ -2567,7 +2571,8 @@
     },
     "instances": "Instance",
     "skipToContent": "Přeskočit na obsah",
-    "breadcrumb": "Drobečková navigace"
+    "breadcrumb": "Drobečková navigace",
+    "faq": "Časté dotazy"
   },
   "Palette": {
     "label": "Hledání",
@@ -2829,7 +2834,8 @@
     "difficulty": {
       "easy": "Lehká",
       "medium": "Střední",
-      "hard": "Těžká"
+      "hard": "Těžká",
+      "unset": "Neurčeno"
     },
     "cannot": {
       "locked": "Zamčená autorem",
@@ -3143,6 +3149,14 @@
       "save": "Uložit nastavení",
       "saved": "Nastavení bylo uloženo.",
       "failed": "Nastavení se neuložilo."
+    },
+    "sessions": {
+      "title": "Přihlášení",
+      "explain": "Odhlásí každý prohlížeč, telefon i rozšíření, které drží token k tomuto účtu — včetně tohoto. Heslo se nemění, takže se můžete hned přihlásit znovu.",
+      "action": "Odhlásit všude",
+      "confirm": "Všechna přihlášení k tomuto účtu přestanou platit, včetně toho, které právě používáte. Budete se muset přihlásit znovu.",
+      "done": "Všechna přihlášení byla odhlášena.",
+      "failed": "Přihlášení se nepodařilo odhlásit."
     },
     "calendars": {
       "title": "Odběr kalendáře",

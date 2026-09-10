@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { canCreatePipeline, getCurrentUser } from "@/lib/api/current-user";
 import { getPipelineCatalog, PIPELINE_PAGE_SIZE } from "@/lib/api/pipelines";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbsForNamespace } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
+import { CreatePipeline } from "@/components/pipelines/create-pipeline";
 import { DateTime } from "@/components/format/date-time";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
@@ -36,6 +38,9 @@ export async function generateMetadata({
  * The one exception is the language filter, which core-api's pipeline endpoint does not offer
  * (`search`, `exerciseId` and `authorId` are its whole vocabulary, read from the presenter) -- so
  * that one narrows the page in hand, and the screen says so rather than implying otherwise.
+ *
+ * **Making one starts here** (G-016). Until it did, the only route to a new pipeline was forking
+ * an existing one, which is no route at all on an instance whose list is empty.
  */
 export default async function PipelinesPage({
   searchParams,
@@ -48,11 +53,12 @@ export default async function PipelinesPage({
   const environment = query.env ?? "";
   const page = Math.max(0, Number(query.page ?? "0") || 0);
 
-  const [t, catalog, environments, breadcrumbs] = await Promise.all([
+  const [t, catalog, environments, breadcrumbs, viewer] = await Promise.all([
     getTranslations("Pipelines"),
     getPipelineCatalog({ search, environment, offset: page * PIPELINE_PAGE_SIZE }),
     getRuntimeEnvironments(),
     resolveBreadcrumbsForNamespace("Pipelines", locale),
+    getCurrentUser(),
   ]);
 
   const narrowed = search !== "" || environment !== "";
@@ -70,7 +76,12 @@ export default async function PipelinesPage({
     "rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <PageShell title={t("title")} subtitle={t("subtitle")} breadcrumbs={breadcrumbs}>
+    <PageShell
+      title={t("title")}
+      subtitle={t("subtitle")}
+      breadcrumbs={breadcrumbs}
+      actions={canCreatePipeline(viewer.role) ? <CreatePipeline /> : undefined}
+    >
       <div className="flex flex-col gap-4">
         <form method="get" className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">

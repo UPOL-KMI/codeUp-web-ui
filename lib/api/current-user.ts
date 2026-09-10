@@ -87,3 +87,14 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
 export function canSeeAdminSection(role: string): boolean {
   return role === "superadmin" || role === "empowered-supervisor";
 }
+
+/**
+ * Who may make a new pipeline (G-016). A role check for the same reason as above and one more:
+ * core-api's pipeline **list** carries no create hint at all -- `permissionHints` are attached per
+ * pipeline by the view factory, and there is no envelope to hang a list-level one on -- so there
+ * is no hint to read, and `permissions.neon` grants `pipeline.create` from `empowered-supervisor`
+ * up. `actionCreatePipeline` asks its own `canCreate()` on every call, which is the boundary.
+ */
+export function canCreatePipeline(role: string): boolean {
+  return role === "superadmin" || role === "empowered-supervisor";
+}

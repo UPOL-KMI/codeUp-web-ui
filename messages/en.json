@@ -1156,7 +1156,8 @@
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
-      "hard": "Hard"
+      "hard": "Hard",
+      "unset": "Not set"
     },
     "flags": {
       "archived": "Archived",
@@ -1226,7 +1227,8 @@
     "difficulties": {
       "easy": "Easy",
       "medium": "Medium",
-      "hard": "Hard"
+      "hard": "Hard",
+      "unset": "Not set"
     },
     "environments": "Languages",
     "noEnvironments": "None selected",
@@ -1933,7 +1935,9 @@
     },
     "pagination": "Pages",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "create": "New pipeline",
+    "creating": "Creating…"
   },
   "Pipeline": {
     "edit": "Edit this pipeline",
@@ -2567,7 +2571,8 @@
     },
     "instances": "Instances",
     "skipToContent": "Skip to content",
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "faq": "FAQ"
   },
   "Palette": {
     "label": "Search",
@@ -2829,7 +2834,8 @@
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
-      "hard": "Hard"
+      "hard": "Hard",
+      "unset": "Not set"
     },
     "cannot": {
       "locked": "Locked by its author",
@@ -3143,6 +3149,14 @@
       "save": "Save settings",
       "saved": "Your settings were saved.",
       "failed": "The settings were not saved."
+    },
+    "sessions": {
+      "title": "Sessions",
+      "explain": "Signs out every browser, phone and extension holding a token for this account — including this one. Your password does not change, so you can sign straight back in.",
+      "action": "Sign out everywhere",
+      "confirm": "Every session for this account stops working, including the one you are using now. You will be asked to sign in again.",
+      "done": "Every session was signed out.",
+      "failed": "The sessions could not be signed out."
     },
     "calendars": {
       "title": "Calendar subscriptions",

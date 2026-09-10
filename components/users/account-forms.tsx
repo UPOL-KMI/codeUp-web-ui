@@ -17,6 +17,7 @@ import {
   type PasswordValues,
   type ProfileValues,
 } from "@/lib/actions/account.schema";
+import { invalidateUserTokens } from "@/lib/actions/users";
 import type { AccountSettings, CalendarToken, NotificationFlag } from "@/lib/api/user-settings";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import type { ActionResult } from "@/lib/forms/action-result";
@@ -387,6 +388,68 @@ export function CalendarTokens({
         onConfirm={() => {
           if (expiring) void run(() => expireCalendarToken(expiring), "expired");
         }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Signing oneself out of every session (G-021).
+ *
+ * AD-002 gave an administrator this button for somebody else's account and nobody had it for
+ * their own -- so the person who has actually lost a laptop, who is the only one who knows it,
+ * had to ask an administrator to act for them. It is the same one call
+ * (`invalidateUserTokens`) against one's own id.
+ *
+ * **It ends this session too, and that is not a side effect to hide.** core-api stamps a validity
+ * threshold rather than revoking a list, so the cookie in this browser dies with all the others;
+ * the page therefore clears it through the app's own logout route and lands on `/login`, exactly
+ * as the password form above does. Skipping that would leave the reader looking at a screen whose
+ * next click is a 401.
+ */
+export function SignOutEverywhere({ userId }: { userId: string }) {
+  const t = useTranslations("Account.sessions");
+  const router = useRouter();
+  const toast = useToast();
+  const [confirming, setConfirming] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  async function signOutEverywhere() {
+    setPending(true);
+    const result = await invalidateUserTokens(userId);
+    if (!result.success) {
+      setPending(false);
+      setConfirming(false);
+      toast.error(t("failed"), result.formError);
+      return;
+    }
+    await fetch("/api/auth/logout", { method: "POST" });
+    toast.success(t("done"));
+    router.push("/login");
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">{t("explain")}</p>
+      <div>
+        <button
+          type="button"
+          className={secondary}
+          disabled={pending}
+          onClick={() => setConfirming(true)}
+        >
+          {t("action")}
+        </button>
+      </div>
+
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={(open) => !open && setConfirming(false)}
+        title={t("action")}
+        description={t("confirm")}
+        confirmLabel={t("action")}
+        pending={pending}
+        onConfirm={() => void signOutEverywhere()}
       />
     </div>
   );

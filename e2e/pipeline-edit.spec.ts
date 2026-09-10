@@ -186,3 +186,25 @@ test("a reader who may not change a pipeline is not offered the screen", async (
     await expect(main.getByRole("heading", { name: "Edit pipeline", level: 1 })).toBeVisible();
   }
 });
+
+test("makes a new pipeline from the catalog, and offers that to nobody else", async ({ page }) => {
+  // G-016: forking was the only route to a new pipeline, which is no route at all on an instance
+  // whose list is empty.
+  await signIn(page, SUPERVISOR, "/en/pipelines");
+  await expect(page.getByRole("main").getByRole("button", { name: "New pipeline" })).toHaveCount(0);
+
+  await signIn(page, SUPERADMIN, "/en/pipelines");
+  const main = page.getByRole("main");
+  await main.getByRole("button", { name: "New pipeline" }).click();
+
+  // It lands on the new pipeline's own editor, empty and already real (DEC-093's shape).
+  await expect(page).toHaveURL(/\/en\/pipelines\/[0-9a-f-]+\/edit$/);
+  const created = pipelineIdOf(page.url());
+  expect(created).not.toBe("");
+  copies.push(created);
+
+  await expect(main.getByLabel("Name", { exact: true })).toHaveValue(/^Pipeline by /);
+  await expect(main.getByRole("heading", { name: "How it is wired" })).toBeVisible();
+
+  await deleteCopy(page, created);
+});

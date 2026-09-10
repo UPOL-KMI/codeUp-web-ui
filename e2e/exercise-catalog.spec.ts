@@ -111,3 +111,15 @@ test("is not a student's screen", async ({ page }) => {
   // the catalog itself.
   await expect(page.getByRole("main")).toContainText("Forbidden");
 });
+
+test("never prints a message key where a difficulty belongs", async ({ page }) => {
+  // G-031b: core-api serves `''` for an exercise nobody set a difficulty on, and next-intl answers
+  // a missing key with the key path -- so the catalog used to show readers `difficulty.` and log a
+  // `MISSING_MESSAGE` per row. Whether this instance *has* such an exercise is not this spec's to
+  // arrange; `exercise-edit.spec.ts` makes one and reads the fallback off it.
+  await signIn(page, SUPERVISOR, "/en/exercises");
+  const main = page.getByRole("main");
+
+  await expect(main.getByText(/^Showing 1–20 of \d+\.$/)).toBeVisible();
+  await expect(main).not.toContainText("difficulty.");
+});

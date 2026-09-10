@@ -20,6 +20,11 @@ import { Badge } from "@/components/status/badge";
  */
 export async function ExerciseTable({ page }: { page: ExerciseCatalogPage }) {
   const t = await getTranslations("Exercises");
+  // core-api serves an empty difficulty for an exercise nobody set one on, and next-intl answers a
+  // missing key with the key path -- so the catalog used to show readers `difficulty.` and log a
+  // `MISSING_MESSAGE` per row (G-031b).
+  const difficulty = (value: string) =>
+    t.has(`difficulty.${value}`) ? t(`difficulty.${value}`) : t("difficulty.unset");
 
   return (
     <div className="overflow-x-auto rounded-md border border-border">
@@ -75,9 +80,7 @@ export async function ExerciseTable({ page }: { page: ExerciseCatalogPage }) {
                   </span>
                 </span>
               </td>
-              <td className="px-3 py-2 whitespace-nowrap">
-                {t(`difficulty.${exercise.difficulty}`)}
-              </td>
+              <td className="px-3 py-2 whitespace-nowrap">{difficulty(exercise.difficulty)}</td>
               <td className="px-3 py-2 text-muted-foreground">
                 {exercise.environments.join(", ") || "—"}
               </td>

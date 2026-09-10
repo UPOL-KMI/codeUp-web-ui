@@ -57,7 +57,11 @@ export async function ExerciseDetailPanel({ exercise }: { exercise: ExerciseDeta
         </Row>
       )}
 
-      <Row label={t("difficulty")}>{t(`difficulties.${exercise.difficulty}`)}</Row>
+      <Row label={t("difficulty")}>
+        {t.has(`difficulties.${exercise.difficulty}`)
+          ? t(`difficulties.${exercise.difficulty}`)
+          : t("difficulties.unset")}
+      </Row>
 
       <Row label={t("environments")}>
         {exercise.environments.length === 0 ? (
