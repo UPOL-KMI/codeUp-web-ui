@@ -12,6 +12,10 @@ test.beforeEach(async ({ context, page }) => {
   const cookie = await loginAndGetCookie(SUPERADMIN);
   await context.addCookies([{ ...cookie, url: baseURL }]);
   await page.goto("/en/dashboard");
+  // The Ctrl-K listener lives in the sidebar, and since PF-002 the sidebar streams in behind the
+  // page rather than arriving with it -- so the shortcut is not armed until it is on screen. That
+  // is the trade that ticket accepted, and this is where it shows.
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
 });
 
 test("opens on Ctrl+K and closes on Escape", async ({ page }) => {

@@ -157,6 +157,10 @@ test("saving the text does not make the settings form's version stale", async ({
   await text.fill(`${original} `);
   await main.getByRole("button", { name: "Save the text" }).click();
   await expect(page.getByText("The text was saved.", { exact: true }).first()).toBeVisible();
+  // The toast fires when the action returns; the refresh that hands the settings form the new
+  // version is still in flight behind it, and nothing on screen changes when it lands. Clicking
+  // through the gap is a race this test would otherwise lose about one run in three.
+  await page.waitForLoadState("networkidle");
 
   const attempts = main.getByLabel("Attempts allowed", { exact: true });
   const attemptsBefore = await attempts.inputValue();

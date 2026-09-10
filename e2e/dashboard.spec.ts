@@ -251,11 +251,13 @@ test.describe("the calendar", () => {
   }) => {
     await signIn(page, SUPERVISOR_STUDENT); // studies in one group, teaches another: three sections
 
-    const headingNames = () =>
-      page
-        .getByRole("main")
-        .getByRole("heading", { level: 2 })
-        .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim()));
+    // `evaluateAll` is a one-shot query with no auto-wait, and since PF-002 the page's own content
+    // streams in behind the shell -- so each read waits for the sections to be there first.
+    const headings = page.getByRole("main").getByRole("heading", { level: 2 });
+    const headingNames = async () => {
+      await expect(headings).toHaveCount(3);
+      return headings.evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim()));
+    };
 
     expect(await headingNames()).toEqual(["My studies", "My teaching", "Calendar"]);
 

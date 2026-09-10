@@ -5100,3 +5100,43 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **What was run:** `typecheck`, `lint`, `format`, `build`, **250 unit tests** (4 new) clean, and the full e2e suite. Verified against the seeded ZIP attempt: the three files listed as unpaired, `solution.py` paired with `solution.zip#main.py` from the select, the address gaining `?pair=solution.py%3A%3Asolution.zip%23main.py`, the diff heading reading `solution.py ↔ solution.zip#main.py` with the ZIP entry's own first line in the table, the remaining entry still listed, and "undo" putting the page back exactly as it was.
 
 **Next ticket:** **PF-002** — the shell blocking every page's own fetching. It is the only item left with a measured cost, it is unblocked (DEC-126 removed the 5-second `.local` mDNS penalty that made it unmeasurable), and the restructuring it needs is already written and stashed as "PF-002: synchronous AppShell". Re-measure before trusting any number in that row: all of them were taken through the penalty. After it, PF-005 is three lines and PF-003 is a measured 81% cut; PF-004 needs a decision before an implementation.
+
+---
+
+### 2026-09-10 — PF-002: The shell blocks every page's own fetching
+
+**Ticket:** PF-002
+**Status:** done
+
+**What was built:** `components/app-shell/app-shell.tsx`, restructured. **With this the last item in this project's backlog with a measured cost is closed** — what is left is PF-003, PF-004 and PF-005.
+
+**The change is small and the reason it took two attempts is not.** `AppShell` was one `async` function that awaited four core-api calls before returning any JSX — and `{children}` is part of that JSX, so no page under `(app)` could start its own fetching until the shell had finished. It is now synchronous and fetches nothing: the sidebar and the notices are siblings of `{children}`, each in its own `<Suspense>` boundary, which is what Next's own bundled `loading.md` prescribes.
+
+**The numbers, this time real.** Time to first byte, median of 7 requests, on the same host, same build pipeline, before and after:
+
+| route        | before | after |
+| ------------ | ------ | ----- |
+| `/dashboard` | 43 ms  | 8 ms  |
+| `/exercises` | 53 ms  | 7 ms  |
+| `/pipelines` | 49 ms  | 5 ms  |
+| `/users`     | 48 ms  | 5 ms  |
+| `/profile`   | 43 ms  | 5 ms  |
+| `/groups`    | 43 ms  | 5 ms  |
+
+An **85–90% cut**, and the document completes no later than it did: the shell's reads now run beside the page's rather than in front of them, so what used to be shell + page is `max(shell, page)`. **Every number recorded in this row before today was taken through the 5-second mDNS penalty DEC-126 found, and is meaningless** — that is why the first attempt at this ticket was parked rather than finished.
+
+**`(app)/loading.tsx` is reachable at last.** The route group has had a `PageSkeleton` that nothing could ever show, because the boundary the layout puts around `{children}` was itself inside an unresolved async component. Both fallbacks are now in the streamed document — checked by reading the response, not inferred.
+
+**Two details worth not rediscovering.** The **skip link moved inside the sidebar boundary**: its label needs the message catalogue, and `getTranslations()` is the one `await` that would put the whole frame back in front of the page. And the **notices are one boundary, not two** — the view-as banner (G-023) and the broadcasts (AD-007) both need the current user, which is memoized per request, so splitting them would buy nothing and cost a second placeholder.
+
+**The trade, stated because the old docblock promised the opposite.** The sidebar streams in rather than being in the first byte. It is the frame around the page, not the page, and its fallback holds its width so nothing shifts when it arrives.
+
+**Three specs had to change, and each one names a real consequence rather than a fixture.** The suite is where a structural change like this gets checked, and all three failures were the same fact seen from different angles: **the document now streams, where before it was assembled and then sent.**
+
+- **`command-palette.spec.ts`** pressed Ctrl-K the moment `goto` resolved. The listener lives in the sidebar, so it is now armed a beat later than the page is. That is the trade this ticket accepted, made visible; the `beforeEach` waits for the navigation to be on screen. Worth stating plainly: **the palette shortcut is not available for the first fraction of a second**, and the trigger button is visibly absent (the fallback) in that window, which is what makes it acceptable rather than a silent dead key.
+- **`dashboard.spec.ts`** read its headings with `evaluateAll`, a one-shot query with no auto-wait, and got an empty array — because the page's own content now arrives behind the shell rather than with it. It waits for the three sections first.
+- **`assignment-edit.spec.ts`** clicked "Save the settings" in the gap between G-007's text save returning and its `router.refresh()` landing, and met core-api's optimistic lock. That race was always there; streaming widened it. Nothing on screen changes when that refresh lands, so the test waits for the network rather than for a pixel.
+
+**What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, and **307 e2e tests** — `app-shell.spec.ts` included, which is the file that would notice if the sidebar stopped arriving. One unrelated flake seen once and not since: `landing.spec.ts` failed to find the instance name on `/`, which is an anonymous page outside this shell entirely and reads `/v1/instances` on every request; it passes on its own and passed on the re-run.
+
+**Next ticket:** **PF-005** — breadcrumbs resolving one after another. Three lines, latent today because Next memoizes the identical GETs the page is making anyway, and worth doing while it is still free; the row records two cautions about doing it. Then **PF-003** (a measured 81% cut on the source viewer's props) and finally **PF-004**, which needs a decision before an implementation.
