@@ -24,7 +24,12 @@ export async function generateMetadata({
  */
 export default async function ProfilePage() {
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
-  const breadcrumbs = await resolveBreadcrumbs("/profile", locale);
+
+  // Unawaited, like `/users/:userId`'s (PF-005) -- this one is a message lookup rather than a
+  // fetch, but the shape is the same, including the `catch` that keeps a rejection from counting
+  // as unhandled while nothing is awaiting it yet.
+  const breadcrumbs = resolveBreadcrumbs("/profile", locale);
+  breadcrumbs.catch(() => {});
 
   return <ProfileView userId={user.id} breadcrumbs={breadcrumbs} />;
 }

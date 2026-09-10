@@ -5140,3 +5140,32 @@ An **85–90% cut**, and the document completes no later than it did: the shell'
 **What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, and **307 e2e tests** — `app-shell.spec.ts` included, which is the file that would notice if the sidebar stopped arriving. One unrelated flake seen once and not since: `landing.spec.ts` failed to find the instance name on `/`, which is an anonymous page outside this shell entirely and reads `/v1/instances` on every request; it passes on its own and passed on the re-run.
 
 **Next ticket:** **PF-005** — breadcrumbs resolving one after another. Three lines, latent today because Next memoizes the identical GETs the page is making anyway, and worth doing while it is still free; the row records two cautions about doing it. Then **PF-003** (a measured 81% cut on the source viewer's props) and finally **PF-004**, which needs a decision before an implementation.
+
+---
+
+### 2026-09-10 — PF-005: Breadcrumbs resolve one after another
+
+**Ticket:** PF-005
+**Status:** done
+
+**What was built:** `lib/breadcrumbs/manifest.ts` (`resolveBreadcrumbs`), `components/users/profile-view.tsx`, the two pages that render it, and a test in `e2e/refusals.spec.ts`.
+
+**Both cautions this row was filed with turned out to be real, and one of them was a bug for the length of a build.** The change itself is what the row said: match every prefix in one synchronous pass, then resolve the labels together instead of awaiting inside the loop.
+
+**`allSettled`, not `all`, and the reason is not paranoia.** These resolvers throw Next's own `notFound()` and `forbidden()` — they decide what the reader sees. `Promise.all` rejects with whichever rejection _arrives first_, which on a path like `/groups/:id/users/:id` is a race rather than an answer. Settling everything and rethrowing in **path order** is what keeps the behaviour the sequential loop had.
+
+**The empty `.catch()` on the hoisted promise is load-bearing, and the row's second caution is exactly why.** `/users/:userId` and `/profile` now hand the chain to `ProfileView` unawaited. Between creating that promise and React calling the component, _nothing is awaiting it_ — so a chain that rejects in that window is an unhandled rejection, and what the reader gets is the error boundary rather than the Not found page. Attaching an empty handler marks it handled without consuming it: the rejection still reaches the `await` inside `ProfileView`'s own `Promise.all`.
+
+**That was found by the test the row asked for, not by reading.** "Checked against a deliberately-refused id" is written into this row, and the first build after the change failed it: `/en/users/00000000-...` rendered "Something went wrong" where it had rendered "The page you're looking for doesn't exist." The same id passes on the build before the change, which is what pinned it on this ticket rather than on PF-002. It is now a permanent test in `refusals.spec.ts`.
+
+**The cost the row named is accepted and unchanged.** Resolving concurrently means a crumb that would have been refused no longer prevents the later ones being _issued_, so a refused page makes one or two requests it then discards. That is the trade for not making every page wait out its own breadcrumbs.
+
+**Latent, as filed.** There is no number to report: Next memoizes the identical GETs the page goes on to make anyway, so this changes nothing measurable today. It was worth doing while it is still free, rather than after a crumb grows a read of its own.
+
+**One spec had to be rewritten, and what it says now is more honest than what it said before.** G-007's "saving the text does not make the settings form's version stale" clicked the second save in the gap between the first action returning and its `router.refresh()` landing, and met core-api's optimistic lock about one run in three. Three attempts at a deterministic wait failed for instructive reasons: **nothing on screen changes when that refresh lands**, `networkidle` fires before the request is issued as readily as after it, and since PF-002 the RSC response _streams and stays open_, so awaiting it to completion hangs. What the test asserts now is the **state rather than the instant** — it waits for the refresh request to be made, then polls a settings save that is not refused, re-pressing a button that posts the same unchanged settings either way. Five consecutive runs, five passes. The window itself is real and stays: it is a few hundred milliseconds between two buttons no person clicks that fast, and closing it would mean either shared client state between two independent forms or a retry that DEC-092 deliberately refuses.
+
+**What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, **307 e2e tests**.
+
+**One flake worth naming rather than dismissing, because it has now been seen twice.** `landing.spec.ts` fails under full-suite load looking for the instance name on `/`, and passes on its own every time. The cause is not timing in the test: `getPublicInstances()` swallows a failed read and returns `[]` (`lib/api/instances.ts:146`), deliberately — `/` is the front door and a visitor should get the page rather than an error — so a core-api blip under two workers of load renders a landing page quietly missing one line. That is the right behaviour for that page and the wrong thing for a spec to assert unconditionally; left as it is, and recorded here so the next person who sees it does not go looking for a bug in the page.
+
+**Next ticket:** **PF-003** — Shiki tokens carrying a style object each. Measured at 162,606 bytes of props JSON for a real 16 KB file, 9.9× the source, against 8 distinct styles in the whole file; interning them as a palette plus an integer index is an 81% cut. The row names the care needed: the class rules must set the same two custom properties at the same or higher specificity, and `:target` line highlighting must still win. After that only **PF-004** remains, and it needs a decision before an implementation.

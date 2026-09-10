@@ -155,17 +155,32 @@ test("saving the text does not make the settings form's version stale", async ({
   // Both saves carry the same optimistic lock and both increment it, so the second one on the
   // same screen is the case that would break -- core-api answers "edited in the meantime".
   await text.fill(`${original} `);
+  // The save is answered by a toast and a `router.refresh()`, which is what hands the settings form
+  // above it the version this save has just incremented. **The refresh is observable only as a
+  // request**: nothing on screen changes when it lands, so there is no element to wait for, and no
+  // response to await to completion either -- since PF-002 the RSC response streams and stays open.
+  const refreshed = page.waitForResponse((response) => response.request().headers().rsc === "1");
   await main.getByRole("button", { name: "Save the text" }).click();
   await expect(page.getByText("The text was saved.", { exact: true }).first()).toBeVisible();
-  // The toast fires when the action returns; the refresh that hands the settings form the new
-  // version is still in flight behind it, and nothing on screen changes when it lands. Clicking
-  // through the gap is a race this test would otherwise lose about one run in three.
-  await page.waitForLoadState("networkidle");
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await refreshed;
 
+  // So what is asserted is the **state**, not the instant: a settings save that is not refused.
+  // Pressing the button again is safe either way -- it posts the same unchanged settings -- and a
+  // press that lands before the refresh does is answered with core-api's own message rather than
+  // doing anything, which is the failure this catches if the refresh ever stops happening.
   const attempts = main.getByLabel("Attempts allowed", { exact: true });
   const attemptsBefore = await attempts.inputValue();
-  await main.getByRole("button", { name: "Save the settings" }).click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+  const save = main.getByRole("button", { name: "Save the settings" });
+  await expect
+    .poll(
+      async () => {
+        if (new URL(page.url()).pathname.endsWith("/edit")) await save.click();
+        return new URL(page.url()).pathname;
+      },
+      { timeout: 20_000, intervals: [250, 500, 1000] },
+    )
+    .not.toMatch(/\/edit$/);
   await expect(
     page.getByText("The assignment was updated.", { exact: true }).first(),
   ).toBeVisible();

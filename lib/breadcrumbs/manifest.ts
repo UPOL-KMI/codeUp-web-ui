@@ -277,23 +277,41 @@ export async function resolveBreadcrumbs(
   locale: string,
 ): Promise<BreadcrumbItem[]> {
   const prefixes = getPrefixes(pathname);
-  const items: BreadcrumbItem[] = [];
 
-  for (let i = 0; i < prefixes.length; i++) {
-    const prefix = prefixes[i]!;
+  // Matched first, in one synchronous pass, so an unregistered prefix still fails before anything
+  // is fetched.
+  const matched = prefixes.map((prefix) => {
     const entry = MANIFEST.find((candidate) => matchPattern(candidate.pattern, prefix) !== null);
     if (!entry) {
       throw new Error(
         `No breadcrumb manifest entry registered for '${prefix}' (resolving '${pathname}').`,
       );
     }
-    const params = matchPattern(entry.pattern, prefix)!;
-    const label = await resolveLabel(entry, params, locale);
-    const isCurrentPage = i === prefixes.length - 1;
-    items.push({ label, href: isCurrentPage || entry.unlinked ? undefined : prefix });
-  }
+    return { prefix, entry, params: matchPattern(entry.pattern, prefix)! };
+  });
 
-  return items;
+  // **Resolved together, not one behind the next (PF-005).** A crumb's label may be a fetch --
+  // a group's name, a user's -- and awaiting inside the loop made `/groups/:id/users/:id` two
+  // round trips deep before the page had issued its first. It costs almost nothing today, because
+  // Next memoizes the identical GETs the page goes on to make anyway; it is worth the change while
+  // it is still free rather than after a crumb grows a read of its own.
+  //
+  // `allSettled` rather than `all` for one reason: **the first *rejection* and the first crumb are
+  // not the same thing.** These resolvers throw Next's own `notFound()` and `forbidden()`, which
+  // decide what the reader sees, and `Promise.all` surfaces whichever loses the race rather than
+  // whichever comes first in the path. Rethrowing in path order keeps the answer the sequential
+  // version gave. The cost is real and small: a crumb that would have been refused no longer stops
+  // the later ones being *issued*, so a refused page makes one or two requests it then discards.
+  const settled = await Promise.allSettled(
+    matched.map(({ entry, params }) => resolveLabel(entry, params, locale)),
+  );
+  const failure = settled.find((result) => result.status === "rejected");
+  if (failure) throw failure.reason;
+
+  return matched.map(({ prefix, entry }, index) => ({
+    label: (settled[index] as PromiseFulfilledResult<string>).value,
+    href: index === matched.length - 1 || entry.unlinked ? undefined : prefix,
+  }));
 }
 
 /** Convenience entry point for static pages that already identify themselves by namespace

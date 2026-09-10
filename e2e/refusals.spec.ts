@@ -41,3 +41,19 @@ test("an entity that does not exist renders the Not found page", async ({ page }
   await expect(main.getByText("The page you're looking for doesn't exist.")).toBeVisible();
   await expect(main.getByText("Something went wrong")).toHaveCount(0);
 });
+
+test("a profile whose crumb chain cannot be resolved is Not found, not an error", async ({
+  page,
+}) => {
+  // PF-005 resolves the breadcrumb chain concurrently and hands `/users/:id`'s over unawaited, so
+  // this is the case worth an assertion: the crumb that names the person is itself a fetch, and
+  // when it 404s the reader must get the Not found page rather than an unhandled rejection or the
+  // error boundary.
+  const cookie = await loginAndGetCookie(STUDENT);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await page.goto("/en/users/00000000-0000-0000-0000-000000000000");
+
+  const main = page.getByRole("main");
+  await expect(main.getByText("The page you're looking for doesn't exist.")).toBeVisible();
+  await expect(main.getByText("Something went wrong")).toHaveCount(0);
+});

@@ -41,10 +41,18 @@ export async function ProfileView({
   breadcrumbs,
 }: {
   userId: string;
-  breadcrumbs: BreadcrumbItem[];
+  /**
+   * Handed over unawaited (PF-005). On `/users/:userId` the crumb chain includes the person's own
+   * name, which is a fetch -- awaiting it in the page put that request **alone** in front of
+   * everything below, for no reason: nothing here derives from it. The page starts it, this
+   * component waits for it beside its own reads, and the promise is never left floating, which is
+   * what would turn a refusal into an unhandled rejection.
+   */
+  breadcrumbs: Promise<BreadcrumbItem[]>;
 }) {
   const locale = await getLocale();
-  const [t, profile, viewer, groups, mine] = await Promise.all([
+  const [crumbs, t, profile, viewer, groups, mine] = await Promise.all([
+    breadcrumbs,
     getTranslations("Profile"),
     getUserProfile(userId),
     getCurrentUser(),
@@ -63,7 +71,7 @@ export async function ProfileView({
     <PageShell
       title={profile.fullName || t("unnamed")}
       subtitle={isMe ? t("thisIsYou") : undefined}
-      breadcrumbs={breadcrumbs}
+      breadcrumbs={crumbs}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {profile.isVerified ? (
