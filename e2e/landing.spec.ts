@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { deploymentInstanceNames } from "./helpers/core-api";
 
 /**
  * The front door (A-001), and the way in through somebody else's identity provider (A-007).
@@ -15,8 +16,14 @@ test("tells a visitor what ReCodEx is, and which instance this is", async ({ pag
   await expect(main.getByText("Practise programming")).toBeVisible();
 
   // The instance names itself from `/v1/instances`, which core-api grants to the unauthenticated
-  // role -- the same read the registration form makes.
-  await expect(main.getByText("Frankenstein University, Atlantida")).toBeVisible();
+  // role -- the same read the registration form makes. **Asked of that endpoint rather than pinned
+  // (PF-010):** this deployment has two instances and the endpoint promises no ordering, so which
+  // one is named is core-api's business and not this app's. What the page owes the visitor is a
+  // real instance name, which is what this asserts.
+  const names = await deploymentInstanceNames();
+  await expect(
+    main.getByText(new RegExp(names.map((name) => escapeForRegExp(name)).join("|"))),
+  ).toBeVisible();
 
   // The quick-start sections, which are the legacy Home page's substance.
   for (const heading of ["Groups", "Exercises", "Assignments", "Solutions"]) {
@@ -55,3 +62,8 @@ test("says so when the external provider hands back nothing usable", async ({ pa
   await page.goto("/en/login?externalAuthError=1");
   await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
 });
+
+/** A deployment's instance name is arbitrary text, and it reaches a `RegExp` here. */
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

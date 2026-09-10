@@ -5340,6 +5340,35 @@ const firstInstance = instances[0];
 
 `pnpm seed` on the deterministically chosen instance, then `pnpm test:e2e`: **308 passed, 0 failed, 4.2 minutes.** `retries` is 0 outside CI, so nothing is masked by a second attempt. With the five static checks and 269 unit tests, the merge is now verified end to end and nothing is owed.
 
-**PF-010's 25 failures did not reproduce**, and the honest reading is that the instance differed rather than that the row is wrong. Three things about this run were not true of the one that filed it: the instance was fully re-seeded rather than partly, `chooseInstance` put that seed on the instance that already held the seed groups, and 25 orphaned `e2e ` broadcasts had been deleted. Bucket (b) of that row asserts _counts_ (`Showing 1-15 of 15` against 9 pipelines) and bucket (c) asserts _which instance the landing page names_ — both are properties of instance state, not of the specs, so passing here says little about failing there. Bucket (a)'s ambiguous `.first()` navigation is the one that should have failed either way and did not, which is worth someone's attention before the row is worked: `.first()` over three same-named assignments is genuinely fragile even when it happens to land right.
+**PF-010's 25 failures did not reproduce**, and the honest reading is that the instance differed rather than that the row is wrong. Three things about this run were not true of the one that filed it: the instance was fully re-seeded rather than partly, `chooseInstance` put that seed on the instance that already held the seed groups, and 25 orphaned `e2e ` broadcasts had been deleted. Bucket (b) of that row asserts _counts_ (`Showing 1-15 of 15` against 9 pipelines) and bucket (c) asserts _which instance the landing page names_ — both are properties of instance state, not of the specs, so passing here says little about failing there. Bucket (a)'s ambiguous `.first()` navigation is the one that should have failed either way and did not — **and the entry below establishes why it passed, which is not to the suite's credit.**
 
 **What this run cost, recorded so it is not paid twice.** Two full-suite runs were thrown away before this one. The first failed 64 specs on the orphaned broadcasts — an orphaned exercise hides until somebody opens the catalog, but an orphaned broadcast renders inside `<main>` on every authenticated page, so it fails anything reading `getByRole("main")`. The second failed almost everything because the first had been killed with `pkill -f playwright`, which leaves the `pnpm start` server behind, and `reuseExistingServer` then handed the new run a wedged one. Neither was a product defect and both looked exactly like one. **Kill the server too, or let the run finish.**
+
+---
+
+### 2026-09-10 — PF-010: the specs that navigate by a name three assignments share
+
+**Ticket:** PF-010
+**Status:** mostly done. Buckets (a) and (b) closed, (c) half; one claim left that does not reproduce.
+
+**The green run in the entry above was luck, and finding out why is most of this ticket.** `.first()` over the group's assignment links resolves to the **second-deadline** assignment — and on this instance that one carries **four solutions left behind by earlier suite runs**. So `assignment-solutions.spec.ts` asserted "lists every attempt" against the assignment the seed intends to have none, and passed on submissions that should not exist. The instance that filed PF-010 had no such residue, so the same line failed there. Neither run was testing what it read as testing.
+
+Querying the three directly is what settled it:
+
+```
+806ce477  2nd=True   sols=4   hint=Has a second deadline ...
+80f6cbfe  2nd=False  sols=2   hint=Nothing submitted yet ...   <- the seed means zero
+c3793a29  2nd=False  sols=4   hint=Print the exact greeting ...  <- the primary
+```
+
+The middle row is the finding worth keeping: **the "nothing submitted yet" fixture has two submissions**, because specs that submit do not clean up after themselves. F-029's empty-state fixture has been quietly gone for some time and nothing noticed, because no spec asserts on that assignment by name.
+
+**The fix names the assignment rather than counting on the order.** `seededAssignments()` tells the three apart by what the seed _guarantees_: the second-deadline one is the only assignment anywhere with one, which the seed says in as many words, and the unsubmitted one by its student hint — deliberately **not** by counting its solutions, because that is precisely the property that drifts, and a helper that broke on a drifted instance would be the same mistake one level down. The primary is what is left. The specs then click the link by `href`, so the navigation from the group page is still exercised rather than replaced by a `goto`. `assignment-edit.spec.ts` takes the second-deadline one (it asserts the second deadline is present); `assignment-solutions.spec.ts` takes the primary (it asserts submissions are listed).
+
+**Bucket (b), the hardcoded totals.** `pipelines.spec.ts` asserted `Showing 1–15 of 15.` and `users.spec.ts` asserted `Showing 1–2 of 2.` — both are facts about a deployment, not about the app, and the same file already had the robust form a few lines away (`/^Showing 1–20 of \d+\.$/`, with the total read out of the page). Pipelines now asserts the counter is present and self-consistent, which is what "the list is counted and fits one page" actually means. Users reads the unfiltered total first and asserts that narrowing narrows, plus that an account which must survive the filter does.
+
+**Bucket (c), half.** `landing.spec.ts` pinned `Frankenstein University, Atlantida`; this deployment has two instances and `/v1/instances` promises no ordering, so which one the page names is core-api's business. It now asks that endpoint — the same read the page makes — and asserts the page names one of them. **The other half does not reproduce and the code says it cannot:** `getByPlaceholder("Filter groups")` is claimed to be a strict-mode violation from the control being rendered twice, but `data-table.tsx` renders one filter input, and `/groups` and `/archive` are separate pages with one table each. Left open rather than closed, for whoever has the failing instance to confirm.
+
+**Not done here, and deliberately.** The seed is not changed to sweep the stray solutions off the unsubmitted assignment. The specs no longer depend on that assignment at all, so the suite is honest either way, and deleting submissions is a bigger decision than a test fix — it belongs to whoever owns the fixture. It is recorded above so it is not rediscovered a fourth time.
+
+**What was run:** typecheck, lint, format, 269 unit tests, and the full e2e suite.

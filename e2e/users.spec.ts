@@ -62,12 +62,26 @@ test("narrows to chosen roles and pages through what matched", async ({ page }) 
   await signIn(page, SUPERADMIN, "/en/users");
   const main = page.getByRole("main");
 
+  // Read before narrowing, because that is what narrowing is measured against.
+  const everyone = Number(
+    (await main.getByText(/^Showing 1–20 of \d+\.$/).innerText()).match(/of (\d+)/)![1],
+  );
+
   await main.getByLabel("Supervisors", { exact: true }).check();
   await main.getByLabel("Administrators").check();
   await main.getByRole("button", { name: "Search" }).click();
   await expect(page).toHaveURL(/role=supervisor(&|$)/);
   await expect(page).toHaveURL(/role=superadmin/);
-  await expect(main.getByText("Showing 1–2 of 2.")).toBeVisible();
+
+  // **Not "of 2" (PF-010).** How many supervisors and administrators a deployment has is instance
+  // state; what this test is about is that choosing roles narrows the list. Asserted against the
+  // unfiltered total, and against an account that must survive the filter.
+  const narrowed = Number(
+    (await main.getByText(/^Showing 1–\d+ of \d+\.$/).innerText()).match(/of (\d+)/)![1],
+  );
+  expect(narrowed).toBeGreaterThan(0);
+  expect(narrowed).toBeLessThan(everyone);
+  await expect(main.getByRole("link", { name: "Sam Supervisor" })).toBeVisible();
 
   // The whole directory is two pages, and the last one offers no next.
   await page.goto("/en/users");

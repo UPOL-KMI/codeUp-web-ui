@@ -24,7 +24,16 @@ test("lists the instance's pipelines and says what each one does", async ({ page
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "Pipelines", level: 1 })).toBeVisible();
-  await expect(main.getByText("Showing 1–15 of 15.")).toBeVisible();
+  // **Not a hardcoded total (PF-010).** How many pipelines a deployment has is instance state --
+  // this read 15 on one instance and 9 on another -- and what the counter is here to show is that
+  // the list is counted and fits on one page, not what the number happens to be.
+  const counter = main.getByText(/^Showing 1–\d+ of \d+\.$/);
+  await expect(counter).toBeVisible();
+  const [shown, total] = (await counter.innerText())
+    .match(/1–(\d+) of (\d+)/)!
+    .slice(1)
+    .map(Number);
+  expect(shown).toBe(total);
 
   // The row leads with what the pipeline *does* -- the parameters T-009's editor reads to decide
   // which fields a test offers.

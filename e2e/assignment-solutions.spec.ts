@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { seededAssignments } from "./helpers/core-api";
 
 /**
  * Every attempt at one assignment (T-003).
@@ -25,8 +26,14 @@ async function openSeededAssignment(page: import("@playwright/test").Page) {
     page.getByRole("heading", { name: "[seed] Intro to Programming", level: 1 }),
   ).toBeVisible();
   await page.goto(`${page.url().split("?")[0]}?tab=assignments`);
-  await page.getByRole("main").getByRole("link", { name: "[seed] Echo Greeting" }).first().click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+
+  // **By id, not `.first()` (PF-010).** All three of the group's assignments render the same label
+  // -- an assignment is displayed by its exercise's name and the seed makes three from one on
+  // purpose -- so `.first()` picked whichever the table sorted first. This spec asserts submissions are listed, so it needs the one the seed submits to.
+  // The click still goes through the group page, so the link itself is still exercised.
+  const target = (await seededAssignments()).primary;
+  await page.getByRole("main").locator(`a[href$="/assignments/${target}"]`).click();
+  await expect(page).toHaveURL(new RegExp(`/en/assignments/${target}$`));
 }
 
 test("lists every attempt, one row per submission", async ({ page }) => {

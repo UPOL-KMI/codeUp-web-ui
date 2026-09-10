@@ -292,6 +292,87 @@ export async function seededAttemptsOfOneAuthor(): Promise<
   throw new Error("no seeded author with two attempts at one assignment");
 }
 
+/**
+ * The three assignments the seed makes from `[seed] Echo Greeting` in one group, told apart
+ * (PF-010).
+ *
+ * **They all render the same label, because an assignment is displayed by its *exercise's* name**,
+ * and the seed creates three from one exercise on purpose (F-029). So
+ * `getByRole("link", {name: "[seed] Echo Greeting"}).first()` picks whichever the table happens to
+ * sort first -- and the specs that did that needed *different* ones of the three: the edit spec
+ * asserts a second deadline is present, the solutions spec asserts submissions are listed. Both
+ * passed on one instance and failed on another for no better reason than the order.
+ *
+ * Told apart by what the seed guarantees rather than by position. The second-deadline one is the
+ * only assignment **anywhere** with one, which the seed says in as many words. The unsubmitted one
+ * is named by its student hint -- not by counting its solutions, because that is exactly the
+ * property that drifts: earlier suite runs have submitted to it, and this helper has to keep
+ * working on an instance where they did.
+ */
+export async function seededAssignments(): Promise<{
+  primary: string;
+  unsubmitted: string;
+  secondDeadline: string;
+}> {
+  const token = await coreApiToken();
+  const groups = await coreApi<
+    { localizedTexts?: { name?: string }[]; privateData?: { assignments?: string[] } }[]
+  >("/groups", token);
+  const group = groups.find((one) =>
+    (one.localizedTexts ?? []).some((text) => text.name === "[seed] Intro to Programming"),
+  );
+  if (!group)
+    throw new Error("the seeded group '[seed] Intro to Programming' is not on this instance");
+
+  const assignments = [];
+  for (const id of group.privateData?.assignments ?? []) {
+    const detail = await coreApi<{
+      allowSecondDeadline?: boolean;
+      localizedTexts?: { studentHint?: string }[];
+    }>(`/exercise-assignments/${id}`, token);
+    assignments.push({
+      id,
+      secondDeadline: detail.allowSecondDeadline === true,
+      hint: (detail.localizedTexts ?? []).map((text) => text.studentHint ?? "").join(" "),
+    });
+  }
+
+  const secondDeadline = assignments.find((one) => one.secondDeadline);
+  const unsubmitted = assignments.find((one) => one.hint.startsWith("Nothing submitted yet"));
+  const primary = assignments.find((one) => one !== secondDeadline && one !== unsubmitted);
+  if (!secondDeadline || !unsubmitted || !primary) {
+    throw new Error(
+      `the seeded group does not hold the three expected assignments (found ${assignments.length}; ` +
+        `run \`pnpm seed\`)`,
+    );
+  }
+  return { primary: primary.id, unsubmitted: unsubmitted.id, secondDeadline: secondDeadline.id };
+}
+
+/**
+ * Every instance name this deployment publishes (PF-010).
+ *
+ * `/v1/instances` is granted to the unauthenticated role, which is how the landing page and the
+ * registration form both read it -- so this asks the same question the app asks, with no token.
+ *
+ * It exists because a spec hardcoded one name. **This deployment has two instances and the endpoint
+ * promises no ordering**, so which one the landing page names is not a fact about the app; a test
+ * that pins it is testing the order core-api happened to return.
+ */
+export async function deploymentInstanceNames(): Promise<string[]> {
+  const response = await fetch(`${coreApiBase}/instances`);
+  const body = (await response.json()) as {
+    success: boolean;
+    payload: { name?: string }[];
+  };
+  if (!response.ok || !body.success) {
+    throw new Error(`core-api GET /instances failed: HTTP ${response.status}`);
+  }
+  const names = body.payload.map((one) => one.name ?? "").filter((name) => name !== "");
+  if (names.length === 0) throw new Error("this deployment publishes no instances");
+  return names;
+}
+
 /** Delete a shadow assignment a spec created, for its own cleanup (G-009). */
 export async function deleteShadowAssignmentIfPresent(shadowId: string): Promise<void> {
   const token = await coreApiToken();
