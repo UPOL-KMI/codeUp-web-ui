@@ -52,6 +52,22 @@ log entries (`docs/PROGRESS.md`, `docs/BACKLOG.md`) describing what was true whe
 6. **i18n: Czech and English, both complete, always.** No hardcoded user-facing strings, ever.
    Any new string lands in both locales in the same commit.
 7. **Never leave the tree red.** `typecheck`, `lint` and `build` pass on every commit.
+
+   **CI runs five checks, not these three** (`.github/workflows/ci.yml`): `typecheck`, `lint`,
+   **`format:check`**, `build`, `test`. The brief's §8 names only the first, second and fourth,
+   and that omission has cost a red build once already -- a batch of tickets written largely
+   through scripted edits went out with fifteen files Prettier disagreed with, all of it
+   line-wrapping, none of it visible to the other four checks. So the sequence to run before a
+   commit is:
+
+   ```
+   pnpm typecheck && pnpm lint && pnpm format:check && pnpm build && pnpm test
+   ```
+
+   `pnpm format` fixes what `format:check` reports. Run the full five whenever a commit touches
+   `messages/` (the catalogue test) or was written by anything other than an editor that formats
+   on save.
+
 8. **No secrets or credentials** in the repo, in fixtures, or in screenshots.
 
 ### Never block

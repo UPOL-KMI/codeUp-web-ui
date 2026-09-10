@@ -93,7 +93,9 @@ export function MarkdownPreviewTabs({
 
   const tab = (active: boolean) =>
     `rounded-md px-2 py-1 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-      active ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-accent/60"
+      active
+        ? "bg-accent font-medium text-accent-foreground"
+        : "text-muted-foreground hover:bg-accent/60"
     }`;
 
   return (

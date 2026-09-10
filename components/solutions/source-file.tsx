@@ -83,7 +83,10 @@ export async function SourceFile({
     );
   }
 
-  const { lines, palette, rootStyle, highlighted } = await highlightToLines(content.content, language);
+  const { lines, palette, rootStyle, highlighted } = await highlightToLines(
+    content.content,
+    language,
+  );
   const interactive = review !== undefined && (review.canComment || review.comments.length > 0);
 
   return (

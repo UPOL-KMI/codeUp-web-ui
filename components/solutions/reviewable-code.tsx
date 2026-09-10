@@ -101,7 +101,7 @@ export function ReviewableCode({
               )}
               <CodeLine
                 tokens={tokens}
-              palette={palette}
+                palette={palette}
                 number={line}
                 idPrefix={idPrefix}
                 label={code("lineLabel", { line })}

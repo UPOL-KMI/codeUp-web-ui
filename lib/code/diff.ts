@@ -134,7 +134,6 @@ export function pairFilesByName<T extends { name: string }>(
   return { pairs, onlyLeft, onlyRight: [...rightByName.values()] };
 }
 
-
 /**
  * A manual pairing the reader asked for (G-030), carried in `searchParams` rather than remembered
  * server-side or in the browser.

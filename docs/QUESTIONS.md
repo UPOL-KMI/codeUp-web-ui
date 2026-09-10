@@ -504,12 +504,12 @@ it, or a superadmin".
 
 | Request                                         | Superadmin | Plain supervisor |
 | ----------------------------------------------- | ---------- | ---------------- |
-| `GET /pipelines/{id}/exercise-files` (the list)  | 200        | **200**          |
-| `GET /uploaded-files/{fileId}/download`          | 200        | **403**          |
+| `GET /pipelines/{id}/exercise-files` (the list) | 200        | **200**          |
+| `GET /uploaded-files/{fileId}/download`         | 200        | **403**          |
 
 So the list is granted more widely than its contents. Worse, the seeded files carry
 **`userId: null`** — `runner.py` on both Python pipelines has no uploader at all — so
-`file.isOwner` is false for *everybody*, and no amount of pipeline permission makes them readable
+`file.isOwner` is false for _everybody_, and no amount of pipeline permission makes them readable
 to anyone but a superadmin.
 
 The practical shape of it: an `empowered-supervisor` may create pipelines, may edit this one, and
@@ -522,7 +522,7 @@ branch) rather than offering one that 403s, and everything else on the screen �
 replace, remove — works for whoever holds the pipeline's `update` hint.
 
 **What would fix it:** either a `GET /v1/pipelines/{id}/exercise-files/{fileId}` that authorises
-against the *pipeline* the way the list and the delete already do, or one more condition on
+against the _pipeline_ the way the list and the delete already do, or one more condition on
 `uploadedFile.download` for a file whose pipeline the caller may view. The first is more in keeping
 with how the rest of that resource is addressed.
 
@@ -559,8 +559,8 @@ all — is the operator's call and their institution's, not a frontend decision.
 **What I would want to know:**
 
 1. Should `/accept-invitation` show the same tick? It is a two-line change if so.
-2. Is an unrecorded consent acceptable? If the institution needs to be able to show *that* a
-   user agreed and *when*, this needs a core-api field, and no amount of frontend work
+2. Is an unrecorded consent acceptable? If the institution needs to be able to show _that_ a
+   user agreed and _when_, this needs a core-api field, and no amount of frontend work
    substitutes. That would be a genuine API change request rather than a UI ticket.
 3. Should the label link to an actual policy document? Legacy's text mentions a "GDPR policy" and
    links to nothing, and there is no configured URL for one. If a document exists, a variable

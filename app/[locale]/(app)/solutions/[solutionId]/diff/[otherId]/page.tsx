@@ -10,12 +10,7 @@ import {
   type SolutionFileEntry,
 } from "@/lib/api/solution-files";
 import { getSolutionDetail } from "@/lib/api/solution";
-import {
-  applyManualPairs,
-  encodeFilePair,
-  pairFilesByName,
-  parseFilePairs,
-} from "@/lib/code/diff";
+import { applyManualPairs, encodeFilePair, pairFilesByName, parseFilePairs } from "@/lib/code/diff";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -89,9 +84,8 @@ export default async function SolutionDiffPage({
     pairFilesByName(leftFiles, rightFiles),
     manual,
   );
-  const applied = manual.filter(
-    ([left, right]) =>
-      pairs.some((pair) => pair.left.name === left && pair.right.name === right),
+  const applied = manual.filter(([left, right]) =>
+    pairs.some((pair) => pair.left.name === left && pair.right.name === right),
   );
 
   const contents = tooBig
