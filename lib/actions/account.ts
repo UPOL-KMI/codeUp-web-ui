@@ -12,6 +12,8 @@ import {
   type PasswordValues,
   type ProfileValues,
   type SettingsValues,
+  interfacePreferencesSchema,
+  type InterfacePreferencesValues,
 } from "./account.schema";
 
 /**
@@ -123,5 +125,49 @@ export async function expireCalendarToken(
     return { success: true, data: { tokenId } };
   } catch (error) {
     return failure(error, "calendarFailed");
+  }
+}
+
+/**
+ * Saving the two interface preferences (G-022).
+ *
+ * **`POST /v1/users/{id}/ui-data` merges rather than replaces**, which is why AD-007's "broadcasts
+ * read up to" marker survives a save here -- verified live: writing these two keys left
+ * `systemMessagesAccepted` untouched. `overwrite` is deliberately never sent, since its `true`
+ * replaces the whole blob and the marker with it.
+ *
+ * **Both keys go on every save, and `null` rather than omission carries "follow the default".**
+ * Two reasons, both established against the running instance rather than reasoned about:
+ * omitting a key leaves the previous value in place, so an override would be unsettable once set;
+ * and an **empty** `uiData` is not a way to say "nothing" -- PHP counts `[]` as empty, so
+ * `{uiData: {}}` takes the presenter's `if (!$newUiData && !$overwrite) return;` branch and
+ * changes nothing at all, answering 200 while saving none of it. A form that posted `{}` would
+ * report success and silently do nothing.
+ */
+export async function updateInterfacePreferences(
+  userId: string,
+  values: InterfacePreferencesValues,
+): Promise<ActionResult<{ userId: string }>> {
+  const t = await getTranslations("Account.errors");
+  const parsed = interfacePreferencesSchema.safeParse(values);
+  if (!parsed.success) return { success: false, formError: t("invalid") };
+
+  try {
+    await apiPost(
+      "/v1/users/{id}/ui-data",
+      {
+        uiData: {
+          defaultPage: parsed.data.defaultPage,
+          // Stored as null rather than omitted: omitting it would leave a previous override in
+          // place, so "follow the interface language" would be unsettable once set.
+          dateFormatOverride:
+            parsed.data.dateFormatOverride === "" ? null : parsed.data.dateFormatOverride,
+        },
+      },
+      { pathParams: { id: userId } },
+    );
+    return { success: true, data: { userId } };
+  } catch (error) {
+    return failure(error, "preferencesFailed");
   }
 }

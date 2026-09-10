@@ -46,6 +46,13 @@ export interface CurrentUser {
    * of which have to know the difference. Everything else wants `role`.
    */
   accountRole: string;
+  /**
+   * Where this reader wants signing in to land, and which language's conventions absolute dates
+   * follow (G-022). Both live in `uiData` beside AD-007's read marker, and both are null until
+   * somebody sets them -- "follow the defaults" is the answer for almost every account.
+   */
+  defaultPage: string | null;
+  dateFormatOverride: string | null;
 }
 
 interface UserPayload {
@@ -59,7 +66,12 @@ interface UserPayload {
     groupLock?: string | null;
     groupLockType?: string | null;
     ipLock?: string | null;
-    uiData?: { systemMessagesAccepted?: number | null } | null;
+    uiData?: {
+      systemMessagesAccepted?: number | null;
+      /** G-022's two, both optional -- most accounts have never set either. */
+      defaultPage?: string | null;
+      dateFormatOverride?: string | null;
+    } | null;
   };
 }
 
@@ -92,6 +104,8 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     groupLockType: user.privateData?.groupLockType ?? null,
     ipLock: user.privateData?.ipLock ?? null,
     messagesReadUpTo: user.privateData?.uiData?.systemMessagesAccepted ?? null,
+    defaultPage: user.privateData?.uiData?.defaultPage ?? null,
+    dateFormatOverride: user.privateData?.uiData?.dateFormatOverride ?? null,
   };
 });
 

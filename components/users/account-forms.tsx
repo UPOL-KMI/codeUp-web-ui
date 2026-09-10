@@ -8,17 +8,25 @@ import {
   changePassword,
   createCalendarToken,
   expireCalendarToken,
+  updateInterfacePreferences,
   updateProfile,
   updateSettings,
 } from "@/lib/actions/account";
 import {
   passwordSchema,
   profileSchema,
+  type InterfacePreferencesValues,
   type PasswordValues,
   type ProfileValues,
 } from "@/lib/actions/account.schema";
 import { invalidateUserTokens } from "@/lib/actions/users";
 import type { AccountSettings, CalendarToken, NotificationFlag } from "@/lib/api/user-settings";
+import {
+  DATE_FORMAT_LOCALES,
+  DEFAULT_PAGES,
+  type DateFormatLocale,
+  type DefaultPage,
+} from "@/lib/api/ui-preferences";
 import {
   restrictedTokenRequest,
   TOKEN_EXPIRATIONS,
@@ -718,5 +726,109 @@ export function EffectiveRole({
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * The two interface preferences this app carries (G-022).
+ *
+ * **Two, out of the legacy panel's nine, and the other seven are in `docs/DROPPED.md` by name.**
+ * Surnames-first, open-on-double-click and sidebar folding are decisions this redesign made
+ * differently; the editor font size and Vim mode configure an in-browser code editor that does not
+ * exist here; the source-viewer dark theme is superseded by the app-wide theme (F-010) which
+ * D-009's viewer already follows; and Gravatar is a real setting that lives on the profile form
+ * above rather than here, because it is about the account rather than the interface.
+ *
+ * **Both fields are always sent, and that is a guard rather than tidiness.** core-api merges what
+ * this endpoint is given -- which is how AD-007's "broadcasts read up to" marker survives a save
+ * here -- but an *empty* `uiData` is a silent no-op rather than a way to say "nothing": PHP counts
+ * `[]` as empty, and the presenter returns 200 having changed nothing. So a form that posted `{}`
+ * would tell the reader it had saved and not have. See `updateInterfacePreferences`.
+ */
+export function InterfacePreferences({
+  userId,
+  defaultPage,
+  dateFormatOverride,
+}: {
+  userId: string;
+  defaultPage: DefaultPage;
+  dateFormatOverride: DateFormatLocale | "";
+}) {
+  const t = useTranslations("Account.preferences");
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, setPending] = useState(false);
+  const [draft, setDraft] = useState<InterfacePreferencesValues>({
+    defaultPage,
+    dateFormatOverride,
+  });
+
+  async function save() {
+    setPending(true);
+    const result = await updateInterfacePreferences(userId, draft);
+    setPending(false);
+    if (result.success) {
+      toast.success(t("saved"));
+      router.refresh();
+      return;
+    }
+    toast.error(t("failed"), result.formError);
+  }
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void save();
+      }}
+      className="flex flex-col gap-4"
+    >
+      <div className="flex flex-wrap gap-4">
+        <Field label={t("defaultPage")} description={t("defaultPageHint")}>
+          <select
+            className={input}
+            value={draft.defaultPage}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                defaultPage: event.target.value as DefaultPage,
+              }))
+            }
+          >
+            {DEFAULT_PAGES.map((page) => (
+              <option key={page} value={page}>
+                {t(`defaultPages.${page}`)}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label={t("dateFormat")} description={t("dateFormatHint")}>
+          <select
+            className={input}
+            value={draft.dateFormatOverride}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                dateFormatOverride: event.target.value as DateFormatLocale | "",
+              }))
+            }
+          >
+            <option value="">{t("dateFormats.follow")}</option>
+            {DATE_FORMAT_LOCALES.map((locale) => (
+              <option key={locale} value={locale}>
+                {t(`dateFormats.${locale}`)}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      <div>
+        <button type="submit" disabled={pending} className={primary}>
+          {pending ? t("saving") : t("save")}
+        </button>
+      </div>
+    </form>
   );
 }

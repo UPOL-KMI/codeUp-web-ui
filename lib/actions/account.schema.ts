@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DATE_FORMAT_LOCALES, DEFAULT_PAGES } from "@/lib/api/ui-preferences";
+
 /**
  * The reader's own account, as the settings forms collect it (S-022). Shared with the Server
  * Actions that re-validate it, in its own module apart from the `"use server"` file (D-004).
@@ -40,3 +42,16 @@ export const settingsSchema = z.object({
 });
 
 export type SettingsValues = z.infer<typeof settingsSchema>;
+
+/**
+ * The two interface preferences (G-022). Both may be empty, which is the stored "follow the
+ * default" -- so this schema has nothing that can fail, and exists for the same reason the others
+ * do: the Server Action re-validates what the form sends rather than trusting it.
+ */
+export const interfacePreferencesSchema = z.object({
+  defaultPage: z.enum(DEFAULT_PAGES),
+  /** Empty means "follow the interface language". */
+  dateFormatOverride: z.union([z.enum(DATE_FORMAT_LOCALES), z.literal("")]),
+});
+
+export type InterfacePreferencesValues = z.infer<typeof interfacePreferencesSchema>;

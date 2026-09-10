@@ -5,6 +5,7 @@ import {
   DATE_TIME_FORMAT,
   DATE_TIME_SECONDS_FORMAT,
 } from "@/lib/format/date-time";
+import { dateFormatLocale } from "@/lib/format/date-locale";
 
 /**
  * The one absolute date/time rendering (D-012). Brief §9: "One date format... shared helpers."
@@ -28,7 +29,11 @@ export interface DateTimeProps {
 }
 
 export async function DateTime({ unixSeconds, dateOnly, withSeconds }: DateTimeProps) {
-  const format = await getFormatter();
+  // G-022: a reader may ask for one language's date conventions while reading the interface in the
+  // other. `getFormatter` still receives the request config -- including `i18n/request.ts`'s pinned
+  // `timeZone`, which is what keeps the instant right -- and only the locale is overridden.
+  const locale = await dateFormatLocale();
+  const format = await getFormatter(locale === null ? undefined : { locale });
   const date = new Date(unixSeconds * 1000);
 
   const formatted = format.dateTime(

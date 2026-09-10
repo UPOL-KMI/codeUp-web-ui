@@ -60,8 +60,12 @@ export function LoginForm({
       return;
     }
 
+    // G-022: the reader's stored "default page (after login)", which the BFF route reads out of
+    // core-api's own login response. `?from=` still wins -- `safeRedirectTarget` prefers it and
+    // falls back to this.
+    const body = (await response.json().catch(() => null)) as { defaultPage?: string } | null;
     router.refresh();
-    router.push(safeRedirectTarget(from));
+    router.push(safeRedirectTarget(from, body?.defaultPage ?? "/dashboard"));
   }
 
   const input =

@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/lib/api/current-user";
 import { SUPERADMIN_TOKEN_SCOPES, TOKEN_SCOPES } from "@/lib/auth/restricted-token";
 import { USER_ROLES } from "@/lib/api/user-roles";
+import { dateFormatValue, defaultPageValue } from "@/lib/api/ui-preferences";
 import { getAccountSettings, getCalendarTokens, NOTIFICATION_FLAGS } from "@/lib/api/user-settings";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
@@ -12,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import {
   ApplicationToken,
   EffectiveRole,
+  InterfacePreferences,
   CalendarTokens,
   PasswordForm,
   ProfileForm,
@@ -97,6 +99,19 @@ export default async function AccountSettingsPage() {
             {t("settings.title")}
           </h2>
           <SettingsForm account={account} locales={routing.locales} flags={NOTIFICATION_FLAGS} />
+        </section>
+
+        {/* G-022. Two of the legacy panel's nine keys; the other seven are in DROPPED.md by
+            name, which is the half of this ticket that is not code. */}
+        <section aria-labelledby="account-preferences">
+          <h2 id="account-preferences" className="mb-3 text-base font-semibold tracking-tight">
+            {t("preferences.title")}
+          </h2>
+          <InterfacePreferences
+            userId={account.id}
+            defaultPage={defaultPageValue(viewer.defaultPage)}
+            dateFormatOverride={dateFormatValue(viewer.dateFormatOverride)}
+          />
         </section>
 
         <section aria-labelledby="account-sessions">

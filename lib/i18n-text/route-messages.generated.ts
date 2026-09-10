@@ -360,6 +360,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   "/profile/edit": [
     "Account.calendars",
     "Account.password",
+    "Account.preferences",
     "Account.profile",
     "Account.sessions",
     "Account.settings",
@@ -496,6 +497,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   "/users/[userId]/edit": [
     "Account.calendars",
     "Account.password",
+    "Account.preferences",
     "Account.profile",
     "Account.sessions",
     "Account.settings",

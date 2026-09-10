@@ -3203,7 +3203,8 @@
       "passwordFailed": "Heslo se nepodařilo změnit.",
       "passwordMismatch": "Hesla se neshodují.",
       "settingsFailed": "Nastavení se nepodařilo uložit.",
-      "calendarFailed": "Odkaz na kalendář se nepodařilo změnit."
+      "calendarFailed": "Odkaz na kalendář se nepodařilo změnit.",
+      "preferencesFailed": "Nastavení rozhraní se nepodařilo uložit."
     },
     "token": {
       "title": "Aplikační token",
@@ -3252,6 +3253,26 @@
       "current": "Aplikaci si právě prohlížíte jako {role}.",
       "restore": "Vrátit se ke své roli",
       "failed": "Roli se nepodařilo změnit."
+    },
+    "preferences": {
+      "title": "Nastavení rozhraní",
+      "defaultPage": "Výchozí stránka po přihlášení",
+      "defaultPageHint": "Kam vás přihlášení zavede, pokud jste na přihlašovací stránku nepřišli odjinud.",
+      "defaultPages": {
+        "dashboard": "Přehled",
+        "home": "Úvodní stránka"
+      },
+      "dateFormat": "Formát datumů",
+      "dateFormatHint": "Podle konvencí kterého jazyka se píšou data. Denní čas a „před 3 dny“ se vždy řídí jazykem rozhraní.",
+      "dateFormats": {
+        "follow": "Podle jazyka rozhraní",
+        "cs": "Český (1. 2. 2026)",
+        "en": "Anglický (2/1/2026)"
+      },
+      "save": "Uložit nastavení",
+      "saving": "Ukládám…",
+      "saved": "Nastavení bylo uloženo.",
+      "failed": "Nastavení se nepodařilo uložit."
     }
   },
   "UserEdit": {

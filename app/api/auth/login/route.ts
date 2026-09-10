@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { defaultPageRoute } from "@/lib/api/ui-preferences";
 import { establishSession } from "@/lib/auth/session-cookie";
 import { shortSessionSeconds } from "@/lib/auth/short-session";
 
@@ -58,7 +59,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const { payload } = (await apiResponse.json()) as { payload: { accessToken: string } };
+  const { payload } = (await apiResponse.json()) as {
+    payload: {
+      accessToken: string;
+      // G-022: core-api's login response already carries the reader's stored preferences, so
+      // honouring "default page (after login)" costs no request of its own.
+      user?: { privateData?: { uiData?: { defaultPage?: string | null } | null } };
+    };
+  };
 
   // core-api returned something that isn't a JWT we can read the expiry of -- fail closed rather
   // than set a cookie we can't reason about.
@@ -66,5 +74,10 @@ export async function POST(request: Request) {
     throw new Error("Login response from core-api did not contain a decodable access token.");
   }
 
-  return NextResponse.json({ success: true });
+  // G-022. The form uses this as its fallback destination -- `?from=` still wins, because being
+  // returned to the page you were refused is more useful than any stored preference.
+  return NextResponse.json({
+    success: true,
+    defaultPage: defaultPageRoute(payload.user?.privateData?.uiData?.defaultPage),
+  });
 }

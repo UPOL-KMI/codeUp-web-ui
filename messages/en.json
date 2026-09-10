@@ -3203,7 +3203,8 @@
       "passwordFailed": "Your password could not be changed.",
       "passwordMismatch": "The two passwords differ.",
       "settingsFailed": "Your settings could not be saved.",
-      "calendarFailed": "The calendar link could not be changed."
+      "calendarFailed": "The calendar link could not be changed.",
+      "preferencesFailed": "Your interface preferences could not be saved."
     },
     "token": {
       "title": "Application token",
@@ -3252,6 +3253,26 @@
       "current": "You are currently viewing the app as {role}.",
       "restore": "Go back to your own role",
       "failed": "The role could not be changed."
+    },
+    "preferences": {
+      "title": "Interface preferences",
+      "defaultPage": "Default page after signing in",
+      "defaultPageHint": "Where signing in takes you, unless you were sent to the sign-in page from somewhere else.",
+      "defaultPages": {
+        "dashboard": "Dashboard",
+        "home": "Home page"
+      },
+      "dateFormat": "Date format",
+      "dateFormatHint": "Which language's conventions dates are written in. Times of day and “3 days ago” always follow the interface language.",
+      "dateFormats": {
+        "follow": "Follow the interface language",
+        "cs": "Czech (1. 2. 2026)",
+        "en": "English (2/1/2026)"
+      },
+      "save": "Save preferences",
+      "saving": "Saving…",
+      "saved": "Your preferences were saved.",
+      "failed": "Your preferences could not be saved."
     }
   },
   "UserEdit": {

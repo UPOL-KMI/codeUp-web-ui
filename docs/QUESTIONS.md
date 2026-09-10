@@ -428,3 +428,46 @@ a superadmin adding a subgroup to a group in an instance other than their own fi
 client stops guessing -- or make `instanceId` optional when `parentGroupId` is given and take the
 instance from the parent, which is the only value that can be correct. The second is better: it
 removes the possibility of a mismatch rather than making it detectable.
+
+---
+
+## Q-025: `ui-data` cannot be cleared the way its own code reads (G-022)
+
+`POST /v1/users/{id}/ui-data` merges what it is sent into whatever is stored, which is the
+behaviour this app depends on: G-022 writes two keys and AD-007's `systemMessagesAccepted` marker
+survives, verified live. The **erase** path is where reading the presenter and running it disagree.
+
+`UsersPresenter::actionUpdateUiData` is written as:
+
+```php
+$overwrite = filter_var($req->getPost("overwrite"), FILTER_VALIDATE_BOOLEAN);
+$newUiData = $req->getPost("uiData");
+if (!$newUiData && !$overwrite) { /* nothing will change */ return; }
+if (!$newUiData && ($overwrite || $uiData)) { $user->setUiData(null); }
+```
+
+so `{"overwrite": true}` with no `uiData` should fall past the first branch and erase. **It does
+not** -- measured against the live instance, four ways:
+
+| Body                                  | Effect                                      |
+| ------------------------------------- | ------------------------------------------- |
+| `{"uiData": {"a": 1}}`                | merges, other keys preserved (as intended)  |
+| `{"uiData": {}}`                      | **no-op**, answers 200 having saved nothing |
+| `{"overwrite": true}`                 | **no-op**                                   |
+| `{"overwrite": "true"}`               | **no-op**                                   |
+| `{"uiData": null, "overwrite": true}` | erases -- the only form that works          |
+
+Two separate things worth the API team's attention. The first is that **an empty `uiData` reports
+success and changes nothing**: PHP counts `[]` as empty, so a client sending `{}` to mean "the
+reader has no preferences" is answered 200 and saves none of it. That is a silent wrong answer
+rather than a refusal, and it is why this app always sends both keys with `null` for "unset"
+instead.
+
+The second is that `overwrite` alone does not reach the erase branch even though the code says it
+should, so the documented way to clear a user's UI data is not the way that works. Nothing here is
+blocked -- `{"uiData": null, "overwrite": true}` clears it, and this app never needs to -- but the
+gap between the presenter as written and the presenter as run is the kind of thing that will cost
+somebody an afternoon.
+
+**Same genre as Q-021, Q-022 and Q-023:** a field that can be set and not unset, found by trying
+it rather than by reading it.

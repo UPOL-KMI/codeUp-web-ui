@@ -4632,6 +4632,44 @@ standalone`), and `API_BASE_INTERNAL` must point at `127.0.0.1` rather than `rec
     this host, whose IPv6-first loopback exceeds Node's 10s connect timeout outright -- see PF-002's
     row.
 
+- **[2026-09-10 09:05] G-022:** Two interface preferences built, seven recorded, and a `ui-data`
+  endpoint that does not clear the way its own code reads. `lib/api/ui-preferences.ts` + unit tests,
+  `lib/format/date-locale.ts`, `components/users/account-forms.tsx` (`InterfacePreferences`),
+  `lib/actions/account.ts`, `components/format/date-time.tsx`, `app/api/auth/login/route.ts`,
+  `docs/DROPPED.md`.
+  - _Both halves of the row's own instruction._ "Either build the two or record all seven item by
+    item; what is not acceptable is the current silence" -- so `defaultPage` and
+    `dateFormatOverride` are on `/profile/edit`, and the rest are one line each in `DROPPED.md`
+    with the thing that replaced them. That retires the one provisional row that file had.
+  - _It was nine keys, not seven._ `useGravatar` is already built on the profile form, because it
+    is a property of the account rather than of the interface; `darkTheme` is superseded by F-010's
+    app-wide theme, which D-009's viewer already follows -- a viewer-only override would let the two
+    disagree.
+  - **_`defaultPage` is honoured at sign-in, and core-api's login response already carries it_**, so
+    it costs no request of its own. `?from=` still wins: being returned to the page you were refused
+    is worth more than a stored preference. `proxy.ts` still sends a live session from `/login` to
+    `/dashboard`, because middleware has the cookie and no `uiData` -- and that is not a login.
+    Legacy's third option, `instance`, **has no destination in this IA** (DEC-113 put the instance
+    screens behind `/admin`), so it is read as the landing page, which is the page that actually
+    names the reader's instance.
+  - _`dateFormatOverride` reaches `DateTime` and nothing else._ Resolved once per request by
+    `dateFormatLocale()`, which asks for the session cookie **before** `getCurrentUser()` --
+    `requireSession()` redirects when there is none, which is right for a page and catastrophic for
+    a date on a public one. Relative times are phrasing rather than numerals and keep following the
+    interface language.
+  - **_Filed Q-025, and corrected my own docblock with it._** `ui-data` merges as documented, which
+    is what keeps AD-007's read marker alive through a save here. But `{uiData: {}}` answers **200
+    having saved nothing** (PHP counts `[]` as empty, so it takes the early-return branch), and
+    `overwrite: true` alone does **not** erase despite the presenter reading as though it must --
+    only `{uiData: null, overwrite: true}` does. The first draft of this ticket's docblock asserted
+    the opposite, that an empty object erases; it was wrong, and it was measuring rather than
+    reading that caught it.
+  - _Observations:_ **verified live.** The two keys saved without disturbing
+    `systemMessagesAccepted`; sign-in then answered `/` instead of `/dashboard`; absolute dates
+    rendered `30. 7. 2026` on an **English** page with the `cs` override set; and the form showed
+    both stored values back. The instance's admin account was returned to the `uiData: null` it
+    started in. 234 unit tests (225 before), typecheck/lint/format/build clean.
+
 - **[2026-09-10 07:55] G-011:** Mailing the whole class, and the truncation the legacy link does not
   mention. `components/groups/mail-students.tsx`, `lib/format/mailto.ts` + unit tests,
   `lib/api/group-detail.ts`, `e2e/mail-students.spec.ts`.
