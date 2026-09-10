@@ -5371,4 +5371,6 @@ The middle row is the finding worth keeping: **the "nothing submitted yet" fixtu
 
 **Not done here, and deliberately.** The seed is not changed to sweep the stray solutions off the unsubmitted assignment. The specs no longer depend on that assignment at all, so the suite is honest either way, and deleting submissions is a bigger decision than a test fix — it belongs to whoever owns the fixture. It is recorded above so it is not rediscovered a fourth time.
 
-**What was run:** typecheck, lint, format, 269 unit tests, and the full e2e suite.
+**What was run:** typecheck, lint, format, build, 269 unit tests, and the full e2e suite — **308 pass, 0 fail.**
+
+**Green before and green after is not the evidence here**, since the run before was green by accident. The evidence is that the specs now go somewhere else: `seededAssignments()` resolves `primary` to `c3793a29`, where `.first()` had been handing back `806ce477`. So `assignment-solutions.spec.ts` navigates to a **different assignment than it did yesterday** — the one the seed actually submits to — and still passes. That is the difference between the assertion holding and the assertion meaning something.
