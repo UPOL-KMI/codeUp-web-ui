@@ -568,3 +568,75 @@ all — is the operator's call and their institution's, not a frontend decision.
 
 **Nothing is blocked.** The registration form is at parity, and the two accounts this deployment
 can create are unaffected either way.
+
+---
+
+## Q-029: a solution that has been through plagiarism detection can never be deleted (PF-012)
+
+`DELETE /assignment-solutions/{id}` answers **HTTP 500** with a raw Doctrine exception —
+`Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException` — for any solution named in a
+detection record. Two foreign keys do it, and neither cascades:
+
+- `plagiarism_detected_similarity.tested_solution_id` — the solution that was flagged;
+- `plagiarism_detected_similar_file.solution_id` — the solution a matched file came _from_.
+
+**And there is no way to remove the record either.** `RouterFactory::createPlagiarismRoutes`
+registers five routes — `listBatches`, `batchDetail`, `createBatch`, `updateBatch`,
+`getSimilarities`, `addSimilarities` — and **no `DELETE` of any kind**, at batch, similarity or file
+level. So the state is terminal through the API: the solution cannot be deleted because the record
+references it, and the record cannot be deleted at all.
+
+**How it was found, which is the ordinary way rather than a contrived one.** The seed sweeps
+solutions it did not intend (PF-012); three of them are refused, and all three are named in
+detection records — two as the _source_ of a match, one as the tested side. Removing them needs a
+write straight to the deployment's database, which is outside what this repo does.
+
+**Same genre as Q-021, Q-022, Q-023 and Q-025:** an operation the API offers in one direction only,
+found by trying it. This one is worse than those in one respect — the refusal is a 500 with a
+database exception in it rather than a message, so an app can neither anticipate it nor explain it.
+`ReCodEx does not detect similarities itself`, so every record here was uploaded by an external
+tool, and a tool that uploads a wrong batch has no way to withdraw it.
+
+**What this app does about it:** nothing, deliberately. Deleting a solution is offered where
+core-api offers it, and the failure is reported with core-api's own answer. The seed logs the
+refusal, counts it, and carries on rather than stopping.
+
+---
+
+## Q-030: core-api answers 500 for a solution whose author has been deleted (PF-013)
+
+Deleting a user leaves their solutions behind with no author — `authorId: null` in
+`/v1/exercise-assignments/{id}/solutions`, which is a state core-api itself publishes. Reading one
+of those solutions through the view factory then throws:
+
+```
+TypeError: App\Model\Repository\AssignmentSolutions::findBestSolution(): Argument #2 ($user)
+must be of type App\Model\Entity\User, null given,
+called in /opt/recodex-core/app/model/view/AssignmentSolutionViewFactory.php on line 69
+```
+
+**core-api already knows this case exists and guards it in one place.**
+`AssignmentSolutionsPresenter::actionSetFlag` opens with
+
+```php
+if ($solution->getSolution()->getAuthor() === null) {
+    throw new NotFoundException("Author of solution '$id' was deleted");
+}
+```
+
+— so setting a flag on an authorless solution is answered with 404 and a sentence, while
+_serialising_ the same solution is answered with an unhandled `TypeError`. The guard is missing from
+the view factory, not from the concept.
+
+**What a reader sees, and why it is worth recording rather than working around.** The 500 reaches
+this app as an ordinary API error, so the page renders "Something went wrong / This content could
+not be loaded" — which is honest and is what the error boundary is for. It is not a defect here.
+But it makes any page listing solutions dependent on whether an authorless one is in range, which
+is how it was found: `refusals.spec.ts` failed intermittently with the error boundary in place of
+the Not found page, because the crumb chain's read happened to include one.
+
+**What this app does about it:** one thing, which is a real fix in its own right. A solver whose
+author is gone is no longer rendered as a row — `/v1/assignment-solvers` reports it with
+`solverId: null`, and it had been reaching the class-progress table as a person with no name,
+sorted first by the empty string, whose link pointed at `/users/null` (PF-013). Nothing else is
+worked around: an endpoint that 500s is an endpoint that 500s.

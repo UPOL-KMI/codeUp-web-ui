@@ -5374,3 +5374,136 @@ The middle row is the finding worth keeping: **the "nothing submitted yet" fixtu
 **What was run:** typecheck, lint, format, build, 269 unit tests, and the full e2e suite — **308 pass, 0 fail.**
 
 **Green before and green after is not the evidence here**, since the run before was green by accident. The evidence is that the specs now go somewhere else: `seededAssignments()` resolves `primary` to `c3793a29`, where `.first()` had been handing back `806ce477`. So `assignment-solutions.spec.ts` navigates to a **different assignment than it did yesterday** — the one the seed actually submits to — and still passes. That is the difference between the assertion holding and the assertion meaning something.
+
+---
+
+### 2026-09-11 — PF-011, PF-012, PF-013: 308 pass, 0 fail, and the twelve that got there
+
+**Tickets:** PF-011, PF-012, PF-013 (new), PF-010 bucket (c) closed, F-028 re-checked.
+**Status:** done. `pnpm test:e2e` from a cold build: **308 passed, 0 failed, 2.8 minutes**,
+`retries` at 0 outside CI so nothing is masked. Five static checks and 269 unit tests green.
+
+**Where this started.** The three commits this session began with turned out to duplicate work
+already on `origin/main` — a parallel line had closed PF-010's buckets (a) and (b) with
+`seededAssignments()`, which finds the three assignments by what the seed guarantees rather than by
+position, and does it better than the version being rebased: it clicks the link by `href` instead
+of `goto`-ing the id, so the navigation from the group page is still exercised. Those commits were
+dropped rather than merged. **One of them was also wrong on its own terms:** it keyed the
+assignment settings form by `assignment.version` to fix a stale optimistic lock, and the lock is
+not stale — the form reads `assignment.version` from props at save time, so `router.refresh()` does
+hand it the new one. Keying it would have thrown away a teacher's unsaved settings every time they
+saved a text. Upstream's answer, a `waitForResponse` on the RSC refresh and a poll, is the right
+one. What did survive from those commits is in PF-012 below.
+
+**Then the whole suite, and twelve failures.** None was a flake and none was upstream's fault:
+every one was a fixture the specs believed in and the seed did not make, or made somewhere else.
+Three tickets came out of it.
+
+**PF-011 — the leak.** `assignments.spec.ts` and `solution-rerun.spec.ts` submit a real solution
+and both removed it at the end of the test body: one after its last assertion, one in a `finally`
+that a Playwright timeout skips — PF-007's defect exactly, one entity over.
+`e2e/helpers/created-solutions.ts` registers the file's `afterEach` and takes the id the moment the
+URL is known. **The residue was worse than the exercise case because where it lands is not fixed:**
+both reach the submit form through the dashboard's first row, so an orphan attaches to whichever
+assignment the dashboard sorted first. F-029's "nothing submitted yet" fixture had collected two and
+had not been an empty-state fixture for some time, which nothing noticed because no spec asserts on
+that assignment by name.
+
+**PF-012 — the seed repairs what earlier runs of it left.** Four things it now guarantees:
+
+- **Its three assignments are found by student hint, not by position.** All three are created
+  inside the same second, so `createdAt` ties and the tiebreak is an arbitrary id comparison —
+  `existing[0]` meant "whichever id sorts first". The file's own sort comment records the symptom
+  this caused ("two solutions noted `[seed] correct` under two different assignments") without the
+  sort ever having been a fix for it.
+- **A reused account is checked against the chosen instance.** An address is unique
+  deployment-wide and a user belongs to one instance, so an account looked up by email can be one
+  created against another. Nothing can move it, so this stops with what to do instead of trying.
+- **A reused exercise is checked against the seeded group, and this one was live.**
+  `[seed] Echo Greeting` was attached to an operator's own `Jazyk Python` and nothing else: an
+  earlier run created it there, and every run since found it by name and reconfigured it in place.
+  An exercise's groups are what a course may assign _from_, so the group picker offered nothing and
+  two specs failed on a fixture core-api's own search could find perfectly well. Attached rather
+  than moved — detaching would write to somebody else's group, and a stray attachment there is
+  theirs to remove.
+- **It sweeps what it did not intend:** prefixed solutions on its three assignments that are not in
+  the set it just made, and evaluation runs beyond the first on its reference solution. Both are
+  residue from the position-picking above and from PF-011, and both were breaking exact counts.
+  F-029's empty fixture is empty again.
+
+**PF-013 — the pattern behind most of the rest.** A helper named `seeded*` that walks _every_ group
+returns whatever an operator has in their own courses first, and calls it a fixture.
+`seededAttemptsOfOneAuthor` returned two attempts on an assignment inside `Jazyk Python`, so the
+spec that needs the seed's ZIP submission got two plain ones; `firstSeededSolution` returned a
+solution with no review, so "asking for a review is not offered once one exists" was reading a
+screen where one did not exist. Both are scoped to the seeded group now — `seededGroup()` also
+refuses if two groups share its name — and `firstSeededSolution` reads the primary assignment,
+which is where the seed puts everything it submits, and takes an optional note so three specs that
+mutate a solution stop mutating the same one.
+
+Three more of the same family. A **hardcoded classmate UUID** from a database since re-seeded, so
+the spec asserted a refusal of somebody who no longer exists and got "Page not found" — the right
+answer to the wrong question. **`exercise-config` asking for a Java checkbox** on a deployment
+whose four installed languages are `bash`, `c-gcc-linux`, `cxx-gcc-linux` and `python3`; the test
+is about two ordinary languages saving, so it now names one that exists. And **`dashboard`
+asserting the seeded review is the _first_ row** of a queue ordered oldest-first across every group
+the teacher administers — which row leads is a fact about the deployment, that the row is queued and
+the order is oldest-first are facts about the app, and both of those are still asserted.
+
+**And one that is core-api's rule rather than a spec's mistake, now DEC-133.** `reviewRequest` is a
+**unique flag per author and assignment**: `actionSetFlag` sets it to `false` on every other
+solution of the same author before setting the one it was asked about. So asking for a review as
+Alice silently withdrew the seed's own request from her other attempt — the row the teacher
+dashboard's queue and the plagiarism report are both reached through. It failed the way shared state
+always does: intermittently, in a different file, depending on which of two workers finished first.
+**A `finally` that clears the flag it set does not restore what setting it displaced**, and nothing
+in the response says what that was. Those specs write on the classmate now, whose flags nothing
+reads, and `plagiarism.spec.ts` no longer enters through the dashboard queue at all — whether the
+queue leads there is `dashboard.spec.ts`'s subject; this one is the report.
+
+**One product defect, found through all this and worth its own line.** A solver whose author has
+been deleted is no longer rendered as a row. `/v1/assignment-solvers` keeps reporting the record
+with `solverId: null`, and it reached the class-progress table as a person with no name, sorted to
+the top by the empty string, whose link pointed at `/users/null` and was answered with a refusal
+when a teacher clicked it.
+
+**Two API findings, filed rather than worked around.**
+
+**Q-029: a solution that has been through plagiarism detection can never be deleted.**
+`DELETE /assignment-solutions/{id}` answers **500** with
+`Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException` for any solution named in a
+detection record — as the tested side or as the source of a matched file — and neither key cascades.
+**And the record cannot be removed either:** the plagiarism route list has `listBatches`,
+`batchDetail`, `createBatch`, `updateBatch`, `getSimilarities`, `addSimilarities` and **no `DELETE`
+at any level**. So the state is terminal through the API. Three swept solutions are refused for
+exactly this reason; the seed logs each, counts them, and carries on.
+
+**Q-030: core-api answers 500 for a solution whose author has been deleted.**
+`AssignmentSolutionViewFactory.php:69` passes the author straight into
+`findBestSolution(): Argument #2 ($user) must be of type User, null given`. core-api already knows
+this case exists — `actionSetFlag` opens by throwing `NotFoundException("Author of solution '$id'
+was deleted")` — so the guard is missing from the view factory, not from the concept. This is what
+was behind `refusals.spec.ts` intermittently rendering the error boundary in place of the Not found
+page: the crumb chain's read happened to include an authorless solution, and "Something went wrong"
+is the honest answer to a 500.
+
+**PF-010's last bucket, closed on the instance that filed it: it does not reproduce.**
+`groups.spec.ts` passes there, and the row's own reading was right about why — `data-table.tsx`
+renders one filter input, and `/groups` and `/archive` are separate pages with one table each. The
+nearest thing to a doubling is that the input's `aria-label` carries the same string as its
+placeholder, and `getByPlaceholder` does not match an `aria-label`. Nothing was changed for it.
+
+**F-028 re-checked, and nothing has moved.** `typescript-eslint@8.70.0` and its canary still declare
+`typescript: >=4.8.4 <6.1.0`; `eslint-plugin-react` is still `7.37.5` peering at `^9.7` with an
+older `next` tag. Both pins are already at the newest version their own range allows, so there is
+no interim upgrade to take either. Dated note in AGENTS.md.
+
+**What is still on the instance, and it is the operator's call.** Three solutions the seed wants
+gone cannot be removed through any API (Q-029), and one of them is authorless, which is what makes
+core-api throw (Q-030). Their only routes out are a write straight to the deployment's database or a
+wipe and re-seed. **The suite is green with them in place** — every spec that used to trip over them
+now names what it needs instead of taking whatever was first, which is the more valuable outcome
+anyway — so this is tidiness rather than a blocker. Also on the instance, and also not ours to
+delete: an assignment of `[seed] Echo Greeting` inside `Jazyk Python` carrying two of Alice's
+solutions, from the same pre-`chooseInstance` run. The seed reports the stray attachment and leaves
+the group alone.
