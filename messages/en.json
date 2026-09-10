@@ -3569,5 +3569,14 @@
       "attempt": "Attempt {attempt}"
     },
     "otherAttempt": "Attempt {attempt}"
+  },
+  "MarkdownPreview": {
+    "write": "Write",
+    "preview": "Preview",
+    "tablist": "Write or preview",
+    "rendering": "Rendering…",
+    "empty": "Nothing to preview yet.",
+    "failed": "This could not be rendered.",
+    "tooLong": "This text is too long to preview."
   }
 }

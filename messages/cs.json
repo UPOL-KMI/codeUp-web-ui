@@ -3569,5 +3569,14 @@
       "attempt": "Pokus {attempt}"
     },
     "otherAttempt": "Pokus {attempt}"
+  },
+  "MarkdownPreview": {
+    "write": "Psát",
+    "preview": "Náhled",
+    "tablist": "Psaní nebo náhled",
+    "rendering": "Vykresluji…",
+    "empty": "Zatím není co zobrazit.",
+    "failed": "Text se nepodařilo vykreslit.",
+    "tooLong": "Tento text je příliš dlouhý pro náhled."
   }
 }

@@ -117,7 +117,13 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
         {assignment.studentHint && (
           <div className="mt-4 rounded-md border border-border bg-muted/40 p-3">
             <h3 className="text-sm font-medium">{t("hint")}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{assignment.studentHint}</p>
+            {/* Markdown, not plain text: legacy renders the hint through its own renderer
+                (`LocalizedTexts.js`), so a hint authored with a list or emphasis rendered here as
+                literal asterisks. Found while building G-028 -- offering a markdown preview of a
+                field displayed as plain text would have been the more visible half of the bug. */}
+            <div className="mt-1">
+              <Markdown source={assignment.studentHint} />
+            </div>
           </div>
         )}
       </section>

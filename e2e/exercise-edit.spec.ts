@@ -149,3 +149,41 @@ test("is not offered to a student, nor readable by one", async ({ page }) => {
   await expect(page.getByRole("main")).toContainText("Forbidden");
   await expect(page.getByRole("main").getByRole("button", { name: "Create" })).toHaveCount(0);
 });
+
+/**
+ * G-028. The preview renders through the **same** Server Component the exercise page uses, which
+ * is the whole point -- so the two things worth asserting are that authored markdown comes back
+ * rendered (KaTeX above all: a mistyped delimiter is invisible until a student reads it) and that
+ * raw HTML is still escaped to text on the way, exactly as it is on the page.
+ */
+test("previews an exercise text through the renderer a student will see", async ({ page }) => {
+  await signIn(page, SUPERVISOR, "/en/exercises");
+  const main = page.getByRole("main");
+
+  await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
+  await main.getByRole("button", { name: "Create" }).click();
+  await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  expect(trackExercise(page.url())).not.toBeNull();
+
+  const field = main.locator("#\\texts\\.0\\.text");
+  await field.fill("## Sort it\n\nGiven $n$ numbers.\n\n<script>alert(1)</script>");
+
+  // The tabs belong to this field, not to the second locale's -- scoped through the panel the
+  // textarea sits in, since the form renders one pair per locale.
+  const group = main.locator('[role="tabpanel"]', { has: field }).locator("..");
+  await group.getByRole("tab", { name: "Preview" }).click();
+
+  const preview = group.locator('[role="tabpanel"]').nth(1);
+  await expect(preview.getByRole("heading", { name: "Sort it" })).toBeVisible();
+  // KaTeX ran: the delimiters became math rather than surviving as literal dollar signs.
+  await expect(preview.locator(".katex").first()).toBeVisible();
+  await expect(preview).not.toContainText("$n$");
+  // And raw HTML is text, not markup -- `remarkEscapeRawHtml` applies to the preview too, because
+  // it is the same pipeline rather than a second renderer.
+  await expect(preview.locator("script")).toHaveCount(0);
+  await expect(preview).toContainText("<script>alert(1)</script>");
+
+  // Switching back does not disturb what will be submitted.
+  await group.getByRole("tab", { name: "Write" }).click();
+  await expect(field).toHaveValue(/## Sort it/);
+});

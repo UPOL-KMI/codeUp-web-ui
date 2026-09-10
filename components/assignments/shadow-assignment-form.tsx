@@ -14,6 +14,7 @@ import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local"
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { FormError } from "@/components/form/form-error";
 import { useToast } from "@/components/toast/toast-provider";
@@ -116,12 +117,16 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
 
               <div className="flex flex-col gap-1 text-sm">
                 <label htmlFor={`shadow-text-${text.locale}`}>{t("text")}</label>
-                <textarea
-                  id={`shadow-text-${text.locale}`}
-                  rows={4}
-                  className={input}
-                  {...register(`texts.${index}.text`)}
-                />
+                <MarkdownPreviewTabs
+                  getSource={() => form.getValues(`texts.${index}.text`) ?? ""}
+                >
+                  <textarea
+                    id={`shadow-text-${text.locale}`}
+                    rows={4}
+                    className={`${input} w-full`}
+                    {...register(`texts.${index}.text`)}
+                  />
+                </MarkdownPreviewTabs>
               </div>
 
               <div className="flex flex-col gap-1 text-sm">

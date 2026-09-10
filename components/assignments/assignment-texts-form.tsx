@@ -12,6 +12,7 @@ import type { AssignmentSettings } from "@/lib/api/assignment-edit";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { Field } from "@/components/form/field";
 import { useToast } from "@/components/toast/toast-provider";
 
@@ -122,12 +123,14 @@ export function AssignmentTextsForm({ assignment }: { assignment: AssignmentSett
               description={t("texts.textHint")}
               error={fieldError(errors.texts?.[index]?.text?.message)}
             >
-              <textarea
-                rows={8}
-                className={`${input} font-mono`}
-                aria-invalid={errors.texts?.[index]?.text ? true : undefined}
-                {...register(`texts.${index}.text`)}
-              />
+              <MarkdownPreviewTabs getSource={() => form.getValues(`texts.${index}.text`) ?? ""}>
+                <textarea
+                  rows={8}
+                  className={`${input} w-full font-mono`}
+                  aria-invalid={errors.texts?.[index]?.text ? true : undefined}
+                  {...register(`texts.${index}.text`)}
+                />
+              </MarkdownPreviewTabs>
             </Field>
 
             <Field

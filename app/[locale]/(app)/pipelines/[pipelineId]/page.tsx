@@ -8,6 +8,7 @@ import { isExternalReference, ports, utilization } from "@/lib/pipelines/types";
 
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
+import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { PipelineGraph } from "@/components/pipelines/pipeline-graph";
 import { Badge } from "@/components/status/badge";
@@ -126,10 +127,14 @@ export default async function PipelinePage({
               <DateTime unixSeconds={pipeline.updatedAt} />
             </dd>
           </dl>
+          {/* Markdown, not preformatted text: legacy renders a pipeline's description through
+              its own renderer (`PipelineDetail.js`). Found while building G-028. The subtitle
+              above stays the first line as plain text -- a heading is not a place for a rendered
+              document. */}
           {pipeline.description.includes("\n") && (
-            <p className="max-w-prose text-sm whitespace-pre-line text-muted-foreground">
-              {pipeline.description}
-            </p>
+            <div className="max-w-prose text-sm">
+              <Markdown source={pipeline.description} />
+            </div>
           )}
         </section>
 

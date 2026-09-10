@@ -10,6 +10,7 @@ import type { ExerciseDetail } from "@/lib/api/exercise-detail";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -111,13 +112,18 @@ export function ExerciseForm({
             </label>
             <div className="flex flex-col gap-1 text-sm">
               <label htmlFor={`texts.${index}.text`}>{t("text")}</label>
-              <textarea
-                id={`texts.${index}.text`}
-                rows={8}
-                aria-describedby={`texts.${index}.text-hint`}
-                className={`${input} font-mono`}
-                {...register(`texts.${index}.text`)}
-              />
+              {/* G-028. The field is untouched -- the tabs wrap it and read it, so nothing about
+                  what gets submitted changes. This is the text KaTeX appears in, which is why it
+                  is the field a preview matters most for. */}
+              <MarkdownPreviewTabs getSource={() => form.getValues(`texts.${index}.text`) ?? ""}>
+                <textarea
+                  id={`texts.${index}.text`}
+                  rows={8}
+                  aria-describedby={`texts.${index}.text-hint`}
+                  className={`${input} w-full font-mono`}
+                  {...register(`texts.${index}.text`)}
+                />
+              </MarkdownPreviewTabs>
               <span id={`texts.${index}.text-hint`} className="text-xs text-muted-foreground">
                 {t("textHint")}
               </span>

@@ -4968,3 +4968,31 @@ The previous entry recorded that nothing had been verified live because the Dock
 **What was run:** `typecheck`, `lint`, `build`, 234 unit tests clean. **`app-shell.spec.ts` passes 6/6 against the real stack** — the first spec this session could actually run, because it signs in and needs no seeded group, unlike the 20 files blocked on `[seed] Intro to Programming`. Verified live in both locales besides: the encoded address includes the query string, the plate stays white with `data-theme="dark"` forced, `Escape` closes the dialog, and reopening after a navigation shows the new page.
 
 **Next ticket:** G-028 — a preview for markdown fields. Worth noting before starting it: that row says it is also the last of the inventory's promised "CodeMirror 6 (editor)", so building it or dropping it closes that row either way.
+
+---
+
+### 2026-09-10 — G-028: A preview for markdown fields
+
+**Ticket:** G-028  
+**Status:** done
+
+**What was built:** `components/markdown/markdown-preview-tabs.tsx` and `lib/actions/markdown-preview.ts`, wired into five forms, plus `MarkdownPreview` in both locales, DEC-128, DROP-C05, and a spec in `e2e/exercise-edit.spec.ts`.
+
+**The mechanism, and why it was probed before it was built.** `Markdown` is an async Server Component that deliberately never touches `dangerouslySetInnerHTML` — it builds React elements and escapes raw HTML to text on the way. Rendering it to an HTML string for the form would have thrown that away; writing a client-side renderer would have reintroduced the exact divergence this ticket exists to prevent. So the preview is a **Server Action that returns a React node** (DEC-128). The bundled Next docs defer to React's on what a Server Function may return and say nothing about elements, so this was **probed with a throwaway page against the real component first** — KaTeX, Shiki and the heading all arrived in a client component — and the probe was deleted before anything was built on it. The component is called and awaited rather than returned as JSX, so a parser failure on arbitrary input becomes a form error rather than a rejected action.
+
+**It wraps the existing textareas instead of replacing them.** All five forms already own their fields through `useServerActionForm`'s `register()`. A component that took over the value would have meant rewriting five working forms to gain a preview, so the tabs take the field as `children` and the way to read it as `getSource`. Nothing about what gets submitted passes through this component, which was checked the only way worth checking: the exercise text was typed, previewed, switched back, saved, and **read back from core-api** with its markdown and KaTeX intact.
+
+**Two of the six fields this row named were wrong, and checking them found two parity gaps instead.** This is the same scoping lesson the G block already carries, in a new shape: the row listed fields to add a preview to, and half the work turned out to be establishing which of them are markdown fields at all.
+
+- **System messages are not markdown** — and legacy does not render them as markdown either (no `Markdown` anywhere in `HeaderSystemMessagesContainer`, `EditSystemMessageForm` or the page). This app already matched. Nothing to do, and the row was simply wrong to name it.
+- **Pipeline descriptions and assignment student hints are the opposite.** Legacy renders both through its own `Markdown` (`PipelineDetail.js:65`, `LocalizedTexts.js:90`); this app rendered both as plain text, so a hint authored with a list or emphasis showed students literal asterisks. **Both are fixed here**, because a markdown preview over a field displayed as plain text would have been the more visible half of that bug.
+
+So the fields wired are the ones whose value actually reaches `<Markdown>`: exercise texts, assignment texts, shadow assignment texts, group descriptions, instance descriptions.
+
+**One regression, and a spec caught it rather than review.** `Field` labels its control by stamping `id` and `aria-describedby` onto its **first element child** — which, once the tabs sat between them, was the tab wrapper rather than the textarea. `instances.spec.ts` went red on `getByLabel("Description")`, which is exactly what that assertion is for. The tabs now pass both attributes straight through to the field, mirroring the `cloneElement` technique `Field` itself uses. `assignment-texts-form.tsx` uses `Field` the same way and had the same latent break; it is fixed by the same change, though its own spec cannot run here.
+
+**CodeMirror is dropped rather than deferred (DROP-C05).** G-028 was the last row that would have needed the inventory's promised "CodeMirror 6 (editor)". Highlighting markdown *source* answers a much smaller complaint than the one this row records, at the price of a large client-only editor on five ordinary prose forms. Recorded with a reason instead of left as a dangling promise; CodeMirror stays the right answer where code is actually edited.
+
+**What was run:** `typecheck`, `lint`, `build`, 234 unit tests clean. **`group-create`, `instances`, `app-shell` and `design-system` pass 24/24** against the real stack — the runnable set, and the one that contains the wired group and instance forms. Verified live besides: the preview renders `##`, `$n$` and a Python fence correctly, `<script>alert(1)</script>` comes back as text with no `<script>` element, an empty field says so **without a round trip**, tab switching preserves the textarea's content, Czech renders "Psát/Náhled". The new spec in `exercise-edit.spec.ts` cannot run here — like the G-019 one, it navigates to `[seed] Intro to Programming`.
+
+**Next ticket:** G-015 — a pipeline's supplementary files. Note it wants D-005's chunked upload Route Handler reused and `components/exercises/exercise-files.tsx` as the model, so it is mostly assembly of parts that exist.

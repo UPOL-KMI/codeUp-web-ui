@@ -9,6 +9,7 @@ import { createInstanceSchema, type CreateInstanceValues } from "@/lib/actions/i
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { Dialog, DialogContent, DialogFooter, DialogTrigger } from "@/components/dialog/dialog";
 import { Field } from "@/components/form/field";
 import { FormError } from "@/components/form/form-error";
@@ -73,7 +74,9 @@ export function CreateInstance() {
             </Field>
 
             <Field label={t("description")} description={t("descriptionHint")}>
-              <textarea rows={3} className={input} {...register("description")} />
+              <MarkdownPreviewTabs getSource={() => form.getValues("description") ?? ""}>
+                <textarea rows={3} className={`${input} w-full`} {...register("description")} />
+              </MarkdownPreviewTabs>
             </Field>
 
             <label className="flex items-center gap-2 text-sm">

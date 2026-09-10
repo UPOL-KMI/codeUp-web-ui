@@ -14,6 +14,7 @@ import type { GroupDetail } from "@/lib/api/group-detail";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -111,10 +112,19 @@ export function GroupSettingsForm({
               {t("name")}
               <input type="text" className={input} {...register(`texts.${index}.name`)} />
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              {t("description")}
-              <textarea rows={3} className={input} {...register(`texts.${index}.description`)} />
-            </label>
+            <div className="flex flex-col gap-1 text-sm">
+              <label htmlFor={`group-description-${index}`}>{t("description")}</label>
+              <MarkdownPreviewTabs
+                getSource={() => form.getValues(`texts.${index}.description`) ?? ""}
+              >
+                <textarea
+                  id={`group-description-${index}`}
+                  rows={3}
+                  className={`${input} w-full`}
+                  {...register(`texts.${index}.description`)}
+                />
+              </MarkdownPreviewTabs>
+            </div>
           </fieldset>
         ))}
 
