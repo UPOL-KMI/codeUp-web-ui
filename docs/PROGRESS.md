@@ -5154,3 +5154,31 @@ The mechanism, from the served HTML itself:
 **The pairing is reader-supplied input and is treated as such.** It arrives in the URL, so a stale link, a hand-edited one, or one copied between two different solution pairs will all be handed to `applyManualPairs` — and each of these would produce a wrong comparison if trusted: fabricating a pair from a file that does not exist, re-pairing a file that already matched by name (showing one file twice), or using one file on both sides of two pairings. Every pairing is checked against what is *actually* unpaired, and one that does not fit is **ignored rather than reported** — its files stay in the unpaired list, which is the honest rendering of "that link no longer fits these two solutions". Those three hazards are most of what the unit tests are for; a colon inside a filename is the fourth, which is why the sides are percent-encoded before the colon joins them.
 
 **Not verified live.** The diff screen needs two solutions on one assignment, and this half-seeded instance has none — `/v1/assignments/solutions` and the per-user solutions endpoint both answer 404 here. `typecheck`, `lint`, `build` and 256 unit tests (11 new) are clean, and the control is a plain GET form with no client behaviour to get wrong, but the screen itself has not been opened with real data. Worth doing after a clean re-seed.
+
+---
+
+### 2026-09-10 — PF-002: The shell blocks every page's own fetching
+
+**Ticket:** PF-002  
+**Status:** done, and **measured** — which is the whole reason it had been parked.
+
+**What changed:** `AppShell` is synchronous. The sidebar and the session notices sit in their own `<Suspense>` boundaries as *siblings* of `{children}`, so all three start at once instead of the page waiting for the layout to return. `(app)/loading.tsx` becomes reachable with it — a suspended *layout* sits above the boundary whose fallback that file is, so it had never had the chance to render.
+
+**Every number this ticket previously carried is void, and that is worth saying plainly.** They were taken through the 5-second-per-connection penalty that DEC-126 later explained as mDNS resolving `.local`, which is also why the ticket parked itself: "it is the measurement that blocked it, not the code". With the penalty gone, nine runs per route, medians:
+
+| route | TTFB before | TTFB after | total before | total after |
+| --- | --- | --- | --- | --- |
+| `/en/dashboard` | 89 ms | **36 ms** | 277 ms | 291 ms |
+| `/en/groups` | 57 ms | **35 ms** | 61 ms | 66 ms |
+| `/en/exercises` | 69 ms | **39 ms** | 80 ms | 80 ms |
+| `/en/profile` | 62 ms | **39 ms** | 63 ms | 82 ms |
+
+**TTFB falls 40–55%. Total load time is flat to marginally worse.** Both halves are the honest result rather than half a disappointment: the ticket's premise was "TTFB is shell + page, never `max()`", and that is confirmed precisely where it was made. The total is bounded by the slowest read on the page either way, and on this host core-api answers in ~30 ms, so the shell's share of the old *sum* was small to begin with; the streaming machinery costs a little back. On a deployment where core-api is a real network hop rather than loopback, the sum-versus-max difference is where this would pay. Run-to-run noise was measured first, by accident: a `git stash push` silently failed on an unmerged file and I measured the same code twice — ~5 ms TTFB, ~30 ms total, which is what makes the TTFB column meaningful and the total column not.
+
+**The merge needed judgement rather than conflict resolution.** The stash predated G-023, so `app-shell.tsx` conflicted over the view-as banner. The banner and the broadcasts are now one `SessionNotices` boundary: they need the same `getCurrentUser()` (memoized per request, so one call serves both), and to the reader they are one strip above the page saying something about *their* situation rather than about what they asked for. The stash also inserted `SkipToContent` between `SidebarNav`'s docblock and its function, orphaning the docblock; that is put back in order.
+
+**Verified live:** skip link, `<main id="main-content">` landmark, all six sidebar sections, G-025's QR trigger and G-031's FAQ link all still render, and the HTML carries 7 streaming placeholders. `typecheck`, `lint`, `build`, 256 unit tests green.
+
+**Two notes for the next session.** The `git stash` entry this ticket pointed at **has landed and is superseded** — it is left in place rather than dropped, but it still describes itself as "parked" and should not be trusted or re-applied. And the browser tool's console buffer accumulates across a whole session and is not cleared by `console.clear()`: it still shows "Merge conflict marker encountered" and "Broadcasts is not defined" from the intermediate states of this very merge, long after the file was clean. A file carrying a conflict marker cannot typecheck or build, so those four passing checks are the evidence, not the console.
+
+**Next ticket:** PF-009 — do its cheaper half first (tokens as `[content, index]` tuples, ~60 kB more off the file PF-003 measured, no cascade risk) before the CSS-palette half.

@@ -24,6 +24,29 @@ const PageQrCode = dynamic(
 );
 
 /**
+ * The skip link, first in the tab order (P-002), and a client component for one reason: PF-002
+ * made `AppShell` synchronous so a page's own fetching does not queue behind the shell's, and an
+ * `await getTranslations()` for these three words would have made it asynchronous again -- which
+ * would either block `children` or put the skip link behind a `<Suspense>`, where a keyboard user
+ * can reach the page before the link that exists to get them there.
+ *
+ * It lives in this module rather than its own so it costs no second client chunk: `Nav` is already
+ * in `SHELL_MESSAGE_NAMESPACES` (PF-001) and this file is already the shell's always-loaded
+ * client half.
+ */
+export function SkipToContent() {
+  const t = useTranslations("Nav");
+  return (
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:ring-2 focus:ring-ring"
+    >
+      {t("skipToContent")}
+    </a>
+  );
+}
+
+/**
  * The interactive half of the app shell (D-014): collapse, the mobile drawer, and the active-link
  * state. Everything it renders is computed on the server and handed down as `sections` -- this
  * component performs no data access, so the sidebar's contents (which depend on the user's group
@@ -34,6 +57,7 @@ const PageQrCode = dynamic(
  * `usePathname` from `@/i18n/navigation`, which strips the `/en` or `/cs` prefix -- the one from
  * `next/navigation` would return `/en/groups` and match nothing.
  */
+
 export interface NavItem {
   href: string;
   label: string;

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
@@ -8,7 +9,7 @@ import { ActiveMessages } from "@/components/messages/active-messages";
 
 import { ViewAsBanner } from "./view-as-banner";
 
-import { SidebarNav, type NavSection } from "./sidebar-nav";
+import { SidebarNav, SkipToContent, type NavSection } from "./sidebar-nav";
 
 /**
  * The application shell (D-014) -- the gap found during D-001, when `PageShell` was built and it
@@ -17,38 +18,85 @@ import { SidebarNav, type NavSection } from "./sidebar-nav";
  * membership rather than the global role, and are not mutually exclusive -- someone supervising
  * one course while taking another sees both.
  *
- * A Server Component that fetches once and passes plain labels to the client island. Two
- * consequences worth stating: no group data crosses the boundary beyond the names already
- * rendered (brief §6.5), and the sidebar is present in the initial HTML rather than popping in
- * after a client-side fetch.
+ * **This component is deliberately synchronous, and that is PF-002.** It used to `await` its three
+ * core-api reads before returning the tree that holds `{children}`, and a page is only rendered
+ * once its layout has returned -- so no page under `(app)` began fetching until the shell had
+ * finished, and every authenticated screen cost shell + page rather than `max(shell, page)`. On
+ * `/solutions/[id]/sources` that was two shell round trips in front of six of the page's own. The
+ * fix is the one Next's own bundled `loading.md` names: nothing is awaited here, and the two parts
+ * that need data are siblings of `{children}` inside their own `<Suspense>` boundaries, so all
+ * three start at once.
+ *
+ * It has a second effect worth naming: **`(app)/loading.tsx` is reachable now**, and was not
+ * before. Next wraps the page in a boundary whose fallback is that file, but a suspended *layout*
+ * is above that boundary, so the fallback never got the chance to render.
+ *
+ * **The trade is that the sidebar streams in rather than being in the first byte** -- the opposite
+ * of what this docblock promised until PF-002. The frame's width is reserved so the page does not
+ * jump sideways when it arrives, and the shell's reads are unchanged in number: `getCurrentUser()`
+ * is `cache()`-memoized per request (see its own note), so the two boundaries below share the one
+ * call they both make.
  *
  * Sections whose destination does not exist yet are simply absent rather than rendered as dead
  * links -- the routes listed here are all real entries in `app/[locale]/(app)/`.
  */
-export async function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col md:flex-row">
+      {/* First in the tab order, before the sidebar's one link per enrolled and taught group --
+          and outside both boundaries below, so it is in the first byte even though the sidebar it
+          skips past is not. */}
+      <SkipToContent />
+      <Suspense fallback={<SidebarPlaceholder />}>
+        <Sidebar />
+      </Suspense>
+      {/* The page's landmark, so assistive technology can jump past the sidebar -- and so a
+          heading in the page cannot be confused with the identically-named sidebar section.
+          `tabIndex={-1}` so the skip link moves focus rather than only the scroll position. */}
+      <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+        {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
+            worth reading without opening a dropdown, and this shell has no header to hang one on
+            (DEC-115). Its fallback is nothing at all, which is also what it renders on the far
+            more common request with no unread broadcast and no narrowed role -- so this boundary
+            resolving moves the page down only when there is something to say. */}
+        <Suspense fallback={null}>
+          <SessionNotices />
+        </Suspense>
+        {children}
+      </main>
+    </div>
+  );
+}
+
+/**
+ * Holds the sidebar's width while it loads, and nothing else.
+ *
+ * Only from `md` up, where the real sidebar is a 16rem column and an unreserved one would shift
+ * the whole page sideways on arrival. Below `md` the sidebar is a toggle bar and a closed drawer,
+ * so there is no width to reserve and a full-width placeholder would reserve the wrong thing.
+ * Decorative, so it is hidden from assistive technology: the region it stands in for announces
+ * itself when it arrives, as its own `<nav aria-label>`.
+ */
+function SidebarPlaceholder() {
+  return (
+    <div
+      aria-hidden="true"
+      className="hidden shrink-0 border-border bg-card md:block md:w-64 md:border-r"
+    />
+  );
+}
+
+/** The sidebar's own two reads, behind their own boundary so `{children}` does not wait for them. */
+async function Sidebar() {
   // `getLocale()` reads next-intl's request config rather than core-api, so awaiting it first costs
-  // nothing and keeps the three reads below in one wave -- none of them derives from another, and
-  // each calls `requireSession()` itself, so ordering them would authorise nothing.
+  // nothing and keeps the reads below in one wave -- neither derives from the other, and each calls
+  // `requireSession()` itself, so ordering them would authorise nothing.
   const locale = await getLocale();
-  const [t, user, groups, broadcasts] = await Promise.all([
+  const [t, user, groups] = await Promise.all([
     getTranslations("Nav"),
     getCurrentUser(),
     getMyGroups(locale),
-    getActiveSystemMessages(),
   ]);
-
-  // core-api keeps one "seen up to" timestamp rather than a flag per message (AD-007), so unread
-  // is everything published since. A message written in neither of this app's languages is
-  // dropped rather than rendered blank -- `localizedTexts` may hold any subset.
-  const unread = broadcasts
-    .filter((message) => message.visibleFrom > (user.messagesReadUpTo ?? 0))
-    .map((message) => ({
-      id: message.id,
-      type: message.type,
-      visibleFrom: message.visibleFrom,
-      text: (message.texts.find((text) => text.locale === locale) ?? message.texts[0])?.text ?? "",
-    }))
-    .filter((message) => message.text !== "");
 
   const sections: NavSection[] = [
     {
@@ -109,29 +157,44 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       : []),
   ];
 
+  return <SidebarNav sections={sections} />;
+}
+
+/**
+ * What the shell has to say about the session before the page says anything (G-023, AD-007),
+ * behind its own boundary for PF-002's reason: it reads core-api, and the page must not wait for
+ * it.
+ *
+ * The two live together because they need the same `getCurrentUser()` -- memoized per request, so
+ * one call serves both -- and because they are one thing from the reader's side: a strip above
+ * the page telling them something about *their* situation rather than about what they asked for.
+ * The view-as banner comes first, since what this session can currently do frames everything
+ * under it.
+ */
+async function SessionNotices() {
+  const [locale, user, broadcasts] = await Promise.all([
+    getLocale(),
+    getCurrentUser(),
+    getActiveSystemMessages(),
+  ]);
+
+  // core-api keeps one "seen up to" timestamp rather than a flag per message (AD-007), so unread
+  // is everything published since. A message written in neither of this app's languages is
+  // dropped rather than rendered blank -- `localizedTexts` may hold any subset.
+  const unread = broadcasts
+    .filter((message) => message.visibleFrom > (user.messagesReadUpTo ?? 0))
+    .map((message) => ({
+      id: message.id,
+      type: message.type,
+      visibleFrom: message.visibleFrom,
+      text: (message.texts.find((text) => text.locale === locale) ?? message.texts[0])?.text ?? "",
+    }))
+    .filter((message) => message.text !== "");
+
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      {/* First in the tab order, before the sidebar's one link per enrolled and taught group. */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus:ring-2 focus:ring-ring"
-      >
-        {t("skipToContent")}
-      </a>
-      <SidebarNav sections={sections} />
-      {/* The page's landmark, so assistive technology can jump past the sidebar -- and so a
-          heading in the page cannot be confused with the identically-named sidebar section.
-          `tabIndex={-1}` so the skip link moves focus rather than only the scroll position. */}
-      <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
-        {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
-            worth reading without opening a dropdown, and this shell has no header to hang one on
-            (DEC-115). */}
-        {/* G-023. Before the broadcasts: what this session can currently do frames everything
-            else on the page. */}
-        {user.role !== user.accountRole && <ViewAsBanner role={user.role} />}
-        <ActiveMessages messages={unread} userId={user.id} />
-        {children}
-      </main>
-    </div>
+    <>
+      {user.role !== user.accountRole && <ViewAsBanner role={user.role} />}
+      <ActiveMessages messages={unread} userId={user.id} />
+    </>
   );
 }
