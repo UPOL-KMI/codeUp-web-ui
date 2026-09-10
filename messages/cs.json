@@ -3602,8 +3602,12 @@
     },
     "unpaired": {
       "title": "Soubory jen v jednom z nich",
-      "explain": "Soubory se párují podle názvu, takže tyto neměly s čím být porovnány.",
-      "onlyIn": "{name} – jen v {side}"
+      "explain": "Soubory se párují podle názvu. Tyto neměly s čím být porovnány — spárujte je ručně, pokud dva pokusy pojmenovaly totéž jinak. Párování je součástí adresy, takže se dá poslat dál, a tlačítko zpět ho vrátí.",
+      "onlyIn": "{name} – jen v {side}",
+      "compareWith": "porovnat s",
+      "compareWithLabel": "Spárovat {name} se souborem z druhého řešení",
+      "choose": "— vyberte —",
+      "compare": "Porovnat"
     },
     "others": {
       "title": "Porovnat místo toho s jiným pokusem"

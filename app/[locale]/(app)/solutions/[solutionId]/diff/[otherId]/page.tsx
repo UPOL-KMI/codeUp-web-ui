@@ -10,7 +10,12 @@ import {
   type SolutionFileEntry,
 } from "@/lib/api/solution-files";
 import { getSolutionDetail } from "@/lib/api/solution";
-import { pairFilesByName } from "@/lib/code/diff";
+import {
+  applyManualPairs,
+  encodeFilePair,
+  pairFilesByName,
+  parseFilePairs,
+} from "@/lib/code/diff";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -44,10 +49,16 @@ export async function generateMetadata({
  */
 export default async function SolutionDiffPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ solutionId: string; otherId: string }>;
+  searchParams: Promise<{ pair?: string | string[] }>;
 }) {
-  const [{ solutionId, otherId }, locale] = await Promise.all([params, getLocale()]);
+  const [{ solutionId, otherId }, query, locale] = await Promise.all([
+    params,
+    searchParams,
+    getLocale(),
+  ]);
   const [t, left, right] = await Promise.all([
     getTranslations("Diff"),
     getSolutionDetail(solutionId, locale),
@@ -69,7 +80,19 @@ export default async function SolutionDiffPage({
   ]);
 
   const tooBig = !canDisplayFiles(leftFiles) || !canDisplayFiles(rightFiles);
-  const { pairs, onlyLeft, onlyRight } = pairFilesByName(leftFiles, rightFiles);
+  // G-030. The reader's own pairings ride in `searchParams`, applied on top of the name-based
+  // ones -- so a comparison of two differently-named files is a link like any other view of this
+  // screen. `applyManualPairs` checks each one against what is actually unpaired, so a stale link
+  // cannot fabricate a pair.
+  const manual = parseFilePairs(query.pair);
+  const { pairs, onlyLeft, onlyRight } = applyManualPairs(
+    pairFilesByName(leftFiles, rightFiles),
+    manual,
+  );
+  const applied = manual.filter(
+    ([left, right]) =>
+      pairs.some((pair) => pair.left.name === left && pair.right.name === right),
+  );
 
   const contents = tooBig
     ? []
@@ -138,10 +161,55 @@ export default async function SolutionDiffPage({
               {t("unpaired.title")}
             </h2>
             <p className="text-sm text-muted-foreground">{t("unpaired.explain")}</p>
-            <ul className="flex flex-col gap-1 text-sm">
+            <ul className="flex flex-col gap-2 text-sm">
               {onlyLeft.map((file) => (
-                <li key={`l-${file.name}`} className="font-mono">
-                  {t("unpaired.onlyIn", { name: file.name, side: leftLabel })}
+                <li key={`l-${file.name}`} className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono">
+                    {t("unpaired.onlyIn", { name: file.name, side: leftLabel })}
+                  </span>
+                  {/* G-030. A plain GET form: submitting lands on this same screen with one more
+                      `pair`, so it needs no JavaScript and the result is a shareable link. The
+                      pairings already applied travel as hidden fields, because a GET form
+                      replaces the whole query string rather than adding to it. */}
+                  {onlyRight.length > 0 && (
+                    <form method="get" className="flex flex-wrap items-center gap-1">
+                      {applied.map(([left, right]) => (
+                        <input
+                          key={`${left}:${right}`}
+                          type="hidden"
+                          name="pair"
+                          value={encodeFilePair(left, right)}
+                        />
+                      ))}
+                      <label className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">
+                          {t("unpaired.compareWith")}
+                        </span>
+                        <select
+                          name="pair"
+                          defaultValue=""
+                          aria-label={t("unpaired.compareWithLabel", { name: file.name })}
+                          className="rounded-md border border-input bg-background px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="">{t("unpaired.choose")}</option>
+                          {onlyRight.map((candidate) => (
+                            <option
+                              key={candidate.name}
+                              value={encodeFilePair(file.name, candidate.name)}
+                            >
+                              {candidate.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t("unpaired.compare")}
+                      </button>
+                    </form>
+                  )}
                 </li>
               ))}
               {onlyRight.map((file) => (

@@ -3602,8 +3602,12 @@
     },
     "unpaired": {
       "title": "Files in only one of them",
-      "explain": "Files are lined up by name, so these had nothing to be compared against.",
-      "onlyIn": "{name} -- only in {side}"
+      "explain": "Files are lined up by name. These had nothing to be compared against — pair one by hand where the two attempts named the same thing differently. The pairing is part of the address, so it can be shared, and the back button undoes it.",
+      "onlyIn": "{name} -- only in {side}",
+      "compareWith": "compare with",
+      "compareWithLabel": "Pair {name} with a file from the other solution",
+      "choose": "— choose —",
+      "compare": "Compare"
     },
     "others": {
       "title": "Compare with another attempt instead"

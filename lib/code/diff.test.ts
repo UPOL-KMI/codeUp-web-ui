@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { diffLines, pairFilesByName } from "./diff";
+import {
+  applyManualPairs,
+  diffLines,
+  encodeFilePair,
+  pairFilesByName,
+  parseFilePairs,
+} from "./diff";
 
 describe("diffLines", () => {
   it("says two identical files are identical, and numbers every line on both sides", () => {
@@ -104,5 +110,88 @@ describe("pairFilesByName", () => {
     const result = pairFilesByName([{ name: "a.py" }, { name: "a.py" }], [{ name: "a.py" }]);
     expect(result.pairs).toHaveLength(1);
     expect(result.onlyLeft).toHaveLength(1);
+  });
+});
+
+/**
+ * G-030. What these pin is mostly what a *stale or hand-edited* link may not do: the pairing
+ * arrives in the URL, so it is reader-supplied input and every one of these is a case where
+ * trusting it would fabricate a comparison.
+ */
+describe("parseFilePairs", () => {
+  it("reads one pairing and several", () => {
+    expect(parseFilePairs(encodeFilePair("a.c", "b.c"))).toEqual([["a.c", "b.c"]]);
+    expect(parseFilePairs([encodeFilePair("a.c", "b.c"), encodeFilePair("x.h", "y.h")])).toEqual([
+      ["a.c", "b.c"],
+      ["x.h", "y.h"],
+    ]);
+  });
+
+  it("survives a colon in either filename, which is why the sides are encoded", () => {
+    expect(parseFilePairs(encodeFilePair("odd:name.c", "b:2.c"))).toEqual([
+      ["odd:name.c", "b:2.c"],
+    ]);
+  });
+
+  it("round-trips a ZIP entry, whose name already carries its archive", () => {
+    const pair = encodeFilePair("archive.zip#src/main.c", "archive.zip#main.c");
+    expect(parseFilePairs(pair)).toEqual([["archive.zip#src/main.c", "archive.zip#main.c"]]);
+  });
+
+  it("drops anything malformed instead of throwing", () => {
+    expect(parseFilePairs(undefined)).toEqual([]);
+    expect(parseFilePairs("")).toEqual([]);
+    expect(parseFilePairs("no-separator")).toEqual([]);
+    expect(parseFilePairs(":b.c")).toEqual([]);
+    expect(parseFilePairs("a.c:")).toEqual([]);
+    // A hand-edited URL with a broken escape must not take the page down.
+    expect(parseFilePairs("%E0%A4%A:b.c")).toEqual([]);
+  });
+});
+
+describe("applyManualPairs", () => {
+  const file = (name: string) => ({ name });
+  const pairing = {
+    pairs: [{ left: file("same.c"), right: file("same.c") }],
+    onlyLeft: [file("main.py"), file("extra.py")],
+    onlyRight: [file("solution.py"), file("spare.py")],
+  };
+
+  it("moves the chosen files out of the unpaired lists", () => {
+    const result = applyManualPairs(pairing, [["main.py", "solution.py"]]);
+    expect(result.pairs).toHaveLength(2);
+    expect(result.pairs[1]).toEqual({ left: file("main.py"), right: file("solution.py") });
+    expect(result.onlyLeft.map((f) => f.name)).toEqual(["extra.py"]);
+    expect(result.onlyRight.map((f) => f.name)).toEqual(["spare.py"]);
+  });
+
+  it("keeps the name-based pairs and their order", () => {
+    const result = applyManualPairs(pairing, [["extra.py", "spare.py"]]);
+    expect(result.pairs[0]).toEqual(pairing.pairs[0]);
+  });
+
+  it("ignores a pairing naming a file that is not unpaired", () => {
+    // `same.c` already matched by name: re-pairing it would show one file twice.
+    expect(applyManualPairs(pairing, [["same.c", "solution.py"]]).pairs).toHaveLength(1);
+    expect(applyManualPairs(pairing, [["main.py", "same.c"]]).pairs).toHaveLength(1);
+  });
+
+  it("ignores a pairing naming a file that does not exist at all", () => {
+    expect(applyManualPairs(pairing, [["ghost.py", "solution.py"]]).pairs).toHaveLength(1);
+  });
+
+  it("refuses to use one file twice", () => {
+    const result = applyManualPairs(pairing, [
+      ["main.py", "solution.py"],
+      ["main.py", "spare.py"],
+      ["extra.py", "solution.py"],
+    ]);
+    expect(result.pairs).toHaveLength(2);
+    expect(result.onlyLeft.map((f) => f.name)).toEqual(["extra.py"]);
+    expect(result.onlyRight.map((f) => f.name)).toEqual(["spare.py"]);
+  });
+
+  it("leaves the pairing alone when nothing was asked for", () => {
+    expect(applyManualPairs(pairing, [])).toEqual(pairing);
   });
 });

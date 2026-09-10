@@ -133,3 +133,73 @@ export function pairFilesByName<T extends { name: string }>(
 
   return { pairs, onlyLeft, onlyRight: [...rightByName.values()] };
 }
+
+
+/**
+ * A manual pairing the reader asked for (G-030), carried in `searchParams` rather than remembered
+ * server-side or in the browser.
+ *
+ * Legacy remembers the mapping per solution pair in its own store. `searchParams` is the same
+ * capability and one thing more: the comparison becomes a link, so "look at these two against
+ * each other" can be sent to a colleague, which is what brief §9's deep-linkability asks for.
+ * It also means the control that creates one needs no JavaScript -- a `<form method="get">` with
+ * the existing pairs as hidden fields is the whole mechanism.
+ *
+ * Each side is percent-encoded before the colon joins them, because a filename may contain one --
+ * a ZIP entry's name already carries its archive (`archive.zip#src/main.c`), and while `#` is the
+ * separator there, nothing stops a submitted file from being called `a:b`.
+ */
+export function encodeFilePair(leftName: string, rightName: string): string {
+  return `${encodeURIComponent(leftName)}:${encodeURIComponent(rightName)}`;
+}
+
+export function parseFilePairs(raw: string | string[] | undefined): [string, string][] {
+  const values = raw === undefined ? [] : Array.isArray(raw) ? raw : [raw];
+  const parsed: [string, string][] = [];
+  for (const value of values) {
+    const separator = value.indexOf(":");
+    if (separator === -1) continue;
+    try {
+      const left = decodeURIComponent(value.slice(0, separator));
+      const right = decodeURIComponent(value.slice(separator + 1));
+      if (left !== "" && right !== "") parsed.push([left, right]);
+    } catch {
+      // A malformed escape is a hand-edited URL, not a state to report -- the pairing is simply
+      // not applied and the files stay listed as unpaired.
+      continue;
+    }
+  }
+  return parsed;
+}
+
+/**
+ * Moves the reader's chosen files out of the unpaired lists and into `pairs` (G-030).
+ *
+ * **Every pairing is checked against what is actually unpaired**, so a stale or invented link
+ * cannot fabricate a pair, silently re-pair a file that already matched by name, or use one file
+ * twice. A pairing that does not apply is ignored rather than reported: the files it named stay in
+ * the unpaired lists, which is the honest rendering of "that link no longer fits these solutions".
+ */
+export function applyManualPairs<T extends { name: string }>(
+  pairing: FilePairing<T>,
+  manual: readonly [string, string][],
+): FilePairing<T> {
+  const leftAvailable = new Map(pairing.onlyLeft.map((file) => [file.name, file]));
+  const rightAvailable = new Map(pairing.onlyRight.map((file) => [file.name, file]));
+  const pairs = [...pairing.pairs];
+
+  for (const [leftName, rightName] of manual) {
+    const left = leftAvailable.get(leftName);
+    const right = rightAvailable.get(rightName);
+    if (!left || !right) continue;
+    leftAvailable.delete(leftName);
+    rightAvailable.delete(rightName);
+    pairs.push({ left, right });
+  }
+
+  return {
+    pairs,
+    onlyLeft: pairing.onlyLeft.filter((file) => leftAvailable.has(file.name)),
+    onlyRight: pairing.onlyRight.filter((file) => rightAvailable.has(file.name)),
+  };
+}

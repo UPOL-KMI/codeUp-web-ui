@@ -5117,3 +5117,40 @@ So the instance is in a *different* broken state than recorded, not the same one
 **Not verified against a live client island.** The 60% figure is a reproducible measurement of the props array, taken the same way the row's own was; measuring the real `/solutions/[id]/sources` flight payload needs a seeded solution with a review, which this half-seeded instance does not have (see the previous entry). Rendering was verified live instead.
 
 **What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean.
+
+---
+
+### 2026-09-10 — PF-008 closed as not a defect
+
+**Ticket:** PF-008  
+**Status:** not a defect. Filed and closed the same day; the mechanism is written down so it does not get filed a third time.
+
+I filed PF-008 during PF-005 on the strength of a `curl` request: `/users/<nonexistent-id>` returned the app shell with an entirely empty `<main>`, and I was careful enough to confirm it was pre-existing rather than mine. **I was not careful enough to open it in a browser**, which is the whole story: the page reads **"Page not found / The page you're looking for doesn't exist. / Go home"**, themed and correct.
+
+The mechanism, from the served HTML itself:
+
+```
+<main id="main-content" …><!--$!--><template data-dgst="NEXT_HTTP_ERROR_FALLBACK;404"
+  data-msg="Switched to client rendering because the server rendering errored: NEXT_HTTP_ERROR_FALLBACK;404 at pageRead …">
+```
+
+`notFound()` is raised from `pageRead` **after streaming has begun**, so Next cannot rewind markup it has already sent. It marks the boundary, records the digest, and the client renders `app/[locale]/not-found.tsx` on hydration. `curl` sees the placeholder because `curl` does not hydrate.
+
+**The lesson, and the reason this entry exists rather than a one-line status change:** a `curl`-only check reads the *first* streamed byte of a page, not the page. That is exactly the right tool for the questions PF-005 was asking (payload sizes, unhandled rejections, error precedence) and the wrong one for "what does the reader see". Both were used on the same request and only one of them was applicable.
+
+**Two residues, recorded rather than ticketed.** A reader with JavaScript disabled does get a blank `<main>` here — inherent to raising an interrupt mid-stream, and avoiding it means resolving existence before the shell streams, which is PF-002's territory rather than a bug of its own. And the response is HTTP **200**, which is already Q-016.
+
+---
+
+### 2026-09-10 — G-030: Mapping two solutions' files by hand
+
+**Ticket:** G-030  
+**Status:** done. **With it the entire G block is closed** — all 31 parity gaps P-001 filed are built, dropped with a reason, or answered as questions.
+
+**What was built:** `encodeFilePair`, `parseFilePairs` and `applyManualPairs` in `lib/code/diff.ts` with 11 unit tests, and a control in the unpaired section of the diff screen.
+
+**The mapping lives in `searchParams` rather than in a store, and that is the design decision.** Legacy remembers it per solution pair in its own state. `searchParams` is the same capability and three things more: the comparison becomes a **link** that can be sent to a colleague (brief §9's deep-linkability), the **back button is the undo** with nothing to build, and the control that creates one **needs no JavaScript** — a `<form method="get">` whose select carries `left:right` as its option value. The pairings already applied travel as hidden fields, because a GET form replaces the whole query string rather than adding to it, which is the one non-obvious thing about that shape.
+
+**The pairing is reader-supplied input and is treated as such.** It arrives in the URL, so a stale link, a hand-edited one, or one copied between two different solution pairs will all be handed to `applyManualPairs` — and each of these would produce a wrong comparison if trusted: fabricating a pair from a file that does not exist, re-pairing a file that already matched by name (showing one file twice), or using one file on both sides of two pairings. Every pairing is checked against what is *actually* unpaired, and one that does not fit is **ignored rather than reported** — its files stay in the unpaired list, which is the honest rendering of "that link no longer fits these two solutions". Those three hazards are most of what the unit tests are for; a colon inside a filename is the fourth, which is why the sides are percent-encoded before the colon joins them.
+
+**Not verified live.** The diff screen needs two solutions on one assignment, and this half-seeded instance has none — `/v1/assignments/solutions` and the per-user solutions endpoint both answer 404 here. `typecheck`, `lint`, `build` and 256 unit tests (11 new) are clean, and the control is a plain GET form with no client behaviour to get wrong, but the screen itself has not been opened with real data. Worth doing after a clean re-seed.
