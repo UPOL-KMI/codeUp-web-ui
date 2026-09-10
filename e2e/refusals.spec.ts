@@ -54,6 +54,13 @@ test("a profile whose crumb chain cannot be resolved is Not found, not an error"
   await page.goto("/en/users/00000000-0000-0000-0000-000000000000");
 
   const main = page.getByRole("main");
-  await expect(main.getByText("The page you're looking for doesn't exist.")).toBeVisible();
+  // **Waited for longer than the default, and PF-008 says why.** Here the interrupt is raised
+  // after streaming has begun, so Next cannot rewind the markup it has already sent: it marks the
+  // boundary and the client renders the Not found page after hydration. What this assertion waits
+  // on is therefore the client bundle rather than a server response, and five seconds is not
+  // always enough for it with the rest of the suite running beside it.
+  await expect(main.getByText("The page you're looking for doesn't exist.")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(main.getByText("Something went wrong")).toHaveCount(0);
 });

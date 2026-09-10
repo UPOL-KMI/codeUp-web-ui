@@ -5,7 +5,11 @@ import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
-import { firstSeededSolution, restoreSolutionVerdict } from "./helpers/core-api";
+import {
+  firstSeededSolution,
+  restoreSolutionVerdict,
+  SEEDED_CORRECT_NOTE,
+} from "./helpers/core-api";
 
 /**
  * The teacher's verdict on a solution: which attempt counts, and what it is worth (G-001).
@@ -28,7 +32,7 @@ async function signIn(page: Page, account: SeedAccount, path: string): Promise<v
 }
 
 test("awards points the evaluation did not, and clears them again", async ({ page }) => {
-  const { id, maxPoints } = await firstSeededSolution();
+  const { id, maxPoints } = await firstSeededSolution(SEEDED_CORRECT_NOTE);
   try {
     await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
     const main = page.getByRole("main");
@@ -54,7 +58,7 @@ test("awards points the evaluation did not, and clears them again", async ({ pag
 });
 
 test("accepts an attempt, saying first that it moves the flag", async ({ page }) => {
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_CORRECT_NOTE);
   try {
     await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
     const main = page.getByRole("main");
@@ -84,7 +88,7 @@ test("is offered to no student, on their own solution or anyone else's", async (
     .click();
   await expect(page).toHaveURL(/\/en\/groups\/[0-9a-f-]+/);
 
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_CORRECT_NOTE);
   await page.goto(`/en/solutions/${id}`);
   // Either refused outright or shown without the verdict -- never shown with it.
   await expect(page.getByRole("heading", { name: "The teacher's verdict" })).toHaveCount(0);

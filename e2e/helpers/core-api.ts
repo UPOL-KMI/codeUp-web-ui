@@ -1,4 +1,5 @@
-import { SUPERADMIN } from "./accounts";
+import { STUDENT, SUPERADMIN } from "./accounts";
+import type { SeedAccount } from "./accounts";
 
 /**
  * Where core-api itself answers, for the one thing this harness cannot get from the app.
@@ -8,6 +9,74 @@ import { SUPERADMIN } from "./accounts";
  * does not load `.env.local` (only the app under test does), so this cannot simply read it.
  */
 export const coreApiBase = process.env.PLAYWRIGHT_API_BASE ?? "http://localhost/api/v1";
+
+/**
+ * The group the seed populates.
+ *
+ * Named in one place because a helper that searches the *whole* deployment finds whatever an
+ * operator has in their own courses first, and reports it as a fixture. `seededAttemptsOfOneAuthor`
+ * did exactly that: it walked every group and returned two attempts on an assignment inside
+ * somebody's `Jazyk Python`, left by a seed run that predates `chooseInstance` -- so the spec that
+ * needs the seed's ZIP submission got two plain ones and failed on the fixture (PF-013).
+ */
+export const SEEDED_GROUP_NAME = "[seed] Intro to Programming";
+
+/** Notes the seed puts on the solutions it submits, so a spec can name the one it means to act on
+ *  rather than taking whichever is first. */
+export const SEEDED_WRONG_NOTE = "[seed] wrong";
+export const SEEDED_ZIP_NOTE = "[seed] zip archive";
+export const SEEDED_CORRECT_NOTE = "[seed] correct";
+
+async function seededGroup(token: string): Promise<{
+  id: string;
+  privateData?: { assignments?: string[]; students?: string[] };
+}> {
+  const groups = await coreApi<
+    {
+      id: string;
+      localizedTexts?: { name?: string }[];
+      privateData?: { assignments?: string[]; students?: string[] };
+    }[]
+  >("/groups", token);
+  const matches = groups.filter((one) =>
+    (one.localizedTexts ?? []).some((text) => text.name === SEEDED_GROUP_NAME),
+  );
+  if (matches.length === 0)
+    throw new Error(`the seeded group '${SEEDED_GROUP_NAME}' is not on this instance`);
+  if (matches.length > 1)
+    throw new Error(
+      `${matches.length} groups are named '${SEEDED_GROUP_NAME}' -- an earlier seed run left a ` +
+        `duplicate, and no helper can tell which one the specs mean`,
+    );
+  return matches[0]!;
+}
+
+/**
+ * The id of the seeded student who is *not* the one the specs sign in as (PF-013).
+ *
+ * A spec asserted a refusal against a hardcoded UUID, which belonged to Bob in a database that has
+ * since been re-seeded -- so it was asking for somebody who does not exist and getting "Page not
+ * found" where it expected "Forbidden". Both answers are correct for what was asked; only one of
+ * them is the thing the test is about.
+ */
+export async function seededClassmateId(fullName = "Bob Classmate"): Promise<string> {
+  const token = await coreApiToken();
+  const group = await seededGroup(token);
+  const ids = group.privateData?.students ?? [];
+  const response = await fetch(`${coreApiBase}/users/list`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
+  });
+  const body = (await response.json()) as {
+    success: boolean;
+    payload: { id: string; fullName: string }[];
+  };
+  if (!response.ok || !body.success) throw new Error(`core-api POST /users/list failed`);
+  const person = body.payload.find((one) => one.fullName === fullName);
+  if (!person) throw new Error(`'${fullName}' is not a student of the seeded group`);
+  return person.id;
+}
 
 async function coreApi<T>(path: string, token: string): Promise<T> {
   const response = await fetch(`${coreApiBase}${path}`, {
@@ -141,24 +210,112 @@ async function coreApiToken(): Promise<string> {
  * asking for a review is deliberately not offered once one exists -- so a test of the request
  * control that used the first solution would be asserting against the guard rather than the
  * control. Found rather than pinned, for the same reason as its neighbour.
+ *
+ * **A pending review request disqualifies a solution too, and that is not fussiness.** Every caller
+ * of this helper *toggles* the request flag and puts it back to `false`, and the seed's own
+ * `[seed] correct` carries a request as a fixture -- the row the teacher dashboard and the
+ * plagiarism spec both walk. Handing that solution out here silently cleared it, so those two
+ * failed depending on which worker finished first (PF-013).
  */
-export async function seededSolutionWithoutReview(): Promise<{ id: string; authorId: string }> {
+export async function seededSolutionWithoutReview(
+  account: SeedAccount = STUDENT,
+): Promise<{ id: string; authorId: string }> {
   const token = await coreApiToken();
-  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
-  for (const group of groups) {
-    for (const assignmentId of group.privateData?.assignments ?? []) {
-      const solutions = await coreApi<{ id: string; authorId: string; review: unknown | null }[]>(
-        `/exercise-assignments/${assignmentId}/solutions`,
-        token,
-      );
-      const clean = solutions.find((solution) => solution.review === null);
-      if (clean) return { id: clean.id, authorId: clean.authorId };
-    }
+  const group = await seededGroup(token);
+  // **This reader's own**, because the control this is for is theirs to press: a student may ask
+  // for a review of their own solution and nobody else's, so handing back a classmate's left the
+  // button they wait for on a page they are refused.
+  const own = await accountUserId(account);
+  for (const assignmentId of group.privateData?.assignments ?? []) {
+    const solutions = await coreApi<
+      { id: string; authorId: string; review: unknown | null; reviewRequest?: boolean }[]
+    >(`/exercise-assignments/${assignmentId}/solutions`, token);
+    const clean = solutions.find(
+      (solution) =>
+        solution.authorId === own && solution.review === null && solution.reviewRequest !== true,
+    );
+    if (clean) return { id: clean.id, authorId: clean.authorId };
   }
-  throw new Error("no seeded solution without a review");
+  throw new Error(`no unreviewed solution of ${account.email} in '${SEEDED_GROUP_NAME}'`);
+}
+
+/** The account's own user id, from the login response core-api answers with. */
+async function accountUserId(account: SeedAccount): Promise<string> {
+  const response = await fetch(`${coreApiBase}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: account.email, password: account.password }),
+  });
+  const body = (await response.json()) as {
+    success: boolean;
+    payload: { user: { id: string } };
+  };
+  if (!response.ok || !body.success) throw new Error(`could not sign in as ${account.email}`);
+  return body.payload.user.id;
+}
+
+/**
+ * The solution the seed has opened a review on (PF-013).
+ *
+ * Named by the state rather than by position. `firstSeededSolution()` was standing in for this,
+ * and "the first solution of the first assignment that has any" is not the same thing -- on a
+ * deployment where an operator's own course sorts first it was a solution with no review at all,
+ * so the spec asserting "asking for a review is not offered once one exists" was reading a screen
+ * where one did not.
+ */
+/**
+ * The seeded solution the similarity fixture is recorded against (PF-013).
+ *
+ * On the **primary** assignment specifically. `plagiarism.spec.ts` used to walk the teacher's
+ * review queue and take the first row that offered a "Similarities" link, which is a coin toss on
+ * an instance carrying a second flagged solution from an earlier run -- and the loser is a report
+ * whose match points at a deleted account, so the screen renders nothing and the failure looks
+ * like a product defect. The queue is still asserted to lead here; it just no longer decides
+ * *which* solution the report is read on.
+ */
+export async function seededFlaggedSolution(): Promise<{ id: string }> {
+  const token = await coreApiToken();
+  const { primary } = await seededAssignments();
+  const solutions = await coreApi<{ id: string; plagiarism?: string | null }[]>(
+    `/exercise-assignments/${primary}/solutions`,
+    token,
+  );
+  const flagged = solutions.find((one) => one.plagiarism != null);
+  if (!flagged)
+    throw new Error("no flagged solution on the seeded primary assignment -- run `pnpm seed`");
+  return { id: flagged.id };
+}
+
+export async function seededSolutionWithOpenReview(): Promise<{ id: string }> {
+  const token = await coreApiToken();
+  const group = await seededGroup(token);
+  for (const assignmentId of group.privateData?.assignments ?? []) {
+    const solutions = await coreApi<{ id: string; review: { closedAt: number | null } | null }[]>(
+      `/exercise-assignments/${assignmentId}/solutions`,
+      token,
+    );
+    const reviewed = solutions.find((solution) => solution.review !== null);
+    if (reviewed) return { id: reviewed.id };
+  }
+  throw new Error(`no solution with a review in '${SEEDED_GROUP_NAME}' -- run \`pnpm seed\``);
 }
 
 /** Set or clear a solution's review request without going through a screen, for teardown (G-003). */
+/**
+ * Puts the seed's review request back where the seed leaves it (PF-013).
+ *
+ * **`reviewRequest` is unique per author and assignment, and core-api enforces that by clearing it
+ * everywhere else** (`AssignmentSolutionsPresenter::actionSetFlag`). So asking for a review on one
+ * of a student's attempts silently withdraws the request from another of theirs -- and one of
+ * those is the seed's fixture, the row the teacher dashboard and the plagiarism report are both
+ * found through. Clearing the flag that was set is not the same as restoring what it displaced,
+ * which is why this exists as well as the specs writing on the classmate.
+ */
+export async function restoreSeededReviewRequest(): Promise<void> {
+  const { id } = await firstSeededSolution(SEEDED_CORRECT_NOTE);
+  await setReviewRequestedDirectly(id, true);
+}
+
 export async function setReviewRequestedDirectly(
   solutionId: string,
   value: boolean,
@@ -204,7 +361,10 @@ export async function solutionSubmissionIds(solutionId: string): Promise<string[
  */
 export async function mintSubmissionFailure(): Promise<{ submissionId: string; jobId: string }> {
   const token = await coreApiToken();
-  const { id } = await firstSeededSolution();
+  // Its own solution, named. Three specs resubmit "the first seeded solution" and they run in
+  // parallel -- one adding a run while another counts them is a failure with no defect behind it
+  // (PF-013).
+  const { id } = await firstSeededSolution(SEEDED_ZIP_NOTE);
   const before = new Set(await solutionSubmissionIds(id));
 
   const response = await fetch(`${coreApiBase}/assignment-solutions/${id}/resubmit`, {
@@ -270,26 +430,27 @@ export async function seededAttemptsOfOneAuthor(): Promise<
   { id: string; attemptIndex: number; note: string }[]
 > {
   const token = await coreApiToken();
-  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
-  for (const group of groups) {
-    for (const assignmentId of group.privateData?.assignments ?? []) {
-      const solutions = await coreApi<
-        { id: string; attemptIndex: number; note: string; authorId: string }[]
-      >(`/exercise-assignments/${assignmentId}/solutions`, token);
-      const byAuthor = new Map<string, typeof solutions>();
-      for (const solution of solutions) {
-        byAuthor.set(solution.authorId, [...(byAuthor.get(solution.authorId) ?? []), solution]);
-      }
-      for (const attempts of byAuthor.values()) {
-        if (attempts.length >= 2) {
-          return [...attempts]
-            .sort((a, b) => a.attemptIndex - b.attemptIndex)
-            .map(({ id, attemptIndex, note }) => ({ id, attemptIndex, note }));
-        }
+  const group = await seededGroup(token);
+  for (const assignmentId of group.privateData?.assignments ?? []) {
+    const solutions = await coreApi<
+      { id: string; attemptIndex: number; note: string; authorId: string | null }[]
+    >(`/exercise-assignments/${assignmentId}/solutions`, token);
+    const byAuthor = new Map<string, typeof solutions>();
+    for (const solution of solutions) {
+      // An authorless solution is what a deleted account leaves behind, and grouping them
+      // together would invent an "author" with several attempts.
+      if (solution.authorId === null) continue;
+      byAuthor.set(solution.authorId, [...(byAuthor.get(solution.authorId) ?? []), solution]);
+    }
+    for (const attempts of byAuthor.values()) {
+      if (attempts.length >= 2) {
+        return [...attempts]
+          .sort((a, b) => a.attemptIndex - b.attemptIndex)
+          .map(({ id, attemptIndex, note }) => ({ id, attemptIndex, note }));
       }
     }
   }
-  throw new Error("no seeded author with two attempts at one assignment");
+  throw new Error(`no author with two attempts at one assignment in '${SEEDED_GROUP_NAME}'`);
 }
 
 /**
@@ -315,14 +476,7 @@ export async function seededAssignments(): Promise<{
   secondDeadline: string;
 }> {
   const token = await coreApiToken();
-  const groups = await coreApi<
-    { localizedTexts?: { name?: string }[]; privateData?: { assignments?: string[] } }[]
-  >("/groups", token);
-  const group = groups.find((one) =>
-    (one.localizedTexts ?? []).some((text) => text.name === "[seed] Intro to Programming"),
-  );
-  if (!group)
-    throw new Error("the seeded group '[seed] Intro to Programming' is not on this instance");
+  const group = await seededGroup(token);
 
   const assignments = [];
   for (const id of group.privateData?.assignments ?? []) {
@@ -389,20 +543,26 @@ export async function deleteShadowAssignmentIfPresent(shadowId: string): Promise
  * would break the moment the seed changed. Returns the first solution of the first seeded
  * assignment that has any, which is stable for a given seeded database and is all the caller needs.
  */
-export async function firstSeededSolution(): Promise<{ id: string; maxPoints: number }> {
+export async function firstSeededSolution(note?: string): Promise<{
+  id: string;
+  maxPoints: number;
+}> {
   const token = await coreApiToken();
-  const groups = await coreApi<{ privateData?: { assignments?: string[] } }[]>("/groups", token);
-  for (const group of groups) {
-    for (const assignmentId of group.privateData?.assignments ?? []) {
-      const solutions = await coreApi<{ id: string; maxPoints: number }[]>(
-        `/exercise-assignments/${assignmentId}/solutions`,
-        token,
-      );
-      const first = solutions[0];
-      if (first) return { id: first.id, maxPoints: first.maxPoints };
-    }
-  }
-  throw new Error("no seeded solution to act on");
+  // The **primary** assignment, which is where the seed puts every solution it submits. Searching
+  // the group -- let alone the deployment, which this did -- means "the first solution of the
+  // first assignment that has any", and that was a solution in an operator's own course.
+  const { primary } = await seededAssignments();
+  const solutions = await coreApi<{ id: string; maxPoints: number; note?: string }[]>(
+    `/exercise-assignments/${primary}/solutions`,
+    token,
+  );
+  const found = note === undefined ? solutions[0] : solutions.find((one) => one.note === note);
+  if (found) return { id: found.id, maxPoints: found.maxPoints };
+  throw new Error(
+    note === undefined
+      ? `the seeded primary assignment has no solutions -- run \`pnpm seed\``
+      : `no solution noted '${note}' on the seeded primary assignment -- run \`pnpm seed\``,
+  );
 }
 
 /**

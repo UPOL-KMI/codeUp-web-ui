@@ -154,8 +154,11 @@ test("a language that cannot share an exercise is refused before saving", async 
 
   // This deployment has no exclusive environment installed, so the rule is checked the only way
   // it can be here: two ordinary languages save, which is what the check must not block.
+  // **Both have to be languages this deployment actually installs.** It asked for Java, which is
+  // not one of the four here (`bash`, `c-gcc-linux`, `cxx-gcc-linux`, `python3`), so the checkbox
+  // it waited for could never appear and the test failed on the fixture rather than on the rule.
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
-  await main.getByRole("checkbox", { name: /Java/ }).check();
+  await main.getByRole("checkbox", { name: /Bash/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();
 

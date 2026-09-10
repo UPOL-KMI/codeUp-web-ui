@@ -21,6 +21,20 @@ export const STUDENT: SeedAccount = {
   password: "RecodexSeed123!",
 };
 
+/**
+ * The other seeded student in the primary group.
+ *
+ * Here because a flag that is unique per author is only safe to write on a student nothing else
+ * reads: `reviewRequest` is one, and asking for a review as Alice withdrew the seed's own request
+ * from her other attempt -- the row the teacher dashboard and the plagiarism report are found
+ * through (PF-013).
+ */
+export const CLASSMATE: SeedAccount = {
+  label: "classmate",
+  email: "bob.classmate@seed.recodex.local",
+  password: "RecodexSeed123!",
+};
+
 export const SUPERVISOR: SeedAccount = {
   label: "supervisor",
   email: "sam.supervisor@seed.recodex.local",
@@ -33,6 +47,13 @@ export const SUPERVISOR_STUDENT: SeedAccount = {
   password: "RecodexSeed123!",
 };
 
+/**
+ * One account per role, which is what the smoke sweep walks.
+ *
+ * `CLASSMATE` is deliberately **not** here: his role is the student's, so a second pass over every
+ * route as him would assert what `STUDENT`'s pass already does. He exists for the specs that need
+ * a *second* student rather than a different permission.
+ */
 export const SEED_ACCOUNTS: readonly SeedAccount[] = [
   SUPERADMIN,
   STUDENT,

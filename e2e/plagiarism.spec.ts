@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { seededFlaggedSolution } from "./helpers/core-api";
 
 /**
  * The detected-similarities report (S-019).
@@ -16,33 +17,16 @@ test("leads a teacher from a flagged solution to what was matched", async ({ pag
   const cookie = await loginAndGetCookie(SUPERADMIN);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
 
-  // The flagged solution is one of the ones in the teacher's own review queue -- but *which* one
-  // is not fixed: this instance carries solutions from earlier seed runs that pointed at a
-  // different assignment (the seed's assignment ordering is only stable as of S-019), and all
-  // three seeded assignments share a name. So the queue is walked until the badge appears, which
-  // is also the honest statement of what is being tested: the badge is how a teacher finds this.
-  await page.goto("/en/dashboard");
+  // **Starts at the flagged solution, not at the teacher's dashboard.** It used to walk the review
+  // queue and take the first row that offered the badge, which coupled this to a fixture it does
+  // not own -- a `reviewRequest` is unique per author and assignment, so any spec that writes one
+  // moves the seed's row out of that queue for as long as it holds it, and the first row offering
+  // a badge could anyway be a solution an earlier run flagged against an account since deleted.
+  // Whether the queue leads here is `dashboard.spec.ts`'s subject; this one is the report (PF-013).
+  const { id } = await seededFlaggedSolution();
+  await page.goto(`/en/solutions/${id}`);
   const main = page.getByRole("main");
-  const queue = page.getByRole("region", { name: "Reviews students have asked for" });
-  const rows = queue.locator("tbody tr").getByRole("link", { name: "Alice Student" });
-
-  // `count()` does not auto-wait, so the queue has to be on screen before it is counted.
-  await expect(queue.locator("tbody tr").first()).toBeVisible();
-  const rowCount = await rows.count();
-  expect(rowCount).toBeGreaterThan(0);
-  let flagged = false;
-  for (let index = 0; index < rowCount; index++) {
-    await rows.nth(index).click();
-    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/);
-    // The solution has to be on screen before the badge is counted -- `count()` does not wait.
-    await expect(main.getByRole("heading", { name: "Summary" })).toBeVisible();
-    if ((await main.getByRole("link", { name: "Similarities" }).count()) > 0) {
-      flagged = true;
-      break;
-    }
-    await page.goBack();
-  }
-  expect(flagged).toBe(true);
+  await expect(main.getByRole("heading", { name: "Summary" })).toBeVisible();
 
   await main.getByRole("link", { name: "Similarities" }).click();
   await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\/plagiarisms$/);

@@ -5,6 +5,7 @@ import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { seededClassmateId } from "./helpers/core-api";
 
 /**
  * One student's whole course, submission by submission (T-005).
@@ -126,11 +127,13 @@ test("a student reads their own submissions and is refused a classmate's", async
     page.getByRole("main").getByRole("heading", { name: "Alice Student", level: 1 }),
   ).toBeVisible();
 
-  // A hidden link is not authorisation: typing the classmate's address is refused too.
+  // A hidden link is not authorisation: typing the classmate's address is refused too. **Looked
+  // up rather than written down** -- this line carried Bob's id from a database that has since
+  // been re-seeded, so it was asking for somebody who no longer exists and getting "Page not
+  // found", which is the right answer to the wrong question (PF-013).
   const own = page.url();
-  await page.goto(
-    own.replace(/\/users\/[0-9a-f-]+$/, "/users/bda73741-c393-4559-a1be-c71c6eca738a"),
-  );
+  const classmate = await seededClassmateId();
+  await page.goto(own.replace(/\/users\/[0-9a-f-]+$/, `/users/${classmate}`));
   await expect(page.getByRole("main")).toContainText("Forbidden");
 });
 

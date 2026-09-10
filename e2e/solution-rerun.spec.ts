@@ -9,8 +9,10 @@ import {
   deleteSolutionIfPresent,
   deleteSubmissionIfPresent,
   firstSeededSolution,
+  SEEDED_WRONG_NOTE,
   solutionSubmissionIds,
 } from "./helpers/core-api";
+import { cleanUpCreatedSolutions } from "./helpers/created-solutions";
 
 /**
  * Running a solution again, and removing one (G-002).
@@ -30,6 +32,8 @@ async function signIn(page: Page, account: SeedAccount, path: string): Promise<v
   await page.goto(path);
 }
 
+const trackSolution = cleanUpCreatedSolutions();
+
 /** Submits a throwaway solution as the student and returns its id. */
 async function submitThrowaway(page: Page): Promise<string> {
   await signIn(page, STUDENT, "/en/dashboard");
@@ -48,13 +52,15 @@ async function submitThrowaway(page: Page): Promise<string> {
   await page.getByRole("button", { name: "Submit", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\?monitor=/, { timeout: 30_000 });
 
-  const id = new URL(page.url()).pathname.split("/").at(-1);
-  if (id === undefined) throw new Error("no solution id after submitting");
+  // Remembered before this function returns, so a test that fails anywhere after it still has the
+  // solution swept -- the `finally` blocks below are skipped by a Playwright timeout (PF-011).
+  const id = trackSolution(page.url());
+  if (id === null) throw new Error("no solution id after submitting");
   return id;
 }
 
 test("runs a solution again, and carries the monitor channel of the new job", async ({ page }) => {
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_WRONG_NOTE);
   // A resubmit adds an evaluation run to this very solution, so the run it adds has to come back
   // out again -- otherwise every pass of this suite leaves the seeded solution one deeper, which is
   // precisely the drift that broke `assignment-solutions.spec.ts` before G-001 fixed it.
@@ -80,7 +86,7 @@ test("runs a solution again, and carries the monitor channel of the new job", as
 });
 
 test("offers a debug run beside the ordinary one", async ({ page }) => {
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_WRONG_NOTE);
   await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
   const main = page.getByRole("main");
 
@@ -92,7 +98,7 @@ test("lists the runs behind a solution, and reads or removes one", async ({ page
   // The other half of G-004: the exit codes are asserted on the design-system fixture, because no
   // evaluation on this host ever produces a test result (DEC-031). This half is about the runs
   // themselves, which do exist.
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_WRONG_NOTE);
   const before = await solutionSubmissionIds(id);
   try {
     await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
@@ -150,7 +156,7 @@ test("deletes a solution, saying first what goes with it", async ({ page }) => {
 });
 
 test("offers re-running every solution from the assignment's own list", async ({ page }) => {
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_WRONG_NOTE);
   await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
   await page.getByRole("link", { name: "Back to the assignment" }).click();
   await page.getByRole("link", { name: "All submissions" }).click();
@@ -162,7 +168,7 @@ test("offers re-running every solution from the assignment's own list", async ({
 });
 
 test("is offered to no student", async ({ page }) => {
-  const { id } = await firstSeededSolution();
+  const { id } = await firstSeededSolution(SEEDED_WRONG_NOTE);
   await signIn(page, STUDENT, `/en/solutions/${id}`);
 
   await expect(page.getByRole("heading", { name: "Running it again" })).toHaveCount(0);

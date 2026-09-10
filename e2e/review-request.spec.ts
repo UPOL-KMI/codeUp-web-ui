@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-import { STUDENT, SUPERADMIN } from "./helpers/accounts";
+import { CLASSMATE, SUPERADMIN } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 import {
-  firstSeededSolution,
+  restoreSeededReviewRequest,
+  seededSolutionWithOpenReview,
   seededSolutionWithoutReview,
   setReviewRequestedDirectly,
 } from "./helpers/core-api";
@@ -37,9 +38,9 @@ async function signIn(page: Page, account: SeedAccount, path: string): Promise<v
 }
 
 test("a student asks for a review on their own solution, and takes it back", async ({ page }) => {
-  const { id } = await seededSolutionWithoutReview();
+  const { id } = await seededSolutionWithoutReview(CLASSMATE);
   try {
-    await signIn(page, STUDENT, `/en/solutions/${id}`);
+    await signIn(page, CLASSMATE, `/en/solutions/${id}`);
     const main = page.getByRole("main");
 
     await main.getByRole("button", { name: "Ask for a review" }).click();
@@ -50,13 +51,18 @@ test("a student asks for a review on their own solution, and takes it back", asy
     await expect(main.getByRole("button", { name: "Ask for a review" })).toBeVisible();
   } finally {
     await setReviewRequestedDirectly(id, false);
+    // `reviewRequest` is unique per author and assignment -- core-api clears it everywhere else
+    // when it is set -- so clearing this one is not the same as restoring what setting it
+    // displaced. This writes on the classmate for that reason, and re-asserts the seed's own
+    // request either way.
+    await restoreSeededReviewRequest();
   }
 });
 
 test("the request reaches the teacher's dashboard queue", async ({ page }) => {
-  const { id } = await seededSolutionWithoutReview();
+  const { id } = await seededSolutionWithoutReview(CLASSMATE);
   try {
-    await signIn(page, STUDENT, `/en/solutions/${id}`);
+    await signIn(page, CLASSMATE, `/en/solutions/${id}`);
     await page.getByRole("main").getByRole("button", { name: "Ask for a review" }).click();
     await expect(
       page.getByRole("main").getByRole("button", { name: "Withdraw the request" }),
@@ -75,6 +81,10 @@ test("the request reaches the teacher's dashboard queue", async ({ page }) => {
     await expect(queue.locator(`a[href$="/solutions/${id}"]`)).toHaveCount(1);
   } finally {
     await setReviewRequestedDirectly(id, false);
+    // Clearing this one's flag is not the same as restoring the state it displaced: the flag is
+    // unique per author and assignment, so setting it here withdrew the seed's own request from
+    // Alice's other attempt.
+    await restoreSeededReviewRequest();
   }
 });
 
@@ -82,7 +92,7 @@ test("is not offered once a review exists", async ({ page }) => {
   // The seed opens a review on its first solution, which is exactly the state this guard is about:
   // asking for something already happening is noise, and withdrawing would not stop a teacher who
   // has started reading -- core-api keeps the flag and the review independently.
-  const { id } = await firstSeededSolution();
+  const { id } = await seededSolutionWithOpenReview();
   await signIn(page, SUPERADMIN, `/en/solutions/${id}`);
   const main = page.getByRole("main");
 
@@ -90,7 +100,7 @@ test("is not offered once a review exists", async ({ page }) => {
   await expect(main.getByRole("button", { name: "Ask for a review" })).toHaveCount(0);
 
   // ...while a solution without one still offers it, to the same reader on the same screen.
-  const clean = await seededSolutionWithoutReview();
+  const clean = await seededSolutionWithoutReview(CLASSMATE);
   await page.goto(`/en/solutions/${clean.id}`);
   await expect(main.getByRole("button", { name: "Ask for a review" })).toBeVisible();
 });

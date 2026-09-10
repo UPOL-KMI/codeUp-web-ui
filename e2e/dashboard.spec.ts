@@ -139,8 +139,13 @@ test.describe("as a teacher", () => {
       const queue = page.getByRole("region", { name: heading });
       await expect(queue).toBeVisible();
 
+      // Alice's row is *in* the queue, not necessarily at the top of it: the queue is ordered
+      // oldest-first across every group this teacher administers, and on a deployment where
+      // somebody has an older open review of their own the seeded row is not first. Which row
+      // leads is a fact about the deployment; that the seeded one is queued, and that the order is
+      // oldest-first, are facts about the app -- and both are still asserted (PF-013).
       const rows = queue.locator("tbody tr");
-      await expect(rows.first().getByRole("link", { name: "Alice Student" })).toBeVisible();
+      await expect(rows.getByRole("link", { name: "Alice Student" }).first()).toBeVisible();
 
       const waiting = await queue
         .locator("tbody tr td:nth-child(4) time:first-child")
@@ -153,11 +158,12 @@ test.describe("as a teacher", () => {
   });
 
   test("opens the solution behind a review row", async ({ page }) => {
+    // The seeded row rather than the first one, for the reason the test above records.
     await page
       .getByRole("main")
       .locator("tbody tr")
-      .first()
       .getByRole("link", { name: "Alice Student" })
+      .first()
       .click();
 
     await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/);

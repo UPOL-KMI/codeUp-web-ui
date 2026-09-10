@@ -33,6 +33,13 @@ import { baseURL } from "./helpers/base-url";
  * live broadcast up for part of their run, and they run in parallel with each other -- the banner
  * is shared state, so each test may only assert about its own message.
  */
+// **Serial, because the sweep below is indiscriminate and the tests are not.** With the suite's
+// `fullyParallel`, two of this file's tests run at once and the first to finish deletes every
+// `e2e `-prefixed message -- including the one its neighbour is still waiting to see on a student's
+// dashboard. Narrowing the sweep would defeat it: it exists for the run that never reaches its own
+// `finally`, so it cannot be told which messages that run owned (PF-013).
+test.describe.configure({ mode: "serial" });
+
 // Registered once for the file (PF-007's pattern). In the ordinary case every test has already
 // removed its own message and this finds nothing to do; it exists for the run that dies before its
 // `finally`, which is how twenty-five of them got there.

@@ -48,7 +48,8 @@ export interface AssignmentSolverSummary {
 
 interface SolverPayload {
   assignmentId: string;
-  solverId: string;
+  /** `null` once the author's account is gone -- the solver record outlives them. */
+  solverId: string | null;
   lastAttemptIndex: number;
   evaluationsCount: number;
 }
@@ -63,7 +64,14 @@ export async function getAssignmentSolvers(
   ]);
 
   const attempts = new Map(solvers.map((solver) => [solver.solverId, solver.lastAttemptIndex]));
-  const userIds = [...new Set([...stats.map((row) => row.userId), ...attempts.keys()])];
+  // A solver whose author is gone is not a row. Deleting an account leaves its solutions behind
+  // with no author, and `/v1/assignment-solvers` keeps reporting the solver record with
+  // `solverId: null` -- which reached the table as a person with no name whose link pointed at
+  // `/users/null`, sorted to the top by the empty string, and answered with a refusal when a
+  // teacher clicked it.
+  const userIds = [...new Set([...stats.map((row) => row.userId), ...attempts.keys()])].filter(
+    (userId): userId is string => typeof userId === "string" && userId.length > 0,
+  );
   if (userIds.length === 0) return [];
 
   const people = await apiPost<{ id: string; fullName: string }[]>("/v1/users/list", {
