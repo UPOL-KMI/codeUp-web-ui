@@ -44,21 +44,21 @@ export function getHighlighter(): Promise<Highlighter> {
  */
 export const MAX_HIGHLIGHT_BYTES = 512 * 1024;
 
-export interface CodeToken {
-  content: string;
-  /**
-   * Index into `HighlightedCode.palette`, not the style itself (PF-003). Absent for an unstyled
-   * token.
-   *
-   * **Shiki hands back a fresh style object per token even though a file uses a handful of
-   * distinct ones** -- measured on a 26 kB source: 3,055 tokens, 3,055 object identities, **8
-   * distinct values**. Since `reviewable-code.tsx` is a client island the array crossed the RSC
-   * boundary as props, so those 3,047 redundant objects were serialised in full: 259 kB of props
-   * JSON for a 26 kB file, ten times the source. An integer per token and one palette beside them
-   * is the same information in 104 kB.
-   */
-  style?: number;
-}
+/**
+ * One coloured run of text: the text, and an index into `HighlightedCode.palette` (PF-003).
+ *
+ * **A tuple rather than an object, which is PF-009 and costs a little readability at the two
+ * render sites for a reason worth the trade.** These cross the RSC boundary as props for
+ * `reviewable-code.tsx`, and an object repeats its own key names once per token -- `"content":`
+ * and `"style":` are 21 bytes of scaffolding against 3 for `[",]`. On the 26 kB file PF-003
+ * measured that is 3,055 tokens x ~19 bytes, and it was the largest thing left in the payload
+ * after the palette.
+ *
+ * **Shiki hands back a fresh style object per token** even though a file uses a handful of
+ * distinct ones -- 3,055 object identities for 8 distinct values on that same file -- so nothing
+ * deduplicates by reference and the palette is what makes the index meaningful.
+ */
+export type CodeToken = [content: string, style?: number];
 
 export interface HighlightedCode {
   /** One entry per source line, each already split into coloured tokens. */
@@ -128,7 +128,7 @@ export async function highlightToLines(code: string, language: string): Promise<
   const lines = result.tokens.map((line) =>
     line.map((token): CodeToken => {
       const style = token.htmlStyle;
-      if (!style || typeof style === "string") return { content: token.content };
+      if (!style || typeof style === "string") return [token.content];
       const key = JSON.stringify(style);
       let index = paletteIndex.get(key);
       if (index === undefined) {
@@ -136,7 +136,7 @@ export async function highlightToLines(code: string, language: string): Promise<
         paletteIndex.set(key, index);
         palette.push(style);
       }
-      return { content: token.content, style: index };
+      return [token.content, index];
     }),
   );
   // A file ending in a newline tokenises to a final empty line, which would render as a numbered

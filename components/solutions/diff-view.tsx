@@ -32,17 +32,17 @@ function rowTokens(
 ): { tokens: CodeToken[]; palette: Record<string, string>[] } {
   if (row.leftNumber !== null) {
     return {
-      tokens: left.lines[row.leftNumber - 1] ?? [{ content: row.text }],
+      tokens: left.lines[row.leftNumber - 1] ?? [[row.text]],
       palette: left.palette,
     };
   }
   if (row.rightNumber !== null) {
     return {
-      tokens: right.lines[row.rightNumber - 1] ?? [{ content: row.text }],
+      tokens: right.lines[row.rightNumber - 1] ?? [[row.text]],
       palette: right.palette,
     };
   }
-  return { tokens: [{ content: row.text }], palette: [] };
+  return { tokens: [[row.text]], palette: [] };
 }
 
 const ROW_TONE: Record<DiffRow["kind"], string> = {
@@ -131,12 +131,12 @@ export async function DiffView({
                 </td>
                 <td className="px-2 py-0.5 align-top whitespace-pre-wrap">
                   {(({ tokens, palette }) =>
-                    tokens.map((token, tokenIndex) => (
+                    tokens.map(([content, style], tokenIndex) => (
                       <span
                         key={tokenIndex}
-                        style={token.style === undefined ? undefined : palette[token.style]}
+                        style={style === undefined ? undefined : palette[style]}
                       >
-                        {token.content}
+                        {content}
                       </span>
                     )))(rowTokens(row, left, right))}
                 </td>

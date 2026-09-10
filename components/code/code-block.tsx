@@ -31,9 +31,10 @@ export function CodeLine({ tokens, palette, number, idPrefix = "", label }: Code
       <a href={`#${id}`} className="code-line-number" aria-label={label}>
         {number}
       </a>
-      {tokens.map((token, index) => (
-        <span key={index} style={token.style === undefined ? undefined : palette[token.style]}>
-          {token.content}
+      {/* Destructured rather than read by name: a token is a `[content, style]` tuple (PF-009). */}
+      {tokens.map(([content, style], index) => (
+        <span key={index} style={style === undefined ? undefined : palette[style]}>
+          {content}
         </span>
       ))}
     </span>
