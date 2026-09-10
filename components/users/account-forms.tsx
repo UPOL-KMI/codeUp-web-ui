@@ -19,6 +19,12 @@ import {
 } from "@/lib/actions/account.schema";
 import { invalidateUserTokens } from "@/lib/actions/users";
 import type { AccountSettings, CalendarToken, NotificationFlag } from "@/lib/api/user-settings";
+import {
+  restrictedTokenRequest,
+  TOKEN_EXPIRATIONS,
+  type RestrictedTokenChoice,
+  type TokenScope,
+} from "@/lib/auth/restricted-token";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import type { ActionResult } from "@/lib/forms/action-result";
 
@@ -451,6 +457,167 @@ export function SignOutEverywhere({ userId }: { userId: string }) {
         pending={pending}
         onConfirm={() => void signOutEverywhere()}
       />
+    </div>
+  );
+}
+
+/**
+ * An application token of one's own (G-020).
+ *
+ * **The BFF half has existed since F-021 and nothing ever called it** -- `POST
+ * /api/auth/restricted-token` had no caller anywhere in the repo, so the feature was reachable
+ * only with `curl`. This is the form the route was built for, and it is the legacy app's own
+ * "Generate Application Token": a credential to paste into a script, the same idea as a personal
+ * access token elsewhere.
+ *
+ * **It calls the Route Handler rather than a Server Action, and that is the point.** DEC-043 has
+ * this one route return the raw token in its response body -- the single deliberate exception to
+ * DEC-021's "client components never see the token" -- because handing it to the reader to copy is
+ * the whole feature. It never touches the session cookie: the token produced here is meant to
+ * leave the app, not to replace this browser's session.
+ *
+ * **Shown once, and said so.** core-api stores no copy a screen could re-read, so navigating away
+ * loses it -- there is nothing this app could do to show it again, and a reader who does not know
+ * that will close the page and generate a second one. It is rendered in a read-only field rather
+ * than as text so it can be selected and copied without a clipboard permission, with a copy button
+ * where the browser allows one.
+ */
+export function ApplicationToken({ scopes }: { scopes: readonly TokenScope[] }) {
+  const t = useTranslations("Account.token");
+  const toast = useToast();
+  const [choice, setChoice] = useState<RestrictedTokenChoice>({
+    scope: "read-all",
+    expiration: 604800,
+    refresh: true,
+  });
+  const [pending, setPending] = useState(false);
+  const [issued, setIssued] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function generate() {
+    setPending(true);
+    setIssued(null);
+    try {
+      const response = await fetch("/api/auth/restricted-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(restrictedTokenRequest(choice)),
+      });
+      const body = (await response.json().catch(() => ({}))) as {
+        accessToken?: string;
+        message?: string;
+      };
+      if (!response.ok || !body.accessToken) {
+        // core-api's own refusal, forwarded verbatim by the route: a forbidden scope, an unknown
+        // role, or a `master` lifetime longer than the deployment allows. Its wording names the
+        // limit, which no message written here could.
+        toast.error(t("failed"), body.message);
+        return;
+      }
+      setIssued(body.accessToken);
+      setCopied(false);
+    } catch {
+      toast.error(t("failed"));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function copy() {
+    if (issued === null) return;
+    try {
+      await navigator.clipboard.writeText(issued);
+      setCopied(true);
+    } catch {
+      // Denied permission, or an insecure context. The field beside it is selectable, so there is
+      // nothing to recover -- saying "copy it by hand" is more use than an error dialog.
+      toast.error(t("copyFailed"));
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">{t("explain")}</p>
+
+      <div className="flex flex-wrap items-end gap-4">
+        <label className="flex flex-col gap-1 text-sm">
+          {t("scope")}
+          <select
+            className={input}
+            value={choice.scope}
+            onChange={(event) =>
+              setChoice((current) => ({ ...current, scope: event.target.value as TokenScope }))
+            }
+          >
+            {scopes.map((scope) => (
+              <option key={scope} value={scope}>
+                {t(`scopes.${scope}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          {t("expiration")}
+          <select
+            className={input}
+            value={choice.expiration}
+            onChange={(event) =>
+              setChoice((current) => ({ ...current, expiration: Number(event.target.value) }))
+            }
+          >
+            {TOKEN_EXPIRATIONS.map((seconds) => (
+              <option key={seconds} value={seconds}>
+                {t(`expirations.${seconds}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="size-4"
+            checked={choice.refresh}
+            onChange={(event) =>
+              setChoice((current) => ({ ...current, refresh: event.target.checked }))
+            }
+          />
+          {t("refresh")}
+        </label>
+
+        <button
+          type="button"
+          disabled={pending}
+          className={primary}
+          onClick={() => void generate()}
+        >
+          {pending ? t("generating") : t("generate")}
+        </button>
+      </div>
+
+      {choice.scope === "master" && (
+        <p className="text-xs text-muted-foreground">{t("masterNote")}</p>
+      )}
+
+      {issued !== null && (
+        <div className="flex flex-col gap-2 rounded-lg border border-warning bg-warning/10 p-3">
+          <p className="text-sm font-medium">{t("issued.title")}</p>
+          <p className="text-xs">{t("issued.onceOnly")}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              readOnly
+              value={issued}
+              aria-label={t("issued.label")}
+              onFocus={(event) => event.currentTarget.select()}
+              className={`${input} min-w-0 flex-1 font-mono text-xs`}
+            />
+            <button type="button" className={secondary} onClick={() => void copy()}>
+              {copied ? t("issued.copied") : t("issued.copy")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

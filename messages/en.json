@@ -3193,6 +3193,39 @@
       "passwordMismatch": "The two passwords differ.",
       "settingsFailed": "Your settings could not be saved.",
       "calendarFailed": "The calendar link could not be changed."
+    },
+    "token": {
+      "title": "Application token",
+      "explain": "A token lets a script or an outside tool act on your behalf through ReCodEx's API. The scope narrows what it may do; it can never do more than you can. Anyone holding it acts as you, so treat it as a password.",
+      "scope": "Scope",
+      "scopes": {
+        "master": "Everything you can do",
+        "read-all": "Read-only",
+        "plagiarism": "Plagiarism detection",
+        "ref-solutions": "Reference solutions",
+        "group-external": "Managing groups from outside"
+      },
+      "expiration": "Expires in",
+      "expirations": {
+        "3600": "1 hour",
+        "86400": "1 day",
+        "604800": "1 week",
+        "2678400": "1 month",
+        "31536000": "1 year"
+      },
+      "refresh": "May renew itself while in use",
+      "masterNote": "A token that can do everything may be capped to a shorter life than you asked for. That limit is this deployment's own setting; if it applies, the refusal will say so.",
+      "generate": "Generate token",
+      "generating": "Generating…",
+      "failed": "The token could not be generated.",
+      "copyFailed": "Your browser would not let the page copy it. Select the token and copy it by hand.",
+      "issued": {
+        "title": "Your new token",
+        "onceOnly": "This is the only time it is shown. ReCodEx keeps no copy it could show you again — if you lose it, generate another.",
+        "label": "The generated token",
+        "copy": "Copy",
+        "copied": "Copied"
+      }
     }
   },
   "UserEdit": {

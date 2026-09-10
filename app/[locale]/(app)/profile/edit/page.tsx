@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
+import { SUPERADMIN_TOKEN_SCOPES, TOKEN_SCOPES } from "@/lib/auth/restricted-token";
 import { getAccountSettings, getCalendarTokens, NOTIFICATION_FLAGS } from "@/lib/api/user-settings";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import {
+  ApplicationToken,
   CalendarTokens,
   PasswordForm,
   ProfileForm,
@@ -95,6 +97,18 @@ export default async function AccountSettingsPage() {
             {t("sessions.title")}
           </h2>
           <SignOutEverywhere userId={account.id} />
+        </section>
+
+        <section aria-labelledby="account-token">
+          <h2 id="account-token" className="mb-3 text-base font-semibold tracking-tight">
+            {t("token.title")}
+          </h2>
+          {/* G-020. `group-external` is offered to a superadmin only, matching the legacy form --
+              core-api does not itself refuse the scope to anybody, so this is an offer withheld
+              rather than a permission enforced; see `lib/auth/restricted-token.ts`. */}
+          <ApplicationToken
+            scopes={viewer.role === "superadmin" ? SUPERADMIN_TOKEN_SCOPES : TOKEN_SCOPES}
+          />
         </section>
 
         <section aria-labelledby="account-calendars">

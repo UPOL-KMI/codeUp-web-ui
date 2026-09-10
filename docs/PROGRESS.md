@@ -4560,6 +4560,39 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     product at the end of the spec, and through core-api in the file's `afterEach` if that never
     runs -- the discipline PF-007 says `exercise-edit.spec.ts` is missing.
 
+- **[2026-09-10 08:35] G-020:** An application token of one's own, and the route that had no caller.
+  `components/users/account-forms.tsx` (`ApplicationToken`), `lib/auth/restricted-token.ts` + unit
+  tests, `app/[locale]/(app)/profile/edit/page.tsx`.
+  - _F-021 built the BFF half and verified it live; nothing ever called it._ `POST
+/api/auth/restricted-token` was reachable only with `curl`, so the feature existed and no
+    person could use it. This is the form it was built for.
+  - **_It calls the Route Handler rather than a Server Action, and that is the design._** DEC-043
+    has this one route return the raw token in its body -- the single deliberate exception to
+    DEC-021 -- because handing it to the reader to copy is the entire feature. It never touches the
+    session cookie: this credential is meant to leave the app.
+  - **_`refresh` is a second scope, not a flag._** core-api reads `TokenScope::REFRESH` out of the
+    same `scopes` array, so "allow renewing" means asking for two scopes. That is the one thing a
+    caller of this endpoint gets wrong, so it is one tested function rather than a property set in
+    a component.
+  - _Two things recorded rather than assumed._ `group-external` is offered to a superadmin only,
+    matching the legacy form -- and **core-api refuses it to nobody**: `validateScopeRoles` guards
+    only `change-password` and `email-verification` and caps `master`'s lifetime, with no role test
+    for this scope at all. So it is an offer withheld, not a permission enforced, and the reason is
+    that a group-management scope issued to somebody who may not manage groups intersects down to a
+    credential that can do nothing. Separately, the legacy form's "1 Year" is `356 * DAY` -- nine
+    days short and plainly a typo -- carried here as 365.
+  - _The `master` cap is not mirrored._ core-api caps that scope at the deployment's own configured
+    token lifetime and does not publish the number, so there is no ceiling to copy; the refusal
+    names it and is shown verbatim. On this deployment a week-long `master` token was issued
+    without complaint, so the cap is real in code and did not bite here.
+  - _Observations:_ **verified live**, as superadmin and as supervisor. The form's own request body
+    issued a token whose decoded claims carry `["read-all", "refresh"]` and a seven-day life;
+    `change-password` was refused 403 with core-api's own sentence forwarded verbatim; and the scope
+    select rendered five `<option>`s for a superadmin and four for a supervisor. What is **not**
+    claimed: that the issued token is read-restricted in practice -- two probe endpoints answered
+    400 for unrelated reasons, and enforcement is core-api's rather than this ticket's. 225 unit
+    tests (217 before), typecheck/lint/format/build clean.
+
 - **[2026-09-10 07:55] G-011:** Mailing the whole class, and the truncation the legacy link does not
   mention. `components/groups/mail-students.tsx`, `lib/format/mailto.ts` + unit tests,
   `lib/api/group-detail.ts`, `e2e/mail-students.spec.ts`.

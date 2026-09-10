@@ -3193,6 +3193,39 @@
       "passwordMismatch": "Hesla se neshodují.",
       "settingsFailed": "Nastavení se nepodařilo uložit.",
       "calendarFailed": "Odkaz na kalendář se nepodařilo změnit."
+    },
+    "token": {
+      "title": "Aplikační token",
+      "explain": "Token umožňuje skriptu nebo externímu nástroji jednat za vás přes API ReCodExu. Rozsah zužuje, co smí; nikdy nemůže víc než vy sami. Kdo token má, jedná jako vy — zacházejte s ním jako s heslem.",
+      "scope": "Rozsah",
+      "scopes": {
+        "master": "Vše, co můžete vy",
+        "read-all": "Jen čtení",
+        "plagiarism": "Detekce plagiátů",
+        "ref-solutions": "Referenční řešení",
+        "group-external": "Správa skupin zvenčí"
+      },
+      "expiration": "Vyprší za",
+      "expirations": {
+        "3600": "1 hodinu",
+        "86400": "1 den",
+        "604800": "1 týden",
+        "2678400": "1 měsíc",
+        "31536000": "1 rok"
+      },
+      "refresh": "Smí se sám obnovovat, dokud se používá",
+      "masterNote": "Tokenu, který může všechno, může být život zkrácen pod hodnotu, o kterou jste požádali. Ten limit je nastavení tohoto nasazení; pokud se uplatní, odmítnutí to napíše.",
+      "generate": "Vygenerovat token",
+      "generating": "Generuji…",
+      "failed": "Token se nepodařilo vygenerovat.",
+      "copyFailed": "Prohlížeč stránce nedovolil token zkopírovat. Označte ho a zkopírujte ručně.",
+      "issued": {
+        "title": "Váš nový token",
+        "onceOnly": "Teď je zobrazen jedinkrát. ReCodEx si žádnou kopii neukládá a znovu vám ho ukázat nemůže — když ho ztratíte, vygenerujte nový.",
+        "label": "Vygenerovaný token",
+        "copy": "Kopírovat",
+        "copied": "Zkopírováno"
+      }
     }
   },
   "UserEdit": {
