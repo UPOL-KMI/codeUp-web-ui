@@ -35,6 +35,8 @@ export interface ReviewableCodeProps {
   /** The comment's `file` key: `main.c`, or `archive.zip#src/main.c` for a ZIP entry. */
   fileName: string;
   lines: CodeToken[][];
+  /** The block's distinct token styles; a token names one by index (PF-003). */
+  palette: Record<string, string>[];
   rootStyle: Record<string, string>;
   idPrefix: string;
   comments: ReviewComment[];
@@ -50,6 +52,7 @@ export function ReviewableCode({
   solutionId,
   fileName,
   lines,
+  palette,
   rootStyle,
   idPrefix,
   comments,
@@ -93,6 +96,7 @@ export function ReviewableCode({
               )}
               <CodeLine
                 tokens={tokens}
+                palette={palette}
                 number={line}
                 idPrefix={idPrefix}
                 label={code("lineLabel", { line })}

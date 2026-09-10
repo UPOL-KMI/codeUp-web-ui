@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { diffLines, type DiffRow } from "@/lib/code/diff";
-import { highlightToLines, type CodeToken } from "@/lib/code/highlight";
+import { highlightToLines, type CodeToken, type HighlightedCode } from "@/lib/code/highlight";
 import { languageForFilename } from "@/lib/code/languages";
 
 /**
@@ -20,10 +20,38 @@ import { languageForFilename } from "@/lib/code/languages";
  * files are tokenised once each, and each aligned row takes its tokens from whichever side it came
  * from. So a diff and the source viewer cannot colour the same file two different ways.
  */
-function rowTokens(row: DiffRow, left: CodeToken[][], right: CodeToken[][]): CodeToken[] {
-  if (row.leftNumber !== null) return left[row.leftNumber - 1] ?? [{ content: row.text }];
-  if (row.rightNumber !== null) return right[row.rightNumber - 1] ?? [{ content: row.text }];
-  return [{ content: row.text }];
+/**
+ * The tokens for one aligned row, **with the palette they were interned against** (PF-003). The
+ * two files are tokenised separately and each keeps its own palette, so an index means nothing
+ * without the side it came from -- carrying the pair is what keeps the two from being mixed up,
+ * and costs nothing since a row belongs to exactly one side.
+ */
+function rowTokens(
+  row: DiffRow,
+  left: HighlightedCode,
+  right: HighlightedCode,
+): { tokens: CodeToken[]; palette: Record<string, string>[] } {
+  if (row.leftNumber !== null) {
+    return { tokens: left.lines[row.leftNumber - 1] ?? [[row.text]], palette: left.palette };
+  }
+  if (row.rightNumber !== null) {
+    return { tokens: right.lines[row.rightNumber - 1] ?? [[row.text]], palette: right.palette };
+  }
+  return { tokens: [[row.text]], palette: [] };
+}
+
+function RowTokens({
+  tokens,
+  palette,
+}: {
+  tokens: CodeToken[];
+  palette: Record<string, string>[];
+}) {
+  return tokens.map(([content, style], index) => (
+    <span key={index} style={style === undefined ? undefined : palette[style]}>
+      {content}
+    </span>
+  ));
 }
 
 const ROW_TONE: Record<DiffRow["kind"], string> = {
@@ -111,11 +139,7 @@ export async function DiffView({
                   </span>
                 </td>
                 <td className="px-2 py-0.5 align-top whitespace-pre-wrap">
-                  {rowTokens(row, left.lines, right.lines).map((token, tokenIndex) => (
-                    <span key={tokenIndex} style={token.style}>
-                      {token.content}
-                    </span>
-                  ))}
+                  <RowTokens {...rowTokens(row, left, right)} />
                 </td>
               </tr>
             ))}

@@ -5169,3 +5169,34 @@ An **85–90% cut**, and the document completes no later than it did: the shell'
 **One flake worth naming rather than dismissing, because it has now been seen twice.** `landing.spec.ts` fails under full-suite load looking for the instance name on `/`, and passes on its own every time. The cause is not timing in the test: `getPublicInstances()` swallows a failed read and returns `[]` (`lib/api/instances.ts:146`), deliberately — `/` is the front door and a visitor should get the page rather than an error — so a core-api blip under two workers of load renders a landing page quietly missing one line. That is the right behaviour for that page and the wrong thing for a spec to assert unconditionally; left as it is, and recorded here so the next person who sees it does not go looking for a bug in the page.
 
 **Next ticket:** **PF-003** — Shiki tokens carrying a style object each. Measured at 162,606 bytes of props JSON for a real 16 KB file, 9.9× the source, against 8 distinct styles in the whole file; interning them as a palette plus an integer index is an 81% cut. The row names the care needed: the class rules must set the same two custom properties at the same or higher specificity, and `:target` line highlighting must still win. After that only **PF-004** remains, and it needs a decision before an implementation.
+
+---
+
+### 2026-09-10 — PF-003: Shiki tokens carry a style object each
+
+**Ticket:** PF-003
+**Status:** done
+
+**What was built:** `lib/code/highlight.ts` (a `palette` on the result, tokens as tuples), and the three components that read a token — `components/code/code-block.tsx`, `components/solutions/diff-view.tsx`, and `components/solutions/reviewable-code.tsx`'s prop chain.
+
+**The 81% this row was filed with is real, and it needs both halves of the change — which the row did not say.** Shiki stamps a fresh `{--shiki-light, --shiki-dark}` object on every token, and the viewers hand the whole array to a client island, so every one of those objects shipped twice: once as an attribute in the SSR HTML and again as props JSON.
+
+**Re-measured, because the row's file is not in this repo.** On `lib/exercise-config/simple-config.ts` — 17,855 bytes, 500 lines, close to the size the row names:
+
+|                                              | props JSON    | cut     |
+| -------------------------------------------- | ------------- | ------- |
+| before                                       | 176,899 bytes | —       |
+| interning the styles only                    | 70,987 bytes  | 60%     |
+| interning **and** dropping the repeated keys | 33,475 bytes  | **81%** |
+
+2,084 tokens; **seven distinct styles in the whole file**. The first half is the palette; the second is the tuple. `"content"` and `"style"`, 2,084 times each, are most of what is left once the colours are shared — which is why a token is now `[content]` or `[content, styleIndex]` rather than an object. Labelled tuple elements keep the type readable, and all three readers destructure it, so the shape is stated where it is used.
+
+**The cascade caution in the row turned out not to apply, and that is worth recording rather than leaving implied.** The palette is looked up at render time and the span still carries an inline style, so nothing moves into the stylesheet: `:target` line highlighting is untouched and the SSR HTML is byte-for-byte what it was. Emitting CSS classes instead would shrink that half too — at the price of a generated stylesheet per block and a specificity fight with exactly the rules `app/globals.css` already warns about ("a `:target` rule that loses the cascade is silently dead"). Not taken.
+
+**The diff viewer needed one thought the other two did not.** It tokenises two files separately, so each keeps its own palette and an index means nothing without the side it came from — `rowTokens` returns the pair, which costs nothing since a row belongs to exactly one side.
+
+**What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, and the full e2e suite — `solution-sources`, `solution-diff`, `comments` and `design-system` are the four that render code, and all four pass, including the reviewable viewer where the tokens cross a client boundary.
+
+**Two specs failed on the full run and passed alone, and the pair is worth one note rather than two.** `landing.spec.ts` looking for the instance name on `/` (the third sighting, cause already recorded under PF-005) and **PF-005's own new refusal test**, which rendered the error boundary instead of the Not found page. That second one is not purely environmental and is an **amendment to PF-005**: with the breadcrumb chain resolved sequentially, `resolveBreadcrumbs` finished — and its `notFound()` was thrown — before `ProfileView` issued a single read. Concurrently the two race, so a core-api that is slow enough to fail the profile read can surface a transport error where the reader used to get Not found. It is the same trade that row records ("a crumb that would have been refused no longer stops the later ones being issued"), one consequence further on: under load the _answer_ can change, not only the number of requests. Both specs pass on their own every time, and the fix is not in this app.
+
+**Next ticket:** **PF-004**, the last open row in the project. It is not an implementation ticket yet: Zod 4 classic is not tree-shakable through the `z` namespace, so the two ways out are moving validation server-side (losing instant client feedback) or replacing the resolver — a decision before a change, which is what that row asks for.
