@@ -158,6 +158,40 @@ interface SeedUserSpec {
 }
 
 /** Login if the account already exists (idempotent path), else register it fresh. */
+class WrongInstanceError extends Error {}
+
+/**
+ * Stops if an account this run means to reuse belongs to a different instance.
+ *
+ * **An address is unique deployment-wide and an account belongs to exactly one instance**, so
+ * looking a seed account up by email can hand back one created against another instance -- which
+ * is what an earlier run, before `chooseInstance`, actually did. The failure that follows is quiet
+ * and misleading rather than loud: the group lists the student, `POST /users/list` discloses only
+ * the ones the caller may see, and the roster renders the rest as a raw UUID. Four specs failed on
+ * a screen that was behaving correctly.
+ *
+ * Nothing here can repair it -- core-api offers no way to move a user between instances and the
+ * address cannot be registered twice -- so this reports what to do rather than trying.
+ */
+async function assertUserIsOnInstance(
+  adminToken: string,
+  userId: string,
+  instanceId: string,
+  email: string,
+): Promise<void> {
+  const user = await api<{ privateData?: { instancesIds?: string[] } }>("GET", `/users/${userId}`, {
+    token: adminToken,
+  });
+  const belongsTo = user.privateData?.instancesIds ?? [];
+  if (belongsTo.includes(instanceId)) return;
+  throw new WrongInstanceError(
+    `${email} already exists on instance ${belongsTo.join(", ") || "(none)"}, but this run seeds ` +
+      `${instanceId}. An address cannot be registered twice and core-api cannot move a user ` +
+      `between instances, so either delete that account (its solutions go with it) or point the ` +
+      `seed at the other instance with SEED_INSTANCE_ID=${belongsTo[0] ?? "<id>"}.`,
+  );
+}
+
 async function getOrCreateUser(
   adminToken: string,
   instanceId: string,
@@ -165,9 +199,13 @@ async function getOrCreateUser(
 ): Promise<AuthResult> {
   try {
     const existing = await login(spec.email, SEED_PASSWORD);
+    await assertUserIsOnInstance(adminToken, existing.userId, instanceId, spec.email);
     log(`user exists, reused: ${spec.email}`);
     return existing;
-  } catch {
+  } catch (error) {
+    // A wrong instance is a stop, not a "does not exist": re-registering the address is refused
+    // (it is unique deployment-wide) and re-running the seed cannot fix it either.
+    if (error instanceof WrongInstanceError) throw error;
     // Not found / wrong credentials -- assume it doesn't exist yet and register it.
   }
 
@@ -597,6 +635,28 @@ async function getOrCreateBaseExercise(
     log(`exercise exists, reconfiguring: ${EXERCISE_NAME}`);
   }
 
+  // **Reused by name, and the name says nothing about which group it hangs in.** An earlier run,
+  // before `chooseInstance`, created this exercise inside an operator's own course; every run
+  // since found it by name and reconfigured it there, so the seeded group never had it. An
+  // exercise's groups are what a course may assign *from*, so the group picker offered nothing
+  // and two specs failed on a fixture that looked present -- core-api's own search finds it, and
+  // scoping to the group does not. Attached rather than moved: a stray attachment in someone
+  // else's course is theirs to remove, and detaching would write to their group (PF-013).
+  if (existing) {
+    const detail = await api<{ groupsIds?: string[] }>("GET", `/exercises/${existing.id}`, {
+      token: adminToken,
+    });
+    const groups = detail.groupsIds ?? [];
+    if (!groups.includes(ownerGroupId)) {
+      await api("POST", `/exercises/${existing.id}/groups/${ownerGroupId}`, { token: adminToken });
+      log(`attached the exercise to the seeded group (it hung only in ${groups.join(", ")})`);
+    }
+    const strays = groups.filter((one) => one !== ownerGroupId);
+    if (strays.length > 0) {
+      log(`NOTE: the exercise is also attached to ${strays.join(", ")} -- left alone, see PF-013`);
+    }
+  }
+
   const id =
     existing?.id ??
     (
@@ -736,13 +796,34 @@ async function getOrCreateBaseExercise(
   // a steadily growing list on any machine where the seed is re-run often. Found by re-running it
   // four times while building F-029's fixtures.
   const referenceNote = `${SEED_PREFIX} reference solution`;
-  const references = await api<{ description: string }[]>(
+  const references = await api<{ id: string; description: string }[]>(
     "GET",
     `/reference-solutions/exercise/${id}`,
     { token: adminToken },
   );
-  if (references.some((reference) => reference.description === referenceNote)) {
+  const seededReference = references.find((reference) => reference.description === referenceNote);
+  if (seededReference) {
     log(`reference solution already exists, skipping submit`);
+    // **One run, which is what the seed promises and what a spec asserts.** Evaluating it again is
+    // how `reference-solutions.spec.ts` gets a history to read, and it removes the run it added --
+    // at the end of the test body, so a failure anywhere before that leaves the solution one run
+    // deeper and the next run finds a history where there should be none. The oldest is the
+    // seed's; core-api refuses to delete the last one, so there is no way to overshoot.
+    const runs = await api<{ id: string; submittedAt: number }[]>(
+      "GET",
+      `/reference-solutions/${seededReference.id}/submissions`,
+      { token: adminToken },
+    );
+    const extra = [...runs]
+      .sort((a, b) => a.submittedAt - b.submittedAt)
+      .slice(1)
+      .map((run) => run.id);
+    for (const runId of extra) {
+      await api("DELETE", `/reference-solutions/submission/${runId}`, { token: adminToken });
+    }
+    if (extra.length > 0) {
+      log(`removed ${extra.length} evaluation run(s) left on the reference solution`);
+    }
   } else {
     const solutionUpload = await apiUpload(
       adminToken,
@@ -775,6 +856,32 @@ interface AssignmentDetail {
   createdAt: number;
   solutionFilesLimit: number;
   solutionSizeLimit: number;
+  localizedTexts?: { studentHint?: string | null }[];
+}
+
+/** The student hints of G1's three assignments, in one place because they are search keys as well
+ *  as content: `pickByHint` finds an existing assignment by the same string `createAssignment`
+ *  gave it. */
+const G1_HINTS = {
+  primary: "Print the exact greeting, including the newline.",
+  unsubmitted: "Nothing submitted yet -- exercises the empty-submissions UI state.",
+  secondDeadline: "Has a second deadline -- worth fewer points after the first one passes.",
+} as const;
+
+/**
+ * The one of `assignments` whose student hint starts with `hint`.
+ *
+ * The seed makes three assignments from one exercise on purpose (F-029) and they are otherwise
+ * indistinguishable -- an assignment has no name of its own, it displays its exercise's. Picking
+ * them out **by position used to be a coin toss**: all three are created inside the same second, so
+ * `createdAt` ties and the tiebreak is an arbitrary id comparison. That is what put two solutions
+ * noted `[seed] correct` under two different assignments, and sorting the list was never a fix for
+ * it. `e2e/helpers/core-api.ts` names them the same way from the other side.
+ */
+function pickByHint(assignments: AssignmentDetail[], hint: string): AssignmentDetail | undefined {
+  return assignments.find((a) =>
+    (a.localizedTexts ?? []).some((text) => (text.studentHint ?? "").startsWith(hint)),
+  );
 }
 
 async function createAssignment(
@@ -882,10 +989,8 @@ async function findAssignmentsForExercise(
     );
     if (a.exerciseId === exerciseId) result.push(a);
   }
-  // Sorted, because callers pick "the primary assignment" by position and core-api returns the
-  // group's assignment ids in no promised order. An unsorted list made an earlier run submit its
-  // solutions to a different assignment than a later one -- which is how this instance ended up
-  // with two solutions noted "[seed] correct" under two different assignments.
+  // Sorted only so the log reads in creation order. Nothing picks an assignment by position any
+  // more -- see `pickByHint` for why that could not work.
   return result.sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
 }
 
@@ -920,6 +1025,61 @@ interface SolutionRecord {
   note: string;
   reviewRequest: boolean;
   review: { startedAt: number; closedAt: number | null; issues: number } | null;
+}
+
+/**
+ * Removes `[seed] `-noted solutions on G1's three assignments that this run did not intend
+ * (PF-012), so the counts the specs assert are facts about the seed rather than about how many
+ * times the suite has been run.
+ *
+ * **Everything it removes was put there by a bug that is now fixed**, and both bugs put it
+ * somewhere arbitrary: picking "the primary assignment" by position meant a run's submissions
+ * could land on a different one than the last run's, and deleting an account leaves its solutions
+ * behind with `authorId: null`. F-029's "nothing submitted yet" fixture had collected two that way
+ * and stopped being an empty-state fixture at all.
+ *
+ * Deliberately narrow. It looks only at these three assignments, and only at notes carrying the
+ * seed's own prefix -- a solution a person submitted by hand, or one the e2e suite left behind
+ * under its own note, is not this function's business. A delete that core-api refuses is logged
+ * and stepped over rather than fatal: an orphan whose author is gone is exactly the case
+ * `DELETE /assignment-solutions/{id}` answers 500 to (the family of Q-021), and a seed that cannot
+ * finish because of one is worse than a seed that says so.
+ */
+async function sweepUnintendedSeedSolutions(
+  adminToken: string,
+  assignmentIds: string[],
+  intended: { assignmentId: string; authorId: string; note: string }[],
+): Promise<void> {
+  const keep = new Set(
+    intended.map((one) => `${one.assignmentId}|${one.authorId}|${SEED_PREFIX} ${one.note}`),
+  );
+  let removed = 0;
+  let refused = 0;
+  for (const assignmentId of assignmentIds) {
+    const solutions = await api<{ id: string; note: string; authorId: string | null }[]>(
+      "GET",
+      `/exercise-assignments/${assignmentId}/solutions`,
+      { token: adminToken },
+    );
+    for (const solution of solutions) {
+      if (!solution.note.startsWith(`${SEED_PREFIX} `)) continue;
+      if (keep.has(`${assignmentId}|${solution.authorId ?? ""}|${solution.note}`)) continue;
+      try {
+        await api("DELETE", `/assignment-solutions/${solution.id}`, { token: adminToken });
+        removed++;
+        log(`removed a solution this run did not intend: ${solution.note} (${solution.id})`);
+      } catch (error) {
+        refused++;
+        log(
+          `could not remove ${solution.note} (${solution.id}): ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+  }
+  if (removed === 0 && refused === 0) log("no unintended seed solutions to remove");
+  if (refused > 0) log(`${refused} unintended solution(s) core-api refused to remove -- see Q-029`);
 }
 
 async function findSolutionByNote(
@@ -1065,7 +1225,30 @@ async function ensureDetectedSimilarity(
     `/plagiarism?detectionTool=${encodeURIComponent(PLAGIARISM_TOOL)}&solutionId=${tested.solutionId}`,
     { token: adminToken },
   );
-  if (batches.length > 0) return false;
+  // **A batch that exists is not a fixture that works.** An earlier run recorded this similarity
+  // against a solution that has since been deleted, and "a batch exists, skip" kept that record
+  // in place for every run after: the report screen had a match whose author was gone and
+  // rendered nothing. Nothing can repair it either -- core-api publishes no way to remove a
+  // detection record (**Q-029**) -- so a stale one is answered with a *new* batch, which is what
+  // the solution's own `plagiarism` pointer then names. The unreachable rows stay in the database.
+  const pointsAtIntended = await Promise.all(
+    batches.map(async (batch) => {
+      const similarities = await api<{ files?: { solution?: { id?: string } }[] }[]>(
+        "GET",
+        `/plagiarism/${batch.id}/${tested.solutionId}`,
+        { token: adminToken },
+      );
+      // The matched solution is nested (`files[].solution.id`), not a flat id -- reading it as
+      // one made every run think the fixture was stale and add another batch.
+      return similarities.some((one) =>
+        (one.files ?? []).some((file) => file.solution?.id === other.solutionId),
+      );
+    }),
+  );
+  if (pointsAtIntended.some(Boolean)) return false;
+  if (batches.length > 0) {
+    log(`the recorded similarity no longer matches the intended solution, recording a new one`);
+  }
 
   const [testedFileId, otherFileId] = await Promise.all([
     firstSolutionFileId(adminToken, tested.solutionId),
@@ -1339,15 +1522,15 @@ async function main() {
   const exercise = await getOrCreateBaseExercise(admin.token, g1.id);
 
   // G1: a "real" assignment with mixed submission states, plus a second assignment with
-  // nothing submitted -- both required states per the brief. Reuse by position (existing[0]
-  // is always the primary one) if this group already has assignments for this exercise.
+  // nothing submitted -- both required states per the brief. Each is found by its own student
+  // hint if this group already has assignments for this exercise (`pickByHint`).
   const existingG1Assignments = await findAssignmentsForExercise(admin.token, g1, exercise.id);
   const primaryAssignment =
-    existingG1Assignments[0] ??
+    pickByHint(existingG1Assignments, G1_HINTS.primary) ??
     (await createAssignment(admin.token, exercise.id, g1.id, {
       firstDeadlineDays: 14,
       maxPoints: 10,
-      hint: "Print the exact greeting, including the newline.",
+      hint: G1_HINTS.primary,
     }));
   await submitSolution(
     student1.token,
@@ -1396,24 +1579,24 @@ async function main() {
     `${SEED_PREFIX} wrong`,
   );
 
-  if (!existingG1Assignments[1]) {
-    await createAssignment(admin.token, exercise.id, g1.id, {
+  const unsubmittedAssignment =
+    pickByHint(existingG1Assignments, G1_HINTS.unsubmitted) ??
+    (await createAssignment(admin.token, exercise.id, g1.id, {
       firstDeadlineDays: 21,
       maxPoints: 10,
-      hint: "Nothing submitted yet -- exercises the empty-submissions UI state.",
-    });
-  }
+      hint: G1_HINTS.unsubmitted,
+    }));
 
   // The only assignment anywhere with a second deadline (F-029).
-  if (!existingG1Assignments[2]) {
-    await createAssignment(admin.token, exercise.id, g1.id, {
+  const secondDeadlineAssignment =
+    pickByHint(existingG1Assignments, G1_HINTS.secondDeadline) ??
+    (await createAssignment(admin.token, exercise.id, g1.id, {
       firstDeadlineDays: 3,
       maxPoints: 10,
       secondDeadlineDays: 14,
       secondDeadlineMaxPoints: 5,
-      hint: "Has a second deadline -- worth fewer points after the first one passes.",
-    });
-  }
+      hint: G1_HINTS.secondDeadline,
+    }));
 
   // G3: enough students and assignments to force pagination in any list/table view.
   const fillerStudentIds: string[] = [];
@@ -1481,6 +1664,32 @@ async function main() {
         : "a detected similarity was already recorded",
     );
   }
+
+  // Bob submits to a **second** assignment (T-005). The group-wide drill-down counts "N
+  // submissions across M assignments", and with every seeded submission on one assignment M was
+  // always 1 -- the aggregation the screen exists for had no data, and the spec that asserts two
+  // across two was passing on residue left by earlier suite runs rather than on anything the seed
+  // made. On the second-deadline assignment because that one is identified by its deadline rather
+  // than by counting solutions, so adding one cannot confuse anything that looks for it.
+  await submitSolution(
+    student2.token,
+    student2.userId,
+    secondDeadlineAssignment.id,
+    `${SEED_PREFIX} second try`,
+    `print("${EXPECTED_OUTPUT.trim()}")\n`,
+  );
+
+  await sweepUnintendedSeedSolutions(
+    admin.token,
+    [primaryAssignment.id, secondDeadlineAssignment.id, unsubmittedAssignment.id],
+    [
+      { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "correct" },
+      { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "wrong" },
+      { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "zip archive" },
+      { assignmentId: primaryAssignment.id, authorId: student2.userId, note: "borrowed" },
+      { assignmentId: secondDeadlineAssignment.id, authorId: student2.userId, note: "second try" },
+    ],
+  );
 
   // Two shadow assignments (S-020, S-025): one with points awarded to Alice, one with none, so the
   // dashboard's "awarded" and "nothing yet" rows are both reachable.
