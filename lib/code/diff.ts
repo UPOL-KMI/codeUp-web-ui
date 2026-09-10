@@ -162,3 +162,40 @@ export function pairFilesByName<T extends { name: string }>(
 
   return { pairs, onlyLeft, onlyRight: right.filter((file) => rightByName.has(file.name)) };
 }
+
+/**
+ * A manual pairing the reader asked for (G-030), carried in `searchParams` rather than remembered
+ * server-side or in the browser.
+ *
+ * Legacy remembers the mapping per solution pair in its own store. `searchParams` is the same
+ * capability and one thing more: the comparison becomes a link, so "look at these two against
+ * each other" can be sent to a colleague, which is what brief §9's deep-linkability asks for.
+ * It also means the control that creates one needs no JavaScript -- a `<form method="get">` with
+ * the existing pairs as hidden fields is the whole mechanism.
+ *
+ * Each side is percent-encoded before the colon joins them, because a filename may contain one --
+ * a ZIP entry's name already carries its archive (`archive.zip#src/main.c`), and while `#` is the
+ * separator there, nothing stops a submitted file from being called `a:b`.
+ */
+export function encodeFilePair(leftName: string, rightName: string): string {
+  return `${encodeURIComponent(leftName)}:${encodeURIComponent(rightName)}`;
+}
+
+export function parseFilePairs(raw: string | string[] | undefined): FilePairingOverride[] {
+  const values = raw === undefined ? [] : Array.isArray(raw) ? raw : [raw];
+  const parsed: FilePairingOverride[] = [];
+  for (const value of values) {
+    const separator = value.indexOf(":");
+    if (separator === -1) continue;
+    try {
+      const left = decodeURIComponent(value.slice(0, separator));
+      const right = decodeURIComponent(value.slice(separator + 1));
+      if (left !== "" && right !== "") parsed.push({ left, right });
+    } catch {
+      // A malformed escape is a hand-edited URL, not a state to report -- the pairing is simply
+      // not applied and the files stay listed as unpaired.
+      continue;
+    }
+  }
+  return parsed;
+}

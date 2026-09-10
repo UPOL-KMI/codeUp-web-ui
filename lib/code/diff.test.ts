@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { diffLines, pairFilesByName } from "./diff";
+import { diffLines, encodeFilePair, pairFilesByName, parseFilePairs } from "./diff";
 
 describe("diffLines", () => {
   it("says two identical files are identical, and numbers every line on both sides", () => {
@@ -148,5 +148,55 @@ describe("pairFilesByName, with pairings the reader made (G-030)", () => {
       { left: { name: "helper.py" }, right: { name: "utils.py" }, byHand: true },
       { left: { name: "main.py" }, right: { name: "main.py" } },
     ]);
+  });
+
+  it("refuses to use one file twice, however many pairings name it", () => {
+    const result = pairFilesByName(left, right, [
+      { left: "helper.py", right: "utils.py" },
+      { left: "helper.py", right: "main.py" },
+      { left: "main.py", right: "utils.py" },
+    ]);
+    expect(result.pairs).toEqual([
+      { left: { name: "helper.py" }, right: { name: "utils.py" }, byHand: true },
+      { left: { name: "main.py" }, right: { name: "main.py" } },
+    ]);
+  });
+});
+
+/**
+ * The pairing arrives in the URL, so it is reader-supplied input (G-030). What most of these pin
+ * is what a stale or hand-edited link may *not* do -- each is a case where trusting it verbatim
+ * would fabricate a comparison or throw on the way.
+ */
+describe("parseFilePairs", () => {
+  it("reads one pairing and several", () => {
+    expect(parseFilePairs(encodeFilePair("a.c", "b.c"))).toEqual([{ left: "a.c", right: "b.c" }]);
+    expect(parseFilePairs([encodeFilePair("a.c", "b.c"), encodeFilePair("x.h", "y.h")])).toEqual([
+      { left: "a.c", right: "b.c" },
+      { left: "x.h", right: "y.h" },
+    ]);
+  });
+
+  it("survives a colon in either filename, which is why the sides are encoded", () => {
+    expect(parseFilePairs(encodeFilePair("odd:name.c", "b:2.c"))).toEqual([
+      { left: "odd:name.c", right: "b:2.c" },
+    ]);
+  });
+
+  it("round-trips a ZIP entry, whose name already carries its archive", () => {
+    const pair = encodeFilePair("archive.zip#src/main.c", "archive.zip#main.c");
+    expect(parseFilePairs(pair)).toEqual([
+      { left: "archive.zip#src/main.c", right: "archive.zip#main.c" },
+    ]);
+  });
+
+  it("drops anything malformed instead of throwing", () => {
+    expect(parseFilePairs(undefined)).toEqual([]);
+    expect(parseFilePairs("")).toEqual([]);
+    expect(parseFilePairs("no-separator")).toEqual([]);
+    expect(parseFilePairs(":b.c")).toEqual([]);
+    expect(parseFilePairs("a.c:")).toEqual([]);
+    // A hand-edited URL with a broken escape must not take the page down.
+    expect(parseFilePairs("%E0%A4%A:b.c")).toEqual([]);
   });
 });

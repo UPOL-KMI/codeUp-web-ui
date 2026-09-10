@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { createUserAccount, type CreateUserOutcome } from "@/lib/actions/users";
-import type { CreateUserValues } from "@/lib/actions/users.schema";
+import { createUserSchema, type CreateUserValues } from "@/lib/actions/users.schema";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
@@ -36,7 +36,7 @@ export function CreateUser() {
   const [sameName, setSameName] = useState<string[] | null>(null);
 
   const { form, onSubmit, isPending } = useServerActionForm<CreateUserValues, CreateUserOutcome>({
-    schema: () => import("@/lib/actions/users.schema").then((module) => module.createUserSchema),
+    schema: createUserSchema,
     defaultValues: {
       firstName: "",
       lastName: "",

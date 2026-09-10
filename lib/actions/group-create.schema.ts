@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { groupTextSchema } from "./group-settings.schema";
 
@@ -17,12 +17,14 @@ import { groupTextSchema } from "./group-settings.schema";
  */
 export const createGroupSchema = z
   .object({
-    texts: z.array(groupTextSchema).min(1),
+    texts: z.array(groupTextSchema).check(z.minLength(1)),
   })
-  .superRefine((values, ctx) => {
-    if (!values.texts.some((text) => text.name.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      if (!values.texts.some((text) => text.name.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
+      }
+    }),
+  );
 
 export type CreateGroupValues = z.infer<typeof createGroupSchema>;

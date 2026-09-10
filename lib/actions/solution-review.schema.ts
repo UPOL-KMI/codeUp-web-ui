@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * A review comment's editable fields, shared by the client form and the Server Action that
@@ -10,7 +10,7 @@ import { z } from "zod";
  * so a comment of nothing but spaces has to fail here, with a message, rather than there.
  */
 export const reviewCommentSchema = z.object({
-  text: z.string().trim().min(1).max(65535),
+  text: z.string().check(z.trim(), z.minLength(1), z.maxLength(65535)),
   /** Issues are the comments the student is expected to resolve; core-api counts them on close. */
   issue: z.boolean(),
   /** Only has an effect on an already-closed review, where an edit would otherwise email the author. */

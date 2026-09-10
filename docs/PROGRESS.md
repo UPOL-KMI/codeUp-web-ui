@@ -5086,13 +5086,15 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **Ticket:** G-030
 **Status:** done
 
-**What was built:** overrides in `pairFilesByName` (+4 unit tests), `components/solutions/pair-files-by-hand.tsx`, `?pair=` on the diff route, `Diff.unpaired` in both locales, **DEC-130**, and two tests in `e2e/solution-diff.spec.ts`. **With this the `solutions` inventory row closes and the G block is empty.**
+**What was built:** overrides in `pairFilesByName`, `encodeFilePair`/`parseFilePairs` (+15 unit tests), `components/solutions/pair-files-by-hand.tsx`, `?pair=` on the diff route, `Diff.unpaired` in both locales, **DEC-130**, and two tests in `e2e/solution-diff.spec.ts`. **With this the `solutions` inventory row closes and the G block is empty.**
 
-**The one decision here is where the mapping lives, and legacy's answer could not be copied.** The legacy app keeps it in `localStorage`, keyed per solution pair. This app cannot: the pairing decides **which files the server fetches, reads and tokenises** — code is highlighted on the server (DEC-012) — so a mapping only the browser knows about cannot reach the thing that acts on it without moving the whole viewer client-side. It goes in the URL instead, `?pair=left::right`, repeatable.
+**The one decision here is where the mapping lives, and legacy's answer could not be copied.** The legacy app keeps it in `localStorage`, keyed per solution pair. This app cannot: the pairing decides **which files the server fetches, reads and tokenises** — code is highlighted on the server (DEC-012) — so a mapping only the browser knows about cannot reach the thing that acts on it without moving the whole viewer client-side. It goes in the URL instead, `?pair=left:right`, repeatable.
 
 **That is the better answer anyway, for the reason G-005 already gave.** A comparison somebody set up by hand is exactly the sort of thing worth sending to a colleague, which is why both solution ids are in the path rather than behind a picker. What is given up against legacy is that the mapping does not follow the reader to their next visit; what is gained is that it follows the link.
 
-**The control needs no JavaScript.** One `GET` form per unpaired file, whose select carries whole `left::right` values and whose hidden fields carry the pairings already made — so a second pairing keeps the first, and the browser alone writes the address. T-020's trade for the exercise catalog, restated. Undoing one is a link carrying every _other_ pairing, which is the whole of what the legacy dialog's "unmap" button does and needs no dialog.
+**The control needs no JavaScript.** One `GET` form per unpaired file, whose select carries whole `left:right` values and whose hidden fields carry the pairings already made — so a second pairing keeps the first, and the browser alone writes the address. T-020's trade for the exercise catalog, restated. Undoing one is a link carrying every _other_ pairing, which is the whole of what the legacy dialog's "unmap" button does and needs no dialog.
+
+**Each side of a pairing is percent-encoded before the colon joins them** (`encodeFilePair` / `parseFilePairs`, 11 unit tests). A filename may contain a colon -- a ZIP entry's name already carries its archive, and nothing stops a submitted file being called `a:b` -- so the separator cannot be a bare one, and a malformed escape in a hand-edited URL is dropped rather than thrown.
 
 **A pairing naming a file neither side has is ignored, not refused.** It arrives in a URL, where a stale link or a typo is an ordinary thing to meet, and the honest answer is the pairing the names give.
 
@@ -5103,46 +5105,6 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **What was run:** `typecheck`, `lint`, `format`, `build`, **250 unit tests** (4 new) clean, and the full e2e suite. Verified against the seeded ZIP attempt: the three files listed as unpaired, `solution.py` paired with `solution.zip#main.py` from the select, the address gaining `?pair=solution.py%3A%3Asolution.zip%23main.py`, the diff heading reading `solution.py ↔ solution.zip#main.py` with the ZIP entry's own first line in the table, the remaining entry still listed, and "undo" putting the page back exactly as it was.
 
 **Next ticket:** **PF-002** — the shell blocking every page's own fetching. It is the only item left with a measured cost, it is unblocked (DEC-126 removed the 5-second `.local` mDNS penalty that made it unmeasurable), and the restructuring it needs is already written and stashed as "PF-002: synchronous AppShell". Re-measure before trusting any number in that row: all of them were taken through the penalty. After it, PF-005 is three lines and PF-003 is a measured 81% cut; PF-004 needs a decision before an implementation.
-
----
-
-### 2026-09-10 — PF-002: The shell blocks every page's own fetching
-
-**Ticket:** PF-002
-**Status:** done
-
-**What was built:** `components/app-shell/app-shell.tsx`, restructured. **With this the last item in this project's backlog with a measured cost is closed** — what is left is PF-003, PF-004 and PF-005.
-
-**The change is small and the reason it took two attempts is not.** `AppShell` was one `async` function that awaited four core-api calls before returning any JSX — and `{children}` is part of that JSX, so no page under `(app)` could start its own fetching until the shell had finished. It is now synchronous and fetches nothing: the sidebar and the notices are siblings of `{children}`, each in its own `<Suspense>` boundary, which is what Next's own bundled `loading.md` prescribes.
-
-**The numbers, this time real.** Time to first byte, median of 7 requests, on the same host, same build pipeline, before and after:
-
-| route        | before | after |
-| ------------ | ------ | ----- |
-| `/dashboard` | 43 ms  | 8 ms  |
-| `/exercises` | 53 ms  | 7 ms  |
-| `/pipelines` | 49 ms  | 5 ms  |
-| `/users`     | 48 ms  | 5 ms  |
-| `/profile`   | 43 ms  | 5 ms  |
-| `/groups`    | 43 ms  | 5 ms  |
-
-An **85–90% cut**, and the document completes no later than it did: the shell's reads now run beside the page's rather than in front of them, so what used to be shell + page is `max(shell, page)`. **Every number recorded in this row before today was taken through the 5-second mDNS penalty DEC-126 found, and is meaningless** — that is why the first attempt at this ticket was parked rather than finished.
-
-**`(app)/loading.tsx` is reachable at last.** The route group has had a `PageSkeleton` that nothing could ever show, because the boundary the layout puts around `{children}` was itself inside an unresolved async component. Both fallbacks are now in the streamed document — checked by reading the response, not inferred.
-
-**Two details worth not rediscovering.** The **skip link moved inside the sidebar boundary**: its label needs the message catalogue, and `getTranslations()` is the one `await` that would put the whole frame back in front of the page. And the **notices are one boundary, not two** — the view-as banner (G-023) and the broadcasts (AD-007) both need the current user, which is memoized per request, so splitting them would buy nothing and cost a second placeholder.
-
-**The trade, stated because the old docblock promised the opposite.** The sidebar streams in rather than being in the first byte. It is the frame around the page, not the page, and its fallback holds its width so nothing shifts when it arrives.
-
-**Three specs had to change, and each one names a real consequence rather than a fixture.** The suite is where a structural change like this gets checked, and all three failures were the same fact seen from different angles: **the document now streams, where before it was assembled and then sent.**
-
-- **`command-palette.spec.ts`** pressed Ctrl-K the moment `goto` resolved. The listener lives in the sidebar, so it is now armed a beat later than the page is. That is the trade this ticket accepted, made visible; the `beforeEach` waits for the navigation to be on screen. Worth stating plainly: **the palette shortcut is not available for the first fraction of a second**, and the trigger button is visibly absent (the fallback) in that window, which is what makes it acceptable rather than a silent dead key.
-- **`dashboard.spec.ts`** read its headings with `evaluateAll`, a one-shot query with no auto-wait, and got an empty array — because the page's own content now arrives behind the shell rather than with it. It waits for the three sections first.
-- **`assignment-edit.spec.ts`** clicked "Save the settings" in the gap between G-007's text save returning and its `router.refresh()` landing, and met core-api's optimistic lock. That race was always there; streaming widened it. Nothing on screen changes when that refresh lands, so the test waits for the network rather than for a pixel.
-
-**What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, and **307 e2e tests** — `app-shell.spec.ts` included, which is the file that would notice if the sidebar stopped arriving. One unrelated flake seen once and not since: `landing.spec.ts` failed to find the instance name on `/`, which is an anonymous page outside this shell entirely and reads `/v1/instances` on every request; it passes on its own and passed on the re-run.
-
-**Next ticket:** **PF-005** — breadcrumbs resolving one after another. Three lines, latent today because Next memoizes the identical GETs the page is making anyway, and worth doing while it is still free; the row records two cautions about doing it. Then **PF-003** (a measured 81% cut on the source viewer's props) and finally **PF-004**, which needs a decision before an implementation.
 
 ---
 
@@ -5177,70 +5139,165 @@ An **85–90% cut**, and the document completes no later than it did: the shell'
 
 ### 2026-09-10 — PF-003: Shiki tokens carry a style object each
 
-**Ticket:** PF-003
-**Status:** done
+**Ticket:** PF-003  
+**Status:** done. Filed **PF-009** for two further cuts it measured and did not take.
 
-**What was built:** `lib/code/highlight.ts` (a `palette` on the result, tokens as tuples), and the three components that read a token — `components/code/code-block.tsx`, `components/solutions/diff-view.tsx`, and `components/solutions/reviewable-code.tsx`'s prop chain.
+**What changed:** `lib/code/highlight.ts` builds one palette per file and each token carries an **integer index** into it; `CodeLine` takes the palette and looks up. Both viewers change at once because they share that component. Threaded through all four consumers — `code-viewer.tsx`, `source-file.tsx`, `reviewable-code.tsx` (the client island that pays for this) and `diff-view.tsx`.
 
-**The 81% this row was filed with is real, and it needs both halves of the change — which the row did not say.** Shiki stamps a fresh `{--shiki-light, --shiki-dark}` object on every token, and the viewers hand the whole array to a client island, so every one of those objects shipped twice: once as an attribute in the SSR HTML and again as props JSON.
+**Re-measured before implementing, and the number is not the one in the row.** On a real 26 kB / 646-line source: 3,055 tokens, **8 distinct styles**, props JSON **259,167 bytes — 10.0x the source** — down to **103,808 bytes**. That is a **60% cut and 155 kB off one file**, not the 81% predicted, and the difference is not a mistake in either measurement: the row measured a 16 kB file, where the style objects were a larger share of the whole. What is left is the token `content` strings and JSON scaffolding, which no amount of style interning touches.
 
-**Re-measured, because the row's file is not in this repo.** On `lib/exercise-config/simple-config.ts` — 17,855 bytes, 500 lines, close to the size the row names:
+**The fact worth keeping, because it is the one that justifies the ticket at all: Shiki hands back a fresh style object per token.** 3,055 distinct object identities for 3,055 tokens, against 8 distinct values — checked with a `Set` of the objects themselves before writing any code. That matters because React's Flight format does deduplicate repeated _references_, so if Shiki had been reusing its eight objects the payload would already have been small and this ticket would have been measuring nothing. It is not, so it was not, and the palette is genuinely required rather than a tidier way to say the same thing.
 
-|                                              | props JSON    | cut     |
-| -------------------------------------------- | ------------- | ------- |
-| before                                       | 176,899 bytes | —       |
-| interning the styles only                    | 70,987 bytes  | 60%     |
-| interning **and** dropping the repeated keys | 33,475 bytes  | **81%** |
+**The cascade caution the row raised does not apply to what was built.** It anticipated emitting CSS classes. The palette keeps the same inline custom properties on the same elements — only the _route_ the value takes to get there changed — so specificity and `:target` line highlighting are untouched. Verified in the served HTML: same `<pre class="shiki">`, same seven `--shiki-light` values, colouring unchanged.
 
-2,084 tokens; **seven distinct styles in the whole file**. The first half is the palette; the second is the tuple. `"content"` and `"style"`, 2,084 times each, are most of what is left once the colours are shared — which is why a token is now `[content]` or `[content, styleIndex]` rather than an object. Labelled tuple elements keep the type readable, and all three readers destructure it, so the shape is stated where it is used.
+**`diff-view.tsx` needed more than a prop.** It highlights two files and renders tokens from either side into one table, so there are two palettes and a token's index is meaningless against the wrong one. `rowTokens` now returns the tokens **and** the palette they belong to, which is what makes the pairing impossible to get wrong at the call site.
 
-**The cascade caution in the row turned out not to apply, and that is worth recording rather than leaving implied.** The palette is looked up at render time and the span still carries an inline style, so nothing moves into the stylesheet: `:target` line highlighting is untouched and the SSR HTML is byte-for-byte what it was. Emitting CSS classes instead would shrink that half too — at the price of a generated stylesheet per block and a specificity fight with exactly the rules `app/globals.css` already warns about ("a `:target` rule that loses the cascade is silently dead"). Not taken.
+**PF-009 filed rather than folded in:** the palette is still inline on every `<span>`, so it also ships in the SSR HTML — moving it to generated CSS removes that copy and _does_ raise the cascade question, and since both themes are fixed it could be a static block in `globals.css`. Separately, tokens as `[content, index]` tuples would drop the repeated `"content":`/`"style":` keys, worth roughly another 60 kB on the same file. The tuple change is the cheaper half and carries no cascade risk.
 
-**The diff viewer needed one thought the other two did not.** It tokenises two files separately, so each keeps its own palette and an index means nothing without the side it came from — `rowTokens` returns the pair, which costs nothing since a row belongs to exactly one side.
+**Not verified against a live client island.** The 60% figure is a reproducible measurement of the props array, taken the same way the row's own was; measuring the real `/solutions/[id]/sources` flight payload needs a seeded solution with a review, which this half-seeded instance does not have (see the previous entry). Rendering was verified live instead.
 
-**What was run:** `typecheck`, `lint`, `format`, `build`, 250 unit tests clean, and the full e2e suite — `solution-sources`, `solution-diff`, `comments` and `design-system` are the four that render code, and all four pass, including the reviewable viewer where the tokens cross a client boundary.
+**What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean.
 
-**Two specs failed on the full run and passed alone, and the pair is worth one note rather than two.** `landing.spec.ts` looking for the instance name on `/` (the third sighting, cause already recorded under PF-005) and **PF-005's own new refusal test**, which rendered the error boundary instead of the Not found page. That second one is not purely environmental and is an **amendment to PF-005**: with the breadcrumb chain resolved sequentially, `resolveBreadcrumbs` finished — and its `notFound()` was thrown — before `ProfileView` issued a single read. Concurrently the two race, so a core-api that is slow enough to fail the profile read can surface a transport error where the reader used to get Not found. It is the same trade that row records ("a crumb that would have been refused no longer stops the later ones being issued"), one consequence further on: under load the _answer_ can change, not only the number of requests. Both specs pass on their own every time, and the fix is not in this app.
+---
 
-**Next ticket:** **PF-004**, the last open row in the project. It is not an implementation ticket yet: Zod 4 classic is not tree-shakable through the `z` namespace, so the two ways out are moving validation server-side (losing instant client feedback) or replacing the resolver — a decision before a change, which is what that row asks for.
+### 2026-09-10 — PF-008 closed as not a defect
+
+**Ticket:** PF-008  
+**Status:** not a defect. Filed and closed the same day; the mechanism is written down so it does not get filed a third time.
+
+I filed PF-008 during PF-005 on the strength of a `curl` request: `/users/<nonexistent-id>` returned the app shell with an entirely empty `<main>`, and I was careful enough to confirm it was pre-existing rather than mine. **I was not careful enough to open it in a browser**, which is the whole story: the page reads **"Page not found / The page you're looking for doesn't exist. / Go home"**, themed and correct.
+
+The mechanism, from the served HTML itself:
+
+```
+<main id="main-content" …><!--$!--><template data-dgst="NEXT_HTTP_ERROR_FALLBACK;404"
+  data-msg="Switched to client rendering because the server rendering errored: NEXT_HTTP_ERROR_FALLBACK;404 at pageRead …">
+```
+
+`notFound()` is raised from `pageRead` **after streaming has begun**, so Next cannot rewind markup it has already sent. It marks the boundary, records the digest, and the client renders `app/[locale]/not-found.tsx` on hydration. `curl` sees the placeholder because `curl` does not hydrate.
+
+**The lesson, and the reason this entry exists rather than a one-line status change:** a `curl`-only check reads the _first_ streamed byte of a page, not the page. That is exactly the right tool for the questions PF-005 was asking (payload sizes, unhandled rejections, error precedence) and the wrong one for "what does the reader see". Both were used on the same request and only one of them was applicable.
+
+**Two residues, recorded rather than ticketed.** A reader with JavaScript disabled does get a blank `<main>` here — inherent to raising an interrupt mid-stream, and avoiding it means resolving existence before the shell streams, which is PF-002's territory rather than a bug of its own. And the response is HTTP **200**, which is already Q-016.
+
+---
+
+### 2026-09-10 — PF-002: The shell blocks every page's own fetching
+
+**Ticket:** PF-002  
+**Status:** done, and **measured** — which is the whole reason it had been parked.
+
+**What changed:** `AppShell` is synchronous. The sidebar and the session notices sit in their own `<Suspense>` boundaries as _siblings_ of `{children}`, so all three start at once instead of the page waiting for the layout to return. `(app)/loading.tsx` becomes reachable with it — a suspended _layout_ sits above the boundary whose fallback that file is, so it had never had the chance to render.
+
+**Every number this ticket previously carried is void, and that is worth saying plainly.** They were taken through the 5-second-per-connection penalty that DEC-126 later explained as mDNS resolving `.local`, which is also why the ticket parked itself: "it is the measurement that blocked it, not the code". With the penalty gone, nine runs per route, medians:
+
+| route           | TTFB before | TTFB after | total before | total after |
+| --------------- | ----------- | ---------- | ------------ | ----------- |
+| `/en/dashboard` | 89 ms       | **36 ms**  | 277 ms       | 291 ms      |
+| `/en/groups`    | 57 ms       | **35 ms**  | 61 ms        | 66 ms       |
+| `/en/exercises` | 69 ms       | **39 ms**  | 80 ms        | 80 ms       |
+| `/en/profile`   | 62 ms       | **39 ms**  | 63 ms        | 82 ms       |
+
+**TTFB falls 40–55%. Total load time is flat to marginally worse.** Both halves are the honest result rather than half a disappointment: the ticket's premise was "TTFB is shell + page, never `max()`", and that is confirmed precisely where it was made. The total is bounded by the slowest read on the page either way, and on this host core-api answers in ~30 ms, so the shell's share of the old _sum_ was small to begin with; the streaming machinery costs a little back. On a deployment where core-api is a real network hop rather than loopback, the sum-versus-max difference is where this would pay. Run-to-run noise was measured first, by accident: a `git stash push` silently failed on an unmerged file and I measured the same code twice — ~5 ms TTFB, ~30 ms total, which is what makes the TTFB column meaningful and the total column not.
+
+**The merge needed judgement rather than conflict resolution.** The stash predated G-023, so `app-shell.tsx` conflicted over the view-as banner. The banner and the broadcasts are now one `SessionNotices` boundary: they need the same `getCurrentUser()` (memoized per request, so one call serves both), and to the reader they are one strip above the page saying something about _their_ situation rather than about what they asked for. The stash also inserted `SkipToContent` between `SidebarNav`'s docblock and its function, orphaning the docblock; that is put back in order.
+
+**Verified live:** skip link, `<main id="main-content">` landmark, all six sidebar sections, G-025's QR trigger and G-031's FAQ link all still render, and the HTML carries 7 streaming placeholders. `typecheck`, `lint`, `build`, 256 unit tests green.
+
+**Two notes for the next session.** The `git stash` entry this ticket pointed at **has landed and is superseded** — it is left in place rather than dropped, but it still describes itself as "parked" and should not be trusted or re-applied. And the browser tool's console buffer accumulates across a whole session and is not cleared by `console.clear()`: it still shows "Merge conflict marker encountered" and "Broadcasts is not defined" from the intermediate states of this very merge, long after the file was clean. A file carrying a conflict marker cannot typecheck or build, so those four passing checks are the evidence, not the console.
+
+**Next ticket:** PF-009 — do its cheaper half first (tokens as `[content, index]` tuples, ~60 kB more off the file PF-003 measured, no cascade risk) before the CSS-palette half.
+
+**Correction to the PF-005 entry above:** its backlog _status cell_ was never actually flipped to `done` — the string replacement that was meant to do it missed by one space in the column padding and, unlike the note replacement beside it, carried no assertion, so it failed silently and the row still read `todo` four commits later. Found by listing open tickets at the end of this batch. Fixed, and worth the note because the lesson is not about spaces: **every edit to these tables should assert that it matched**, or the record quietly disagrees with the code.
+
+---
+
+### 2026-09-10 — CI: the formatting check nobody was running, and the actions' Node 20
+
+**Status:** both fixed.
+
+**The red build was mine, and the cause is a gap between the brief and the workflow.** Brief §8 says "`typecheck`, `lint` and `build` pass on every commit", and that is the sequence I have been running all session. **`.github/workflows/ci.yml` runs five: `typecheck`, `lint`, `format:check`, `build`, `test`.** Fifteen files failed Prettier — all of it line-wrapping in files I wrote through scripted edits rather than an editor, so none of it was visible to the other four checks, and `pnpm format` fixed all fifteen with no semantic change. `AGENTS.md` constraint 7 now records the real five-command sequence, since the brief's three-command version is what caused this and will cause it again otherwise. (The edit adding that note itself failed `format:check` on the first attempt, which is the neatest possible argument for having written it.)
+
+**The Node 20 question was worth asking and the answer was not where I first looked.** Node itself is 22 everywhere it is pinned — `.nvmrc`, `package.json#engines`, and both `FROM` lines in the Dockerfile — and the workflow takes its version from `.nvmrc` rather than hardcoding one, so there is no stale Node in the app. The stale Node 20 is the **actions' own runtime**: `actions/checkout@v4` and `actions/setup-node@v4` both declare `using: node20`, which GitHub is retiring. Checked against each action's own `action.yml` per tag rather than from memory: v4 is node20, and v5, v6 and v7 are all node24. Both are now on **v7**.
+
+**v7 rather than v5, for a reason worth recording.** `setup-node@v5` introduced automatic package-manager caching keyed on `package.json#packageManager` — and this workflow installs pnpm through `corepack enable` **after** setup-node runs, so a v5 that decided to cache pnpm would have looked for a binary that did not exist yet. `v6` limited that automatic caching to npm, so the hazard is gone by the version we are on. It would not have fired here anyway: this repo declares no `packageManager` field. Both facts are in a comment beside the step, because the next person to bump this will face the same question.
+
+**Noticed and not acted on:** `corepack enable` with no `packageManager` field means corepack resolves whatever pnpm it defaults to, so the pnpm version is not actually pinned even though `pnpm-lock.yaml` is. It has not bitten anything and the lockfile is respected by `--frozen-lockfile`; worth a line here rather than a ticket.
+
+---
+
+### 2026-09-10 — PF-009: the token palette into CSS, and tokens as tuples
+
+**Ticket:** PF-009  
+**Status:** done, both halves. Committed as two steps so each is revertible on its own.
+
+**(b) tokens as `[content, style]` tuples.** An object repeats its own key names once per token — `"content":` and `"style":` are 21 bytes of scaffolding against 3 for `[",]`. Props JSON **103,881 → 48,855 bytes**, 55 kB off the file PF-003 measured. Together with PF-003 that is **259,167 → 48,855, an 81% cut** — which is exactly the figure PF-003's row predicted before either step existed. It was right about the destination and wrong only about reaching it in one move.
+
+**(a) the palette as CSS.** `lib/code/palette.ts` turns a file's palette into rules emitted beside the block, and spans carry a class instead of an inline `style`. Measured: **155,907 bytes of inline custom properties against 36,684 of class attributes plus 384 of rules — about 119 kB off the served HTML**, which makes (a) the larger of the two halves.
+
+**The design decision that made (a) simple: the class name comes from the colours, not from the palette index.** Several files render on one page, each highlighted separately with its own palette, so index-based names would collide _and mean different things_ — `tk3` would be one colour in one block and another in the next. Deriving the name from the light and dark hex means a collision only happens where two blocks genuinely share a colour, and there the duplicate rule is identical and idempotent. That removed the need to thread a unique per-block prefix through `CodeBlock`, `CodeLine` and `diff-view`, which is what I had assumed this would cost.
+
+**The cascade caution PF-003 handed down turned out to be mild, once checked rather than feared.** `app/globals.css` reads the two properties in `.shiki span { color: var(--shiki-light) }` and switches which one under `.dark`; a class setting them is the only source once the inline copy is gone; and the `:target` line highlight sets **`background-color`**, never `color` — so it was never in competition with a token colour. Verified live: 49 classed spans, all 49 resolving the property, 6 distinct colours per theme, and toggling `.dark` swaps github-light for github-dark (`#24292E` → `#E1E4E8`).
+
+**Two defects the checks caught and review had not.**
+
+`pnpm build` — and _only_ build — failed with **"'server-only' cannot be imported from a Client Component module"**. `tokenClassName` and `paletteCss` had gone into `highlight.ts`, which is `server-only`, and `CodeLine` needs them while being rendered inside S-018's client island. `typecheck`, `lint`, `format:check` and the unit tests all passed over it. This is the brief's §8 claim about `build` earning its place for the first time this session, and the fix was to move two pure functions to their own module, where they belonged regardless.
+
+A unit test caught `paletteCss` deduplicating by **rule text** instead of by **class name** — the name is lower-cased and the rule embeds the value as written, so `#032F62` and `#032f62` are one class and two strings, and the same selector was emitted twice with equivalent values. Harmless on the page, wrong in the bytes, and it would have quietly contradicted the module's own docblock.
+
+**Left inline, deliberately and out of scope:** code fences inside markdown. Their HTML is generated by `rehypeShikiFromHighlighter` and never passes through `CodeLine`, so the four remaining inline-styled spans on the design-system page are all inside the markdown slot — confirmed by position rather than assumed. A smaller, separate opportunity.
+
+**What was run:** all five CI commands green, 263 unit tests (7 new).
+
+**Next ticket:** **PF-004** — Zod's runtime, 17% of all client JS. Its own row says it "needs a decision before an implementation", and that decision is a UX trade rather than a technical one, so it is the next thing to put to the operator rather than to start.
 
 ---
 
 ### 2026-09-10 — PF-004: Zod's runtime is the largest client chunk
 
-**Ticket:** PF-004
-**Status:** done — **but its e2e verification is owed**, see the end of this entry
+**Ticket:** PF-004  
+**Status:** done. **With it every measured performance item is closed**, and the only thing left in the backlog is X-001, which is an idea rather than a ticket.
 
-**What was built:** `lib/forms/use-server-action-form.ts` (a schema _loader_ and a lazy resolver), the eighteen call sites that pass one, `lib/exercises/difficulty.ts` and `lib/pipelines/parameters.ts`, and **DEC-132**. **With this every G and PF row in the backlog is closed.**
+**The row offered two ways out and both were bad; there was a third it did not know about.** It said "move validation server-side and lose instant client feedback, or replace the resolver", and put the decision to the operator because that is a UX trade. The answer is **`zod/mini`, already present inside the installed Zod 4.4.3** — the same validation engine behind a tree-shakable function API. Client-side validation is _kept_, no dependency was added beyond the types-only `@standard-schema/spec`, and the brief's stated stack is unchanged.
 
-**This row asked for a decision before an implementation, and the answer is neither of the two options it named.** Both were weighed rather than dismissed:
+**Measured before committing to the rewrite, which is what the operator asked for.** An esbuild probe of exactly the constructs these 20 schema files use — every `z.*` and every chained method, counted first — came out at **327,715 raw / 54,134 brotli for classic against 23,260 / 6,641 for mini**. The classic figure landed within 15% of the real chunk, which is what made the probe worth trusting. A first pass at estimating from `node_modules` file sizes had suggested a much smaller win and was wrong, because it counted `v4/core` (220 kB, shared by both variants) as unavoidable — the point of mini is that the core _is_ shakeable when reached through functions rather than methods. Worth remembering: for a tree-shaking question, file sizes are not evidence.
 
-- **Move validation server-side.** Removes Zod from the client outright, and costs the instant feedback eighteen forms are built on — a password mismatch, a second deadline before the first, "fill in the text, or give an address where it can be read". The brief chose "React Hook Form + Zod (shared schema)" for exactly that feedback, and every one of those messages would become a round trip.
-- **Rewrite the schemas in `zod/mini`.** Keeps the feedback and does cut the runtime — and costs twenty schema modules rewritten into a functional API. Readability is load-bearing in those files: each one carries core-api's own rules in prose beside the rule it restates.
+**Delivered, against the real build:**
 
-**Neither is necessary, because what this row measured is _when_ Zod loads, not that it loads.** A schema imported from a `"use client"` form is in that route's initial chunk group, so the page waits for 52 kB of it before painting. `useServerActionForm` now takes `() => import("./thing.schema").then((m) => m.thing)`: the specifier stays static so the bundler still splits it, the form imports only the _type_ (erased), and the resolver awaits the loader. **Nothing about when validation runs changes** — the resolver is always present and always used; it just fetches its chunk the first time, and a `useEffect` warms it on mount, so it is there long before anybody has typed a field.
+|                   | raw        | brotli     |
+| ----------------- | ---------- | ---------- |
+| the classic chunk | 283,397    | 52,108     |
+| the mini chunk    | **45,031** | **10,900** |
 
-**Measured on real builds, initial script set per route:**
+**41 kB brotli off twelve of forty-six routes, and total client JS 1,834,168 → 1,593,673 raw (−13.1%).** No chunk carries `ZodCIDRv6` or `ZodJWT` any more, which is how the row identified the waste in the first place.
 
-| route              | raw before | raw after | brotli before | brotli after |
-| ------------------ | ---------- | --------- | ------------- | ------------ |
-| `/profile/edit`    | 1,040,718  | 753,819   | 258,602       | 205,501      |
-| `/system-messages` | 1,036,362  | 749,704   | 258,028       | 204,984      |
-| `/admin/instances` | 1,028,376  | 741,893   | 256,325       | 203,333      |
-| `/exercises`       | 678,583    | 678,583   | 183,307       | 183,307      |
-| `/dashboard`       | 688,510    | 688,510   | 186,258       | 186,258      |
+**`useServerActionForm` no longer names a validator.** It takes a `StandardSchemaV1` and uses `standardSchemaResolver`; mini exposes `~standard` (v1, vendor `zod`), so that file changed by one import and one cast comment. `@standard-schema/spec` had to be _declared_ rather than used transitively — pnpm's strict `node_modules` is the reason the brief chose it, and a phantom dependency here would have been exactly what it exists to prevent.
 
-**About a fifth of the JavaScript a form route waited for**, and nothing at all on the routes with no form — which is the shape that says the change did what it claims rather than moving weight around.
+**What the conversion actually cost, and where it tried to go wrong.** Twenty files, mechanical, and `typecheck` caught every single miss: eleven unbalanced parens where a wrapped `superRefine` opened two brackets and the old closer shut one, one file whose two **chained** `.refine()`s had to become a single `.check(a, b)` (chaining them produced nested nonsense), and three nested or multi-line chains a line-oriented rewrite could not see. **The real trap is `.min`/`.max`**: they mean `minLength` on a string or an array and `minimum` on a number, and only the base type says which — a converter that guessed would have silently changed what every numeric field accepts. `lib/actions/group-settings.schema.test.ts` was written **before** converting anything, to pin trimming, both numeric bounds and all three custom refinements, because a check attached to the wrong node typechecks perfectly and fails only in front of a user.
 
-**The catch is worth knowing before somebody trips on it.** A schema module may no longer export anything a client component needs as a **value**: one such import anchors the whole runtime again, however carefully the schema itself is loaded. Two already did — `DIFFICULTIES` and `PIPELINE_PARAMETERS` — and both moved to modules of their own, the same shape `lib/api/user-roles.ts` already had for `server-only`.
+**Verified live where it matters.** The two specs that assert _client-side_ validation both pass: `group-create`'s "refuses the name that is blank in every language, without asking core-api" and `account`'s mismatched-password test. `group-settings.spec.ts` fails three tests, and those are the half-seeded instance rather than this change — confirmed the same way as before, by stashing the work and re-running them against the committed code, where they fail identically.
 
-**What was run.** `typecheck`, `lint`, `format`, `build`, 250 unit tests, the full e2e suite, and the bundle numbers above from four real production builds. The two specs that exercise this change most directly are `account.spec.ts`'s "refuses a new password that was typed differently twice" and `assignment-edit.spec.ts`'s "refuses a language that is named but says nothing" — both are client-side Zod validation through the new lazy resolver, and both are green.
+**All five CI checks green, 270 unit tests (7 new).**
 
-**Getting to that run took two detours, and the second one is a finding.**
+**Next:** nothing measured remains. **X-001** (the GitHub Classroom importer) is the only open item and is an _idea_ — it is beyond parity, the operator asked about it, and its own write-up says it waits until the sweep has said what is finished. The sweep has now said so: every G ticket and every PF ticket is closed.
 
-- **The stack fell over mid-suite.** The local core-api stopped answering and `docker ps` hung with it. The containers were up the whole time and the daemon was merely wedged, so the answer was to wait rather than to restart anything — worth knowing before somebody reaches for `docker compose down` on a machine that is only busy.
-- **Cleaning up `exercise-edit`'s orphans deleted a fixture nobody knew was a fixture.** The aborted run left six exercises named "Exercise by Sam Supervisor" — core-api's default name for a fresh one — and deleting them broke `exercise-catalog.spec.ts`'s "narrows to one author". That spec's own comment says "the seed splits the catalog cleanly between two authors", and **the seed did no such thing**: every exercise it makes belongs to the administrator. What the test had been reading was **detritus** — which is exactly what G-031b's entry said those exercises were, without anybody following the thought through to the spec that depended on them. `scripts/seed.ts` now creates two exercises **as the supervisor** (`ensureAuthoredExercises`), so the split the spec asserts is one the seed actually produces. Both halves pass against a freshly seeded instance.
+---
 
-**306 of 308 on the final run**, and the two that failed are the pair already recorded under PF-003 and PF-005 — `landing.spec.ts`'s instance name and `refusals.spec.ts`'s crumb chain, both of which fail only under two workers of load against a busy core-api and pass on their own every time. Checked again immediately afterwards: 7 passed.
+### 2026-09-10 — Reconciling two parallel lines of work
 
-**Next ticket:** none open. `X-001` (the GitHub Classroom importer) is filed and deliberately not started; `RETROSPECTIVE.md` §6's ranking is exhausted.
+**Ticket:** none — a merge.
+**Status:** done. `typecheck`, `lint`, `format:check`, `build` and **269 unit tests** clean.
+
+**What happened:** the same six rows — G-026, G-030, PF-002, PF-003, PF-004, PF-005 — were built twice, independently, from the same commit (`70e53e0`). Two histories, eight commits against ten, eighteen files in conflict. This entry records which implementation survived each row and why, because the reasoning is not recoverable from the diff afterwards.
+
+**Where the two agreed, which was more than expected.** PF-002 arrived at the same structure on both sides: a synchronous `AppShell`, the sidebar and the session notices as `<Suspense>` siblings of `{children}`, `(app)/loading.tsx` reachable at last. PF-005 likewise: match every prefix synchronously, resolve the labels through `allSettled`, re-throw in path order. PF-003 converged on the same tuple-and-interned-palette design down to the shape of the `Map` keyed by `JSON.stringify`. Independent agreement on a design is worth more than either argument for it, and none of those three needed a decision.
+
+**Where one was a superset, it won.** PF-003 continued into **PF-009** on one side only — the palette as CSS rules instead of an inline style per span, `lib/code/palette.ts`, another ~119 kB off the served HTML — so that line was taken whole. PF-004 was the one genuine fork: **`zod/mini`** (twenty schema modules rewritten, −41 kB brotli across twelve routes, −13.1% total client JS) against a **lazy-loaded resolver** (Zod deferred out of the first paint, −53 kB brotli on `/profile/edit`, unchanged where there is no form). Both were built and both were measured. `zod/mini` won because it removes the bytes rather than moving them, and because deferring a 10.9 kB brotli validator does not pay for the ref-and-promise dance or for the rule it imposes — that a schema module may no longer export anything a client component needs as a _value_. **DEC-132 now records the decision that landed**, including the option that did not.
+
+**Where one was more complete, it won.** G-026 was built on the registration form alone on one side and on **both screens that create an account** on the other (`components/auth/consent-checkbox.tsx`, shared by A-003 and S-024), with the refusal as a sentence beside the box rather than a disabled button. The broader one is DEC-129 and is what survived. PF-005 was the same change on both sides except for **one empty `.catch()`**: hoisting the crumb chain past `ProfileView` leaves it unawaited for a window, and a chain that rejects inside that window is an unhandled rejection — the reader gets the error boundary instead of the Not found page. One side hit it, one side reasoned it away. It hides from the obvious test, because over a nonexistent id the crumb is a _fetch_ and the handler is attached long before core-api answers; what rejects inside the window is this ticket's own new fast path, where an unregistered prefix throws synchronously and `/profile`'s chain is a message lookup rather than a fetch. The guard stayed, and `refusals.spec.ts` now pins it.
+
+**Where each half was better, both were taken.** G-030 put the mapping in the URL on both sides. The surviving control is the richer one — an undo link per pairing, `left ↔ right` headings, and overrides applied _before_ the names so a file that would have matched by name can still be re-pointed — and it now carries the other side's **encoding**: each half percent-encoded before the colon joins them, because a filename may contain a colon and a ZIP entry's name already carries its archive. `applyManualPairs` was dropped as superseded and its cases restated against `pairFilesByName`. Similarly PF-002 kept the shell from one side but the **skip link** from the other: making `SkipToContent` a small client component reading `Nav` keeps it in the first byte, where the other version had had to put it behind the sidebar's boundary — a keyboard reader could reach the page before the link that exists to get them there.
+
+**The asymmetry that decided the test-side work.** One line touched **no** `e2e/` and **no** `scripts/` file while making the PF-002 streaming change, and that change breaks three specs that were written against an assembled document: `command-palette` arms Ctrl-K a beat after the page, `dashboard`'s `evaluateAll` is a one-shot query with no auto-wait, and `assignment-edit` clicks into the gap between a save returning and its `router.refresh()` landing. Those fixes, `e2e/solution-diff.spec.ts`, the `refusals.spec.ts` case above, and the seed fix all came from the other line and are all kept. The seed one matters beyond its own row: `exercise-catalog.spec.ts` had been reading orphaned exercises left by failed runs as though they were a fixture, and `ensureAuthoredExercises` now makes the second author properly — which is also what unblocks the "half-seeded instance" that had left G-030 unverified live and three `group-settings` failures unexplained.
+
+**Owed:** a full `pnpm test:e2e` against a freshly seeded instance. The five static checks are green and the unit suite is 269 green, but the merged tree has not been run end to end. **Run `pnpm seed` first.**

@@ -45,32 +45,25 @@ export function getHighlighter(): Promise<Highlighter> {
 export const MAX_HIGHLIGHT_BYTES = 512 * 1024;
 
 /**
- * One coloured run of text: its content, and -- where it has a colour of its own -- an index into
- * the block's `palette`.
+ * One coloured run of text: the text, and an index into `HighlightedCode.palette` (PF-003).
  *
- * **A tuple rather than an object, and an index rather than the style itself. That is PF-003.**
- * Shiki stamps a fresh `{--shiki-light, --shiki-dark}` object on every token, and the viewers hand
- * the whole array to a client island, so every one of those objects shipped twice: once as an
- * attribute in the SSR HTML and again as props JSON. Measured on this repo's own
- * `lib/exercise-config/simple-config.ts` (17,855 bytes, 500 lines): **2,084 tokens, 176,899 bytes
- * of props JSON -- 9.9x the source -- against seven distinct styles in the whole file.**
+ * **A tuple rather than an object, which is PF-009 and costs a little readability at the two
+ * render sites for a reason worth the trade.** These cross the RSC boundary as props for
+ * `reviewable-code.tsx`, and an object repeats its own key names once per token -- `"content":`
+ * and `"style":` are 21 bytes of scaffolding against 3 for `[",]`. On the 26 kB file PF-003
+ * measured that is 3,055 tokens x ~19 bytes, and it was the largest thing left in the payload
+ * after the palette.
  *
- * Interning the styles alone brings that to 70,987 bytes (60%); interning them *and* dropping the
- * two repeated JSON keys brings it to **33,475 bytes, an 81% cut**. Both halves were measured
- * rather than assumed, and it is the second half that gets from 60% to the number this ticket was
- * filed with -- `"content"` and `"style"`, 2,084 times each, are most of what is left once the
- * colours are shared.
+ * **Shiki hands back a fresh style object per token** even though a file uses a handful of
+ * distinct ones -- 3,055 object identities for 8 distinct values on that same file -- so nothing
+ * deduplicates by reference and the palette is what makes the index meaningful.
  */
-export type CodeToken = [content: string] | [content: string, style: number];
+export type CodeToken = [content: string, style?: number];
 
 export interface HighlightedCode {
   /** One entry per source line, each already split into coloured tokens. */
   lines: CodeToken[][];
-  /**
-   * The distinct token styles this block uses, in first-seen order (PF-003). Each is the
-   * `--shiki-light` / `--shiki-dark` pair `app/globals.css` picks one of per theme; a token names
-   * one by index.
-   */
+  /** The distinct token styles this file uses, indexed by `CodeToken.style` (PF-003). */
   palette: Record<string, string>[];
   /** The block's own foreground/background custom properties, for the `<pre>` element. */
   rootStyle: Record<string, string>;
@@ -128,25 +121,22 @@ export async function highlightToLines(code: string, language: string): Promise<
     defaultColor: false,
   });
 
-  // Interned by the declarations themselves rather than by object identity: Shiki builds a new
-  // object per token, so identity says nothing about whether two tokens look the same. A whole
-  // file's worth of tokens collapses to the handful of colours its grammar actually produces.
+  // One palette for the file, keyed by the style's own serialisation: Shiki's objects are never
+  // identical by reference (see `CodeToken.style`), so value equality is what has to be tested.
   const palette: Record<string, string>[] = [];
-  const seen = new Map<string, number>();
-  const styleIndex = (declarations: Record<string, string> | undefined): number | undefined => {
-    if (declarations === undefined) return undefined;
-    const key = JSON.stringify(declarations);
-    const existing = seen.get(key);
-    if (existing !== undefined) return existing;
-    seen.set(key, palette.length);
-    palette.push(declarations);
-    return palette.length - 1;
-  };
-
-  const lines: CodeToken[][] = result.tokens.map((line) =>
-    line.map((token) => {
-      const style = styleIndex(token.htmlStyle);
-      return style === undefined ? [token.content] : [token.content, style];
+  const paletteIndex = new Map<string, number>();
+  const lines = result.tokens.map((line) =>
+    line.map((token): CodeToken => {
+      const style = token.htmlStyle;
+      if (!style || typeof style === "string") return [token.content];
+      const key = JSON.stringify(style);
+      let index = paletteIndex.get(key);
+      if (index === undefined) {
+        index = palette.length;
+        paletteIndex.set(key, index);
+        palette.push(style);
+      }
+      return [token.content, index];
     }),
   );
   // A file ending in a newline tokenises to a final empty line, which would render as a numbered

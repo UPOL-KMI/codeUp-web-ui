@@ -35,7 +35,7 @@ export async function CodeViewer({ code, filename, language }: CodeViewerProps) 
           {highlighted ? resolvedLanguage : t("notHighlighted")}
         </span>
       </figcaption>
-      <CodeBlock rootStyle={rootStyle}>
+      <CodeBlock rootStyle={rootStyle} palette={palette}>
         {lines.map((tokens, index) => (
           <CodeLine
             key={index}

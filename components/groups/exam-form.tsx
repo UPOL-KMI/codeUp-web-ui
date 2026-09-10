@@ -4,7 +4,11 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { setExamPeriod } from "@/lib/actions/group-exam";
-import { examFormToPeriod, type ExamFormValues } from "@/lib/actions/group-exam.schema";
+import {
+  examFormSchema,
+  examFormToPeriod,
+  type ExamFormValues,
+} from "@/lib/actions/group-exam.schema";
 import { toDateTimeLocal } from "@/lib/format/datetime-local";
 import { secondsToHoursMinutes } from "@/lib/format/duration";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
@@ -70,7 +74,7 @@ export function ExamFormDialog({
   // four things, and one exam has one name wherever it is written.
   const tExam = useTranslations("Group.exams");
   const { form, onSubmit, isPending } = useServerActionForm<ExamFormValues, { groupId: string }>({
-    schema: () => import("@/lib/actions/group-exam.schema").then((module) => module.examFormSchema),
+    schema: examFormSchema,
     defaultValues: defaultValues(begin, end, lockType),
     action: (values) => setExamPeriod(groupId, examFormToPeriod(values, examRunning)),
     onSuccess: () => {

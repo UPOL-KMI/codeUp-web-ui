@@ -5,7 +5,11 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateGroupSettings } from "@/lib/actions/group-settings";
-import { PASS_MODES, type GroupSettingsValues } from "@/lib/actions/group-settings.schema";
+import {
+  groupSettingsSchema,
+  PASS_MODES,
+  type GroupSettingsValues,
+} from "@/lib/actions/group-settings.schema";
 import type { GroupDetail } from "@/lib/api/group-detail";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -52,8 +56,7 @@ export function GroupSettingsForm({
     GroupSettingsValues,
     { groupId: string }
   >({
-    schema: () =>
-      import("@/lib/actions/group-settings.schema").then((module) => module.groupSettingsSchema),
+    schema: groupSettingsSchema,
     defaultValues: {
       texts: editedLocales.map((locale) => {
         const existing = group.texts.find((text) => text.locale === locale);

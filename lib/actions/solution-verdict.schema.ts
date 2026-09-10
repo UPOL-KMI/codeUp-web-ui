@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * A teacher's own verdict on a solution: the points they award instead of the ones the pipeline
@@ -16,8 +16,8 @@ import { z } from "zod";
  * nominally worth is a thing they are allowed to mean.
  */
 export const solutionPointsSchema = z.object({
-  overriddenPoints: z.number().int().nullable(),
-  bonusPoints: z.number().int(),
+  overriddenPoints: z.nullable(z.number().check(z.int())),
+  bonusPoints: z.number().check(z.int()),
 });
 
 export type SolutionPointsValues = z.infer<typeof solutionPointsSchema>;

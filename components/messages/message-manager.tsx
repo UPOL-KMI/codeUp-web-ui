@@ -9,7 +9,10 @@ import {
   deleteSystemMessage,
   updateSystemMessage,
 } from "@/lib/actions/system-messages";
-import { type SystemMessageValues } from "@/lib/actions/system-messages.schema";
+import {
+  systemMessageSchema,
+  type SystemMessageValues,
+} from "@/lib/actions/system-messages.schema";
 import { USER_ROLES } from "@/lib/api/user-roles";
 import { MESSAGE_TYPES } from "@/lib/api/message-types";
 import type { SystemMessage } from "@/lib/api/system-messages";
@@ -228,8 +231,7 @@ function MessageEditor({
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<SystemMessageValues, { id: string }>({
-    schema: () =>
-      import("@/lib/actions/system-messages.schema").then((module) => module.systemMessageSchema),
+    schema: systemMessageSchema,
     defaultValues: message
       ? {
           // Every language gets a field, seeded from whichever the message was written in.

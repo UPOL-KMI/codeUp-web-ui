@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { diffLines, type DiffRow } from "@/lib/code/diff";
 import { highlightToLines, type CodeToken, type HighlightedCode } from "@/lib/code/highlight";
+import { paletteCss, tokenClassName } from "@/lib/code/palette";
 import { languageForFilename } from "@/lib/code/languages";
 
 /**
@@ -21,10 +22,9 @@ import { languageForFilename } from "@/lib/code/languages";
  * from. So a diff and the source viewer cannot colour the same file two different ways.
  */
 /**
- * The tokens for one aligned row, **with the palette they were interned against** (PF-003). The
- * two files are tokenised separately and each keeps its own palette, so an index means nothing
- * without the side it came from -- carrying the pair is what keeps the two from being mixed up,
- * and costs nothing since a row belongs to exactly one side.
+ * A row's tokens **and the palette they index into** (PF-003). The two sides are highlighted
+ * separately, so each has its own palette and a token's index means nothing without the one it
+ * was built against -- returning them together is what keeps the pairing impossible to get wrong.
  */
 function rowTokens(
   row: DiffRow,
@@ -32,14 +32,30 @@ function rowTokens(
   right: HighlightedCode,
 ): { tokens: CodeToken[]; palette: Record<string, string>[] } {
   if (row.leftNumber !== null) {
-    return { tokens: left.lines[row.leftNumber - 1] ?? [[row.text]], palette: left.palette };
+    return {
+      tokens: left.lines[row.leftNumber - 1] ?? [[row.text]],
+      palette: left.palette,
+    };
   }
   if (row.rightNumber !== null) {
-    return { tokens: right.lines[row.rightNumber - 1] ?? [[row.text]], palette: right.palette };
+    return {
+      tokens: right.lines[row.rightNumber - 1] ?? [[row.text]],
+      palette: right.palette,
+    };
   }
   return { tokens: [[row.text]], palette: [] };
 }
 
+/** Both sides' palettes as one stylesheet -- `paletteCss` de-duplicates by rule text. */
+function paletteRules(left: HighlightedCode, right: HighlightedCode): string {
+  return paletteCss([...left.palette, ...right.palette]);
+}
+
+/**
+ * One row's tokens as coloured spans (PF-003, PF-009). A component rather than an inline callback
+ * because a row's tokens and the palette they index into have to travel together -- see
+ * `rowTokens` -- and spreading one object into props is what makes that pairing hard to get wrong.
+ */
 function RowTokens({
   tokens,
   palette,
@@ -47,11 +63,19 @@ function RowTokens({
   tokens: CodeToken[];
   palette: Record<string, string>[];
 }) {
-  return tokens.map(([content, style], index) => (
-    <span key={index} style={style === undefined ? undefined : palette[style]}>
-      {content}
-    </span>
-  ));
+  return tokens.map(([content, style], index) => {
+    const entry = style === undefined ? undefined : palette[style];
+    const className = entry ? tokenClassName(entry) : "";
+    return (
+      <span
+        key={index}
+        className={className || undefined}
+        style={entry && className === "" ? entry : undefined}
+      >
+        {content}
+      </span>
+    );
+  });
 }
 
 const ROW_TONE: Record<DiffRow["kind"], string> = {
@@ -80,6 +104,7 @@ export async function DiffView({
     highlightToLines(rightContent, language),
   ]);
   const diff = diffLines(leftContent, rightContent);
+  const rules = paletteRules(left, right);
 
   if (diff.identical) {
     return (
@@ -102,6 +127,10 @@ export async function DiffView({
       <p className="text-xs text-muted-foreground">
         {t("counts", { added: diff.added, removed: diff.removed })}
       </p>
+      {/* PF-009: both sides' palettes, since a row's tokens may come from either and each side
+          was highlighted separately. Class names are colour-derived, so the two overlap into one
+          rule wherever they share a colour. */}
+      {rules !== "" && <style>{rules}</style>}
       <div className="overflow-x-auto rounded-lg border border-border" tabIndex={0}>
         <table className="w-full border-collapse text-sm" style={left.rootStyle}>
           <caption className="sr-only">

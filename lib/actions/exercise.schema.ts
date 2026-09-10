@@ -1,6 +1,4 @@
-import { z } from "zod";
-
-import { DIFFICULTIES } from "@/lib/exercises/difficulty";
+import * as z from "zod/mini";
 
 /**
  * An exercise's basic settings, shared by the form and the Server Action that re-validates them
@@ -9,12 +7,15 @@ import { DIFFICULTIES } from "@/lib/exercises/difficulty";
  * The rules restated here are core-api's own (`ExercisesPresenter::actionUpdateDetail`): the
  * localized texts may not be empty and each entry needs a locale, a name and a text; the two
  * solution limits are whole numbers or nothing at all ("no limit"). Difficulty is a closed set of
- * three, which the API documents as a string and this app refuses to widen -- the list itself
- * lives in `lib/exercises/difficulty.ts`, so a form can read it without pulling Zod in (PF-004).
+ * three, which the API documents as a string and this app refuses to widen.
  */
+export const DIFFICULTIES = ["easy", "medium", "hard"] as const;
+
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
 export const exerciseTextSchema = z.object({
-  locale: z.string().min(2),
-  name: z.string().trim(),
+  locale: z.string().check(z.minLength(2)),
+  name: z.string().check(z.trim()),
   text: z.string(),
   /** The short description, which only whoever may see the exercise ever reads. */
   description: z.string(),
@@ -24,23 +25,25 @@ export const exerciseTextSchema = z.object({
 
 export const exerciseSettingsSchema = z
   .object({
-    version: z.number().int(),
-    texts: z.array(exerciseTextSchema).min(1),
+    version: z.number().check(z.int()),
+    texts: z.array(exerciseTextSchema).check(z.minLength(1)),
     difficulty: z.enum(DIFFICULTIES),
     isPublic: z.boolean(),
     isLocked: z.boolean(),
     mergeJudgeLogs: z.boolean(),
-    solutionFilesLimit: z.number().int().min(1).nullable(),
-    solutionSizeLimit: z.number().int().min(1).nullable(),
+    solutionFilesLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
+    solutionSizeLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
   })
-  .superRefine((values, ctx) => {
-    // A locale is offered for every language this app speaks; an empty name means "this exercise
-    // has no text in that language" and the action drops it, which is how core-api removes one.
-    // At least one has to survive, or the exercise becomes unnameable -- and core-api refuses an
-    // empty `localizedTexts` outright.
-    if (!values.texts.some((text) => text.name.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      // A locale is offered for every language this app speaks; an empty name means "this exercise
+      // has no text in that language" and the action drops it, which is how core-api removes one.
+      // At least one has to survive, or the exercise becomes unnameable -- and core-api refuses an
+      // empty `localizedTexts` outright.
+      if (!values.texts.some((text) => text.name.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
+      }
+    }),
+  );
 
 export type ExerciseSettingsValues = z.infer<typeof exerciseSettingsSchema>;

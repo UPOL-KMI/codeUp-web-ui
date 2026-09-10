@@ -119,7 +119,7 @@ export async function SourceFile({
           reviewClosed={review.reviewClosed}
         />
       ) : (
-        <CodeBlock rootStyle={rootStyle}>
+        <CodeBlock rootStyle={rootStyle} palette={palette}>
           {lines.map((tokens, index) => (
             <CodeLine
               key={index}

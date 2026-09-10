@@ -6,6 +6,7 @@ import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 import { seededAttemptsOfOneAuthor } from "./helpers/core-api";
+import { encodeFilePair } from "@/lib/code/diff";
 
 /**
  * Comparing two attempts (G-005) -- the brief §7 landmine, named in three `INVENTORY.md` rows with
@@ -118,11 +119,13 @@ test("pairs two files whose names differ, on the reader's word, and undoes it", 
 
   await unpaired
     .getByLabel("Compare solution.py with")
-    .selectOption("solution.py::solution.zip#main.py");
+    .selectOption(encodeFilePair("solution.py", "solution.zip#main.py"));
   await unpaired.getByRole("button", { name: "Pair them" }).click();
 
-  // The pairing is in the address, which is what makes a hand-made comparison a link.
-  await expect(page).toHaveURL(/\?pair=solution\.py%3A%3Asolution\.zip%23main\.py$/);
+  // The pairing is in the address, which is what makes a hand-made comparison a link. Each side
+  // is percent-encoded before the colon joins them (a filename may contain one), and the GET form
+  // then encodes that whole value again -- hence the `%25`, which is the `%` of `%23`.
+  await expect(page).toHaveURL(/\?pair=solution\.py%3Asolution\.zip%2523main\.py$/);
   await expect(
     main.getByRole("heading", { name: "solution.py ↔ solution.zip#main.py" }),
   ).toBeVisible();
@@ -148,7 +151,7 @@ test("ignores a pairing in the address that names a file neither side has", asyn
   await signIn(
     page,
     SUPERADMIN,
-    `/en/solutions/${first!.id}/diff/${second!.id}?pair=gone.py%3A%3Aalso-gone.py`,
+    `/en/solutions/${first!.id}/diff/${second!.id}?pair=gone.py%3Aalso-gone.py`,
   );
 
   // A stale link is an ordinary thing to be sent, so the page falls back to pairing by name

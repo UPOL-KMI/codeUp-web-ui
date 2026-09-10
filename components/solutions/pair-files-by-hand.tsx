@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import type { FilePairingOverride } from "@/lib/code/diff";
+import { encodeFilePair, type FilePairingOverride } from "@/lib/code/diff";
 
 import { Link } from "@/i18n/navigation";
 
@@ -13,7 +13,7 @@ import { Link } from "@/i18n/navigation";
  * deployment path prefix, neither of which a hand-written action would know about. The pairing has
  * to reach the server --
  * it decides which files are fetched, read and tokenised -- so it belongs in the address, and a
- * form whose select carries whole `left::right` values needs nothing beyond the browser to put it
+ * form whose select carries whole `left:right` values needs nothing beyond the browser to put it
  * there. That is T-020's trade for the exercise catalog restated: the narrowed view is a URL, and
  * a URL is something a teacher can send.
  *
@@ -45,7 +45,7 @@ export async function PairFilesByHand({
   const href = (pairs: FilePairingOverride[]) => {
     if (pairs.length === 0) return basePath;
     const params = new URLSearchParams();
-    for (const pair of pairs) params.append("pair", `${pair.left}::${pair.right}`);
+    for (const pair of pairs) params.append("pair", encodeFilePair(pair.left, pair.right));
     return `${basePath}?${params.toString()}`;
   };
 
@@ -59,7 +59,10 @@ export async function PairFilesByHand({
       {overrides.length > 0 && (
         <ul className="flex flex-col gap-1 text-sm">
           {overrides.map((pair) => (
-            <li key={`${pair.left}::${pair.right}`} className="flex flex-wrap items-center gap-2">
+            <li
+              key={`${pair.left}\u0000${pair.right}`}
+              className="flex flex-wrap items-center gap-2"
+            >
               <span className="font-mono">
                 {t("pairedByHand", { left: pair.left, right: pair.right })}
               </span>
@@ -86,10 +89,10 @@ export async function PairFilesByHand({
               <form method="get" className="flex flex-wrap items-center gap-2">
                 {overrides.map((pair) => (
                   <input
-                    key={`${pair.left}::${pair.right}`}
+                    key={`${pair.left}\u0000${pair.right}`}
                     type="hidden"
                     name="pair"
-                    value={`${pair.left}::${pair.right}`}
+                    value={encodeFilePair(pair.left, pair.right)}
                   />
                 ))}
                 {/* Not a `<label>`: the select's own `aria-label` names it after the file it is
@@ -109,7 +112,7 @@ export async function PairFilesByHand({
                       {t("choose")}
                     </option>
                     {onlyRight.map((other) => (
-                      <option key={other} value={`${name}::${other}`}>
+                      <option key={other} value={encodeFilePair(name, other)}>
                         {other}
                       </option>
                     ))}

@@ -4,7 +4,7 @@ import { FormProvider, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateExerciseConfig } from "@/lib/actions/exercise-config";
-import type { ConfigValues } from "@/lib/actions/exercise-config.schema";
+import { configSchema, type ConfigValues } from "@/lib/actions/exercise-config.schema";
 import type { ConfigCapabilities, SimpleConfigValues } from "@/lib/exercise-config/simple-config";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -70,8 +70,7 @@ export function TestConfigForm({
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<ConfigValues, { tests: number }>({
-    schema: () =>
-      import("@/lib/actions/exercise-config.schema").then((module) => module.configSchema),
+    schema: configSchema,
     defaultValues: values as ConfigValues,
     action: (submitted) => updateExerciseConfig(exerciseId, submitted),
     onSuccess: () => {

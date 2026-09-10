@@ -5,7 +5,10 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { deleteShadowAssignment, updateShadowAssignment } from "@/lib/actions/shadow-assignment";
-import { type ShadowAssignmentValues } from "@/lib/actions/shadow-assignment.schema";
+import {
+  shadowAssignmentSchema,
+  type ShadowAssignmentValues,
+} from "@/lib/actions/shadow-assignment.schema";
 import type { ShadowAssignmentSettings } from "@/lib/api/shadow-assignment";
 import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
@@ -42,10 +45,7 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
     ShadowAssignmentValues,
     { shadowId: string }
   >({
-    schema: () =>
-      import("@/lib/actions/shadow-assignment.schema").then(
-        (module) => module.shadowAssignmentSchema,
-      ),
+    schema: shadowAssignmentSchema,
     defaultValues: {
       texts: assignment.texts,
       maxPoints: assignment.maxPoints,

@@ -525,3 +525,46 @@ replace, remove — works for whoever holds the pipeline's `update` hint.
 against the _pipeline_ the way the list and the delete already do, or one more condition on
 `uploadedFile.download` for a file whose pipeline the caller may view. The first is more in keeping
 with how the rest of that resource is addressed.
+
+---
+
+## Q-027: consent is collected on registration but not on the other route to an account (G-026)
+
+**For the operator, because it is a legal question rather than a technical one.**
+
+G-026 restored the GDPR consent tick to `/register`, which is exact parity: legacy's
+`RegistrationForm.js` carries a `gdpr` field, validates it in the browser, and blocks the
+submission without it. Two facts about that field are worth stating plainly, because both bear on
+the question below.
+
+**Legacy's consent is a client-side gate and nothing else.** `grep -rln gdpr` over the legacy
+source returns the registration form and the locale files, and nothing else. core-api has no
+consent field, stores no timestamp, and no endpoint reports one — `POST /v1/users` happens to
+receive the flag along with the rest of the form body only because legacy submits its whole form
+object, and the API ignores it. So there is no record anywhere that a given account consented.
+This app matches that: the tick gates the button, and nothing is sent, because there is nothing
+to send it to.
+
+**Legacy does not ask for consent on the other route to an account.** `/accept-invitation`
+creates a full account — first name, last name, password, instance — for somebody a supervisor
+invited by email, and that form has no `gdpr` field in legacy and none here. So on both frontends
+an account can come into existence without the tick ever being shown.
+
+G-026's own backlog row noticed this ("the accept-invitation form creates an account too") and it
+would have been easy to add the checkbox there while I was in the area. **I deliberately did
+not**, for two reasons: it is beyond parity, and more importantly whether consent is legally
+required at that point — and whether a tick with nothing recorded behind it is worth anything at
+all — is the operator's call and their institution's, not a frontend decision.
+
+**What I would want to know:**
+
+1. Should `/accept-invitation` show the same tick? It is a two-line change if so.
+2. Is an unrecorded consent acceptable? If the institution needs to be able to show _that_ a
+   user agreed and _when_, this needs a core-api field, and no amount of frontend work
+   substitutes. That would be a genuine API change request rather than a UI ticket.
+3. Should the label link to an actual policy document? Legacy's text mentions a "GDPR policy" and
+   links to nothing, and there is no configured URL for one. If a document exists, a variable
+   beside `FAQ_URI` would carry it.
+
+**Nothing is blocked.** The registration form is at parity, and the two accounts this deployment
+can create are unaffected either way.

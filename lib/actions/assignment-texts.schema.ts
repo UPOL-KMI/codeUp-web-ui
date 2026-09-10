@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * An assignment's own localized texts, as the form collects them and the Server Action
@@ -17,7 +17,7 @@ import { z } from "zod";
  * empty field. One has to survive, or the assignment becomes unnameable.
  */
 export const assignmentTextSchema = z.object({
-  locale: z.string().min(2),
+  locale: z.string().check(z.minLength(2)),
   name: z.string(),
   /** Markdown, as the student reads it, with `%%key%%` file placeholders unresolved. */
   text: z.string(),
@@ -26,25 +26,27 @@ export const assignmentTextSchema = z.object({
 });
 
 export const assignmentTextsSchema = z
-  .object({ texts: z.array(assignmentTextSchema).min(1) })
-  .superRefine((values, ctx) => {
-    if (!values.texts.some((text) => text.name.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
-    }
-
-    values.texts.forEach((text, index) => {
-      // A language nobody filled in is not an error -- it is the absence of that translation.
-      if (text.name.trim() === "") return;
-
-      if (text.text.trim() === "" && text.link.trim() === "") {
-        ctx.addIssue({ code: "custom", path: ["texts", index, "text"], message: "textOrLink" });
+  .object({ texts: z.array(assignmentTextSchema).check(z.minLength(1)) })
+  .check(
+    z.superRefine((values, ctx) => {
+      if (!values.texts.some((text) => text.name.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
       }
-      // core-api answers 400 for a link that is not a URL, which is a worse way to learn it.
-      if (text.link.trim() !== "" && !isUrl(text.link.trim())) {
-        ctx.addIssue({ code: "custom", path: ["texts", index, "link"], message: "invalidLink" });
-      }
-    });
-  });
+
+      values.texts.forEach((text, index) => {
+        // A language nobody filled in is not an error -- it is the absence of that translation.
+        if (text.name.trim() === "") return;
+
+        if (text.text.trim() === "" && text.link.trim() === "") {
+          ctx.addIssue({ code: "custom", path: ["texts", index, "text"], message: "textOrLink" });
+        }
+        // core-api answers 400 for a link that is not a URL, which is a worse way to learn it.
+        if (text.link.trim() !== "" && !isUrl(text.link.trim())) {
+          ctx.addIssue({ code: "custom", path: ["texts", index, "link"], message: "invalidLink" });
+        }
+      });
+    }),
+  );
 
 /** core-api's `Validators::isUrl` in the shape a browser already has. */
 function isUrl(value: string): boolean {

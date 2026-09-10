@@ -1,25 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useTransition } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import type { DefaultValues, FieldValues, Path, Resolver, UseFormReturn } from "react-hook-form";
-import type { ZodType } from "zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import type { ActionResult } from "./action-result";
 
 export interface UseServerActionFormOptions<TFieldValues extends FieldValues, Result> {
   /**
-   * **A loader, not the schema itself (PF-004).** Zod's runtime is 283,397 bytes raw / 52,108
-   * brotli -- 15.5% of all this app's client JavaScript -- and importing a schema module from a
-   * `"use client"` form put it in that route's initial chunk group, where the page waits for it
-   * before painting. Passing `() => import("./thing.schema").then((m) => m.thing)` keeps the
-   * specifier static, so the bundler still splits it, and moves the whole of Zod behind the first
-   * validation instead of in front of the first paint.
+   * Any Standard Schema, which in this repo means a `zod/mini` schema (PF-004).
    *
-   * Nothing about *when* validation happens changes: the resolver below awaits this, and the
-   * chunk is warmed on mount, so by the time anybody has typed a field it is already there.
+   * Typed against the *spec* rather than against Zod so the resolver never has to care which
+   * validator produced it -- and so the switch from `zod` to `zod/mini`, which cut 45 kB brotli
+   * off twelve routes, needed no change here beyond the import.
    */
-  schema: () => Promise<ZodType<TFieldValues>>;
+  schema: StandardSchemaV1<TFieldValues>;
   defaultValues: DefaultValues<TFieldValues>;
   /** The Server Action itself (an imported `"use server"` function) -- called directly as a
    *  function, not via `<form action>`, since React Hook Form already owns form submission. */
@@ -59,8 +56,8 @@ export interface UseServerActionFormResult<TFieldValues extends FieldValues> {
  * **The `schema` passed here cannot live in the same file as the `"use server"` action** -- found
  * live, not from a doc: a `"use server"` file's compiler pass only handles (async) function
  * exports; a plain `z.object(...)` co-located there is silently replaced with something
- * `zodResolver` rejects at runtime ("Invalid input: not a Zod schema", confirmed reproducing and
- * fixing this during D-004's own verification). Put the schema in its own plain module and import
+ * the resolver rejects at runtime ("Invalid input: not a Zod schema", confirmed
+ * reproducing and fixing this during D-004's own verification). Put the schema in its own plain module and import
  * it from both the client form and the action file -- which is what "shared schema" in the brief's
  * own phrasing meant anyway.
  */
@@ -70,39 +67,16 @@ export function useServerActionForm<TFieldValues extends FieldValues, Result>({
   action,
   onSuccess,
 }: UseServerActionFormOptions<TFieldValues, Result>): UseServerActionFormResult<TFieldValues> {
-  // Loaded once per mounted form and remembered, so a second validation costs nothing. The ref
-  // holds the *promise*: two validations racing the first load share it rather than starting two.
-  const loading = useRef<Promise<Resolver<TFieldValues>> | null>(null);
-  const load = useCallback(() => {
-    loading.current ??= Promise.all([import("@hookform/resolvers/zod"), schema()]).then(
-      ([{ zodResolver }, loaded]) =>
-        // Cast: TypeScript can't unify zodResolver's own generic constraints with this function's
-        // generic TFieldValues (a known variance limitation when one generic function calls
-        // another through a schema-derived type, not a real runtime mismatch -- the loader returns
-        // ZodType<TFieldValues> by this function's own signature, so the resolver it produces
-        // genuinely does validate into TFieldValues).
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see comment above
-        zodResolver(loaded as any) as unknown as Resolver<TFieldValues>,
-    );
-    return loading.current;
-    // The loader is a fresh closure on every render at every call site; keying off it would
-    // reload on each one. It names one module and cannot change identity in any meaningful sense.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Warmed as soon as the form is on screen, so the fetch overlaps the reader reading the fields
-  // rather than their first keystroke. Nothing depends on it finishing -- `resolver` awaits the
-  // same promise -- so there is nothing to clean up if the form unmounts first.
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const resolver = useCallback<Resolver<TFieldValues>>(
-    async (values, context, options) => (await load())(values, context, options),
-    [load],
-  );
-
-  const form = useForm<TFieldValues>({ resolver, defaultValues });
+  const form = useForm<TFieldValues>({
+    // Cast for the same variance limitation the `zodResolver` version had: TypeScript cannot
+    // unify the resolver's own generics with this function's `TFieldValues` when one generic
+    // function calls another through a schema-derived type. `schema` is
+    // `StandardSchemaV1<TFieldValues>` by this function's signature, so what it produces does
+    // validate into `TFieldValues`.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see comment above
+    resolver: standardSchemaResolver(schema as any) as unknown as Resolver<TFieldValues>,
+    defaultValues,
+  });
   const [isPending, startTransition] = useTransition();
 
   const onSubmit = form.handleSubmit((values) => {

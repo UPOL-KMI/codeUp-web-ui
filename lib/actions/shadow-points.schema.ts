@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * Points awarded by hand for a shadow assignment (S-020), shared by the form and the Server Action
@@ -10,8 +10,8 @@ import { z } from "zod";
  * refused what the API accepts would be this app inventing a rule.
  */
 export const shadowPointsSchema = z.object({
-  points: z.number().int(),
-  note: z.string().trim().max(1024),
+  points: z.number().check(z.int()),
+  note: z.string().check(z.trim(), z.maxLength(1024)),
   /** A datetime-local string, or empty for "no date recorded". */
   awardedAt: z.string(),
 });

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { USER_ROLES } from "@/lib/api/user-roles";
 
@@ -16,25 +16,27 @@ import { USER_ROLES } from "@/lib/api/user-roles";
  * the way every other localized text in this app does.
  */
 const messageTextSchema = z.object({
-  locale: z.string().min(2),
+  locale: z.string().check(z.minLength(2)),
   text: z.string(),
 });
 
 export const systemMessageSchema = z
   .object({
-    texts: z.array(messageTextSchema).min(1),
+    texts: z.array(messageTextSchema).check(z.minLength(1)),
     type: z.enum(["success", "info", "warning", "danger"]),
     role: z.enum(USER_ROLES),
-    visibleFrom: z.string().min(1, "required"),
-    visibleTo: z.string().min(1, "required"),
+    visibleFrom: z.string().check(z.minLength(1, "required")),
+    visibleTo: z.string().check(z.minLength(1, "required")),
   })
-  .superRefine((values, ctx) => {
-    if (!values.texts.some((text) => text.text.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "textRequired" });
-    }
-    if (values.visibleFrom && values.visibleTo && values.visibleTo <= values.visibleFrom) {
-      ctx.addIssue({ code: "custom", path: ["visibleTo"], message: "endsBeforeItStarts" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      if (!values.texts.some((text) => text.text.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "textRequired" });
+      }
+      if (values.visibleFrom && values.visibleTo && values.visibleTo <= values.visibleFrom) {
+        ctx.addIssue({ code: "custom", path: ["visibleTo"], message: "endsBeforeItStarts" });
+      }
+    }),
+  );
 
 export type SystemMessageValues = z.infer<typeof systemMessageSchema>;

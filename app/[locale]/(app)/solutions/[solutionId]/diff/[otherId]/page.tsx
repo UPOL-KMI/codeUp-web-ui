@@ -10,7 +10,7 @@ import {
   type SolutionFileEntry,
 } from "@/lib/api/solution-files";
 import { getSolutionDetail } from "@/lib/api/solution";
-import { pairFilesByName, type FilePairingOverride } from "@/lib/code/diff";
+import { pairFilesByName, parseFilePairs } from "@/lib/code/diff";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -39,7 +39,7 @@ export async function generateMetadata({
  * can send to a colleague. Swapping sides is the same route with the ids the other way round.
  *
  * **When the names differ, the reader says which goes with which (G-030), and the mapping is in
- * the address** -- `?pair=helper.py::utils.py`, repeatable. `localStorage` is where the legacy app
+ * the address** -- `?pair=helper.py:utils.py`, repeatable. `localStorage` is where the legacy app
  * keeps it, and it cannot be where this app does: the pairing decides what the *server* fetches
  * and tokenises, so it has to arrive with the request. Putting it in the URL is also the better
  * answer for the same reason the two solution ids are in the path -- a comparison somebody set up
@@ -62,7 +62,7 @@ export default async function SolutionDiffPage({
     searchParams,
     getLocale(),
   ]);
-  const overrides = readPairings(query.pair);
+  const overrides = parseFilePairs(query.pair);
   const [t, left, right] = await Promise.all([
     getTranslations("Diff"),
     getSolutionDetail(solutionId, locale),
@@ -183,22 +183,6 @@ export default async function SolutionDiffPage({
       </div>
     </PageShell>
   );
-}
-
-/**
- * The pairings a reader made, read out of `?pair=left::right` (G-030). Anything that is not one
- * name, two colons and another name is dropped -- this is a URL, so it is whatever somebody typed
- * or whatever a link they were sent still says, and the fallback is the pairing the names give.
- */
-function readPairings(value: string | string[] | undefined): FilePairingOverride[] {
-  const raw = value === undefined ? [] : Array.isArray(value) ? value : [value];
-  return raw.flatMap((entry) => {
-    const separator = entry.indexOf("::");
-    if (separator <= 0) return [];
-    const left = entry.slice(0, separator);
-    const right = entry.slice(separator + 2);
-    return right === "" ? [] : [{ left, right }];
-  });
 }
 
 /** A file this app cannot read is compared as empty rather than failing the whole page (F-030). */

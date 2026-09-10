@@ -13,6 +13,8 @@ import {
   updateSettings,
 } from "@/lib/actions/account";
 import {
+  passwordSchema,
+  profileSchema,
   type InterfacePreferencesValues,
   type PasswordValues,
   type ProfileValues,
@@ -62,7 +64,7 @@ export function ProfileForm({ account }: { account: AccountSettings }) {
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<ProfileValues, { userId: string }>({
-    schema: () => import("@/lib/actions/account.schema").then((module) => module.profileSchema),
+    schema: profileSchema,
     defaultValues: {
       titlesBeforeName: account.titlesBeforeName,
       firstName: account.firstName,
@@ -161,7 +163,7 @@ export function PasswordForm({ account }: { account: AccountSettings }) {
   const toast = useToast();
 
   const { form, onSubmit, isPending } = useServerActionForm<PasswordValues, { userId: string }>({
-    schema: () => import("@/lib/actions/account.schema").then((module) => module.passwordSchema),
+    schema: passwordSchema,
     defaultValues: { oldPassword: "", password: "", passwordConfirm: "" },
     action: (values) => changePassword(account.id, values),
     onSuccess: async () => {

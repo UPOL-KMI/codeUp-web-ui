@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * The submit form's shape, shared by the client form and the Server Action that re-validates it
@@ -13,9 +13,9 @@ import { z } from "zod";
  * an inline message.
  */
 export const submitSolutionSchema = z.object({
-  files: z.array(z.uuid()).min(1),
-  runtimeEnvironmentId: z.string().min(1),
-  note: z.string().max(1024),
+  files: z.array(z.uuid()).check(z.minLength(1)),
+  runtimeEnvironmentId: z.string().check(z.minLength(1)),
+  note: z.string().check(z.maxLength(1024)),
 });
 
 export type SubmitSolutionValues = z.infer<typeof submitSolutionSchema>;

@@ -5,7 +5,11 @@ import { useFieldArray, FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateExerciseTests } from "@/lib/actions/exercise-config";
-import { TEST_NAME_PATTERN, type TestsValues } from "@/lib/actions/exercise-config.schema";
+import {
+  testsSchema,
+  TEST_NAME_PATTERN,
+  type TestsValues,
+} from "@/lib/actions/exercise-config.schema";
 import type { ExerciseTest } from "@/lib/exercise-config/types";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
@@ -46,8 +50,7 @@ export function TestsForm({
   const [confirmingRemoval, setConfirmingRemoval] = useState<number | null>(null);
 
   const { form, onSubmit, isPending } = useServerActionForm<TestsValues, { count: number }>({
-    schema: () =>
-      import("@/lib/actions/exercise-config.schema").then((module) => module.testsSchema),
+    schema: testsSchema,
     defaultValues: {
       calculator: calculator === "weighted" ? "weighted" : "uniform",
       tests: tests.map((test) => ({

@@ -276,11 +276,9 @@ export async function resolveBreadcrumbs(
   pathname: string,
   locale: string,
 ): Promise<BreadcrumbItem[]> {
-  const prefixes = getPrefixes(pathname);
-
-  // Matched first, in one synchronous pass, so an unregistered prefix still fails before anything
-  // is fetched.
-  const matched = prefixes.map((prefix) => {
+  // Matched first, synchronously and all of it, so an unregistered prefix still fails before any
+  // request goes out rather than after some of them have.
+  const matched = getPrefixes(pathname).map((prefix) => {
     const entry = MANIFEST.find((candidate) => matchPattern(candidate.pattern, prefix) !== null);
     if (!entry) {
       throw new Error(
@@ -290,23 +288,19 @@ export async function resolveBreadcrumbs(
     return { prefix, entry, params: matchPattern(entry.pattern, prefix)! };
   });
 
-  // **Resolved together, not one behind the next (PF-005).** A crumb's label may be a fetch --
-  // a group's name, a user's -- and awaiting inside the loop made `/groups/:id/users/:id` two
-  // round trips deep before the page had issued its first. It costs almost nothing today, because
-  // Next memoizes the identical GETs the page goes on to make anyway; it is worth the change while
-  // it is still free rather than after a crumb grows a read of its own.
-  //
-  // `allSettled` rather than `all` for one reason: **the first *rejection* and the first crumb are
-  // not the same thing.** These resolvers throw Next's own `notFound()` and `forbidden()`, which
-  // decide what the reader sees, and `Promise.all` surfaces whichever loses the race rather than
-  // whichever comes first in the path. Rethrowing in path order keeps the answer the sequential
-  // version gave. The cost is real and small: a crumb that would have been refused no longer stops
-  // the later ones being *issued*, so a refused page makes one or two requests it then discards.
+  // `allSettled` rather than `all`, and the rejections re-thrown in **path order** (PF-005).
+  // Resolving concurrently means an inner crumb's read is issued even when an outer one is going
+  // to be refused, and `Promise.all` would then surface whichever rejected *first* -- so a
+  // missing user under a forbidden group could answer 404 where the serial loop answered 403.
+  // Path order keeps the outermost refusal winning, which is both the previous behaviour and the
+  // more informative answer. The original rejection object is re-thrown untouched, because these
+  // are Next's `forbidden()`/`notFound()`/`redirect()` interrupts and they are recognised by
+  // identity -- catching one and throwing anything else would swallow it (see `lib/api/read.ts`).
   const settled = await Promise.allSettled(
     matched.map(({ entry, params }) => resolveLabel(entry, params, locale)),
   );
   const failure = settled.find((result) => result.status === "rejected");
-  if (failure) throw failure.reason;
+  if (failure) throw (failure as PromiseRejectedResult).reason;
 
   return matched.map(({ prefix, entry }, index) => ({
     label: (settled[index] as PromiseFulfilledResult<string>).value,

@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { createGroup } from "@/lib/actions/group-create";
-import type { CreateGroupValues } from "@/lib/actions/group-create.schema";
+import { createGroupSchema, type CreateGroupValues } from "@/lib/actions/group-create.schema";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
@@ -42,8 +42,7 @@ export function CreateGroup({
 
   const { form, onSubmit, isPending } = useServerActionForm<CreateGroupValues, { groupId: string }>(
     {
-      schema: () =>
-        import("@/lib/actions/group-create.schema").then((module) => module.createGroupSchema),
+      schema: createGroupSchema,
       defaultValues: {
         texts: locales.map((locale) => ({ locale, name: "", description: "" })),
       },

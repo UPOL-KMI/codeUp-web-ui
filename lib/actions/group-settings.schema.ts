@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * A group's own settings, as the form collects them and as the Server Action re-validates them
@@ -16,38 +16,40 @@ export const PASS_MODES = ["none", "threshold", "pointsLimit"] as const;
 export type PassMode = (typeof PASS_MODES)[number];
 
 export const groupTextSchema = z.object({
-  locale: z.string().min(2),
-  name: z.string().trim(),
+  locale: z.string().check(z.minLength(2)),
+  name: z.string().check(z.trim()),
   description: z.string(),
 });
 
 export const groupSettingsSchema = z
   .object({
-    texts: z.array(groupTextSchema).min(1),
+    texts: z.array(groupTextSchema).check(z.minLength(1)),
     externalId: z.string(),
     isPublic: z.boolean(),
     publicStats: z.boolean(),
     detaining: z.boolean(),
     passMode: z.enum(PASS_MODES),
     /** Whole percent, only read when `passMode` is `threshold`. */
-    threshold: z.number().int().min(1).max(100).nullable(),
+    threshold: z.nullable(z.number().check(z.int(), z.minimum(1), z.maximum(100))),
     /** Absolute points, only read when `passMode` is `pointsLimit`. */
-    pointsLimit: z.number().int().min(1).nullable(),
+    pointsLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
   })
-  .superRefine((values, ctx) => {
-    // A locale is offered for every language this app speaks, but a group need not be named in
-    // all of them -- an empty name means "this group has no text in that language", and the action
-    // drops it, which is how core-api deletes one. At least one has to survive, or the group
-    // would become unnameable.
-    if (!values.texts.some((text) => text.name.trim() !== "")) {
-      ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
-    }
-    if (values.passMode === "threshold" && values.threshold === null) {
-      ctx.addIssue({ code: "custom", path: ["threshold"], message: "thresholdRequired" });
-    }
-    if (values.passMode === "pointsLimit" && values.pointsLimit === null) {
-      ctx.addIssue({ code: "custom", path: ["pointsLimit"], message: "pointsLimitRequired" });
-    }
-  });
+  .check(
+    z.superRefine((values, ctx) => {
+      // A locale is offered for every language this app speaks, but a group need not be named
+      // in all of them -- an empty name means "this group has no text in that language", and the
+      // action drops it, which is how core-api deletes one. At least one has to survive, or the
+      // group would become unnameable.
+      if (!values.texts.some((text) => text.name.trim() !== "")) {
+        ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
+      }
+      if (values.passMode === "threshold" && values.threshold === null) {
+        ctx.addIssue({ code: "custom", path: ["threshold"], message: "thresholdRequired" });
+      }
+      if (values.passMode === "pointsLimit" && values.pointsLimit === null) {
+        ctx.addIssue({ code: "custom", path: ["pointsLimit"], message: "pointsLimitRequired" });
+      }
+    }),
+  );
 
 export type GroupSettingsValues = z.infer<typeof groupSettingsSchema>;
