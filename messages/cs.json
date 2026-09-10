@@ -381,13 +381,13 @@
       },
       "subgroups": "Podskupiny",
       "addSubgroup": "Nová podskupina",
-      "noSubgroups": "Tato skupina nemá žádné podskupiny."
-    },
-    "externalAttributes": {
-      "title": "Externí atributy",
-      "service": "Služba",
-      "key": "Klíč",
-      "value": "Hodnota"
+      "noSubgroups": "Tato skupina nemá žádné podskupiny.",
+      "externalAttributes": {
+        "title": "Externí atributy",
+        "service": "Služba",
+        "key": "Klíč",
+        "value": "Hodnota"
+      }
     },
     "membership": {
       "join": "Vstoupit do skupiny",
@@ -1347,6 +1347,20 @@
       "detached": "Úloha byla ze skupiny odebrána.",
       "undisclosed": "a {count, plural, one {# skupina, kterou nevidíte} few {# skupiny, které nevidíte} other {# skupin, které nevidíte}}"
     },
+    "notify": {
+      "title": "Upozornění vyučujícím",
+      "explain": "Odešle e-mail všem správcům a cvičícím skupin, ve kterých je tato úloha zadaná. Použijte, když jste v úloze našli chybu nebo ji změnili tak, že to jejich skupiny potřebují vědět.",
+      "message": "Zpráva",
+      "messageHint": "Nepovinné. Když necháte prázdné, odešle se obecné upozornění, že se úloha změnila.",
+      "action": "Upozornit vyučující",
+      "sent": "{count, plural, one {Upozornění dostal # vyučující.} few {Upozornění dostali # vyučující.} other {Upozornění dostalo # vyučujících.}}",
+      "noRecipients": "Nikdo nebyl upozorněn",
+      "noRecipientsHint": "Nenašli se žádní adresáti. Vyučující si také mohou tato upozornění vypnout ve svém nastavení.",
+      "confirm": {
+        "title": "Odeslat toto upozornění?",
+        "description": "E-mail půjde všem správcům a cvičícím skupin, ve kterých je úloha zadaná. Nelze jej vzít zpět."
+      }
+    },
     "archive": {
       "title": "Archivace",
       "explain": "Archivovaná úloha zůstává čitelná a zachovává zadání, která z ní vznikla, ale nepřekáží v katalogu a nejde měnit ani zadávat.",
@@ -1374,7 +1388,8 @@
       "tagFailed": "Štítek se nepodařilo změnit.",
       "groupFailed": "Skupinu se nepodařilo změnit.",
       "archiveFailed": "Úlohu se nepodařilo archivovat.",
-      "deleteFailed": "Úlohu se nepodařilo smazat."
+      "deleteFailed": "Úlohu se nepodařilo smazat.",
+      "notificationFailed": "Upozornění se nepodařilo odeslat."
     },
     "files": {
       "title": "Soubory",

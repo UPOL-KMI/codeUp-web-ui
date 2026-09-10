@@ -381,13 +381,13 @@
       },
       "subgroups": "Subgroups",
       "addSubgroup": "New subgroup",
-      "noSubgroups": "This group has no subgroups."
-    },
-    "externalAttributes": {
-      "title": "External Attributes",
-      "service": "Service",
-      "key": "Key",
-      "value": "Value"
+      "noSubgroups": "This group has no subgroups.",
+      "externalAttributes": {
+        "title": "External Attributes",
+        "service": "Service",
+        "key": "Key",
+        "value": "Value"
+      }
     },
     "membership": {
       "join": "Join this group",
@@ -1347,6 +1347,20 @@
       "detached": "The exercise was removed from the group.",
       "undisclosed": "and {count, plural, one {# group} other {# groups}} you cannot see"
     },
+    "notify": {
+      "title": "Notifying teachers",
+      "explain": "Sends an email to every group administrator and supervisor who has this exercise assigned. Use it when you have found a bug in the exercise or changed it in a way their groups need to know about.",
+      "message": "Message",
+      "messageHint": "Optional. Left empty, a generic notice saying the exercise has changed is sent instead.",
+      "action": "Notify teachers",
+      "sent": "{count, plural, one {# teacher was notified.} other {# teachers were notified.}}",
+      "noRecipients": "Nobody was notified",
+      "noRecipientsHint": "No recipients were found. Teachers can also turn these notifications off in their own settings.",
+      "confirm": {
+        "title": "Send this notification?",
+        "description": "An email goes out to every administrator and supervisor of a group this exercise is assigned in. It cannot be recalled."
+      }
+    },
     "archive": {
       "title": "Archiving",
       "explain": "An archived exercise stays readable and keeps the assignments already made from it, but it is out of the catalog's way and cannot be changed or assigned.",
@@ -1374,7 +1388,8 @@
       "tagFailed": "The tag could not be changed.",
       "groupFailed": "The group could not be changed.",
       "archiveFailed": "The exercise could not be archived.",
-      "deleteFailed": "The exercise could not be deleted."
+      "deleteFailed": "The exercise could not be deleted.",
+      "notificationFailed": "The notification could not be sent."
     },
     "files": {
       "title": "Files",

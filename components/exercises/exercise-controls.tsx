@@ -9,6 +9,7 @@ import {
   deleteExercise,
   detachExerciseGroup,
   removeExerciseTag,
+  sendExerciseNotification,
   setExerciseArchived,
 } from "@/lib/actions/exercise";
 import type { ExerciseDetail } from "@/lib/api/exercise-detail";
@@ -52,6 +53,8 @@ export function ExerciseControls({
   const [tag, setTag] = useState("");
   const [group, setGroup] = useState("");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [confirmingNotice, setConfirmingNotice] = useState(false);
 
   async function run(call: () => Promise<ActionResult<unknown>>, successKey: string) {
     setPending(true);
@@ -201,6 +204,68 @@ export function ExerciseControls({
           </div>
         )}
       </section>
+
+      {/* G-019. The legacy button's own gate: `update` and not archived -- an archived exercise
+          has nothing to announce, and core-api's rule requires the same. Nothing here can be
+          verified end to end on this deployment, which has no outbound SMTP (Q-007). */}
+      {exercise.can.update === true && !frozen && (
+        <section aria-labelledby="exercise-notify" className="flex flex-col gap-2">
+          <h2 id="exercise-notify" className="text-base font-semibold tracking-tight">
+            {t("notify.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t("notify.explain")}</p>
+          <label className="flex flex-col gap-1 text-sm">
+            {t("notify.message")}
+            <textarea
+              value={notice}
+              onChange={(event) => setNotice(event.target.value)}
+              rows={3}
+              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </label>
+          <p className="text-xs text-muted-foreground">{t("notify.messageHint")}</p>
+          <div>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => setConfirmingNotice(true)}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+            >
+              {t("notify.action")}
+            </button>
+          </div>
+
+          <ConfirmDialog
+            open={confirmingNotice}
+            onOpenChange={(open) => !open && setConfirmingNotice(false)}
+            title={t("notify.confirm.title")}
+            description={t("notify.confirm.description")}
+            confirmLabel={t("notify.action")}
+            destructive={false}
+            pending={pending}
+            onConfirm={() => {
+              setPending(true);
+              void sendExerciseNotification(exercise.id, notice).then((result) => {
+                setPending(false);
+                setConfirmingNotice(false);
+                if (!result.success) {
+                  toast.error(t("errors.failed"), result.formError);
+                  return;
+                }
+                setNotice("");
+                // Zero is core-api's honest answer, not a failure: a teacher can turn these
+                // notifications off in their own settings, so "nobody was written to" needs
+                // saying rather than reporting as a success with no effect.
+                if (result.data.notified === 0) {
+                  toast.success(t("notify.noRecipients"), t("notify.noRecipientsHint"));
+                  return;
+                }
+                toast.success(t("notify.sent", { count: result.data.notified }));
+              });
+            }}
+          />
+        </section>
+      )}
 
       {exercise.can.archive === true && (
         <section aria-labelledby="exercise-archive" className="flex flex-col gap-2">

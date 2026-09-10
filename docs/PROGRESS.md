@@ -4903,3 +4903,22 @@ A`, path and all, so that name is the seed's own doing. What is actually wrong i
 **Observations:** The generated OpenAPI types declare `content?: never` for this endpoint's response body, so the shape is taken from the legacy `GroupInfoTable.js` (`{id, service, key, value}`). The legacy app also attempted to translate `service` and `key` via a `EXTERNAL_ATTRIBUTES` config map; this app renders the raw values since no such config exists here and the translations were always deployment-specific rather than something to port.
 
 **Next ticket:** G-019 — Telling teachers an exercise changed (`POST /v1/exercises/{id}/notification`).
+
+---
+
+### 2026-09-10 — G-019: Telling teachers an exercise changed
+
+**Ticket:** G-019  
+**Status:** done
+
+**What was built:** `sendExerciseNotification()` in `lib/actions/exercise.ts` over `POST /v1/exercises/{id}/notification`, and a section in `components/exercises/exercise-controls.tsx` — an optional message field, a confirmation, and the count reported by toast. i18n in both locales; `notificationFailed` added to `ExerciseEdit.errors`. One test added to `e2e/exercise-edit.spec.ts`.
+
+**Three things worth not re-deriving.** First, the **gate is one condition, not two**: the legacy button asks `!archivedAt && permissionHints.update`, but archiving an exercise takes `update` away (core-api's rule carries `exercise.notArchived`, recorded on this screen already by T-008), so the two are the same condition stated twice. Kept both anyway, matching the legacy source. Second, **an empty message is core-api's own documented case** — it sends a generic "the exercise changed" notice — so it is a hint under the field rather than a validation error. Third, **zero recipients is an answer**, and it is the one half of this that a deployment with no SMTP can actually verify: a freshly created exercise is assigned in no group, so core-api finds nobody and never reaches the mailer. That is what the new spec asserts, and it is also why the legacy popover's nuance is carried across in words — a teacher can switch these notifications off in their own settings, so "nobody was notified" is not evidence the lookup was wrong.
+
+**The response shape is undeclared.** The generated OpenAPI types say `content?: never` for this endpoint's 200, as they do for G-012's. The count comes from core-api's own prose description ("The response is number of emails sent") plus the legacy reducer reading it as a bare number — `apiPost<number>`, not an object.
+
+**Observations:** **The message-catalogue test caught a real defect in G-012, committed one commit earlier.** `externalAttributes` had been inserted as a sibling of `Group.info` rather than inside it, so `t("externalAttributes.title")` — read through `getTranslations("Group.info")` — would have resolved nothing and rendered a `MISSING_MESSAGE` at runtime. `typecheck`, `lint` and `build` were all clean over it, which is precisely the failure mode PF-001 predicted and the reason `lib/i18n-text/messages.test.ts` exists. **`pnpm test` belongs in the pre-commit sequence alongside the other three whenever a commit touches `messages/`**; the brief's §8 list does not name it, and this is the second mechanism (after the generated route map) whose whole job is to catch a class of error the build cannot see.
+
+**Verification gap for this whole session:** `typecheck`, `lint`, `build` and the 234 unit tests are clean. **Nothing was verified live, because the Docker daemon is not running on this host** — `docker compose ps` cannot reach it, so core-api is unreachable and no Playwright spec could run. Both this ticket and G-012 are therefore build-verified only. G-012's section cannot be verified with real data on this deployment in any case (no external system attaches attributes), but G-019's no-recipients path and the new spec are genuinely runnable and should be run when the stack is next up, along with `group-info`'s existing specs.
+
+**Next ticket:** G-025 — a QR code of the current page (needs no API and no session; a client island in the sidebar footer).

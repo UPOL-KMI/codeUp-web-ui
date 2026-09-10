@@ -107,6 +107,42 @@ test("creates an exercise, configures it, and removes it again", async ({ page }
   await expect(page).toHaveURL(/\/en\/exercises$/);
 });
 
+/**
+ * G-019. **The no-recipients path is the half of this that a deployment without SMTP can check**,
+ * and a freshly created exercise is exactly the fixture for it: it is assigned in no group, so
+ * core-api finds nobody to write to and never reaches the mailer. The non-zero count -- and the
+ * mail itself -- stays unverifiable here (Q-007).
+ */
+test("notifies the teachers who assigned an exercise, and says when there are none", async ({
+  page,
+}) => {
+  await signIn(page, SUPERVISOR, "/en/exercises");
+  const main = page.getByRole("main");
+
+  await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
+  await main.getByRole("button", { name: "Create" }).click();
+  await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  const editUrl = page.url();
+  expect(trackExercise(editUrl)).not.toBeNull();
+
+  await main.getByLabel("Message").fill("The third test case had the wrong expected output.");
+  await main.getByRole("button", { name: "Notify teachers" }).click();
+  const dialog = page.getByRole("alertdialog");
+  await expect(dialog.getByRole("heading", { name: "Send this notification?" })).toBeVisible();
+  await dialog.getByRole("button", { name: "Notify teachers" }).click();
+
+  // Nobody has this exercise assigned, which is an answer rather than a failure -- and the reason
+  // the message says recipients can also have switched these off.
+  await expect(page.getByText("Nobody was notified", { exact: true })).toBeVisible();
+  await expect(main.getByLabel("Message")).toHaveValue("");
+
+  // An archived exercise has nothing to announce, and core-api's rule requires `update` which
+  // archiving takes away -- so the control is absent rather than offered and refused.
+  await main.getByRole("button", { name: "Archive this exercise" }).click();
+  await expect(page.getByText("The exercise was archived.", { exact: true })).toBeVisible();
+  await expect(main.getByRole("button", { name: "Notify teachers" })).toHaveCount(0);
+});
+
 test("is not offered to a student, nor readable by one", async ({ page }) => {
   await signIn(page, STUDENT, "/en/exercises");
   // The catalog itself is already refused, so the create control cannot be there either.

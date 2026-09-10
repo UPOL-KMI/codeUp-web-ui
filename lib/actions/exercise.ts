@@ -160,6 +160,30 @@ export async function setExerciseArchived(
   }
 }
 
+/**
+ * Emails every group admin and supervisor who has this exercise assigned (G-019).
+ *
+ * An empty message is core-api's own documented case, not an omission: it sends a generic "this
+ * exercise changed" notice instead. The payload is the **number of people written to**, which the
+ * caller reports -- zero is a real answer rather than a failure, since a recipient can turn these
+ * off in their own settings.
+ */
+export async function sendExerciseNotification(
+  exerciseId: string,
+  message: string,
+): Promise<ActionResult<{ notified: number }>> {
+  try {
+    const notified = await apiPost<number>(
+      "/v1/exercises/{id}/notification",
+      { message: message.trim() },
+      { pathParams: { id: exerciseId } },
+    );
+    return { success: true, data: { notified } };
+  } catch (error) {
+    return failure(error, "notificationFailed");
+  }
+}
+
 export async function deleteExercise(exerciseId: string): Promise<ActionResult<{ id: string }>> {
   try {
     await apiDelete("/v1/exercises/{id}", { pathParams: { id: exerciseId } });
