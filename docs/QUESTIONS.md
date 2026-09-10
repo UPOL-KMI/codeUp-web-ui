@@ -471,3 +471,57 @@ somebody an afternoon.
 
 **Same genre as Q-021, Q-022 and Q-023:** a field that can be set and not unset, found by trying
 it rather than by reading it.
+
+---
+
+## Q-026: whoever may replace a pipeline's file cannot download the one they are replacing (G-015)
+
+Not a question so much as an incoherence, and one for the retrospective's API-change list rather
+than anything this app can work around.
+
+A pipeline's supplementary files are read and written through the pipeline
+(`GET`/`POST /v1/pipelines/{id}/exercise-files`, `DELETE .../{fileId}`), but there is **no
+per-pipeline download endpoint** — the only way to the bytes is the generic
+`GET /v1/uploaded-files/{id}/download`, which has its own ACL and knows nothing about pipelines.
+`permissions.neon` grants `uploadedFile.download` on any of six conditions:
+
+```
+or:
+  - file.isSolutionInSupervisedOrObservedGroup
+  - file.isReferenceSolutionInSupervisedOrObservedSubGroup
+  - file.isOwner
+  - file.isRelatedToAssignment            # deprecated
+  - file.isAuthorOfFileExercises
+  - file.isExerciseFileInGroupUserSupervises
+```
+
+A pipeline file can satisfy **only `file.isOwner`**. It is not a solution; and the two
+exercise-file conditions are about files attached to an exercise, which a pipeline file is not — a
+pipeline belongs to no group and has no author. So the rule reduces to "the person who uploaded
+it, or a superadmin".
+
+**Measured on the live instance**, which is what makes this concrete rather than a reading:
+
+| Request                                         | Superadmin | Plain supervisor |
+| ----------------------------------------------- | ---------- | ---------------- |
+| `GET /pipelines/{id}/exercise-files` (the list)  | 200        | **200**          |
+| `GET /uploaded-files/{fileId}/download`          | 200        | **403**          |
+
+So the list is granted more widely than its contents. Worse, the seeded files carry
+**`userId: null`** — `runner.py` on both Python pipelines has no uploader at all — so
+`file.isOwner` is false for *everybody*, and no amount of pipeline permission makes them readable
+to anyone but a superadmin.
+
+The practical shape of it: an `empowered-supervisor` may create pipelines, may edit this one, and
+may upload a replacement `runner.py` — but may not read the `runner.py` they are about to replace.
+Replacing a file you cannot inspect is the wrong way round.
+
+**Nothing is blocked.** G-015 renders the download link only where it will work
+(`lib/pipelines/file-access.ts`, unit-tested, since no seeded account can exercise the interesting
+branch) rather than offering one that 403s, and everything else on the screen — list, upload,
+replace, remove — works for whoever holds the pipeline's `update` hint.
+
+**What would fix it:** either a `GET /v1/pipelines/{id}/exercise-files/{fileId}` that authorises
+against the *pipeline* the way the list and the delete already do, or one more condition on
+`uploadedFile.download` for a file whose pipeline the caller may view. The first is more in keeping
+with how the rest of that resource is addressed.

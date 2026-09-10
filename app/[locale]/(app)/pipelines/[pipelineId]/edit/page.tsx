@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getCurrentUser } from "@/lib/api/current-user";
+import { getPipelineFiles } from "@/lib/api/pipeline-files";
+import { canDownloadPipelineFile } from "@/lib/pipelines/file-access";
 import { getBoxTypes, getPipeline, getPipelineExercises } from "@/lib/api/pipelines";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
+import { PipelineFiles } from "@/components/pipelines/pipeline-files";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
 import { StructureEditor } from "@/components/pipelines/structure-editor";
 
@@ -51,12 +55,19 @@ export default async function EditPipelinePage({
   // Reading a pipeline is something any teacher may do; changing one is not.
   if (pipeline.can.update !== true && pipeline.can.fork !== true) forbidden();
 
-  const [boxTypes, environments, exercises, breadcrumbs] = await Promise.all([
+  const [boxTypes, environments, exercises, files, viewer, breadcrumbs] = await Promise.all([
     getBoxTypes(),
     getRuntimeEnvironments(),
     getPipelineExercises(pipelineId, locale),
+    getPipelineFiles(pipelineId),
+    getCurrentUser(),
     resolveBreadcrumbs(`/pipelines/${pipelineId}/edit`, locale),
   ]);
+  // Decided here, where the viewer's role is known, rather than shipped to the browser as a role
+  // for a client component to test (brief §6.5).
+  const downloadableIds = files
+    .filter((file) => canDownloadPipelineFile(file, viewer.id, viewer.role))
+    .map((file) => file.id);
 
   return (
     <PageShell
@@ -92,6 +103,21 @@ export default async function EditPipelinePage({
             environments={environments}
             selectedEnvironments={pipeline.runtimeEnvironmentIds}
             can={pipeline.can}
+          />
+        </section>
+
+        {/* G-015. Before the structure editor, because a box that names a remote file is
+            unreadable until you know which files exist -- which is the order the legacy screen
+            put them in too. */}
+        <section aria-labelledby="pipeline-files" className="flex flex-col gap-3">
+          <h2 id="pipeline-files" className="text-base font-semibold tracking-tight">
+            {t("files.title")}
+          </h2>
+          <PipelineFiles
+            pipelineId={pipelineId}
+            files={files}
+            readOnly={pipeline.can.update !== true}
+            downloadableIds={downloadableIds}
           />
         </section>
 

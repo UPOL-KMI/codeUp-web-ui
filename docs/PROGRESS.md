@@ -4996,3 +4996,26 @@ So the fields wired are the ones whose value actually reaches `<Markdown>`: exer
 **What was run:** `typecheck`, `lint`, `build`, 234 unit tests clean. **`group-create`, `instances`, `app-shell` and `design-system` pass 24/24** against the real stack — the runnable set, and the one that contains the wired group and instance forms. Verified live besides: the preview renders `##`, `$n$` and a Python fence correctly, `<script>alert(1)</script>` comes back as text with no `<script>` element, an empty field says so **without a round trip**, tab switching preserves the textarea's content, Czech renders "Psát/Náhled". The new spec in `exercise-edit.spec.ts` cannot run here — like the G-019 one, it navigates to `[seed] Intro to Programming`.
 
 **Next ticket:** G-015 — a pipeline's supplementary files. Note it wants D-005's chunked upload Route Handler reused and `components/exercises/exercise-files.tsx` as the model, so it is mostly assembly of parts that exist.
+
+---
+
+### 2026-09-10 — G-015: A pipeline's supplementary files
+
+**Ticket:** G-015  
+**Status:** done
+
+**What was built:** `lib/api/pipeline-files.ts` (the read), `lib/actions/pipeline-files.ts` (attach, remove), `lib/pipelines/file-access.ts` + 4 unit tests (who may download), `components/pipelines/pipeline-files.tsx`, `app/api/pipelines/[pipelineId]/files/[fileId]/route.ts`, a section on `/pipelines/[id]/edit`, `PipelineEdit.files` in both locales, and **Q-026**.
+
+**Mostly assembly, as the row predicted — except for the download, which was the whole ticket.** The list, the upload and the removal are T-023's exercise-files shapes over the same core-api upload action, and the file section is shorter by one whole half because **there are no file links on a pipeline**: a link exists to resolve `%%key%%` in an authored text, and a pipeline has no text.
+
+**Two things core-api does not have.** There is **no download-archive** for a pipeline the way there is for an exercise, and **no per-pipeline download endpoint at all**. The only route to the bytes is the generic `GET /v1/uploaded-files/{id}/download`, which knows nothing about pipelines and carries its own ACL — and that ACL is the finding.
+
+**Q-026, and it is a real incoherence rather than a question.** `uploadedFile.download` is granted on any of six conditions; a pipeline file can satisfy only `file.isOwner`, because the other five are about solutions and about files attached to an **exercise**, and a pipeline belongs to no group and has no author. Measured live: `GET /pipelines/{id}/exercise-files` answers **200** to a plain supervisor while `GET /uploaded-files/{fileId}/download` answers **403** to the same supervisor — the list is granted more widely than its contents. And every seeded file carries **`userId: null`**, so `isOwner` is false for everybody and only a superadmin can read them at all. The practical shape: an `empowered-supervisor` may edit the pipeline and upload a replacement `runner.py` but may not read the `runner.py` they are replacing.
+
+So the link is rendered only where it will work. That is a **role-and-owner test rather than a permission hint**, because there is no hint to read — G-016's precedent, for the third time in this block — and it is **unit-tested rather than checked E2E** for a reason worth recording: **no seeded account can exercise the interesting branch.** A plain supervisor cannot open the pipeline edit screen at all (it gates on `update` or `fork`, which they do not have), and the seed has no `empowered-supervisor`, which is the one role that reaches the screen without being a superadmin. `canDownloadPipelineFile` had to move out of `lib/api/pipeline-files.ts` to be testable at all — that module is `server-only` and Vitest refuses it — which is the right home anyway for a pure predicate with no server dependency.
+
+**The download route checks the file is on the named pipeline before streaming.** Without that it would be a generic "fetch any uploaded file by id" proxy resting entirely on core-api's ACL, which turns this app into an oracle for file ids nobody asked it about. Verified: the same file id requested under a pipeline that does not carry it answers **404**, not the file.
+
+**What was run:** `typecheck`, `lint`, `build`, **238 unit tests** (4 new) clean. Verified live in English and Czech as a superadmin: `runner.py` listed at 1.5 KiB with a working link, the route streamed **1549 bytes of real Python**, a cross-pipeline file id answered 404, a made-up id answered 404, a supervisor's request forwarded core-api's own 403 sentence, and an anonymous request never reached the route (`proxy.ts` redirects first). The Czech section renders with no missing keys.
+
+**Next ticket:** G-017 — a pipeline's structure as a file (export the T-016 editor's structure as JSON, import one back). Note the row deliberately excludes legacy's undo/redo as an editor convenience rather than a capability.

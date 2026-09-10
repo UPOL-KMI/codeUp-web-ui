@@ -2050,6 +2050,28 @@
         "confirm": "Delete it"
       }
     },
+    "files": {
+      "title": "Pipeline files",
+      "explain": "The files this pipeline's boxes can reach — a runner script, a wrapper, a fixed data file. A box refers to one by name, so these have to exist before the structure below makes sense.",
+      "none": "No files are attached to this pipeline.",
+      "upload": "Add files",
+      "uploadExplain": "Uploading is additive, and a name is an identity: a file whose name already exists here is replaced by the new one. That is how a corrected script is installed.",
+      "attach": "{count, plural, =0 {Attach} one {Attach # file} other {Attach # files}}",
+      "attached": "The files were attached.",
+      "remove": "Remove",
+      "removed": "The file was removed.",
+      "confirmRemove": {
+        "title": "Remove this file?",
+        "description": "{name} goes for good. Boxes name files by name, so if the structure still refers to it the pipeline keeps the name and fails at evaluation time with nothing on screen to explain it — and a pipeline is shared, so every exercise using it is affected.",
+        "confirm": "Remove the file"
+      },
+      "errors": {
+        "generic": "That did not work.",
+        "nothingToAttach": "Choose a file to attach first.",
+        "attachFailed": "The files could not be attached.",
+        "removeFailed": "The file could not be removed."
+      }
+    },
     "structure": {
       "title": "How it is wired",
       "explain": "Boxes are operations; a variable is the wire between them. A box reads or writes a variable by naming it, so a port left unconnected is not an error ReCodEx will report — it is simply a wire that is not there.",

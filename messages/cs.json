@@ -2050,6 +2050,28 @@
         "confirm": "Smazat"
       }
     },
+    "files": {
+      "title": "Soubory pipeliny",
+      "explain": "Soubory, na které boxy této pipeliny dosáhnou — spouštěcí skript, obálka, pevná data. Box se na soubor odkazuje jménem, takže musí existovat, aby struktura níže dávala smysl.",
+      "none": "K této pipelině nejsou připojeny žádné soubory.",
+      "upload": "Přidat soubory",
+      "uploadExplain": "Nahrávání přidává a jméno je identita: soubor se stejným jménem je nahrazen novým. Tak se nasazuje opravený skript.",
+      "attach": "{count, plural, =0 {Připojit} one {Připojit # soubor} few {Připojit # soubory} other {Připojit # souborů}}",
+      "attached": "Soubory byly připojeny.",
+      "remove": "Odebrat",
+      "removed": "Soubor byl odebrán.",
+      "confirmRemove": {
+        "title": "Odebrat tento soubor?",
+        "description": "{name} zmizí nadobro. Boxy se na soubory odkazují jménem, takže pokud na něj struktura stále odkazuje, pipelina si jméno ponechá a selže až při vyhodnocování, bez čehokoli na obrazovce — a pipelina je společná, takže se to dotkne každé úlohy, která ji používá.",
+        "confirm": "Odebrat soubor"
+      },
+      "errors": {
+        "generic": "Nepovedlo se.",
+        "nothingToAttach": "Nejprve vyberte soubor k připojení.",
+        "attachFailed": "Soubory se nepodařilo připojit.",
+        "removeFailed": "Soubor se nepodařilo odebrat."
+      }
+    },
     "structure": {
       "title": "Jak je zapojená",
       "explain": "Boxy jsou operace, proměnná je drát mezi nimi. Box čte nebo zapisuje proměnnou tím, že ji pojmenuje — nezapojený port tedy není chyba, kterou by ReCodEx ohlásil, prostě tam ten drát není.",

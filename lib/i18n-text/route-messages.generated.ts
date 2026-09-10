@@ -383,11 +383,13 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Nav.locale",
     "Nav.qr",
     "Palette",
+    "PipelineEdit.files",
     "PipelineEdit.settings",
     "PipelineEdit.structure",
     "SystemMessages.active",
     "SystemMessages.types",
     "Toast",
+    "Upload",
   ],
   "/profile": [
     "Dialog",
