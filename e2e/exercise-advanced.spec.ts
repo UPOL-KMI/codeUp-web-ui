@@ -5,6 +5,10 @@ import { SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 
 /**
  * The advanced exercise configuration and the switch between the two kinds (T-024).
@@ -26,6 +30,7 @@ test("takes an exercise to a configuration of its own and back again", async ({ 
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
   const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
 
@@ -101,6 +106,7 @@ test("the standard form is not offered to an exercise that has its own configura
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
 
   await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));

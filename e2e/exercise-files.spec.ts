@@ -5,6 +5,10 @@ import { SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 
 /**
  * An exercise's own files, the links into them, its people and copying it (T-023).
@@ -25,6 +29,7 @@ async function createExercise(page: Page): Promise<string> {
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   return page.url();
 }
 
@@ -121,6 +126,7 @@ test("copies an exercise into another group, and the copy is its own", async ({ 
   // the page we are already on -- wait for the id to actually differ.
   await expect.poll(() => page.url(), { timeout: 15_000 }).not.toBe(editUrl);
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const copyUrl = page.url();
   await expect(main.getByLabel("Name").first()).toHaveValue("[e2e] Original");
 

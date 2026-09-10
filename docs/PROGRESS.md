@@ -4670,6 +4670,39 @@ standalone`), and `API_BASE_INTERNAL` must point at `127.0.0.1` rather than `rec
     both stored values back. The instance's admin account was returned to the `uiData: null` it
     started in. 234 unit tests (225 before), typecheck/lint/format/build clean.
 
+- **[2026-09-10 09:20] PF-007:** A spec's cleanup that only ran when it passed -- in six files, not
+  the one the row named. `e2e/helpers/created-exercises.ts`, `e2e/helpers/core-api.ts`
+  (`deleteExerciseIfPresent`), `e2e/exercise-{edit,advanced,config,files,limits,score}.spec.ts`.
+  - _The row named `exercise-edit.spec.ts`; a scan found five more with the same shape._ All six
+    create a real exercise through the product and all six deleted it at the end of the **test
+    body**, so any failure in between left it on the instance -- and core-api names a new exercise
+    after its author, so an orphan carries no `[e2e]` prefix to sweep on and looks exactly like one
+    a real supervisor started and abandoned.
+  - _Shared rather than copied._ `cleanUpCreatedExercises()` registers the file's `afterEach` and
+    returns the `track(url)` each creation site calls. Six copies of a hook is six places for the
+    seventh spec to forget it. The deletion each test performs is the thing those tests **assert**,
+    so the hook finds the exercise already gone in the ordinary case and only does work when
+    something went wrong -- which is why the helper is `...IfPresent`.
+  - _Registered before the assertions that follow the creation_, because a failure in those is the
+    case this exists for. `exercise-files`' second site is a **fork**, which creates an exercise
+    too, so it is tracked for the same reason rather than skipped as "not a create".
+  - **_The row's stated model does not exist._** It said to copy `group-create.spec.ts`'s
+    "module-level list and an `afterEach`"; that file actually uses `try`/`finally`, which a
+    Playwright **timeout** can cut short. The pattern copied is `pipeline-edit.spec.ts`'s, which
+    G-016 had already got right for the same reason.
+  - **_And the other half of this ticket was correcting G-011's diagnosis, which was mine and was
+    wrong._** G-011 recorded that the instance's fixtures had "drifted" because its seeded group is
+    named `[seed] Intro to Programming / Lab A`. `scripts/seed.ts:1158` creates a group called
+    exactly that, path and all -- the name is the seed's own. What is actually wrong is that
+    `[seed] Intro to Programming`, the group every one of these specs navigates to, **is absent**
+    while `[seed] Large Lecture` and the Lab A group are present: the instance is partly seeded,
+    not renamed. Reached by looking at one group's name instead of asking what the seed creates;
+    three lines of `grep` would have settled it at the time.
+  - _Observations:_ the four orphans this row says to delete first are **already gone** -- zero
+    exercises named "Exercise by" on the instance. The six specs are not run here, for the reason
+    above; `pnpm seed` is idempotent and is what makes the suite runnable again. 234 unit tests,
+    typecheck/lint/format/build clean.
+
 - **[2026-09-10 07:55] G-011:** Mailing the whole class, and the truncation the legacy link does not
   mention. `components/groups/mail-students.tsx`, `lib/format/mailto.ts` + unit tests,
   `lib/api/group-detail.ts`, `e2e/mail-students.spec.ts`.
@@ -4694,11 +4727,17 @@ standalone`), and `API_BASE_INTERNAL` must point at `127.0.0.1` rather than `rec
     ACL does _not_ ask for -- `sendEmail` is the one group write with no `group.isNotArchived`
     condition, so a finished course can still be written to, deliberately and as in legacy.
   - **_Observations: not verified live, and that is an environment fact rather than a caveat about
-    the code._** This instance's `[seed]` fixtures have drifted -- the seeded group is now named
-    `[seed] Intro to Programming / Lab A`, and the instance carries real groups beside it -- so the
-    spec's group-navigation helper finds nothing. **`points-export.spec.ts` fails identically on the
-    same helper**, which is what says the cause is the fixtures and not this ticket. Re-run both
-    after `pnpm seed`. 217 unit tests (209 before), typecheck/lint/format/build clean.
+    the code._** This instance is **partly seeded**: `[seed] Intro to Programming`, the group the
+    spec navigates to, is absent, while `[seed] Large Lecture` and `[seed] Intro to Programming /
+Lab A` are present. So the group-navigation helper finds nothing, and
+    **`points-export.spec.ts` fails identically on the same helper** -- which is what says the
+    cause is the fixtures and not this ticket. Re-run both after `pnpm seed`, which is idempotent.
+    217 unit tests (209 before), typecheck/lint/format/build clean.
+    - _Corrected during PF-007._ This entry first read the second group's name as a rename, and it
+      is not one: `scripts/seed.ts:1158` creates a group called `[seed] Intro to Programming / Lab
+A`, path and all, so that name is the seed's own doing. What is actually wrong is the missing
+      parent. The wrong diagnosis was reached by looking at one group's name instead of asking what
+      the seed creates -- three lines of `grep` would have settled it at the time.
 
 ### Current Status
 

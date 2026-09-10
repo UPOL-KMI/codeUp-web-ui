@@ -5,6 +5,10 @@ import { SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 
 /**
  * The custom score expression (T-025).
@@ -23,6 +27,7 @@ async function exerciseWithTests(page: Page): Promise<string> {
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
 
   await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));

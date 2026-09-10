@@ -70,6 +70,28 @@ export async function deleteGroupIfPresent(groupId: string): Promise<void> {
   }).catch(() => undefined);
 }
 
+/**
+ * Delete an exercise directly, for a spec's own cleanup (PF-007).
+ *
+ * Fourth of its kind, and the one whose absence was already costing something. `exercise-edit.spec`
+ * created a real exercise and deleted it at the end of the test body rather than in a hook, so any
+ * failure in between left it behind -- and **four had accumulated on the development instance**,
+ * all named "Exercise by Sam Supervisor", all with no difficulty, indistinguishable from a fixture.
+ * They were what made G-031b's empty-difficulty cell look like seeded data when it was detritus.
+ *
+ * An orphan here is worse than a stray pipeline, because a new exercise is named after its author
+ * rather than by the spec: there is no `[e2e]` prefix to sweep on, and nothing tells one apart from
+ * an exercise a real supervisor started and abandoned. So it has to be removed by id, by whoever
+ * created it, whether or not their test survived.
+ */
+export async function deleteExerciseIfPresent(exerciseId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/exercises/${exerciseId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 async function coreApiToken(): Promise<string> {
   const response = await fetch(`${coreApiBase}/login`, {
     method: "POST",

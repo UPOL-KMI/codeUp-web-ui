@@ -5,6 +5,10 @@ import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 
 /**
  * An exercise's resource limits (T-010).
@@ -52,6 +56,7 @@ test("sets limits on a new exercise, and refuses ones the machine will not allow
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
 
   // A test and a language first -- limits are per test and per language, so there is nothing to

@@ -5,6 +5,7 @@ import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
 
 /**
  * Creating an exercise and changing its settings (T-008).
@@ -16,7 +17,16 @@ import { baseURL } from "./helpers/base-url";
  *
  * A new exercise is broken by construction (no tests), so nobody can assign it and no student can
  * meet it in the window it exists.
+ *
+ * **The deletion at the end of the test is the thing being tested; `cleanUpCreatedExercises` is
+ * what makes it safe to test (PF-007).** Deleting only there meant any failure in between left the
+ * exercise on the instance -- and four had accumulated that way, all named "Exercise by Sam
+ * Supervisor" with no difficulty, which is exactly what a fixture looks like. PF-007 named this
+ * file; **five more had the same defect** and share the same helper now.
  */
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
@@ -35,6 +45,9 @@ test("creates an exercise, configures it, and removes it again", async ({ page }
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
   await expect(main.getByRole("heading", { name: "Exercise settings", level: 1 })).toBeVisible();
   const editUrl = page.url();
+  // Registered before anything that can fail: from here the exercise exists on the instance
+  // whether or not the rest of this test runs.
+  expect(trackExercise(editUrl)).not.toBeNull();
 
   // G-031b, and this is the only moment it can be checked: core-api creates an exercise with no
   // difficulty at all, and the save below gives it one. The catalog used to print the message key

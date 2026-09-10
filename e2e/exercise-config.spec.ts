@@ -5,6 +5,10 @@ import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreatedExercises } from "./helpers/created-exercises";
+
+/** PF-007: every exercise these tests create, removed even when a test dies first. */
+const trackExercise = cleanUpCreatedExercises();
 
 /**
  * The exercise configuration editor (T-009).
@@ -63,6 +67,7 @@ test("takes a new exercise from broken to configured, and removes it again", asy
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
   const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
 
@@ -143,6 +148,7 @@ test("a language that cannot share an exercise is refused before saving", async 
   await main.getByLabel("New exercise in").selectOption({ label: "[seed] Intro to Programming" });
   await main.getByRole("button", { name: "Create" }).click();
   await expect(page).toHaveURL(/\/en\/exercises\/[0-9a-f-]+\/edit$/);
+  trackExercise(page.url());
   const editUrl = page.url();
   await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));
 
