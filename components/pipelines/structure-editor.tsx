@@ -1,10 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { updatePipelineStructure } from "@/lib/actions/pipeline";
 import { layoutPipeline } from "@/lib/pipelines/layout";
+import {
+  parsePipelineStructure,
+  serializePipelineStructure,
+  type ParseFailure,
+} from "@/lib/pipelines/structure-file";
 import { renderPipelineSvg } from "@/lib/pipelines/svg";
 import {
   isArrayType,
@@ -18,6 +23,7 @@ import {
 } from "@/lib/pipelines/types";
 
 import { useRouter } from "@/i18n/navigation";
+import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -71,6 +77,10 @@ export function StructureEditor({
   const [newBoxType, setNewBoxType] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState<{ name: string; structure: PipelineStructure } | null>(
+    null,
+  );
 
   const used = useMemo(() => utilization(boxes), [boxes]);
   const svg = useMemo(
@@ -212,6 +222,65 @@ export function StructureEditor({
     }
     toast.success(t("saved"));
     router.refresh();
+  }
+
+  /**
+   * G-017. **Client-side, unlike every other file this app hands over** (T-007's points export and
+   * G-015's pipeline files both go through a Route Handler so they need no JavaScript). The reason
+   * is not preference: what is exported is the editor's *current* state, including edits that have
+   * not been saved, and the server does not have it. That is legacy's behaviour too, and it is the
+   * useful one -- exporting work in progress is most of why somebody wants a file.
+   */
+  function exportStructure() {
+    const text = serializePipelineStructure({ boxes, variables });
+    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "pipeline.json";
+    link.click();
+    // Revoked, or the blob is held for the life of the document -- a structure is not large, but
+    // an editor session can export many times.
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Reading a file replaces everything in the editor, so it **asks first**. Legacy pushed the old
+   * contents onto its undo stack instead; this screen has no undo (deliberately out of G-017's
+   * scope), so a confirmation is what stands in for it -- otherwise one wrong file silently
+   * discards an afternoon's wiring.
+   *
+   * Nothing is saved by importing. The structure lands in the editor, the graph redraws, and the
+   * save button does what it always does -- which also means core-api's own validation still gets
+   * the last word on a file that parsed but describes a broken pipeline.
+   */
+  async function readFile(file: File) {
+    setError(null);
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      setError(t("import.unreadable", { name: file.name }));
+      return;
+    }
+    const result = parsePipelineStructure(text);
+    if (!result.ok) {
+      setError(t(`import.reasons.${result.reason}` satisfies `import.reasons.${ParseFailure}`, {
+        name: file.name,
+      }));
+      return;
+    }
+    setImporting({ name: file.name, structure: result.structure });
+  }
+
+  function applyImport(structure: PipelineStructure) {
+    setBoxes(
+      structure.boxes.map((box) => ({
+        ...box,
+        portsIn: { ...ports(box.portsIn) },
+        portsOut: { ...ports(box.portsOut) },
+      })),
+    );
+    setVariables(structure.variables);
   }
 
   const input =
@@ -499,6 +568,46 @@ export function StructureEditor({
         </p>
       )}
 
+      {/* G-017. Export is offered to a reader who may only look: taking a copy of a definition
+          away is not a change to it, and it is how a pipeline moves to another instance. Import
+          is not -- it rewrites the editor, so it needs somewhere to save to. */}
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+        <button
+          type="button"
+          onClick={exportStructure}
+          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          {t("export.action")}
+        </button>
+        {!readOnly && (
+          <>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => fileInput.current?.click()}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("import.action")}
+            </button>
+            {/* Hidden rather than styled, and reset after every pick so that choosing the same
+                file twice fires `change` the second time as well. */}
+            <input
+              ref={fileInput}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              aria-label={t("import.action")}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void readFile(file);
+              }}
+            />
+          </>
+        )}
+        <p className="text-xs text-muted-foreground">{t("export.note")}</p>
+      </div>
+
       {!readOnly && (
         <div className="flex items-center gap-2">
           <button
@@ -512,6 +621,25 @@ export function StructureEditor({
           <p className="text-xs text-muted-foreground">{t("saveNote")}</p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={importing !== null}
+        onOpenChange={(open) => {
+          if (!open) setImporting(null);
+        }}
+        title={t("import.confirm.title")}
+        description={t("import.confirm.description", {
+          name: importing?.name ?? "",
+          boxes: importing?.structure.boxes.length ?? 0,
+          variables: importing?.structure.variables.length ?? 0,
+        })}
+        confirmLabel={t("import.confirm.confirm")}
+        onConfirm={() => {
+          const pending = importing;
+          setImporting(null);
+          if (pending) applyImport(pending.structure);
+        }}
+      />
     </div>
   );
 }

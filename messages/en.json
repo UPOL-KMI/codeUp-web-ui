@@ -2120,7 +2120,29 @@
       "saveNote": "The whole structure is saved at once — ReCodEx has no call that changes one box.",
       "saveFailed": "The structure could not be saved.",
       "removeVariable": "Remove variable {index}",
-      "removeBox": "Remove box {name}"
+      "removeBox": "Remove box {name}",
+      "export": {
+        "action": "Export as a file",
+        "note": "A JSON file in the same format the old frontend reads and writes, so a definition can move between instances or be edited outside ReCodEx."
+      },
+      "import": {
+        "action": "Import a file",
+        "unreadable": "{name} could not be read.",
+        "confirm": {
+          "title": "Replace the structure with this file?",
+          "description": "{name} describes {boxes, plural, one {# box} other {# boxes}} and {variables, plural, one {# variable} other {# variables}}. It replaces everything in the editor, including changes you have not saved, and there is no undo. Nothing is saved until you press Save.",
+          "confirm": "Replace the structure"
+        },
+        "reasons": {
+          "notJson": "{name} is not valid JSON.",
+          "notAnObject": "{name} does not contain a pipeline — the file's top level should be an object with boxes and variables.",
+          "boxesNotAnArray": "{name} has no list of boxes.",
+          "variablesNotAnArray": "{name} has no list of variables.",
+          "badBox": "{name} has a box without a proper name and type, so it was not imported — nothing was changed.",
+          "badPort": "{name} has a port without a proper type and value, so it was not imported — nothing was changed.",
+          "badVariable": "{name} has a variable without a proper name and type, so it was not imported — nothing was changed."
+        }
+      }
     },
     "errors": {
       "invalid": "That is not something ReCodEx can store.",

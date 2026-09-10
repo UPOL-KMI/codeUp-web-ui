@@ -2120,7 +2120,29 @@
       "saveNote": "Celá struktura se ukládá najednou — ReCodEx nemá volání, které by změnilo jeden box.",
       "saveFailed": "Strukturu se nepodařilo uložit.",
       "removeVariable": "Odebrat proměnnou {index}",
-      "removeBox": "Odebrat box {name}"
+      "removeBox": "Odebrat box {name}",
+      "export": {
+        "action": "Exportovat do souboru",
+        "note": "Soubor JSON ve stejném formátu, jaký čte a zapisuje staré rozhraní, takže definice může přejít mezi instancemi nebo se upravovat mimo ReCodEx."
+      },
+      "import": {
+        "action": "Importovat soubor",
+        "unreadable": "Soubor {name} se nepodařilo přečíst.",
+        "confirm": {
+          "title": "Nahradit strukturu tímto souborem?",
+          "description": "Soubor {name} popisuje {boxes, plural, one {# box} few {# boxy} other {# boxů}} a {variables, plural, one {# proměnnou} few {# proměnné} other {# proměnných}}. Nahradí vše v editoru včetně neuložených změn a nelze to vrátit. Nic se neuloží, dokud nestisknete Uložit.",
+          "confirm": "Nahradit strukturu"
+        },
+        "reasons": {
+          "notJson": "Soubor {name} není platný JSON.",
+          "notAnObject": "Soubor {name} neobsahuje pipelinu — na nejvyšší úrovni má být objekt s boxy a proměnnými.",
+          "boxesNotAnArray": "Soubor {name} neobsahuje seznam boxů.",
+          "variablesNotAnArray": "Soubor {name} neobsahuje seznam proměnných.",
+          "badBox": "Soubor {name} obsahuje box bez řádného jména a typu, proto nebyl naimportován — nic se nezměnilo.",
+          "badPort": "Soubor {name} obsahuje port bez řádného typu a hodnoty, proto nebyl naimportován — nic se nezměnilo.",
+          "badVariable": "Soubor {name} obsahuje proměnnou bez řádného jména a typu, proto nebyla naimportována — nic se nezměnilo."
+        }
+      }
     },
     "errors": {
       "invalid": "Tohle ReCodEx uložit neumí.",
