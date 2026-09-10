@@ -98,6 +98,7 @@
     "password": "Password",
     "passwordConfirm": "Password again",
     "instance": "Instance",
+    "consent": "I agree that my personal data will be processed by ReCodEx in accordance with its GDPR policy.",
     "create": "Create the account",
     "creating": "Creating…",
     "strength": {

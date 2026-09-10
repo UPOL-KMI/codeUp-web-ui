@@ -5042,3 +5042,26 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **What was run:** `typecheck`, `lint`, `build`, **246 unit tests** (8 new) clean. Verified live in both locales as a superadmin: exported the real 12-box Python pipeline — 8,268 bytes, `{boxes, variables}`, four-space indented, every empty port map an object — fed that file back, then fed in a hand-written two-box/one-variable file carrying an extra top-level key and watched the dialog report "2 boxes and 1 variable" and the graph redraw to the imported boxes. A reload restored the original 19 variables, which is the proof that importing saves nothing. `{ not json` and a box missing its `name` each answered with their own sentence naming the file. The pipeline on the instance was never saved and is untouched.
 
 **Next ticket:** G-026 — consent to data processing on registration. Note this deployment has local registration **off** (`ALLOW_LOCAL_REGISTRATION=false`, A-003), so the registration form says so rather than rendering; the accept-invitation form creates an account too and is the reachable half.
+
+---
+
+### 2026-09-10 — G-026: Consent to data processing on registration
+
+**Ticket:** G-026  
+**Status:** done
+
+**What was built:** the GDPR consent tick on `/register` (`components/auth/register-form.tsx`), `Register.consent` in both locales, and **Q-027**. The `registration` inventory row closes with it.
+
+**Legacy's consent is a client-side gate and nothing else, and this matches it deliberately.** `grep -rln gdpr` over the legacy source returns exactly one component and the locale files. core-api has **no consent field**, stores no timestamp, and reports none; the flag reaches `POST /v1/users` in legacy only because that form submits its whole values object, and the API ignores it. So `required` plus the disabled button is the entire mechanism, and there is deliberately no server-side check — brief §6 wants one wherever there is something to check, and here there is nothing on the far side to check against. Worth stating rather than leaving as an apparent omission.
+
+**A second submit path had to be gated, which is the one thing here that was not two lines.** The name-collision "continue anyway" button is a `type="button"` with its own `onClick`, so native `required` does not apply to it — a reader who hit a name collision could have created an account with the tick unticked. It now carries `!consent` as well.
+
+**The Czech is corrected rather than copied.** Legacy's string reads "Souhlasím se zpracování osobních údajů systémem ReCodex…" — a case error after the preposition and the product's own name misspelled. Parity is about the meaning, so the wording is legacy's and the grammar is not.
+
+**Q-027 filed instead of acted on.** G-026's row noticed that `/accept-invitation` creates a full account too, and adding the same tick there is two lines. I did not: legacy has no consent on that form either, so it is beyond parity, and the questions it opens — whether consent is legally required at that point, whether an unrecorded consent is worth anything without a core-api field to store it in, and whether the label should link to a policy document that does not currently exist anywhere in the configuration — are the operator's and their institution's, not a frontend's. All three are written up.
+
+**Verified live, which needed the deployment's own switch flipped.** `ALLOW_LOCAL_REGISTRATION=false` here (A-003), so `/register` normally renders a "closed" notice. I set it to `true` in `.env.local`, verified, and **restored it — checked byte for byte against a copy taken beforehand.** With the form otherwise completely filled: unticked → `form.checkValidity()` false and submit disabled; ticked → both open; unticked again → both close. The browser supplies its own localised message for the native block ("Chcete-li pokračovat, zaškrtněte toto políčko."), which is a small argument for `required` over a hand-rolled error. Renders in both locales, no missing keys. No account was created, and core-api's own registration switch is still off regardless.
+
+**What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean.
+
+**Next ticket:** **PF-005** — breadcrumbs resolve one after another. Taken next because the G block is now down to G-030 alone (manual file pairing for a diff, the rarest thing left) and PF-005 is three lines with two named cautions. **Note PF-002 is no longer blocked**: DEC-126 removed the 5s-per-connection penalty that stopped its measurement, and its stash is still on this branch (`git stash list`, "PF-002: synchronous AppShell") — every timing in its backlog row was taken through that penalty and should be discarded rather than trusted.

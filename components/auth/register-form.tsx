@@ -36,6 +36,7 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
   const [emailIsFree, setEmailIsFree] = useState<boolean | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [collision, setCollision] = useState<string[] | null>(null);
+  const [consent, setConsent] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,7 +122,7 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
           <div>
             <button
               type="button"
-              disabled={pending}
+              disabled={pending || !consent}
               onClick={(event) => void submit(event, true)}
               className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
             >
@@ -233,9 +234,26 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
         </label>
       )}
 
+      {/* G-026. The one element of this form that exists for a legal reason rather than a
+          functional one, and the reason it is `required` rather than server-checked: **core-api
+          stores no consent**, so there is nothing to enforce on the far side and nothing to send.
+          Legacy gates it client-side too (`RegistrationForm.js`'s `gdpr`, validated in the browser
+          and meaningless to the API). Also in the disabled condition, not left to the browser's
+          own prompt alone: this is the one field where being unmissable is the point. */}
+      <label className="flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(event) => setConsent(event.target.checked)}
+          required
+          className="mt-0.5 size-4 shrink-0"
+        />
+        <span>{t("consent")}</span>
+      </label>
+
       <button
         type="submit"
-        disabled={pending || mismatched || emailIsFree === false || score === 0}
+        disabled={pending || mismatched || emailIsFree === false || score === 0 || !consent}
         className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
       >
         {pending ? t("creating") : t("create")}

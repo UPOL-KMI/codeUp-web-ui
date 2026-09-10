@@ -98,6 +98,7 @@
     "password": "Heslo",
     "passwordConfirm": "Heslo znovu",
     "instance": "Instance",
+    "consent": "Souhlasím se zpracováním svých osobních údajů systémem ReCodEx v souladu s GDPR.",
     "create": "Vytvořit účet",
     "creating": "Vytvářím…",
     "strength": {
