@@ -460,6 +460,67 @@ const CATALOG_FILLERS: {
   })),
 ];
 
+/**
+ * Two exercises **authored by somebody other than the administrator**, so the catalog has a second
+ * author to filter by (G-018's "only mine").
+ *
+ * **This fixture existed by accident until 2026-09-10 and nobody knew.** `exercise-catalog.spec.ts`
+ * asserts that filtering to one author gives a total larger than zero and smaller than everything,
+ * and its own comment says "the seed splits the catalog cleanly between two authors" -- which the
+ * seed did not do. What it was actually reading were exercises left behind by failed
+ * `exercise-edit` runs, all named "Exercise by Sam Supervisor" because that is what core-api calls
+ * a fresh one. PF-007 stopped those being created; deleting the ones already there took the
+ * fixture with them. So the seed now makes what the spec always claimed it made.
+ *
+ * Created as the supervisor rather than assigned to them afterwards: core-api sets `authorId` from
+ * whoever calls `POST /exercises` and there is no endpoint that changes it. They are left
+ * unconfigured, like the catalog fillers -- an exercise nobody can assign still counts in a
+ * catalog, which is the whole of what this fixture is for.
+ */
+async function ensureAuthoredExercises(
+  supervisorToken: string,
+  ownerGroupId: string,
+): Promise<number> {
+  let created = 0;
+
+  for (const suffix of ["Supervisor's Draft", "Supervisor's Second Draft"]) {
+    const name = `${SEED_PREFIX} ${suffix}`;
+    if (await findExerciseByName(supervisorToken, name)) continue;
+
+    const { id } = await api<{ id: string }>("POST", "/exercises", {
+      token: supervisorToken,
+      body: { groupId: ownerGroupId },
+    });
+    const current = await api<{ version: number }>("GET", `/exercises/${id}`, {
+      token: supervisorToken,
+    });
+    await api("POST", `/exercises/${id}`, {
+      token: supervisorToken,
+      body: {
+        version: current.version,
+        difficulty: "medium",
+        localizedTexts: [
+          {
+            locale: "en",
+            name,
+            text: "A catalog fixture with an author of its own. Nothing is configured here.",
+            link: "",
+            description: "",
+          },
+        ],
+        isPublic: true,
+        isLocked: false,
+        mergeJudgeLogs: true,
+        solutionFilesLimit: 5,
+        solutionSizeLimit: 65536,
+      },
+    });
+    created++;
+  }
+
+  return created;
+}
+
 async function ensureCatalogExercises(adminToken: string, ownerGroupId: string): Promise<number> {
   let created = 0;
 
@@ -1453,6 +1514,14 @@ async function main() {
     fillersCreated > 0
       ? `created ${fillersCreated} catalog exercises`
       : "the catalog exercises already existed",
+  );
+
+  // A second author, so "only mine" is a filter with two sides (G-018).
+  const supervisorExercises = await ensureAuthoredExercises(supervisor1.token, g1.id);
+  log(
+    supervisorExercises > 0
+      ? `created ${supervisorExercises} exercises authored by the supervisor`
+      : "the supervisor's own exercises already existed",
   );
 
   log("done");

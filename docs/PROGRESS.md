@@ -4802,11 +4802,12 @@ A`, path and all, so that name is the seed's own doing. What is actually wrong i
   performance block). What is left in `BACKLOG.md` is **X-001**, the GitHub Classroom importer,
   filed on the operator's question and deliberately not started, and **F-028**, which waits on
   upstream releases rather than on a session.
-  **One thing is owed before this state is believed: PF-004's e2e run.** The local core-api, and
-  the Docker daemon with it, stopped responding partway through that ticket's suite run -- so it
-  has `typecheck`, `lint`, `format`, `build`, 250 unit tests and four measured production builds
-  behind it, and **not** a full `pnpm test:e2e`. Everything that ran before the stack went down
-  passed, including the two specs that exercise it most directly. Run the suite first thing.
+  **One thing to know about this instance rather than about the code.** PF-004's suite run took
+  three attempts: the stack wedged partway through the first, and the cleanup afterwards deleted
+  six exercises that turned out to be `exercise-catalog.spec.ts`'s fixture -- accidental detritus
+  the spec had been reading as though the seed made it. `scripts/seed.ts` makes it properly now
+  (`ensureAuthoredExercises`), so **run `pnpm seed` before the suite on any instance that has not
+  had it since 2026-09-10**.
   **Two things to carry into that work rather than rediscover.** First, each of Phase 7's passes is a
   snapshot: a screen built for G-001 will not have been contrast-checked, will not have a `<title>`,
   and will not have had its Czech read, so apply those rules while building instead of re-running the
@@ -5233,6 +5234,13 @@ An **85–90% cut**, and the document completes no later than it did: the shell'
 
 **The catch is worth knowing before somebody trips on it.** A schema module may no longer export anything a client component needs as a **value**: one such import anchors the whole runtime again, however carefully the schema itself is loaded. Two already did — `DIFFICULTIES` and `PIPELINE_PARAMETERS` — and both moved to modules of their own, the same shape `lib/api/user-roles.ts` already had for `server-only`.
 
-**What was run, and what was not.** `typecheck`, `lint`, `format`, `build` and 250 unit tests are clean, and the bundle numbers above come from four real production builds. **The full e2e suite could not be completed: the local core-api stopped responding partway through the run and the Docker daemon with it** — `docker ps` hangs, `GET /v1/instances` times out. Everything that ran before the stack went down passed, including the two specs that exercise this change most directly: `account.spec.ts`'s "refuses a new password that was typed differently twice" and `assignment-edit.spec.ts`'s "refuses a language that is named but says nothing" are both **client-side Zod validation through the new lazy resolver**, and both are green. That is good evidence and it is not the suite. **Re-run `pnpm test:e2e` once the stack is back before treating this row as verified.**
+**What was run.** `typecheck`, `lint`, `format`, `build`, 250 unit tests, the full e2e suite, and the bundle numbers above from four real production builds. The two specs that exercise this change most directly are `account.spec.ts`'s "refuses a new password that was typed differently twice" and `assignment-edit.spec.ts`'s "refuses a language that is named but says nothing" — both are client-side Zod validation through the new lazy resolver, and both are green.
+
+**Getting to that run took two detours, and the second one is a finding.**
+
+- **The stack fell over mid-suite.** The local core-api stopped answering and `docker ps` hung with it. The containers were up the whole time and the daemon was merely wedged, so the answer was to wait rather than to restart anything — worth knowing before somebody reaches for `docker compose down` on a machine that is only busy.
+- **Cleaning up `exercise-edit`'s orphans deleted a fixture nobody knew was a fixture.** The aborted run left six exercises named "Exercise by Sam Supervisor" — core-api's default name for a fresh one — and deleting them broke `exercise-catalog.spec.ts`'s "narrows to one author". That spec's own comment says "the seed splits the catalog cleanly between two authors", and **the seed did no such thing**: every exercise it makes belongs to the administrator. What the test had been reading was **detritus** — which is exactly what G-031b's entry said those exercises were, without anybody following the thought through to the spec that depended on them. `scripts/seed.ts` now creates two exercises **as the supervisor** (`ensureAuthoredExercises`), so the split the spec asserts is one the seed actually produces. Both halves pass against a freshly seeded instance.
+
+**306 of 308 on the final run**, and the two that failed are the pair already recorded under PF-003 and PF-005 — `landing.spec.ts`'s instance name and `refusals.spec.ts`'s crumb chain, both of which fail only under two workers of load against a busy core-api and pass on their own every time. Checked again immediately afterwards: 7 passed.
 
 **Next ticket:** none open. `X-001` (the GitHub Classroom importer) is filed and deliberately not started; `RETROSPECTIVE.md` §6's ranking is exhausted.
