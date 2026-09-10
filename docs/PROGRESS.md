@@ -5255,3 +5255,30 @@ A unit test caught `paletteCss` deduplicating by **rule text** instead of by **c
 **All five CI checks green, 270 unit tests (7 new).**
 
 **Next:** nothing measured remains. **X-001** (the GitHub Classroom importer) is the only open item and is an _idea_ — it is beyond parity, the operator asked about it, and its own write-up says it waits until the sweep has said what is finished. The sweep has now said so: every G ticket and every PF ticket is closed.
+
+---
+
+### 2026-09-10 — The seed, actually fixed: it was choosing a different instance each run
+
+**Status:** seed fixed and run to completion. **The whole Playwright suite ran for the first time in three sessions: 278 pass, 25 fail, 1 skipped**, and the 25 are filed as **PF-010** — none of them a product defect.
+
+**The diagnosis three sessions got wrong, including twice by me.** This file has recorded the problem as "`[seed] Intro to Programming` is absent", then as "the killed seed left duplicate groups". Both were symptoms. The cause is one line:
+
+```ts
+const instances = await api<{ id: string }[]>("GET", "/instances", …);
+const firstInstance = instances[0];
+```
+
+**This deployment has two instances** — `Univerzita Palackého v Olomouci` and `Frankenstein University, Atlantida` — `GET /instances` promises no ordering, and the order it returned changed between runs. So an earlier run seeded one instance and mine seeded the other, leaving **two half-sets of identically-named groups under two different roots**. Every spec that navigates by group name then matched two links or none depending on which half it found, and nothing on any screen said which instance anybody was looking at. That is why it kept being re-diagnosed.
+
+**Fixed properly rather than cleaned up.** `chooseInstance()` now picks the instance that **already holds this script's own groups** — anchored on any of the three top-level seed group names, so a run that died part-way is still recoverable — falling back to the first instance only when nothing is seeded anywhere, and saying so. `SEED_INSTANCE_ID` overrides both and is validated against the real list (which caught me immediately: I passed a UUID I had guessed from an 8-character prefix and it refused it).
+
+**The cleanup, and the trap in it.** Five stray `[seed]` groups were deleted from the wrong instance, plus one misparented `Lab A` that had ended up under an operator's own `Jazyk Python`. My first pass missed one: **`GET /groups` excludes archived groups by default**, so a second `[seed] Retired Course` survived and kept one spec failing with a strict-mode violation until I looked again with `archived=true`. Worth remembering — a cleanup script that lists groups the obvious way is blind to exactly the ones a seed marks archived on purpose.
+
+**A full wipe was the wrong answer and I nearly reached for it.** `docker compose down -v` is what the brief names as the reset, but the tree also holds `Katedra informatiky` and `2025/2026 - Jazyk python`, which carry no `[seed]` prefix and are the operator's own. Deleting the five strays cost nothing and destroyed nothing of theirs.
+
+**State now:** one instance holds all six seed groups, no name is duplicated anywhere (checked with `archived=true` across both instances), 25 exercises in the catalog, and `pnpm seed` exits 0 having chosen its instance by itself.
+
+**What the 25 remaining failures are, and why none of them is the seed.** The most instructive: the seed creates **three** assignments of `[seed] Echo Greeting` in one group _by design_ — one with a second deadline, one primary, one deliberately unsubmitted (F-029 asked for that state) — and an assignment displays its **exercise's** name, so all three render the same label. `assignment-solutions.spec.ts` does `…getByRole("link", {name: "[seed] Echo Greeting"}).first()` and lands on the second-deadline one, which correctly has nothing submitted. The specs assume a uniqueness the seed never promised, and it only shows now that a _complete_ set exists — while the instance was half-seeded they were failing earlier, for the other reason. The other two buckets are count assertions that no longer match the data and two assumptions about there being one instance. All three are in PF-010.
+
+**Not done, deliberately:** fixing those 25. They are spec work rather than seed work, the seed's three-assignment design is what F-029 wanted and should not be bent to suit a `.first()`, and it is the operator's call whether that is worth the time now.

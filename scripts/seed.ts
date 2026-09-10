@@ -1140,15 +1140,68 @@ async function ensureGroupInvitation(
   return true;
 }
 
+/**
+ * Which instance to seed into.
+ *
+ * **This used to be `instances[0]`, and that was a real bug rather than a shortcut.** This
+ * deployment has two instances, `GET /instances` guarantees no ordering, and the order it returns
+ * evidently changed between runs: an earlier run seeded one instance and a later one seeded the
+ * *other*, leaving two half-sets of identically-named groups across two roots. Every spec that
+ * navigates by group name then matched two links, or none, depending on which half it found -- and
+ * three sessions in a row diagnosed that as "the group is missing" because nothing said which
+ * instance anybody was looking at.
+ *
+ * So the instance is chosen by **where this script's own groups already are**, which makes a
+ * re-run land where the last run landed however `/instances` is ordered -- the property this
+ * script's own docblock claims ("safe to run again on top of its own previous output"). Only when
+ * no seeded group exists anywhere does it fall back to the first instance, and it says so.
+ *
+ * `SEED_INSTANCE_ID` overrides both, for an operator who wants a specific one.
+ */
+async function chooseInstance(adminToken: string): Promise<string> {
+  const instances = await api<{ id: string }[]>("GET", "/instances", { token: adminToken });
+  if (instances.length === 0) throw new Error("GET /instances returned no instances.");
+
+  const override = process.env.SEED_INSTANCE_ID;
+  if (override) {
+    if (!instances.some((i) => i.id === override)) {
+      throw new Error(`SEED_INSTANCE_ID=${override} is not one of this deployment's instances.`);
+    }
+    log(`instance ${override} (from SEED_INSTANCE_ID)`);
+    return override;
+  }
+
+  // Any of this script's own top-level groups anchors the choice, not one particular name: a run
+  // that died part-way may have created only some of them, which is exactly the state this
+  // function exists to recover from.
+  const anchors = [
+    `${SEED_PREFIX} Intro to Programming`,
+    `${SEED_PREFIX} Large Lecture`,
+    `${SEED_PREFIX} Faculty of Seeded Studies`,
+  ];
+  for (const instance of instances) {
+    for (const anchor of anchors) {
+      if (await findGroupByName(adminToken, instance.id, anchor)) {
+        log(`instance ${instance.id} (already holds ${anchor}, reusing it)`);
+        return instance.id;
+      }
+    }
+  }
+
+  const first = instances[0]!;
+  log(
+    `instance ${first.id} (nothing seeded anywhere yet; ${instances.length} instance(s) exist, ` +
+      `set SEED_INSTANCE_ID to choose)`,
+  );
+  return first.id;
+}
+
 async function main() {
   log(`seeding against ${API_BASE}`);
   const nowSeconds = Math.floor(Date.now() / 1000);
 
   const admin = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
-  const instances = await api<{ id: string }[]>("GET", "/instances", { token: admin.token });
-  const firstInstance = instances[0];
-  if (!firstInstance) throw new Error("GET /instances returned no instances.");
-  const instanceId = firstInstance.id;
+  const instanceId = await chooseInstance(admin.token);
 
   // Groups -- G1 has a subgroup, G2 is archived, G3 exists purely to exercise pagination.
   const g1 = await getOrCreateGroup(admin.token, instanceId, {
