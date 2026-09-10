@@ -2724,6 +2724,10 @@
     "save": "Save the settings",
     "saving": "Saving…",
     "saved": "The assignment was updated.",
+    "language": {
+      "en": "English",
+      "cs": "Czech"
+    },
     "visibility": {
       "title": "Visibility",
       "isPublic": "Students can see this assignment",
@@ -2770,10 +2774,24 @@
     },
     "hints": {
       "title": "Hint for students",
-      "explain": "Shown on the assignment, under its text. This belongs to the assignment, not to the exercise, so a re-sync will not overwrite it.",
-      "locale": {
-        "en": "English",
-        "cs": "Czech"
+      "explain": "Shown on the assignment, under its text. This belongs to the assignment, not to the exercise, so a re-sync will not overwrite it."
+    },
+    "texts": {
+      "title": "Text of the assignment",
+      "override": "This text is the assignment's own copy of the exercise's. Changing it here changes what this group reads and nothing else — but it is an override: whenever the assignment is re-synchronised with the exercise, the exercise's text silently replaces it, and nothing on the assignment warns you first. To change the text everywhere it is assigned, edit the exercise instead.",
+      "name": "Name",
+      "nameHint": "Leave empty to drop this language from the assignment.",
+      "text": "Text",
+      "textHint": "Markdown. This is what a student reads.",
+      "link": "External text",
+      "linkHint": "An address holding the full text, when it is kept outside ReCodEx.",
+      "save": "Save the text",
+      "saving": "Saving…",
+      "saved": "The text was saved.",
+      "errors": {
+        "nameRequired": "The assignment needs a name in at least one language.",
+        "textOrLink": "Fill in the text, or give an address where it can be read.",
+        "invalidLink": "This has to be a full address, starting with http:// or https://."
       }
     },
     "delete": {
@@ -2791,7 +2809,8 @@
       "invalid": "Check the highlighted fields and try again.",
       "updateFailed": "The assignment could not be saved.",
       "syncFailed": "The assignment could not be re-synchronised.",
-      "deleteFailed": "The assignment could not be deleted."
+      "deleteFailed": "The assignment could not be deleted.",
+      "textsFailed": "The text could not be saved."
     }
   },
   "AssignExercise": {

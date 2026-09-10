@@ -2724,6 +2724,10 @@
     "save": "Uložit nastavení",
     "saving": "Ukládám…",
     "saved": "Zadání bylo upraveno.",
+    "language": {
+      "en": "Angličtina",
+      "cs": "Čeština"
+    },
     "visibility": {
       "title": "Viditelnost",
       "isPublic": "Studenti toto zadání vidí",
@@ -2770,10 +2774,24 @@
     },
     "hints": {
       "title": "Nápověda pro studenty",
-      "explain": "Zobrazuje se u zadání pod jeho textem. Patří zadání, ne úloze, takže ji synchronizace nepřepíše.",
-      "locale": {
-        "en": "Anglicky",
-        "cs": "Česky"
+      "explain": "Zobrazuje se u zadání pod jeho textem. Patří zadání, ne úloze, takže ji synchronizace nepřepíše."
+    },
+    "texts": {
+      "title": "Zadání úlohy",
+      "override": "Tohle zadání je vlastní kopie zadání z úlohy. Změna se projeví jen v této skupině — je to ale výjimka: při každé synchronizaci s úlohou zadání z úlohy tuhle změnu tiše přepíše a nic vás předem neupozorní. Chcete-li změnit zadání všude, kde je úloha zadaná, upravte místo toho úlohu.",
+      "name": "Název",
+      "nameHint": "Prázdné pole tenhle jazyk ze zadání odstraní.",
+      "text": "Zadání",
+      "textHint": "Markdown. Tohle čte student.",
+      "link": "Externí zadání",
+      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo ReCodEx.",
+      "save": "Uložit zadání",
+      "saving": "Ukládám…",
+      "saved": "Zadání bylo uloženo.",
+      "errors": {
+        "nameRequired": "Zadání potřebuje název alespoň v jednom jazyce.",
+        "textOrLink": "Vyplňte zadání, nebo uveďte adresu, kde je k přečtení.",
+        "invalidLink": "Musí to být celá adresa začínající http:// nebo https://."
       }
     },
     "delete": {
@@ -2791,7 +2809,8 @@
       "invalid": "Zkontrolujte zvýrazněná pole a zkuste to znovu.",
       "updateFailed": "Zadání se nepodařilo uložit.",
       "syncFailed": "Zadání se nepodařilo sesynchronizovat.",
-      "deleteFailed": "Zadání se nepodařilo smazat."
+      "deleteFailed": "Zadání se nepodařilo smazat.",
+      "textsFailed": "Zadání se nepodařilo uložit."
     }
   },
   "AssignExercise": {

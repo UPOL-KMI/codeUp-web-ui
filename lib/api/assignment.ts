@@ -3,10 +3,12 @@ import "server-only";
 import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
+import { replaceLinkKeys } from "@/lib/i18n-text/file-links";
 import { requireSession } from "@/lib/auth/require-session";
 import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
+import { linkMapFromPayload } from "./exercise-files";
 import { environmentNames } from "./runtime-environments";
 
 /**
@@ -83,6 +85,8 @@ export interface AssignmentDetail {
 interface AssignmentPayload {
   id: string;
   localizedTexts?: (LocalizedText & { text?: string; link?: string; studentHint?: string })[];
+  /** `key -> link id` for the assignment's own copy of the exercise's file links. */
+  localizedTextsLinks?: Record<string, string>;
   groupId: string | null;
   exerciseId: string | null;
   createdAt: number;
@@ -230,12 +234,18 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
   ]);
 
   const texts = localizedText(assignment.localizedTexts, locale);
+  // An assignment's text carries `%%key%%` placeholders just as the exercise's does -- the file
+  // links are copied along with the text when the assignment is made, and re-filled on every
+  // re-sync (G-007). Resolved here for the reason T-023 resolves the exercise's here: a
+  // placeholder can stand inside a markdown link target, where no post-parse transform could
+  // reach it. The hint is resolved too, which is what the legacy `LocalizedTexts` does.
+  const links = linkMapFromPayload(assignment.localizedTextsLinks);
 
   return {
     id: assignment.id,
     name: localizedName(assignment.localizedTexts, locale),
-    text: texts.text,
-    studentHint: texts.studentHint,
+    text: replaceLinkKeys(texts.text, links),
+    studentHint: replaceLinkKeys(texts.studentHint, links),
     externalLink: texts.link,
     groupId: assignment.groupId,
     groupName: group ? localizedName(group.localizedTexts, locale) : "",

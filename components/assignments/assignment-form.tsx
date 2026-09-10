@@ -428,7 +428,7 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
           <Field
             key={hint.locale}
             id={`assignment-hint-${hint.locale}`}
-            label={t(`hints.locale.${hint.locale}`)}
+            label={t.has(`language.${hint.locale}`) ? t(`language.${hint.locale}`) : hint.locale}
           >
             <textarea
               id={`assignment-hint-${hint.locale}`}

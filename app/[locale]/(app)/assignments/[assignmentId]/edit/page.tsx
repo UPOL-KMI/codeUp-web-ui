@@ -8,6 +8,7 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { AssignmentForm } from "@/components/assignments/assignment-form";
+import { AssignmentTextsForm } from "@/components/assignments/assignment-texts-form";
 import { DeleteAssignment } from "@/components/assignments/delete-assignment";
 import { PageShell } from "@/components/page-shell";
 
@@ -25,9 +26,11 @@ export async function generateMetadata({
  * An assignment's settings (T-002): when it is due, what it is worth, how often it may be
  * attempted, and how much of the evaluation a student is shown.
  *
- * **Not the exercise.** What is asked here is everything the *assignment* owns; the text, the
- * tests and the limits belong to the exercise it was copied from, and changing those is
- * T-008/T-010's screen followed by the re-sync this ticket added to S-013's notice.
+ * **Not the exercise.** What is asked here is everything the *assignment* owns; the tests and the
+ * limits belong to the exercise it was copied from, and changing those is T-008/T-010's screen
+ * followed by the re-sync this ticket added to S-013's notice. The **text** is the one thing that
+ * can be either: the assignment holds a copy, and G-007's second form overrides it for this class
+ * alone, at the cost of a re-sync putting the exercise's back.
  *
  * **The refusal has to be an explicit check here, not `apiRead`'s.** Reading an assignment is
  * something a student may do -- it is their own assignment -- so the fetch this page makes
@@ -65,6 +68,7 @@ export default async function EditAssignmentPage({
     >
       <div className="flex max-w-3xl flex-col gap-10">
         <AssignmentForm assignment={assignment} />
+        <AssignmentTextsForm assignment={assignment} />
         {assignment.can.remove === true && (
           <DeleteAssignment assignmentId={assignment.id} groupId={assignment.groupId} />
         )}

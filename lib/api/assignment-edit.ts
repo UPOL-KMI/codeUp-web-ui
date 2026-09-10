@@ -26,6 +26,23 @@ export interface AssignmentStudentHint {
   hint: string;
 }
 
+/**
+ * One language of the assignment's own text (G-007), exactly as it is stored -- `%%key%%`
+ * placeholders and all. The editor has to see what the author wrote, so this is *not* the resolved
+ * copy `getAssignmentDetail` renders, the same split `getExerciseDetail` makes between `rawTexts`
+ * and `texts`.
+ *
+ * `description` is missing on purpose: core-api carries the exercise's own description over on
+ * every save of these (`actionUpdateLocalizedTexts` reads it off the exercise), so it is not the
+ * assignment's to edit.
+ */
+export interface AssignmentText {
+  locale: string;
+  name: string;
+  text: string;
+  link: string;
+}
+
 export interface AssignmentSettings {
   id: string;
   name: string;
@@ -55,6 +72,7 @@ export interface AssignmentSettings {
   canViewJudgeStdout: boolean;
   canViewJudgeStderr: boolean;
   hints: AssignmentStudentHint[];
+  texts: AssignmentText[];
   can: Record<string, boolean>;
 }
 
@@ -83,7 +101,13 @@ interface SettingsPayload {
   canViewMeasuredValues: boolean;
   canViewJudgeStdout: boolean;
   canViewJudgeStderr: boolean;
-  localizedTexts?: { locale: string; name?: string; studentHint?: string }[];
+  localizedTexts?: {
+    locale: string;
+    name?: string;
+    text?: string;
+    link?: string;
+    studentHint?: string;
+  }[];
   permissionHints?: Record<string, boolean>;
 }
 
@@ -98,6 +122,14 @@ export const getAssignmentSettings = cache(async function getAssignmentSettings(
 
   const texts = assignment.localizedTexts ?? [];
   const named = texts.find((text) => text.locale === locale) ?? texts[0];
+  // Every language this app speaks, plus any other one the assignment already carries. The second
+  // half matters because **both saves replace a whole collection**: core-api's `updateCollection`
+  // deletes any locale the payload omits, so a form that only knew about `en` and `cs` would throw
+  // away a third language's text -- and its hint -- the first time either was saved.
+  const editedLocales = [
+    ...locales,
+    ...texts.map((text) => text.locale).filter((code) => !locales.includes(code)),
+  ];
 
   return {
     id: assignment.id,
@@ -127,12 +159,20 @@ export const getAssignmentSettings = cache(async function getAssignmentSettings(
     canViewMeasuredValues: assignment.canViewMeasuredValues,
     canViewJudgeStdout: assignment.canViewJudgeStdout,
     canViewJudgeStderr: assignment.canViewJudgeStderr,
-    // A row per locale this app speaks, so a hint can be added in a language the assignment has no
-    // text in yet -- core-api keys them by locale and merges rather than replacing the texts.
-    hints: locales.map((code) => ({
+    // A row per locale, so a hint can be added in a language the assignment has no text in yet.
+    hints: editedLocales.map((code) => ({
       locale: code,
       hint: texts.find((text) => text.locale === code)?.studentHint ?? "",
     })),
+    texts: editedLocales.map((code) => {
+      const existing = texts.find((text) => text.locale === code);
+      return {
+        locale: code,
+        name: existing?.name ?? "",
+        text: existing?.text ?? "",
+        link: existing?.link ?? "",
+      };
+    }),
     can: assignment.permissionHints ?? {},
   };
 });

@@ -6,6 +6,7 @@ import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { assignmentSettingsSchema, type AssignmentSettingsValues } from "./assignment.schema";
+import { assignmentTextsSchema, type AssignmentTextsValues } from "./assignment-texts.schema";
 
 /**
  * Editing an assignment (T-002), and re-syncing it with the exercise it was copied from.
@@ -79,6 +80,55 @@ export async function updateAssignment(
     return { success: true, data: { assignmentId } };
   } catch (error) {
     return failure(error, "updateFailed");
+  }
+}
+
+/**
+ * Override the assignment's own localized texts (G-007).
+ *
+ * **A separate endpoint, and separate on purpose.** core-api's own comment says why: the texts
+ * arrive as a copy of the exercise's, so changing them is an override that "needs to be handled
+ * carefully", and a re-sync puts the exercise's back. `updateDetail` does not touch them at all --
+ * it carries the per-locale *hints*, which belong to the assignment and survive a sync.
+ *
+ * A language is removed by leaving its name blank: `Localizations::updateCollection` replaces the
+ * whole collection with what it is sent, so an omitted locale is a deleted translation. The
+ * description is not sent because it is not the assignment's -- core-api reads it off the exercise
+ * on every save of these.
+ *
+ * `version` is the same optimistic lock the settings save uses, and it is **incremented by this
+ * call too**, which is why the caller refreshes: the settings form on the same screen is holding
+ * the number this save has just made stale.
+ */
+export async function updateAssignmentTexts(
+  assignmentId: string,
+  version: number,
+  values: AssignmentTextsValues,
+): Promise<ActionResult<{ assignmentId: string }>> {
+  const t = await getTranslations("AssignmentEdit.errors");
+  const parsed = assignmentTextsSchema.safeParse(values);
+  if (!parsed.success) return { success: false, formError: t("invalid") };
+
+  const texts = parsed.data.texts
+    .filter((text) => text.name.trim() !== "")
+    .map((text) => ({
+      locale: text.locale,
+      name: text.name.trim(),
+      text: text.text,
+      // core-api stores an absent link as null and trims what it is given; an empty string is how
+      // this app says "there is none", the same as the exercise form (T-008).
+      link: text.link.trim(),
+    }));
+
+  try {
+    await apiPost(
+      "/v1/exercise-assignments/{id}/localized-texts",
+      { version, localizedTexts: texts },
+      { pathParams: { id: assignmentId } },
+    );
+    return { success: true, data: { assignmentId } };
+  } catch (error) {
+    return failure(error, "textsFailed");
   }
 }
 

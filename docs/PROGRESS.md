@@ -4455,6 +4455,49 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   - _Observations:_ **261 e2e tests** (257 before), 170 unit tests. The `groups` inventory row is
     closed; twenty-eight gaps remain.
 
+- **[2026-09-10 05:20] G-007:** An assignment's own text, overridden for one class.
+  `lib/actions/assignment.ts` (`updateAssignmentTexts`), `lib/actions/assignment-texts.schema.ts`,
+  `components/assignments/assignment-texts-form.tsx`, `lib/api/assignment-edit.ts`,
+  `e2e/assignment-edit.spec.ts`.
+  - **_A second form on the settings screen, not another section of the first one_**, because
+    core-api keeps the two apart and says why in its own comment: the texts arrive as a copy of the
+    exercise's, so changing them "needs to be handled carefully". `updateDetail` does not touch them
+    at all -- what it carries is the per-locale _hints_, which belong to the assignment and survive
+    a re-sync. Two endpoints, two payload shapes, two saves.
+  - **_Both saves increment the same `version`, which is the trap on a screen that holds both._**
+    Saving the text and then the settings would meet core-api's "edited in the meantime" refusal on
+    the reader's own edit. The texts form therefore refreshes the route on success rather than
+    navigating away, which re-renders the settings form with the new number. Its own spec is the
+    one that would catch a regression: save the text, then save the settings, on one visit.
+  - **_An override does not look like drift, and that is the reason the warning exists._**
+    `Assignment::areLocalizedTextsInSync` calls a locale stale only when the **exercise's** copy is
+    newer than the assignment's -- so saving here makes the assignment's the newer one and S-013's
+    sync notice stays quiet. Nothing warns the reader before they press re-sync for some unrelated
+    reason and lose the text. The legacy app's own callout says something stronger and no longer
+    true, that an ordinary settings save overwrites these from the exercise; `actionUpdateDetail`
+    does not.
+  - _A blank name deletes that language_, because `Localizations::updateCollection` replaces the
+    whole collection with what it is sent -- the same rule and the same gesture as T-008's exercise
+    form. One name has to survive, or the assignment becomes unnameable. The other two rules are
+    the legacy form's: a named language needs a text or an external link, and a link has to be a
+    real `http(s)` address, which core-api answers with a 400 and this answers in the form.
+  - **_A defect found on the way and fixed here: an assignment's text never resolved its `%%key%%`
+    file links._** T-023 built that for exercises; an assignment carries its **own copy** of the
+    links (`ExerciseFileLink` is copied when the assignment is made and re-filled on every re-sync)
+    and `getAssignmentDetail` was rendering the placeholders literally. `linkMapFromPayload()` --
+    written for this, never called, and written for the wrong shape, a list of `{key, id}` where
+    core-api sends a `key -> id` object -- now takes the real shape and resolves both the text and
+    the student hint, which is what the legacy `LocalizedTexts` does. The reason it matters now is
+    that this ticket is what lets an author type a placeholder into an assignment.
+  - _The locale list widened for both forms._ `getAssignmentSettings` offers a row per language this
+    app speaks **plus any other the assignment already carries**: both saves replace a collection,
+    so a form that only knew `en` and `cs` would silently delete a third language's text -- and its
+    hint, which was already true before this ticket.
+  - _Observations:_ **295 e2e tests pass** (292 before), 3 of them new here, and **209 unit tests**
+    (203 before) -- 6 on the schema, where the interesting cases are the absences. The language
+    names moved to one `AssignmentEdit.language` map shared by both forms, so an unknown locale
+    renders its code rather than a message key.
+
 ### Current Status
 
 - **Phase:** **Parity Sweep & Polish (Phase 7) is complete, and with it every ticket of the original
@@ -4512,14 +4555,11 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   public landing page, and the way in through an external identity provider. **F-028 was re-checked
   and stays open on purpose** -- it is a recurring question about a toolchain pin, not unfinished
   work.
-- **Next ticket:** **G-007** -- an assignment's own localized texts, which today are whatever its
-  exercise says and can only be changed by editing the exercise (which changes every assignment made
-  from it). **G-008, G-001, G-002, G-003, G-009 and G-005 are done**: a group and a subgroup can be created, a teacher can accept an
-  attempt and set what it is worth, work already submitted can be re-run or removed, and a student
-  can ask for a review. Then the rest of the G block
-  in the order `BACKLOG.md` lists it (roughly: the solution screen's write half, shadow-assignment
-  CRUD, the solution diff, then the smaller controls). **PF-001** can run alongside it -- it is the
-  largest measured saving in the project and touches none of the same files.
+- **Next ticket:** **G-011** -- mailing the whole class, the last of the ranked teacher controls.
+  **G-007 is done**, and with it the last of the rank-9 group but G-011: an assignment now carries
+  its own text, overridable for one class, with the warning that a re-sync silently replaces it.
+  Then the rest of the G block in the order `BACKLOG.md` lists it -- the pipeline trio, the
+  restricted-token form, and the smaller controls.
   **Two things to carry into that work rather than rediscover.** First, each of Phase 7's passes is a
   snapshot: a screen built for G-001 will not have been contrast-checked, will not have a `<title>`,
   and will not have had its Czech read, so apply those rules while building instead of re-running the
@@ -4535,7 +4575,13 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
   What remains of the anonymous block is A-001 (the public landing page, still the `/` placeholder)
   and A-007 (CAS finalisation, which needs an external authenticator this deployment does not
   configure -- Q-004).
-- **Closed this session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
+- **Closed on 2026-09-10:** **G-007**, which turned out to be two facts rather than one form --
+  core-api keeps the texts on their own endpoint, and **an override never registers as drift**
+  (`areLocalizedTextsInSync` compares created-at, so saving makes the assignment's copy the newer
+  one), which is why the warning is a permanent part of that form and not a toast. It also found
+  that an assignment's text never resolved its `%%key%%` file links: `linkMapFromPayload()` was
+  written for it, never called, and written for the wrong payload shape.
+- **Closed in the previous session:** **AD-001**, which also filed **Q-021** -- core-api can delete a given
   address only once, because anonymisation appends one fixed suffix to a column whose unique index
   covers soft-deleted rows. Found by the ticket's own spec on its second run, not by reading.
   **AD-002**, half of which (the user detail screen) turned out to have shipped as S-021 already;

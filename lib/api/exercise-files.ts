@@ -97,14 +97,18 @@ export function linkMap(links: { key: string; url: string }[]): FileLinkMap {
   return Object.fromEntries(links.map((link) => [link.key, link.url]));
 }
 
-/** The same map built from what core-api attaches to an entity as `localizedTextsLinks`. */
-export function linkMapFromPayload(
-  entries: { key?: string; id?: string }[] | undefined,
-): FileLinkMap {
+/**
+ * The same map built from what core-api attaches to an entity as `localizedTextsLinks`, which is
+ * a plain `key -> link id` object (`ExerciseFileLinks::getLinksMapFor*`) rather than the list the
+ * links endpoint serves. An **assignment** has its own copy of the exercise's links -- they are
+ * copied when it is created and re-filled on every re-sync -- so this is how an assignment's text
+ * resolves its placeholders without a second request for a list it is not allowed to read anyway
+ * (the links endpoint is the exercise's, and a group supervisor who did not write the exercise is
+ * refused it).
+ */
+export function linkMapFromPayload(entries: Record<string, string> | undefined): FileLinkMap {
   const base = publicApiBase();
   return Object.fromEntries(
-    (entries ?? [])
-      .filter((entry): entry is { key: string; id: string } => !!entry.key && !!entry.id)
-      .map((entry) => [entry.key, fileLinkUrl(base, entry.id)]),
+    Object.entries(entries ?? {}).map(([key, id]) => [key, fileLinkUrl(base, id)]),
   );
 }
