@@ -117,9 +117,7 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
 
               <div className="flex flex-col gap-1 text-sm">
                 <label htmlFor={`shadow-text-${text.locale}`}>{t("text")}</label>
-                <MarkdownPreviewTabs
-                  getSource={() => form.getValues(`texts.${index}.text`) ?? ""}
-                >
+                <MarkdownPreviewTabs getSource={() => form.getValues(`texts.${index}.text`) ?? ""}>
                   <textarea
                     id={`shadow-text-${text.locale}`}
                     rows={4}

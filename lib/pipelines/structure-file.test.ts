@@ -74,12 +74,13 @@ describe("parsePipelineStructure", () => {
     });
     const result = parsePipelineStructure(text);
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.structure.boxes[0]).toEqual({
-      name: "b",
-      type: "t",
-      portsIn: {},
-      portsOut: {},
-    });
+    if (result.ok)
+      expect(result.structure.boxes[0]).toEqual({
+        name: "b",
+        type: "t",
+        portsIn: {},
+        portsOut: {},
+      });
   });
 
   it("fills in a missing variable value with the empty form for its type", () => {
@@ -125,7 +126,10 @@ describe("parsePipelineStructure", () => {
         }),
       ],
       ["badVariable", JSON.stringify({ boxes: [], variables: [{ name: "v" }] })],
-      ["badVariable", JSON.stringify({ boxes: [], variables: [{ name: "v", type: "s", value: 7 }] })],
+      [
+        "badVariable",
+        JSON.stringify({ boxes: [], variables: [{ name: "v", type: "s", value: 7 }] }),
+      ],
     ];
 
     for (const [reason, text] of cases) {

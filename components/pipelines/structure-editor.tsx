@@ -264,9 +264,11 @@ export function StructureEditor({
     }
     const result = parsePipelineStructure(text);
     if (!result.ok) {
-      setError(t(`import.reasons.${result.reason}` satisfies `import.reasons.${ParseFailure}`, {
-        name: file.name,
-      }));
+      setError(
+        t(`import.reasons.${result.reason}` satisfies `import.reasons.${ParseFailure}`, {
+          name: file.name,
+        }),
+      );
       return;
     }
     setImporting({ name: file.name, structure: result.structure });

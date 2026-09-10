@@ -44,8 +44,7 @@ export function serializePipelineStructure(structure: PipelineStructure): string
 }
 
 export type ParseResult =
-  | { ok: true; structure: PipelineStructure }
-  | { ok: false; reason: ParseFailure };
+  { ok: true; structure: PipelineStructure } | { ok: false; reason: ParseFailure };
 
 /** Which check failed, so the screen can say something better than "invalid file". */
 export type ParseFailure =

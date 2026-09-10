@@ -18,10 +18,9 @@ const CommandPalette = dynamic(
 /** Same bargain as the palette above (G-025): a QR encoder and a second Radix dialog are dead
  *  weight on every authenticated page for a feature used in front of a lecture room. `ssr: false`
  *  is also what makes reading `window.location.href` during its render safe. */
-const PageQrCode = dynamic(
-  () => import("./page-qr-code").then((mod) => mod.PageQrCode),
-  { ssr: false },
-);
+const PageQrCode = dynamic(() => import("./page-qr-code").then((mod) => mod.PageQrCode), {
+  ssr: false,
+});
 
 /**
  * The interactive half of the app shell (D-014): collapse, the mobile drawer, and the active-link
