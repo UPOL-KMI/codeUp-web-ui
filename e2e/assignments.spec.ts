@@ -5,6 +5,7 @@ import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 import { deleteSolutionIfPresent } from "./helpers/core-api";
+import { cleanUpCreatedSolutions } from "./helpers/created-solutions";
 import type { SeedAccount } from "./helpers/accounts";
 
 /**
@@ -123,6 +124,8 @@ test("refuses one student a look at another student's attempts", async ({ page }
   await expect(page.getByText("You don't have permission to access this resource.")).toBeVisible();
 });
 
+const trackSolution = cleanUpCreatedSolutions();
+
 test.describe("submitting a solution", () => {
   test("uploads a file, detects the language and creates a solution", async ({ page }) => {
     const cookie = await loginAndGetCookie(STUDENT);
@@ -159,11 +162,13 @@ test.describe("submitting a solution", () => {
       timeout: 30_000,
     });
 
-    // ...and then remove it, because this test creates a real solution and everything that counts
-    // Alice's attempts -- the solutions table, the dashboard, the points matrix -- counts this one
-    // too. Left in, it made the suite pass once per seeded database and fail on every run after.
-    const solutionId = new URL(page.url()).pathname.split("/").at(-1);
-    if (solutionId !== undefined) await deleteSolutionIfPresent(solutionId);
+    // Remembered here rather than only deleted below, because this test creates a real solution
+    // and everything that counts Alice's attempts -- the solutions table, the dashboard, the
+    // points matrix -- counts this one too. Left in, it made the suite pass once per seeded
+    // database and fail on every run after. The delete stays inline: removing it is the ordinary
+    // path, and the hook is for the run that never gets here (PF-011).
+    const solutionId = trackSolution(page.url());
+    if (solutionId !== null) await deleteSolutionIfPresent(solutionId);
   });
 
   test("refuses to submit before a file exists", async ({ page }) => {
