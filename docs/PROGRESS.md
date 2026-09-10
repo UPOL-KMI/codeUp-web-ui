@@ -5065,3 +5065,32 @@ So the link is rendered only where it will work. That is a **role-and-owner test
 **What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean.
 
 **Next ticket:** **PF-005** — breadcrumbs resolve one after another. Taken next because the G block is now down to G-030 alone (manual file pairing for a diff, the rarest thing left) and PF-005 is three lines with two named cautions. **Note PF-002 is no longer blocked**: DEC-126 removed the 5s-per-connection penalty that stopped its measurement, and its stash is still on this branch (`git stash list`, "PF-002: synchronous AppShell") — every timing in its backlog row was taken through that penalty and should be discarded rather than trusted.
+
+---
+
+### 2026-09-10 — PF-005: Breadcrumbs resolve one after another
+
+**Ticket:** PF-005  
+**Status:** done. Filed **PF-008** on the way, and **corrected this file's own account of the instance state** — read that last section, it changes what "the seed is broken" means.
+
+**Both halves built, and both of the audit's cautions needed answering rather than accepting.**
+
+`resolveBreadcrumbs` now matches every prefix synchronously in a first pass — so an unregistered prefix still throws before any request goes out, which the serial loop got for free — and then resolves the labels concurrently. **Through `Promise.allSettled`, not `Promise.all`,** which is the answer to the first caution rather than a restatement of it: resolving concurrently means an inner crumb's read is issued even when an outer one is going to be refused, and `Promise.all` surfaces whichever rejection settles *first*, so a missing user under a forbidden group could have answered 404 where the serial loop answered 403. Re-throwing in **path order** keeps the outermost refusal winning — the previous behaviour, and the more informative answer. The rejection object is re-thrown untouched, because every dynamic resolver goes through `apiRead` and these are Next's `forbidden()`/`notFound()`/`redirect()` interrupts, recognised by identity: catching one and throwing anything else would swallow it (`lib/api/read.ts` says so).
+
+The second caution — that hoisting `/users/[userId]`'s crumb promise leaves it briefly floating — **does not materialise.** `Promise.all` inside `ProfileView` attaches the handler in the same tick the component starts rendering, long before core-api can answer, and a run across own-profile, another user, a nonexistent id and both locales produced **zero unhandled rejections** in the server log. `ProfileView` takes `Promise<BreadcrumbItem[]>` now and awaits it as a sixth entry in the `Promise.all` it already had; both callers stopped awaiting.
+
+**The saving stays latent, exactly as the row predicted.** The `/users/:userId` crumb resolver and `getUserProfile` both call `apiRead("/v1/users/{id}")` for the same id, so Next memoizes them into one request — what the hoist removes is one *serial hop*, not a request.
+
+**PF-008, and the reason it is a separate ticket.** While checking the refused-id case I found `/users/<well-formed-but-nonexistent-id>` rendering the app shell with **no `<h1>` and an entirely empty `<main>`** — a blank page where "no such user" belongs. Before assuming I had broken it, I **stashed the change, restarted, and re-ran the same request: identical.** So it is pre-existing, it is unrelated to this ticket, and per the brief's own rule it is logged rather than folded in. `notFound()` *is* being raised (`apiRead` maps the 404); something between it and the reader is swallowing the result, and `next.config.ts`'s `globalNotFound` experiment is the first suspect. Same family as Q-016.
+
+**The instance state is not what this file has been saying, and the correction matters.** Earlier entries (G-011's row, and my own notes from this session) record `[seed] Intro to Programming` as **absent**, and 20 spec files as blocked on that. Measured directly today:
+
+- The group **exists**, is **not organizational**, is not archived, and **the seed supervisor is its admin** — so the earlier "absent" diagnosis is wrong now, whatever it was when written.
+- **`pnpm seed`'s SIGKILL left work behind.** It did not simply fail: there are now **two `[seed] Intro to Programming / Lab A` groups and two `[seed] Large Lecture` groups**, both pairs distinct ids. The run created before it was killed.
+- `exercise-edit.spec.ts` still fails, but **not for the recorded reason** — `selectOption({label: "[seed] Intro to Programming"})` reports "did not find some options", i.e. the exercise-creation select does not offer that group even though the supervisor administers it. Why is unresolved; the duplicate groups are the obvious suspect for other label-matched assertions regardless.
+
+So the instance is in a *different* broken state than recorded, not the same one, and the fix is an **operator action**: a clean wipe and re-seed (`docker compose down -v && up -d` then `db:fill`, then `pnpm seed`), not another partial run on top of duplicates. **Do not diagnose the blocked specs further without doing that first** — anything measured against this state is measuring the half-seed, and the last two sessions have each re-diagnosed it differently for that reason.
+
+**What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean. `app-shell`, `group-create`, `instances`, `design-system` still green (24/24) — no breadcrumb regression, and those cover the hoisted `/profile` path. Live: chains render in the right order, both locales, zero unhandled rejections.
+
+**Next ticket:** PF-003 — Shiki tokens carry a style object each (an 81% cut on a measured 162 kB of props JSON). Chosen over PF-002 and PF-004 because it is a local change with a number already measured against a real file, where PF-002 now needs re-measuring from scratch (DEC-126 invalidated its figures) and PF-004 needs a decision before an implementation.

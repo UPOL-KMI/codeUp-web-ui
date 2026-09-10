@@ -24,7 +24,8 @@ export async function generateMetadata({
  */
 export default async function ProfilePage() {
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
-  const breadcrumbs = await resolveBreadcrumbs("/profile", locale);
+  // Not awaited: `ProfileView` awaits it alongside its own reads (PF-005).
+  const breadcrumbs = resolveBreadcrumbs("/profile", locale);
 
   return <ProfileView userId={user.id} breadcrumbs={breadcrumbs} />;
 }

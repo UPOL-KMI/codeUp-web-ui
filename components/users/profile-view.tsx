@@ -41,10 +41,17 @@ export async function ProfileView({
   breadcrumbs,
 }: {
   userId: string;
-  breadcrumbs: BreadcrumbItem[];
+  /**
+   * Unawaited on purpose (PF-005). `/users/[userId]`'s breadcrumb resolves the same user this
+   * component reads, so awaiting it in the page put one round trip **in front of** everything
+   * here instead of alongside it. Handed over as a promise and awaited in the `Promise.all`
+   * below, which is where it gets its rejection handler -- a refused crumb still reaches the
+   * reader as the Forbidden page, because the interrupt is re-thrown by that await.
+   */
+  breadcrumbs: Promise<BreadcrumbItem[]>;
 }) {
   const locale = await getLocale();
-  const [t, profile, viewer, groups, mine] = await Promise.all([
+  const [t, profile, viewer, groups, mine, crumbs] = await Promise.all([
     getTranslations("Profile"),
     getUserProfile(userId),
     getCurrentUser(),
@@ -53,6 +60,7 @@ export async function ProfileView({
     // it adds here is which of these groups the *reader* teaches, which is what decides whether
     // T-005's drill-down is theirs to open.
     getMyGroups(locale),
+    breadcrumbs,
   ]);
 
   const isMe = viewer.id === profile.id;
@@ -63,7 +71,7 @@ export async function ProfileView({
     <PageShell
       title={profile.fullName || t("unnamed")}
       subtitle={isMe ? t("thisIsYou") : undefined}
-      breadcrumbs={breadcrumbs}
+      breadcrumbs={crumbs}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {profile.isVerified ? (

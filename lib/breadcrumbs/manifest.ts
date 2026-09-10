@@ -276,24 +276,36 @@ export async function resolveBreadcrumbs(
   pathname: string,
   locale: string,
 ): Promise<BreadcrumbItem[]> {
-  const prefixes = getPrefixes(pathname);
-  const items: BreadcrumbItem[] = [];
-
-  for (let i = 0; i < prefixes.length; i++) {
-    const prefix = prefixes[i]!;
+  // Matched first, synchronously and all of it, so an unregistered prefix still fails before any
+  // request goes out rather than after some of them have.
+  const matched = getPrefixes(pathname).map((prefix) => {
     const entry = MANIFEST.find((candidate) => matchPattern(candidate.pattern, prefix) !== null);
     if (!entry) {
       throw new Error(
         `No breadcrumb manifest entry registered for '${prefix}' (resolving '${pathname}').`,
       );
     }
-    const params = matchPattern(entry.pattern, prefix)!;
-    const label = await resolveLabel(entry, params, locale);
-    const isCurrentPage = i === prefixes.length - 1;
-    items.push({ label, href: isCurrentPage || entry.unlinked ? undefined : prefix });
-  }
+    return { prefix, entry, params: matchPattern(entry.pattern, prefix)! };
+  });
 
-  return items;
+  // `allSettled` rather than `all`, and the rejections re-thrown in **path order** (PF-005).
+  // Resolving concurrently means an inner crumb's read is issued even when an outer one is going
+  // to be refused, and `Promise.all` would then surface whichever rejected *first* -- so a
+  // missing user under a forbidden group could answer 404 where the serial loop answered 403.
+  // Path order keeps the outermost refusal winning, which is both the previous behaviour and the
+  // more informative answer. The original rejection object is re-thrown untouched, because these
+  // are Next's `forbidden()`/`notFound()`/`redirect()` interrupts and they are recognised by
+  // identity -- catching one and throwing anything else would swallow it (see `lib/api/read.ts`).
+  const settled = await Promise.allSettled(
+    matched.map(({ entry, params }) => resolveLabel(entry, params, locale)),
+  );
+  const failure = settled.find((result) => result.status === "rejected");
+  if (failure) throw (failure as PromiseRejectedResult).reason;
+
+  return matched.map(({ prefix, entry }, index) => ({
+    label: (settled[index] as PromiseFulfilledResult<string>).value,
+    href: index === matched.length - 1 || entry.unlinked ? undefined : prefix,
+  }));
 }
 
 /** Convenience entry point for static pages that already identify themselves by namespace
