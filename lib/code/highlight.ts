@@ -46,13 +46,25 @@ export const MAX_HIGHLIGHT_BYTES = 512 * 1024;
 
 export interface CodeToken {
   content: string;
-  /** `--shiki-light` / `--shiki-dark` custom properties; `app/globals.css` picks one per theme. */
-  style?: Record<string, string>;
+  /**
+   * Index into `HighlightedCode.palette`, not the style itself (PF-003). Absent for an unstyled
+   * token.
+   *
+   * **Shiki hands back a fresh style object per token even though a file uses a handful of
+   * distinct ones** -- measured on a 26 kB source: 3,055 tokens, 3,055 object identities, **8
+   * distinct values**. Since `reviewable-code.tsx` is a client island the array crossed the RSC
+   * boundary as props, so those 3,047 redundant objects were serialised in full: 259 kB of props
+   * JSON for a 26 kB file, ten times the source. An integer per token and one palette beside them
+   * is the same information in 104 kB.
+   */
+  style?: number;
 }
 
 export interface HighlightedCode {
   /** One entry per source line, each already split into coloured tokens. */
   lines: CodeToken[][];
+  /** The distinct token styles this file uses, indexed by `CodeToken.style` (PF-003). */
+  palette: Record<string, string>[];
   /** The block's own foreground/background custom properties, for the `<pre>` element. */
   rootStyle: Record<string, string>;
   /** False when the file was too large to tokenise -- the viewer surfaces this rather than hiding it. */
@@ -109,8 +121,23 @@ export async function highlightToLines(code: string, language: string): Promise<
     defaultColor: false,
   });
 
+  // One palette for the file, keyed by the style's own serialisation: Shiki's objects are never
+  // identical by reference (see `CodeToken.style`), so value equality is what has to be tested.
+  const palette: Record<string, string>[] = [];
+  const paletteIndex = new Map<string, number>();
   const lines = result.tokens.map((line) =>
-    line.map((token) => ({ content: token.content, style: token.htmlStyle })),
+    line.map((token): CodeToken => {
+      const style = token.htmlStyle;
+      if (!style || typeof style === "string") return { content: token.content };
+      const key = JSON.stringify(style);
+      let index = paletteIndex.get(key);
+      if (index === undefined) {
+        index = palette.length;
+        paletteIndex.set(key, index);
+        palette.push(style);
+      }
+      return { content: token.content, style: index };
+    }),
   );
   // A file ending in a newline tokenises to a final empty line, which would render as a numbered
   // line that is not in the file.
@@ -118,6 +145,7 @@ export async function highlightToLines(code: string, language: string): Promise<
 
   return {
     lines,
+    palette,
     rootStyle: parseStyle(typeof result.rootStyle === "string" ? result.rootStyle : undefined),
     highlighted: !tooLarge && resolved !== PLAINTEXT,
   };

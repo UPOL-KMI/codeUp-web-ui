@@ -83,7 +83,7 @@ export async function SourceFile({
     );
   }
 
-  const { lines, rootStyle, highlighted } = await highlightToLines(content.content, language);
+  const { lines, palette, rootStyle, highlighted } = await highlightToLines(content.content, language);
   const interactive = review !== undefined && (review.canComment || review.comments.length > 0);
 
   return (
@@ -105,6 +105,7 @@ export async function SourceFile({
           solutionId={solutionId}
           fileName={file.name}
           lines={lines}
+          palette={palette}
           rootStyle={rootStyle}
           idPrefix={`${anchor}-`}
           comments={review.comments}
@@ -120,6 +121,7 @@ export async function SourceFile({
             <CodeLine
               key={index}
               tokens={tokens}
+              palette={palette}
               number={index + 1}
               idPrefix={`${anchor}-`}
               label={code("lineLabel", { line: index + 1 })}

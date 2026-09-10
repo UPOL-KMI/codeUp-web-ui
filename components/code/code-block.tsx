@@ -14,6 +14,8 @@ import type { CodeToken } from "@/lib/code/highlight";
  */
 export interface CodeLineProps {
   tokens: CodeToken[];
+  /** The file's distinct token styles; `CodeToken.style` indexes into it (PF-003). */
+  palette: Record<string, string>[];
   /** 1-based line number, as shown in the gutter and used in the anchor. */
   number: number;
   /** Prefixes the anchor id, so several files on one page do not all claim `#L1`. */
@@ -22,7 +24,7 @@ export interface CodeLineProps {
   label: string;
 }
 
-export function CodeLine({ tokens, number, idPrefix = "", label }: CodeLineProps) {
+export function CodeLine({ tokens, palette, number, idPrefix = "", label }: CodeLineProps) {
   const id = `${idPrefix}L${number}`;
   return (
     <span className="line" id={id} data-line={number}>
@@ -30,7 +32,7 @@ export function CodeLine({ tokens, number, idPrefix = "", label }: CodeLineProps
         {number}
       </a>
       {tokens.map((token, index) => (
-        <span key={index} style={token.style}>
+        <span key={index} style={token.style === undefined ? undefined : palette[token.style]}>
           {token.content}
         </span>
       ))}

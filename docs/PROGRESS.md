@@ -5094,3 +5094,26 @@ So the instance is in a *different* broken state than recorded, not the same one
 **What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean. `app-shell`, `group-create`, `instances`, `design-system` still green (24/24) — no breadcrumb regression, and those cover the hoisted `/profile` path. Live: chains render in the right order, both locales, zero unhandled rejections.
 
 **Next ticket:** PF-003 — Shiki tokens carry a style object each (an 81% cut on a measured 162 kB of props JSON). Chosen over PF-002 and PF-004 because it is a local change with a number already measured against a real file, where PF-002 now needs re-measuring from scratch (DEC-126 invalidated its figures) and PF-004 needs a decision before an implementation.
+
+---
+
+### 2026-09-10 — PF-003: Shiki tokens carry a style object each
+
+**Ticket:** PF-003  
+**Status:** done. Filed **PF-009** for two further cuts it measured and did not take.
+
+**What changed:** `lib/code/highlight.ts` builds one palette per file and each token carries an **integer index** into it; `CodeLine` takes the palette and looks up. Both viewers change at once because they share that component. Threaded through all four consumers — `code-viewer.tsx`, `source-file.tsx`, `reviewable-code.tsx` (the client island that pays for this) and `diff-view.tsx`.
+
+**Re-measured before implementing, and the number is not the one in the row.** On a real 26 kB / 646-line source: 3,055 tokens, **8 distinct styles**, props JSON **259,167 bytes — 10.0x the source** — down to **103,808 bytes**. That is a **60% cut and 155 kB off one file**, not the 81% predicted, and the difference is not a mistake in either measurement: the row measured a 16 kB file, where the style objects were a larger share of the whole. What is left is the token `content` strings and JSON scaffolding, which no amount of style interning touches.
+
+**The fact worth keeping, because it is the one that justifies the ticket at all: Shiki hands back a fresh style object per token.** 3,055 distinct object identities for 3,055 tokens, against 8 distinct values — checked with a `Set` of the objects themselves before writing any code. That matters because React's Flight format does deduplicate repeated *references*, so if Shiki had been reusing its eight objects the payload would already have been small and this ticket would have been measuring nothing. It is not, so it was not, and the palette is genuinely required rather than a tidier way to say the same thing.
+
+**The cascade caution the row raised does not apply to what was built.** It anticipated emitting CSS classes. The palette keeps the same inline custom properties on the same elements — only the *route* the value takes to get there changed — so specificity and `:target` line highlighting are untouched. Verified in the served HTML: same `<pre class="shiki">`, same seven `--shiki-light` values, colouring unchanged.
+
+**`diff-view.tsx` needed more than a prop.** It highlights two files and renders tokens from either side into one table, so there are two palettes and a token's index is meaningless against the wrong one. `rowTokens` now returns the tokens **and** the palette they belong to, which is what makes the pairing impossible to get wrong at the call site.
+
+**PF-009 filed rather than folded in:** the palette is still inline on every `<span>`, so it also ships in the SSR HTML — moving it to generated CSS removes that copy and *does* raise the cascade question, and since both themes are fixed it could be a static block in `globals.css`. Separately, tokens as `[content, index]` tuples would drop the repeated `"content":`/`"style":` keys, worth roughly another 60 kB on the same file. The tuple change is the cheaper half and carries no cascade risk.
+
+**Not verified against a live client island.** The 60% figure is a reproducible measurement of the props array, taken the same way the row's own was; measuring the real `/solutions/[id]/sources` flight payload needs a seeded solution with a review, which this half-seeded instance does not have (see the previous entry). Rendering was verified live instead.
+
+**What was run:** `typecheck`, `lint`, `build`, 246 unit tests clean.

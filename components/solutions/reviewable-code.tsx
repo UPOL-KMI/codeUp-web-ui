@@ -35,6 +35,13 @@ export interface ReviewableCodeProps {
   /** The comment's `file` key: `main.c`, or `archive.zip#src/main.c` for a ZIP entry. */
   fileName: string;
   lines: CodeToken[][];
+  /**
+   * The distinct token styles the lines index into (PF-003). **The reason this island's props
+   * shrank by 60%:** Shiki hands back a fresh style object per token, so before this the same
+   * eight colours crossed the RSC boundary once per token -- 259 kB of props JSON for a 26 kB
+   * file.
+   */
+  palette: Record<string, string>[];
   rootStyle: Record<string, string>;
   idPrefix: string;
   comments: ReviewComment[];
@@ -50,6 +57,7 @@ export function ReviewableCode({
   solutionId,
   fileName,
   lines,
+  palette,
   rootStyle,
   idPrefix,
   comments,
@@ -93,6 +101,7 @@ export function ReviewableCode({
               )}
               <CodeLine
                 tokens={tokens}
+              palette={palette}
                 number={line}
                 idPrefix={idPrefix}
                 label={code("lineLabel", { line })}

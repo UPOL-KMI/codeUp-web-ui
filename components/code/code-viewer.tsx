@@ -25,7 +25,7 @@ export interface CodeViewerProps {
 export async function CodeViewer({ code, filename, language }: CodeViewerProps) {
   const t = await getTranslations("Code");
   const resolvedLanguage = language ?? languageForFilename(filename);
-  const { lines, rootStyle, highlighted } = await highlightToLines(code, resolvedLanguage);
+  const { lines, palette, rootStyle, highlighted } = await highlightToLines(code, resolvedLanguage);
 
   return (
     <figure className="flex flex-col overflow-hidden rounded-lg border border-border">
@@ -40,6 +40,7 @@ export async function CodeViewer({ code, filename, language }: CodeViewerProps) 
           <CodeLine
             key={index}
             tokens={tokens}
+            palette={palette}
             number={index + 1}
             label={t("lineLabel", { line: index + 1 })}
           />
