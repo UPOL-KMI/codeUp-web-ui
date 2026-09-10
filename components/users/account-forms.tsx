@@ -621,3 +621,102 @@ export function ApplicationToken({ scopes }: { scopes: readonly TokenScope[] }) 
     </div>
   );
 }
+
+/**
+ * Seeing the app as somebody with fewer privileges sees it (G-023).
+ *
+ * **The other half of the endpoint G-020 uses, and DEC-043's unfiled "future ticket".** It
+ * re-issues this browser's own token with core-api's `effectiveRole` claim set and installs it as
+ * the session, keeping the scopes and remaining lifetime the token already had.
+ *
+ * **It is "view as", not dropping privileges, and it says so rather than implying otherwise.**
+ * core-api's `validateEffectiveRole` compares the requested role against the **account's** role in
+ * the database, not the calling token's, so a narrowed session can ask for its full role back and
+ * be granted it -- verified live, a session narrowed to `student` re-issued itself as `superadmin`.
+ * Nothing here is a containment boundary, and a reader who believed otherwise would be wrong.
+ *
+ * Offered to anyone with a role below their own, which is the legacy panel's rule and core-api's;
+ * G-023's own wording said "superadmin only", which is narrower than either and would have kept it
+ * from the supervisors who most want to see what a student sees.
+ *
+ * The whole page reloads afterwards rather than refreshing the route, for AD-003's reason: the
+ * session now answers differently everywhere, and Next's client Router Cache is still holding
+ * payloads rendered for the old one.
+ */
+export function EffectiveRole({
+  accountRole,
+  effectiveRole,
+  roles,
+}: {
+  accountRole: string;
+  /** The role currently acted as, or null when acting as the account itself. */
+  effectiveRole: string | null;
+  /** Every role at or below the account's, weakest first. */
+  roles: readonly string[];
+}) {
+  const t = useTranslations("Account.viewAs");
+  const toast = useToast();
+  const [pending, setPending] = useState<string | null>(null);
+
+  async function change(role: string | null) {
+    setPending(role ?? "");
+    try {
+      const response = await fetch("/api/auth/effective-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      if (!response.ok) {
+        toast.error(t("failed"), body.message);
+        setPending(null);
+        return;
+      }
+      // A full load, not router.refresh(): every role-gated thing on every cached route was
+      // rendered for the old session.
+      window.location.reload();
+    } catch {
+      toast.error(t("failed"));
+      setPending(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">{t("explain")}</p>
+      <p className="text-xs text-muted-foreground">{t("notContainment")}</p>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {roles.map((role) => {
+          const active = (effectiveRole ?? accountRole) === role;
+          return (
+            <button
+              key={role}
+              type="button"
+              aria-pressed={active}
+              disabled={pending !== null}
+              className={active ? primary : secondary}
+              onClick={() => void change(role === accountRole ? null : role)}
+            >
+              {t(`roles.${role}`)}
+            </button>
+          );
+        })}
+      </div>
+
+      {effectiveRole !== null && (
+        <p className="text-sm">
+          {t("current", { role: t(`roles.${effectiveRole}`) })}{" "}
+          <button
+            type="button"
+            disabled={pending !== null}
+            className="underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            onClick={() => void change(null)}
+          >
+            {t("restore")}
+          </button>
+        </p>
+      )}
+    </div>
+  );
+}

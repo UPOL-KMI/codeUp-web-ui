@@ -3,6 +3,19 @@ import "server-only";
 export interface JwtPayload {
   sub: string;
   exp: number;
+  /**
+   * The role this token acts as, when its holder narrowed it (G-023). core-api spells the claim
+   * `effrole` and sets it to `null` on an ordinary session, so absent and null both mean "acting
+   * as whatever the account is". Optional rather than required: a token predating this claim, or
+   * one from an older core-api, must still decode.
+   */
+  effrole?: string | null;
+  /**
+   * What this token is allowed to be used for (G-020's vocabulary). An ordinary session carries
+   * `["master", "refresh"]`; a narrowing re-issue (G-023) has to send the same list back, which is
+   * the only reason this app reads it. Optional for the same reason `effrole` is.
+   */
+  scopes?: string[];
 }
 
 /**

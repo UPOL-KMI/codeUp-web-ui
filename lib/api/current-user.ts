@@ -23,6 +23,12 @@ export interface CurrentUser {
   /** The instances this account belongs to. The first is the one an administrator creating an
    *  account here puts it in (AD-001), which is the legacy app's `selectedInstanceId` restated. */
   instanceIds: string[];
+  /**
+   * **The role this session is acting as, which is what every gate in this app should ask.** Where
+   * the reader has narrowed their session (G-023) this is that narrower role, not the account's --
+   * because it is what core-api authorises against, so a screen offered on the account's role
+   * would be a screen core-api then refuses. `accountRole` below is the account's own.
+   */
   /** The group this user is locked into for an exam, if any (S-008). */
   groupLock: string | null;
   groupLockType: string | null;
@@ -34,6 +40,12 @@ export interface CurrentUser {
    * message older than it as read, and this is that number.
    */
   messagesReadUpTo: number | null;
+  /**
+   * What the account actually is, regardless of any narrowing (G-023). Only two things need it:
+   * the banner that says a session is narrowed, and the control that offers to narrow it -- both
+   * of which have to know the difference. Everything else wants `role`.
+   */
+  accountRole: string;
 }
 
 interface UserPayload {
@@ -63,13 +75,19 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   const session = await requireSession();
   const user = await apiRead<UserPayload>("/v1/users/{id}", { pathParams: { id: session.userId } });
 
+  const accountRole = user.privateData?.role ?? "student";
+
   return {
     id: user.id,
     fullName: user.fullName,
     isVerified: user.isVerified ?? true,
     instanceIds: user.privateData?.instancesIds ?? [],
     avatarUrl: user.avatarUrl,
-    role: user.privateData?.role ?? "student",
+    // The session's narrowing wins over the account's role, deliberately and app-wide (G-023):
+    // core-api authorises against the token's `effrole`, so a sidebar built from the account's
+    // role would offer a narrowed reader links that every click then refuses.
+    role: session.effectiveRole ?? accountRole,
+    accountRole,
     groupLock: user.privateData?.groupLock ?? null,
     groupLockType: user.privateData?.groupLockType ?? null,
     ipLock: user.privateData?.ipLock ?? null,

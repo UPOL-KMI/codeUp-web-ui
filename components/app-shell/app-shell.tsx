@@ -6,6 +6,8 @@ import { getActiveSystemMessages } from "@/lib/api/system-messages";
 
 import { ActiveMessages } from "@/components/messages/active-messages";
 
+import { ViewAsBanner } from "./view-as-banner";
+
 import { SidebarNav, type NavSection } from "./sidebar-nav";
 
 /**
@@ -124,6 +126,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
             worth reading without opening a dropdown, and this shell has no header to hang one on
             (DEC-115). */}
+        {/* G-023. Before the broadcasts: what this session can currently do frames everything
+            else on the page. */}
+        {user.role !== user.accountRole && <ViewAsBanner role={user.role} />}
         <ActiveMessages messages={unread} userId={user.id} />
         {children}
       </main>

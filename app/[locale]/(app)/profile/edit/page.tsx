@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@/lib/api/current-user";
 import { SUPERADMIN_TOKEN_SCOPES, TOKEN_SCOPES } from "@/lib/auth/restricted-token";
+import { USER_ROLES } from "@/lib/api/user-roles";
 import { getAccountSettings, getCalendarTokens, NOTIFICATION_FLAGS } from "@/lib/api/user-settings";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
@@ -10,6 +11,7 @@ import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import {
   ApplicationToken,
+  EffectiveRole,
   CalendarTokens,
   PasswordForm,
   ProfileForm,
@@ -53,6 +55,11 @@ export default async function AccountSettingsPage() {
   ]);
 
   const apiBase = process.env.API_BASE_PUBLIC ?? "";
+
+  // Every role at or below the account's. `USER_ROLES` is ordered weakest-first, so the account's
+  // own index is the ceiling -- and core-api enforces the same rule on the call itself.
+  const ceiling = USER_ROLES.indexOf(viewer.accountRole as (typeof USER_ROLES)[number]);
+  const viewAsRoles = ceiling < 0 ? [] : USER_ROLES.slice(0, ceiling + 1);
 
   return (
     <PageShell
@@ -98,6 +105,22 @@ export default async function AccountSettingsPage() {
           </h2>
           <SignOutEverywhere userId={account.id} />
         </section>
+
+        {/* G-023. Offered to anyone with a role below their own -- the legacy panel's rule and
+            core-api's, which refuses a role above the account's. A plain student has nowhere to
+            go, so the section is absent rather than empty. */}
+        {viewAsRoles.length > 1 && (
+          <section aria-labelledby="account-view-as">
+            <h2 id="account-view-as" className="mb-3 text-base font-semibold tracking-tight">
+              {t("viewAs.title")}
+            </h2>
+            <EffectiveRole
+              accountRole={viewer.accountRole}
+              effectiveRole={viewer.role === viewer.accountRole ? null : viewer.role}
+              roles={viewAsRoles}
+            />
+          </section>
+        )}
 
         <section aria-labelledby="account-token">
           <h2 id="account-token" className="mb-3 text-base font-semibold tracking-tight">

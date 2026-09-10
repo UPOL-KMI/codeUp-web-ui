@@ -8,6 +8,12 @@ import { isSessionTokenLive, SESSION_COOKIE_NAME } from "./session-cookie";
 export interface Session {
   token: string;
   userId: string;
+  /**
+   * The role this session is acting as, when its holder narrowed it (G-023) -- core-api's `effrole`
+   * claim, `null` on an ordinary session. Read here rather than by each caller so there is one
+   * answer to "what is this session acting as", the same reason `userId` is read here.
+   */
+  effectiveRole: string | null;
 }
 
 function decodeSessionCookie(value: string): Session | null {
@@ -17,7 +23,7 @@ function decodeSessionCookie(value: string): Session | null {
   if (!isSessionTokenLive(value)) return null;
   const payload = decodeJwtPayload(value);
   if (!payload) return null;
-  return { token: value, userId: payload.sub };
+  return { token: value, userId: payload.sub, effectiveRole: payload.effrole ?? null };
 }
 
 /**

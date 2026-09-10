@@ -4593,6 +4593,45 @@ section-nav}.tsx`, `lib/format/calendar-month.ts` + unit tests, `getDeadlineCale
     400 for unrelated reasons, and enforcement is core-api's rather than this ticket's. 225 unit
     tests (217 before), typecheck/lint/format/build clean.
 
+- **[2026-09-10 08:45] G-023:** Seeing the app as somebody with fewer privileges sees it, and the
+  field that had to change meaning for it to work. `app/api/auth/effective-role/route.ts`,
+  `components/users/account-forms.tsx` (`EffectiveRole`),
+  `components/app-shell/view-as-banner.tsx`, `lib/api/current-user.ts`,
+  `lib/auth/require-session.ts`.
+  - _The other half of G-020's endpoint, and DEC-043's unfiled "future ticket"._ That route issues
+    a credential meant to leave the app and never touches the cookie; this one re-issues **this**
+    session's token with `effectiveRole` set and installs it. The scopes and the remaining lifetime
+    are read off the current token and sent back unchanged, as the legacy `restrictEffectiveRole`
+    does, so narrowing cannot quietly widen a session's scopes or extend its life.
+  - **_The load-bearing change is not the route -- it is that `getCurrentUser().role` now means the
+    session's role rather than the account's_** (DEC-125). core-api authorises against `effrole`, so
+    a gate reading the account's role would offer a narrowed superadmin an Admin section that every
+    click then refuses. Ten gate sites needed no edit: the one place that resolves the field changed
+    meaning instead, and the account's own role moved to `accountRole`, whose only readers are the
+    banner and the switcher.
+  - **_It is "view as", not dropping privileges, and it says so._** `validateEffectiveRole` compares
+    the requested role against the account's role **in the database**, not the calling token's -- so
+    a narrowed session can ask for its full role back and be granted it. Verified directly: a token
+    narrowed to `student` re-issued itself as `superadmin`. Both the section and the banner therefore
+    describe a preview rather than a safety measure; the opposite wording would be a security claim
+    the mechanism does not support.
+  - _Offered to anyone with a role below their own_, which is the legacy panel's rule and core-api's.
+    G-023's own row said "superadmin only" -- narrower than either, and it would have kept the
+    feature from the supervisors who most want to see what a student sees.
+  - _A banner on every page, which AD-003 could not have._ Takeover's token carries nothing naming
+    the administrator (DEC-112), so there was no impersonation to render; `effrole` is right there in
+    this one, so the thing AD-003 had to leave unsaid gets said. A reader who narrowed an hour ago
+    and forgot is otherwise looking at an app that is missing things for no visible reason.
+  - _Observations:_ **verified live end to end.** Narrowing to `student` hid the Admin sidebar
+    section and turned `/en/admin` into the Forbidden page; the banner rendered on every page;
+    restoring brought both back and removed the banner; and a supervisor asking for `superadmin` was
+    refused 400 with core-api's own sentence, forwarded verbatim. The refused page still answers
+    HTTP 200 -- that is Q-016, untouched. 225 unit tests, typecheck/lint/format/build clean. Two
+    verification notes for the next session: `next start` cannot serve this build (`output:
+standalone`), and `API_BASE_INTERNAL` must point at `127.0.0.1` rather than `recodex.local` on
+    this host, whose IPv6-first loopback exceeds Node's 10s connect timeout outright -- see PF-002's
+    row.
+
 - **[2026-09-10 07:55] G-011:** Mailing the whole class, and the truncation the legacy link does not
   mention. `components/groups/mail-students.tsx`, `lib/format/mailto.ts` + unit tests,
   `lib/api/group-detail.ts`, `e2e/mail-students.spec.ts`.

@@ -2584,7 +2584,18 @@
     "instances": "Instances",
     "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "viewAs": {
+      "banner": "You are viewing ReCodEx as {role}. Some things are hidden because that role cannot reach them.",
+      "restore": "Go back to your own role",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Supervisor-student",
+        "supervisor": "Supervisor",
+        "empowered-supervisor": "Empowered supervisor",
+        "superadmin": "Superadministrator"
+      }
+    }
   },
   "Palette": {
     "label": "Search",
@@ -3226,6 +3237,21 @@
         "copy": "Copy",
         "copied": "Copied"
       }
+    },
+    "viewAs": {
+      "title": "View the app as someone else",
+      "explain": "See ReCodEx as a person with fewer privileges sees it — useful for checking what your students actually get. Your account is unchanged; only this browser's session acts differently.",
+      "notContainment": "This is a preview, not a safety measure: a narrowed session can restore itself at any time, so it protects nothing and is not a way to work more safely.",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Supervisor-student",
+        "supervisor": "Supervisor",
+        "empowered-supervisor": "Empowered supervisor",
+        "superadmin": "Superadministrator"
+      },
+      "current": "You are currently viewing the app as {role}.",
+      "restore": "Go back to your own role",
+      "failed": "The role could not be changed."
     }
   },
   "UserEdit": {

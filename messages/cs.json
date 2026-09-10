@@ -2584,7 +2584,18 @@
     "instances": "Instance",
     "skipToContent": "Přeskočit na obsah",
     "breadcrumb": "Drobečková navigace",
-    "faq": "Časté dotazy"
+    "faq": "Časté dotazy",
+    "viewAs": {
+      "banner": "Prohlížíte si ReCodEx jako {role}. Některé věci jsou skryté, protože k nim tato role nemá přístup.",
+      "restore": "Vrátit se ke své roli",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Cvičící-student",
+        "supervisor": "Cvičící",
+        "empowered-supervisor": "Cvičící s rozšířenými právy",
+        "superadmin": "Superadministrátor"
+      }
+    }
   },
   "Palette": {
     "label": "Hledání",
@@ -3226,6 +3237,21 @@
         "copy": "Kopírovat",
         "copied": "Zkopírováno"
       }
+    },
+    "viewAs": {
+      "title": "Zobrazit aplikaci jako někdo jiný",
+      "explain": "Podívejte se na ReCodEx očima člověka s menšími právy — hodí se ke kontrole, co doopravdy vidí vaši studenti. Účet se nemění, jinak se chová jen session v tomto prohlížeči.",
+      "notContainment": "Je to náhled, ne bezpečnostní opatření: zúžená session si může kdykoli vrátit plná práva, takže nic nechrání a není to způsob, jak pracovat bezpečněji.",
+      "roles": {
+        "student": "Student",
+        "supervisor-student": "Cvičící-student",
+        "supervisor": "Cvičící",
+        "empowered-supervisor": "Cvičící s rozšířenými právy",
+        "superadmin": "Superadministrátor"
+      },
+      "current": "Aplikaci si právě prohlížíte jako {role}.",
+      "restore": "Vrátit se ke své roli",
+      "failed": "Roli se nepodařilo změnit."
     }
   },
   "UserEdit": {
