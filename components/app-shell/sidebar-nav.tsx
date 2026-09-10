@@ -15,6 +15,14 @@ const CommandPalette = dynamic(
   { ssr: false },
 );
 
+/** Same bargain as the palette above (G-025): a QR encoder and a second Radix dialog are dead
+ *  weight on every authenticated page for a feature used in front of a lecture room. `ssr: false`
+ *  is also what makes reading `window.location.href` during its render safe. */
+const PageQrCode = dynamic(
+  () => import("./page-qr-code").then((mod) => mod.PageQrCode),
+  { ssr: false },
+);
+
 /**
  * The interactive half of the app shell (D-014): collapse, the mobile drawer, and the active-link
  * state. Everything it renders is computed on the server and handed down as `sections` -- this
@@ -43,6 +51,8 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteRequested, setPaletteRequested] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrUrl, setQrUrl] = useState("");
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   // Only the exact route is *the* current page; an ancestor whose subtree the reader is inside is
@@ -114,6 +124,22 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         >
           {t("faq")}
         </Link>
+        {/* G-025. Beside the locale switch and the FAQ because it is chrome about the page you are
+            on rather than an action on its contents -- the legacy app kept it in the header, which
+            is where this app puts a page's own actions. */}
+        <button
+          type="button"
+          onClick={() => {
+            // Captured here, on the click: this is the moment the page is known, and it keeps
+            // `PageQrCode` a pure function of its props.
+            setQrUrl(window.location.href);
+            setQrOpen(true);
+            setMobileOpen(false);
+          }}
+          className="rounded-md px-2 py-1.5 text-left text-sm text-foreground outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {t("qr.open")}
+        </button>
       </div>
     </nav>
   );
@@ -123,6 +149,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
       {/* Mounted here rather than in `AppShell`: this is the shell's only always-mounted client
           component, so it is the one that can hold the state both triggers below share. */}
       {paletteRequested && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
+      {qrUrl !== "" && <PageQrCode url={qrUrl} open={qrOpen} onOpenChange={setQrOpen} />}
 
       {/* Mobile: a disclosure button and a drawer. Brief §9 requires phone width to work --
           "students check deadlines on phones" -- and a permanently-visible sidebar would eat most

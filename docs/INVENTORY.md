@@ -152,7 +152,7 @@ plan turned out to name a route that was never built.
 | **Code highlighting**   | `highlight.js` + `prismjs` + `react-syntax-highlighter` | Shiki (server) + CodeMirror 6 (editor)       | partial (G-028)        |
 | **Diff viewer**         | `react-diff-viewer`                                     | Dedicated diff component                     | todo (G-005)           |
 | **Graphviz rendering**  | `viz.js` (WASM) for pipeline structure                  | Port or replace (§7)                         | done                   |
-| **QR code of page**     | Header dropdown                                         | Header dropdown                              | todo (G-025)           |
+| **QR code of page**     | Header dropdown                                         | Sidebar footer, a dialog                     | done                   |
 | **Breadcrumbs**         | Missing/inconsistent                                    | Central manifest + PageShell                 | done                   |
 
 ---
@@ -167,7 +167,7 @@ plan turned out to name a route that was never built.
 | Pipeline visualisation (Graphviz)                  | `EditPipelineStructure`                                    | Decide: viz.js, server-side, or JS layout                                                                         | done            |
 | Markdown compatibility                             | `markdown-it` + KaTeX in exercise texts                    | Test against real data                                                                                            | done            |
 | Third-party extensions                             | `SIS-ext-webapp` repo mentioned                            | Investigate token handoff                                                                                         | partial (G-020) |
-| QR code of current page                            | Header component                                           | Reproduce                                                                                                         | todo (G-025)    |
+| QR code of current page                            | Header component                                           | Reproduce                                                                                                         | done            |
 | Archived/organisational groups                     | `groups` module                                            | Filter in UI                                                                                                      | done            |
 | Group invitations                                  | `AcceptGroupInvitation` page                               | Accepting (S-023) and minting (T-018)                                                                             | done            |
 | Nested subgroups                                   | `groups` module                                            | Tree navigation                                                                                                   | done            |

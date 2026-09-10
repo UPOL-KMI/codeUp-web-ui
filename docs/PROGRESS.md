@@ -4943,3 +4943,28 @@ The previous entry recorded that nothing had been verified live because the Dock
 **What was run:** `typecheck`, `lint`, `build`, 234 unit tests all clean. `npx playwright test group-create group-invitations exercise-catalog exercise-detail` → **8 passed, 12 failed, and no failure touches this session's work** — every one is looking for absent seed data (`[seed] Large Lecture`, `[seed] Merge Sort`, `Showing 1–20 of N` against a one-row catalog). `group-create.spec.ts` passed in full, which does exercise G-012's new fetch, since it renders group pages. The exercise created for the G-019 check was deleted through the API and the instance has no orphans (`Exercise by` → 0).
 
 **Next ticket:** G-025 — a QR code of the current page. Unchanged.
+
+---
+
+### 2026-09-10 — G-025: A QR code of the current page
+
+**Ticket:** G-025  
+**Status:** done
+
+**What was built:** `components/app-shell/page-qr-code.tsx` — a dialog holding the code and the address as text — with its trigger and dynamic boundary in `components/app-shell/sidebar-nav.tsx`, `Nav.qr` in both locales, DEC-127, and a test in `e2e/app-shell.spec.ts`.
+
+**The library.** `qrcode.react@4.2.0`, not legacy's `react-qr-code`. Both wrap an encoder, but `react-qr-code` depends on `prop-types` — which this repo dropped with the rest of the legacy plumbing — while `qrcode.react` has **no dependencies at all**, ships its own types, and peers on React 19. Checked against the registry rather than chosen from memory, and it is not among `pnpm peers check`'s complaints.
+
+**It loads on the first click, and that was verified rather than assumed.** The encoder is an **18.6 kB chunk** sitting behind a feature most sessions never open, on a component reachable from every authenticated page — exactly the command palette's bargain, so it took the command palette's solution: `dynamic(..., { ssr: false })`, with the trigger declared inline in the always-loaded half so no static import drags the chunk back. Confirmed two ways: the chunk appears **only** in `react-loadable-manifest.json` files and in no initial-chunk manifest, and two script requests fire on the first click. `ssr: false` is also what would have made reading `window.location.href` during render safe — but see below.
+
+**Three encoding details are deliberately set against defaults, and one of them against this project's own rule (DEC-127).** A QR code is a machine-readable image, so ISO/IEC 18004 outranks the design system here. **Black-on-white in both themes**, on its own white plate: the standard defines modules as the dark element, inverted codes are decoder-dependent, and "the QR code works unless you use dark mode" is a worse failure than an inconsistent swatch — brief §9's "never hardcode a colour" is knowingly broken and recorded. **`marginSize={4}`**, because the library defaults to **`0`** and the standard requires a four-module quiet zone; without it the code runs to the edge of its own SVG. **`level="M"`** over the default `"L"`, because these get photographed off a projector at an angle. The spec asserts the quiet zone through the `viewBox` (37 = 29 modules + 4 either side), since that is the one of the three that could be "tidied" away silently.
+
+**A design correction worth keeping, forced by the linter.** The URL was first read inside the dialog in a `useEffect` keyed on `open`; `react-hooks/set-state-in-effect` rejected it, and the rule was right for a better reason than it knew. **The trigger captures `window.location.href` on the click instead**, which makes the dialog a pure function of its props *and* fixes correctness: the component stays mounted after its first open, so a URL read once would have gone stale the moment the reader navigated. One piece of state (`qrUrl`) now does both jobs — it gates the mount and carries the value. The spec asserts the freshness property directly, by navigating client-side and reopening.
+
+**Also:** the QR `<svg>` carries `role="img"` alongside its `<title>`. An inline SVG with a title but no role is announced inconsistently, and this is the only non-text thing in the dialog. It also made the test selector honest — `dialog.locator("svg")` had matched two elements, because `DialogContent`'s close button has an icon of its own.
+
+**One cost recorded rather than discovered later:** regenerating PF-001's route map added **`Dialog`** to `SHELL_MESSAGE_NAMESPACES`, because this component imports `DialogContent`, which reads that namespace. `Dialog` is 60 bytes of JSON (three words), so the shell grew by that; noted only because PF-001 exists to keep this visible.
+
+**What was run:** `typecheck`, `lint`, `build`, 234 unit tests clean. **`app-shell.spec.ts` passes 6/6 against the real stack** — the first spec this session could actually run, because it signs in and needs no seeded group, unlike the 20 files blocked on `[seed] Intro to Programming`. Verified live in both locales besides: the encoded address includes the query string, the plate stays white with `data-theme="dark"` forced, `Escape` closes the dialog, and reopening after a navigation shows the new page.
+
+**Next ticket:** G-028 — a preview for markdown fields. Worth noting before starting it: that row says it is also the last of the inventory's promised "CodeMirror 6 (editor)", so building it or dropping it closes that row either way.

@@ -65,3 +65,43 @@ test("offers the FAQ to a signed-in reader, not only to a visitor", async ({ pag
   await expect(page).toHaveURL(/\/en\/faq$/);
   await expect(page.getByRole("main")).toBeVisible();
 });
+
+/**
+ * G-025. Two properties beyond "it appears", both of which would regress silently: the code has to
+ * encode the page **including its query string** (a filtered table is the interesting thing to put
+ * on a room's phones), and it has to keep doing so after a client-side navigation, since the dialog
+ * stays mounted once opened.
+ */
+test("encodes the current page as a QR code, and keeps up when the page changes", async ({
+  page,
+}) => {
+  await page.goto("/en/exercises?q=sort");
+  const nav = page.getByRole("navigation", { name: "Primary navigation" });
+  await nav.getByRole("button", { name: "QR code of this page" }).click();
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "QR code of this page" })).toBeVisible();
+  // The address is shown as text beside the code, which is what makes it assertable at all -- and
+  // is there for the reader whose camera will not focus.
+  await expect(dialog.getByText("/en/exercises?q=sort")).toBeVisible();
+
+  // The quiet zone (DEC-127): 29 modules of QR plus 4 either side. Without the explicit
+  // `marginSize` the library defaults to none and the viewBox would be 29 -- a code that scanners
+  // struggle with, and a regression nothing else here would catch.
+  const code = dialog.getByRole("img", {
+    name: "QR code encoding the address of the current page",
+  });
+  const viewBox = await code.getAttribute("viewBox");
+  const modules = Number(viewBox?.split(" ")[2]);
+  expect(modules).toBeGreaterThanOrEqual(29 + 8);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  // Navigate without a reload, so the dialog mounted above survives, and reopen it.
+  await nav.getByRole("link", { name: "Pipelines" }).click();
+  await expect(page).toHaveURL(/\/en\/pipelines$/);
+  await nav.getByRole("button", { name: "QR code of this page" }).click();
+  await expect(page.getByRole("dialog").getByText("/en/pipelines")).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("q=sort")).toHaveCount(0);
+});

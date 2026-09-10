@@ -2606,6 +2606,12 @@
     "skipToContent": "Přeskočit na obsah",
     "breadcrumb": "Drobečková navigace",
     "faq": "Časté dotazy",
+    "qr": {
+      "open": "QR kód této stránky",
+      "title": "QR kód této stránky",
+      "explain": "Namiřte na něj kameru telefonu a otevřete stránku, kterou máte právě před sebou. Užitečné, když stránku promítáte před učebnou.",
+      "imageTitle": "QR kód s adresou aktuální stránky"
+    },
     "viewAs": {
       "banner": "Prohlížíte si ReCodEx jako {role}. Některé věci jsou skryté, protože k nim tato role nemá přístup.",
       "restore": "Vrátit se ke své roli",

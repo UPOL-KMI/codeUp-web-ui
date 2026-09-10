@@ -2606,6 +2606,12 @@
     "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb",
     "faq": "FAQ",
+    "qr": {
+      "open": "QR code of this page",
+      "title": "QR code of this page",
+      "explain": "Point a phone camera at this to open the page you are looking at. Useful for putting a page on the screen in front of a room.",
+      "imageTitle": "QR code encoding the address of the current page"
+    },
     "viewAs": {
       "banner": "You are viewing ReCodEx as {role}. Some things are hidden because that role cannot reach them.",
       "restore": "Go back to your own role",
