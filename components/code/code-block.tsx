@@ -1,4 +1,5 @@
 import type { CodeToken } from "@/lib/code/highlight";
+import { paletteCss, tokenClassName } from "@/lib/code/palette";
 
 /**
  * The presentational half of the code viewer (D-009): the `<pre>` surface and one line of it.
@@ -31,30 +32,59 @@ export function CodeLine({ tokens, palette, number, idPrefix = "", label }: Code
       <a href={`#${id}`} className="code-line-number" aria-label={label}>
         {number}
       </a>
-      {/* Destructured rather than read by name: a token is a `[content, style]` tuple (PF-009). */}
-      {tokens.map(([content, style], index) => (
-        <span key={index} style={style === undefined ? undefined : palette[style]}>
-          {content}
-        </span>
-      ))}
+      {/* Destructured rather than read by name: a token is a `[content, style]` tuple (PF-009).
+          The colour arrives by class where `paletteCss` could emit a rule for it, and by inline
+          style otherwise -- see `tokenClassName` for what "otherwise" means. */}
+      {tokens.map(([content, style], index) => {
+        const entry = style === undefined ? undefined : palette[style];
+        const className = entry ? tokenClassName(entry) : "";
+        return (
+          <span
+            key={index}
+            className={className || undefined}
+            style={entry && className === "" ? entry : undefined}
+          >
+            {content}
+          </span>
+        );
+      })}
     </span>
   );
 }
 
 export function CodeBlock({
   rootStyle,
+  palette,
   children,
 }: {
   rootStyle: Record<string, string>;
+  /** This file's token styles, emitted as rules rather than repeated inline (PF-009). */
+  palette: Record<string, string>[];
   children: React.ReactNode;
 }) {
   return (
     <div data-slot="code-block" className="overflow-x-auto text-sm">
+      <PaletteRules palette={palette} />
       <pre className="shiki" style={rootStyle}>
         <code>{children}</code>
       </pre>
     </div>
   );
+}
+
+/**
+ * One file's palette as CSS. Rendered beside the block rather than collected into `globals.css`
+ * because the palette is a property of the *file* -- what colours its tokens happen to use -- and
+ * a static global would have to enumerate every colour both themes can produce. Class names are
+ * derived from the colours (`tokenClassName`), so two blocks on a page that share a colour emit
+ * the same rule twice, which is idempotent.
+ *
+ * The rules are built from hex values this module has already validated, and contain none of the
+ * characters React escapes in a text child.
+ */
+function PaletteRules({ palette }: { palette: Record<string, string>[] }) {
+  const css = paletteCss(palette);
+  return css === "" ? null : <style>{css}</style>;
 }
 
 /**
@@ -66,13 +96,16 @@ export function CodeBlock({
  */
 export function AnnotatedCodeBlock({
   rootStyle,
+  palette,
   children,
 }: {
   rootStyle: Record<string, string>;
+  palette: Record<string, string>[];
   children: React.ReactNode;
 }) {
   return (
     <div data-slot="code-block" className="overflow-x-auto text-sm">
+      <PaletteRules palette={palette} />
       <div className="shiki code-annotated" style={rootStyle}>
         {children}
       </div>

@@ -79,7 +79,7 @@ export function ReviewableCode({
   }
 
   return (
-    <AnnotatedCodeBlock rootStyle={rootStyle}>
+    <AnnotatedCodeBlock rootStyle={rootStyle} palette={palette}>
       {lines.map((tokens, index) => {
         const line = index + 1;
         const lineComments = byLine.get(line) ?? [];

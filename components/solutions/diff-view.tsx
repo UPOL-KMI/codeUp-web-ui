@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { diffLines, type DiffRow } from "@/lib/code/diff";
 import { highlightToLines, type CodeToken, type HighlightedCode } from "@/lib/code/highlight";
+import { paletteCss, tokenClassName } from "@/lib/code/palette";
 import { languageForFilename } from "@/lib/code/languages";
 
 /**
@@ -43,6 +44,11 @@ function rowTokens(
     };
   }
   return { tokens: [[row.text]], palette: [] };
+}
+
+/** Both sides' palettes as one stylesheet -- `paletteCss` de-duplicates by rule text. */
+function paletteRules(left: HighlightedCode, right: HighlightedCode): string {
+  return paletteCss([...left.palette, ...right.palette]);
 }
 
 const ROW_TONE: Record<DiffRow["kind"], string> = {
@@ -93,6 +99,10 @@ export async function DiffView({
       <p className="text-xs text-muted-foreground">
         {t("counts", { added: diff.added, removed: diff.removed })}
       </p>
+      {/* PF-009: both sides' palettes, since a row's tokens may come from either and each side
+          was highlighted separately. Class names are colour-derived, so the two overlap into one
+          rule wherever they share a colour. */}
+      {paletteRules(left, right) !== "" && <style>{paletteRules(left, right)}</style>}
       <div className="overflow-x-auto rounded-lg border border-border" tabIndex={0}>
         <table className="w-full border-collapse text-sm" style={left.rootStyle}>
           <caption className="sr-only">
@@ -131,14 +141,19 @@ export async function DiffView({
                 </td>
                 <td className="px-2 py-0.5 align-top whitespace-pre-wrap">
                   {(({ tokens, palette }) =>
-                    tokens.map(([content, style], tokenIndex) => (
-                      <span
-                        key={tokenIndex}
-                        style={style === undefined ? undefined : palette[style]}
-                      >
-                        {content}
-                      </span>
-                    )))(rowTokens(row, left, right))}
+                    tokens.map(([content, style], tokenIndex) => {
+                      const entry = style === undefined ? undefined : palette[style];
+                      const className = entry ? tokenClassName(entry) : "";
+                      return (
+                        <span
+                          key={tokenIndex}
+                          className={className || undefined}
+                          style={entry && className === "" ? entry : undefined}
+                        >
+                          {content}
+                        </span>
+                      );
+                    }))(rowTokens(row, left, right))}
                 </td>
               </tr>
             ))}
