@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
-import type { GroupDetail } from "@/lib/api/group-detail";
+import { getGroupAttributes, type GroupDetail } from "@/lib/api/group-detail";
 import { formatPoints } from "@/lib/format/points";
 
 import { routing } from "@/i18n/routing";
@@ -32,7 +32,11 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
 }
 
 export async function GroupInfo({ group }: { group: GroupDetail }) {
-  const [t, format] = await Promise.all([getTranslations("Group.info"), getFormatter()]);
+  const [t, format, attributes] = await Promise.all([
+    getTranslations("Group.info"),
+    getFormatter(),
+    getGroupAttributes(group.id),
+  ]);
 
   const roleOrder: GroupDetail["members"][number]["role"][] = ["admin", "supervisor", "observer"];
   const membersByRole = roleOrder
@@ -159,6 +163,40 @@ export async function GroupInfo({ group }: { group: GroupDetail }) {
               label={t("addSubgroup")}
             />
           )}
+        </section>
+      )}
+
+      {attributes.length > 0 && (
+        <section aria-labelledby="group-ext-attrs">
+          <h2 id="group-ext-attrs" className="mb-3 text-base font-semibold tracking-tight">
+            {t("externalAttributes.title")}
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="pb-2 pr-4 font-medium">{t("externalAttributes.service")}</th>
+                  <th className="pb-2 pr-4 font-medium">{t("externalAttributes.key")}</th>
+                  <th className="pb-2 font-medium">{t("externalAttributes.value")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attributes.map((attr) => (
+                  <tr key={attr.id} className="border-b border-border last:border-0">
+                    <td className="py-2 pr-4">
+                      <code className="rounded bg-muted px-1 py-0.5 text-xs">{attr.service}</code>
+                    </td>
+                    <td className="py-2 pr-4">
+                      <code className="rounded bg-muted px-1 py-0.5 text-xs">{attr.key}</code>
+                    </td>
+                    <td className="py-2">
+                      <code className="rounded bg-muted px-1 py-0.5 text-xs">{attr.value}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
     </div>

@@ -383,6 +383,12 @@
       "addSubgroup": "New subgroup",
       "noSubgroups": "This group has no subgroups."
     },
+    "externalAttributes": {
+      "title": "External Attributes",
+      "service": "Service",
+      "key": "Key",
+      "value": "Value"
+    },
     "membership": {
       "join": "Join this group",
       "leave": "Leave this group",

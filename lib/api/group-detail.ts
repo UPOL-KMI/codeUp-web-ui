@@ -5,7 +5,7 @@ import { cache } from "react";
 import { localizedDescription, localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { parseExamLockType, type ExamLockType } from "@/lib/status/exam";
 
-import { apiGet, apiPost } from "./client";
+import { ApiError, apiGet, apiPost } from "./client";
 import { apiRead, pageRead } from "./read";
 import { getMyGroupStats, type GroupStudentStats } from "./groups";
 
@@ -631,4 +631,28 @@ export async function getGroupPointsExport(groupId: string, locale: string): Pro
     .sort((a, b) => a.fullName.localeCompare(b.fullName, locale));
 
   return { groupName, columns, shadowColumns, rows };
+}
+
+export interface GroupAttribute {
+  id: string;
+  service: string;
+  key: string;
+  value: string;
+}
+
+/**
+ * External attributes an outside system (e.g. SIS) has attached to this group (G-012).
+ * Returns an empty array when none exist or when the reader may not see them (403), so the
+ * section is simply absent rather than erroring.
+ */
+export async function getGroupAttributes(groupId: string): Promise<GroupAttribute[]> {
+  try {
+    return await apiGet<GroupAttribute[]>("/v1/group-attributes/{groupId}", {
+      pathParams: { groupId },
+    });
+  } catch (error) {
+    if (error instanceof ApiError && (error.httpStatus === 403 || error.httpStatus === 404))
+      return [];
+    throw error;
+  }
 }

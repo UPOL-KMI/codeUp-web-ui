@@ -4888,3 +4888,18 @@ A`, path and all, so that name is the seed's own doing. What is actually wrong i
   (`arduino-gcc`, `data-linux`, `prolog`, `haskell`, `pyspark`) cannot share an exercise with
   another. All three are ported from the legacy tables and carried deliberately (Q-020); re-verify
   on an instance that has them.
+
+---
+
+### 2026-09-10 — G-012: A group's external attributes
+
+**Ticket:** G-012  
+**Status:** done
+
+**What was built:** `getGroupAttributes(groupId)` added to `lib/api/group-detail.ts` — calls `GET /v1/group-attributes/{groupId}`, returns `GroupAttribute[]` (id, service, key, value), handles 403 and 404 by returning an empty array so the section is simply absent rather than erroring. `components/groups/group-info.tsx` updated to fetch attributes in parallel with translations and format, then render a read-only table at the bottom of the Info tab when any exist. i18n strings added to both locales under `Group.externalAttributes`.
+
+**What was verified:** `pnpm typecheck`, `pnpm lint`, `pnpm build` all clean. The section cannot be verified with real data on this deployment, which has no external system attaching attributes; re-verify on an instance with SIS integration. 403/404 handling verified structurally by analogy with the same pattern in `lib/api/comments.ts` and `lib/api/exercise-detail.ts`.
+
+**Observations:** The generated OpenAPI types declare `content?: never` for this endpoint's response body, so the shape is taken from the legacy `GroupInfoTable.js` (`{id, service, key, value}`). The legacy app also attempted to translate `service` and `key` via a `EXTERNAL_ATTRIBUTES` config map; this app renders the raw values since no such config exists here and the translations were always deployment-specific rather than something to port.
+
+**Next ticket:** G-019 — Telling teachers an exercise changed (`POST /v1/exercises/{id}/notification`).

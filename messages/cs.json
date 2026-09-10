@@ -383,6 +383,12 @@
       "addSubgroup": "Nová podskupina",
       "noSubgroups": "Tato skupina nemá žádné podskupiny."
     },
+    "externalAttributes": {
+      "title": "Externí atributy",
+      "service": "Služba",
+      "key": "Klíč",
+      "value": "Hodnota"
+    },
     "membership": {
       "join": "Vstoupit do skupiny",
       "leave": "Opustit skupinu",
