@@ -1,5 +1,6 @@
 import "server-only";
 
+import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
@@ -124,6 +125,12 @@ export const getUserGroups = cache(async function getUserGroups(
     );
   } catch (error) {
     if (error instanceof ApiError && error.httpStatus === 403) return null;
+    // **The carve-out is 403 and only 403.** A 404 here means the person does not exist, which is
+    // the whole page's answer rather than one section's -- and `ProfileView` awaits this alongside
+    // two reads that *do* raise the interrupt, in one `Promise.all`. `Promise.all` rejects with
+    // whichever settles first, so letting a raw `ApiError` out of this one made the reader's answer
+    // a race: usually the Not found page, sometimes "Something went wrong" for the same URL.
+    if (error instanceof ApiError && error.httpStatus === 404) notFound();
     throw error;
   }
 
