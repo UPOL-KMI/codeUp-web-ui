@@ -477,8 +477,11 @@ export async function solutionSubmissionIds(solutionId: string): Promise<string[
  * not run at all, so every job failed within a second. **That is no longer true** -- evaluation
  * works, and a re-run now produces an ordinary verdict. Nothing this suite can reach from core-api
  * makes a job fail on purpose any more: it takes a hardware group no worker serves, and this
- * deployment defines exactly one. So the two tests that need a failure say why they cannot run
- * instead of waiting twenty seconds for one that will not appear (filed as **PF-017**).
+ * deployment defines exactly one -- and **that group cannot be created**, since
+ * `/v1/hardware-groups` is a lone `GET`. PF-017 investigated both routes out of this and closed:
+ * nothing reachable from an API a spec can call produces a submission failure, because a
+ * submission failure is by definition what the broker or the worker could not do. So the tests
+ * that need a row say why they cannot run.
  *
  * Returns `null` rather than throwing, so the caller skips rather than fails: the screen is fine,
  * the fixture is missing.

@@ -5778,3 +5778,42 @@ but it does not hold up: the read asserts the evaluation table, which a points o
 touch, and a GET cannot disturb the writer anyway. So it is left alone and written down: if it
 recurs, `[seed] correct` has several readers now (`plagiarism`, `dashboard`, `solutions`) and one
 writer, and that is where to look first.
+
+---
+
+### 2026-09-11 — PF-017 answered: the fixture cannot be built, and that is the finding
+
+**Tickets:** PF-017 (closed, not a defect).
+**Status:** no code changed. Two candidate fixtures were investigated against the running stack and
+both are closed, so the three skipped tests in `submission-failures.spec.ts` keep their skips.
+
+The row asked for a decision between two ways of minting a submission failure now that the sandbox
+works. Neither survives contact.
+
+**A hardware group nothing serves cannot be created.** `/v1/hardware-groups` is a single `GET`
+route — there is no create, update or delete anywhere in core-api's router. The only group that
+exists, `01-default`, comes from `fixtures/init/10-hwGroups.neon`, so a second one means patching
+an upstream fixture or inserting a database row by hand. That is deployment surgery performed to
+give a test suite something to look at, and the result would sit in every exercise's limits screen
+for as long as the deployment lives.
+
+**A job whose supplementary file is missing is refused before it is dispatched.** Tried directly:
+an exercise was built, given an `expected.txt`, and the file deleted afterwards. The next
+submission answers `Exercise is broken. If you are the author, check its configuration.` — core-api
+checks the configuration it is about to compile and declines. That is the right behaviour and it is
+not a submission failure.
+
+**What is left is the definition of the thing.** A submission failure is what core-api records when
+the _broker or the worker_ could not process a job it accepted: no worker for the hardware group, a
+file the worker cannot fetch, a worker that dies. None of those is reachable from an API a spec can
+call, which is exactly why the old fixture was a side effect of a broken sandbox rather than
+something anybody built.
+
+**So the screen keeps the coverage that does not need a row** — it opens on the unresolved queue,
+it is refused to a reader core-api does not trust, and an empty queue renders honestly, which is
+now this instance's ordinary state. The three tests that need a row say why they cannot run.
+
+**One real failure was made on the way and has been resolved through the product**, with a note
+saying what it was: importing the C# runtime package by hand through `docker compose exec` runs as
+root, and php-fpm serves as `www-data`, so the imported blob was unreadable and the worker's next
+job failed to fetch it. The compose repo's `COMPATIBILITY.md` carries that step now.
