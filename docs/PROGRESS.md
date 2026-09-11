@@ -5507,3 +5507,87 @@ anyway — so this is tidiness rather than a blocker. Also on the instance, and 
 delete: an assignment of `[seed] Echo Greeting` inside `Jazyk Python` carrying two of Alice's
 solutions, from the same pre-`chooseInstance` run. The seed reports the stray attachment and leaves
 the group alone.
+
+---
+
+### 2026-09-11 — The instance wiped and re-seeded, and the four things a clean fixture exposed
+
+**Ticket:** none — the operator's call, taken after PF-012 recorded that three solutions could not
+be removed through any API (Q-029).
+**Status:** done. **308 pass, 0 fail, twice in a row — and the fixture is byte-for-byte unchanged
+after both runs**, which is the result worth having rather than the green tick.
+
+**What was done.** `docker compose down`, then `mysql_data`, `api_storage` and `worker_cache`
+removed, then `up -d`. The api entrypoint's fresh-database path does the rest on its own: schema
+from the current entity mappings with the 144-migration history marked applied, `db:fill init` for
+the admin account and the hardware group, and `runtimes:import` for each language package — four
+environments with working pipelines. Then `pnpm seed`.
+
+**`api_storage` had to go with the database, and that is the one thing easy to get wrong here.** The
+entrypoint's guard is `[ ! -f storage/.seeded ]`, and `storage/` is that volume — so wiping only
+`mysql_data` would have skipped `db:fill init` and `runtimes:import` entirely, leaving a schema with
+no admin account and no runtime environments. It also holds every uploaded solution and attachment,
+which a fresh database has no rows for.
+
+**A backup was taken first** (`mysqldump` plus a tar of `api_storage`, ~350 kB together), because
+the wipe was not only the seed's data: it also took an operator's own `Katedra informatiky`,
+`2025/2026 - Jazyk python` and `Jazyk Python` groups, a hand-written `01 - RPN` exercise, three real
+accounts, and the second instance. That was put to the operator with the list before anything was
+removed, and the answer was to go ahead.
+
+**What the wipe fixed by itself:** one instance instead of two, so nothing has to guess which one
+the landing page names; 34 soft-deleted instances and 14 orphaned probe accounts gone; the stray
+`[seed] Echo Greeting` attachment in somebody else's course gone; and the three undeletable
+solutions of Q-029 gone with the tables that held their plagiarism records. `pnpm seed` on the fresh
+database now logs "no unintended seed solutions to remove" and nothing is refused.
+
+**And then four failures that only a clean fixture could show**, every one of them a real fault that
+dirty data had been masking:
+
+**1. A spec insisted on a plural the fixture does not promise.** The group-wide drill-down summary
+reads "3 submissions across 1 assignment." for the seeded student — all three of her attempts are on
+one assignment, deliberately — and the assertion required `assignments`. It had been passing only
+because a stray solution of hers sat on a second assignment. The count across more than one is
+asserted further down, on the classmate, who genuinely has that.
+
+**2. The teacher dashboard's two queues could not both be read by one person.** "Reviews you have
+open" is the reviews _this reader_ started; "Reviews students have asked for" is the requests in
+groups _this reader_ supervises. The seed opened its review with the **admin** token, and the admin
+supervises nothing, so no single account had both — it had only ever worked because earlier runs had
+left the admin attached to the seeded groups. The seed opens it as **Sam**, the group's own
+supervisor, which is also who would really be reading it.
+
+**3. PF-010's last bucket is real, and both earlier readings of it were wrong — including mine, one
+commit before this.** `getByPlaceholder("Filter groups")` is a strict-mode violation because the
+document holds **two** identical inputs: one under `main#main-content` and one under `div#S:2`,
+React's out-of-order streaming staging area, which an inline script relocates into place afterwards.
+So it is not the responsive duplicate the row guessed, and it is not "impossible because
+`data-table.tsx` renders one input", which is what I concluded from reading the code and which
+`groups.spec.ts` refuted on the next fresh instance. It is a **race with PF-002's streaming**, which
+is exactly why it appeared on some instances and not others. Scoped to `main`, and recorded as
+**DEC-134** because every unscoped locator in the suite has the same exposure.
+
+**4. A product defect that had been hiding behind an intermittent spec.** `refusals.spec.ts` kept
+failing about one run in three with "Something went wrong" where the Not found page belongs — which
+I had attributed to Q-030's authorless solutions, and the fresh instance has none, so that was
+wrong. The real cause: `ProfileView` awaits three reads of the same user in one `Promise.all`, and
+`getUserGroups` uses the raw client on purpose so that a **403** can be rendered around. It rethrew
+everything else — including a **404** — as a plain `ApiError`, while its two neighbours raise
+`notFound()`. `Promise.all` rejects with whichever settles first, so **the reader's answer for a
+nonexistent user was decided by a race between three requests**, and one of the three was wrong.
+The carve-out is now 403 and only 403. The assertion that used to wait five seconds and fail now
+resolves in 305 ms, and passed four repeats.
+
+**Also found on the way, and it belongs to DEC-133 rather than to a ticket of its own.**
+`AssignmentSolution::setReviewedAt()` clears `reviewRequest` whenever a review is **closed** — in
+the entity, so it is in no presenter and in no response — and erasing or reopening the review does
+not put it back. `solution-sources.spec.ts` closes a supervisor's review on the very solution the
+request fixture lives on, so it had been consuming that fixture every single run, and the dashboard
+spec failed in the other worker when it did. It restores it explicitly now. Found by bisecting: set
+the flag, run one spec file, read the flag, repeat — eight files, and the answer was unambiguous.
+
+**The evidence that the suite no longer eats its own fixtures** is not the two green runs on their
+own. It is that after both of them the seeded group still holds exactly four solutions on the
+primary assignment, one on the second-deadline one, **zero on the "nothing submitted yet" one**, and
+the review request still standing — the state `pnpm seed` had left. Nothing leaked either: no
+orphaned broadcasts, 27 exercises, 9 pipelines, 7 groups, no authorless solutions.
