@@ -179,6 +179,31 @@ piece worth doing first and independent of the status code: **F-030 landed (DEC-
 question is unchanged by it.** A refused page now says so in words wherever the refusal comes from,
 and still answers 200.
 
+**Re-checked 2026-09-11 against Next 16.3's own bundled documentation, and there is nothing to do
+here — but one thing this question was missing turns out to matter.** The framework documents this
+as an accepted trade-off, in the same words and with the same two remedies this entry had reasoned
+out unaided: _"Because the check runs inside the `<Suspense>` boundary, the response has already
+begun streaming as a `200`, and the status can't change once streaming has started... To return a
+real `403` status, the check has to run before the response streams... run that check in `proxy`
+instead"_ (`04-functions/forbidden.md`, and identically in `not-found.md` and `unauthorized.md`).
+`03-file-conventions/not-found.md` states the resulting behaviour outright: **200 for streamed
+responses, 404 for non-streamed ones.** So the analysis above is confirmed rather than superseded,
+and neither remedy has got cheaper.
+
+**What is new is the mitigation, which this entry did not know about: Next injects
+`<meta name="robots" content="noindex" />` itself.** Verified in this app's own served HTML rather
+than taken from the docs — `/en/users/<nonexistent-id>` and `/en/admin` read by a student both
+answer `HTTP/1.1 200 OK` carrying `NEXT_HTTP_ERROR_FALLBACK;404` / `;403` **and**
+`content="noindex"`. That removes the half of the cost that would have been permanent: a soft 404
+or 403 is kept out of search results regardless of the status line. What remains is what the status
+line means to a non-browser client — monitoring, a crawler that ignores the meta tag, an
+integration reading status codes — and a browser reader still gets the right page either way.
+
+**So this stays open as an accepted constraint rather than a defect, and the trigger for revisiting
+it is named:** if a monitoring or integration requirement ever needs real statuses, the fix is the
+`proxy` one, and its cost is a core-api round trip per navigation to answer a question the page then
+asks again.
+
 ## Q-017: The IP half of an exam lock records infrastructure, not the student (S-008)
 
 Locking into an exam pins the student to the address the lock request came from
