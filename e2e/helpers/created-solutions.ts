@@ -1,6 +1,5 @@
-import { test } from "@playwright/test";
-
 import { deleteSolutionIfPresent } from "./core-api";
+import { cleanUpCreated } from "./created";
 
 /**
  * Removes the solutions a spec file submitted, whether or not its tests reached their own teardown
@@ -24,19 +23,7 @@ import { deleteSolutionIfPresent } from "./core-api";
  * for.
  */
 export function cleanUpCreatedSolutions(): (solutionUrl: string) => string | null {
-  const created: string[] = [];
+  const track = cleanUpCreated(deleteSolutionIfPresent);
 
-  test.afterEach(async () => {
-    // Popped rather than iterated, so a failure part-way through still shortens the list and the
-    // next hook does not retry what already succeeded.
-    while (created.length > 0) await deleteSolutionIfPresent(created.pop()!);
-  });
-
-  return (solutionUrl: string) => {
-    // Guarded: an empty id would aim the cleanup's DELETE at the collection rather than at a
-    // member of it.
-    const id = /\/solutions\/([0-9a-f-]+)/.exec(solutionUrl)?.[1] ?? null;
-    if (id !== null) created.push(id);
-    return id;
-  };
+  return (solutionUrl: string) => track(/\/solutions\/([0-9a-f-]+)/.exec(solutionUrl)?.[1]);
 }

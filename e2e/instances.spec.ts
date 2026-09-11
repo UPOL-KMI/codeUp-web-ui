@@ -4,7 +4,8 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
-import { deleteGroupIfPresent } from "./helpers/core-api";
+import { deleteGroupIfPresent, deleteInstanceIfPresent } from "./helpers/core-api";
+import { cleanUpCreated } from "./helpers/created";
 import { baseURL } from "./helpers/base-url";
 
 /**
@@ -35,6 +36,17 @@ async function signIn(page: Page, account: SeedAccount, path: string): Promise<v
   await page.goto(path);
 }
 
+/**
+ * Registered once for the file (PF-014). The two tests below delete their instance through the
+ * dialog, which is what one of them asserts; this is for the run that never gets there.
+ *
+ * **The old teardown could not cover that case, because it drove the page.** `deleteCurrentInstance`
+ * clicks through the screen, so a test killed by a timeout left an instance *and* the root group
+ * deleting it orphans (Q-023) in every superadmin's sidebar -- which is the one leak in the suite
+ * that a reader would actually notice.
+ */
+const trackInstance = cleanUpCreated(deleteInstanceIfPresent);
+
 /** Creates an instance through the dialog and leaves the browser on its own screen. */
 async function createInstance(page: Page, name: string): Promise<void> {
   const main = page.getByRole("main");
@@ -44,6 +56,9 @@ async function createInstance(page: Page, name: string): Promise<void> {
   await dialog.getByLabel("Description").fill("Created by the e2e suite.");
   await dialog.getByRole("button", { name: "Create", exact: true }).click();
   await expect(main.getByRole("heading", { name, level: 1 })).toBeVisible();
+  // Creating one lands on `/admin/instances/{id}`, so the id is known here -- before the
+  // assertions that follow, which is the point.
+  trackInstance(new URL(page.url()).pathname.split("/").at(-1));
 }
 
 /**

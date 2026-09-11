@@ -153,6 +153,105 @@ export async function deleteGroupIfPresent(groupId: string): Promise<void> {
  * an exercise a real supervisor started and abandoned. So it has to be removed by id, by whoever
  * created it, whether or not their test survived.
  */
+/**
+ * Delete the account with this address, for a spec's own cleanup (PF-014).
+ *
+ * **By address rather than by id**, because the screen that creates an account does not put its id
+ * anywhere the test can read before the assertions that follow -- and the address is what the test
+ * already holds, since it has to mint a unique one per run (Q-021: a soft-deleted address can never
+ * be deleted a second time).
+ */
+export async function deleteUserByEmailIfPresent(email: string): Promise<void> {
+  const token = await coreApiToken();
+  const found = await coreApi<{
+    items?: { id: string; privateData?: { email?: string } }[];
+  }>(`/users?filters[search]=${encodeURIComponent(email)}`, token).catch(() => ({ items: [] }));
+  for (const user of found.items ?? []) {
+    // The address is under `privateData`, not on the item -- the list discloses a name to anyone
+    // who may read it and an address only to a caller who may see that. An exact match, because
+    // core-api's `search` is a substring one and this must not delete a neighbour.
+    if (user.privateData?.email !== email) continue;
+    await fetch(`${coreApiBase}/users/${user.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => undefined);
+  }
+}
+
+/**
+ * Delete an instance and the root group deleting it leaves behind, for a spec's own cleanup
+ * (PF-014).
+ *
+ * The second half is not tidiness: **deleting an instance orphans its root group** (Q-023), and an
+ * orphaned root group lands in the sidebar of every superadmin page on the deployment. So a
+ * teardown that removed only the instance would still leave a visible trace of every run.
+ *
+ * Written against core-api rather than the screen on purpose. The spec's own delete goes through
+ * the dialog, which is what it asserts; this one has to work when the page is the thing that died.
+ */
+export async function deleteInstanceIfPresent(instanceId: string): Promise<void> {
+  const token = await coreApiToken();
+  const instance = await coreApi<{ rootGroupId?: string | null }>(
+    `/instances/${instanceId}`,
+    token,
+  ).catch(() => null);
+  await fetch(`${coreApiBase}/instances/${instanceId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+  if (instance?.rootGroupId) await deleteGroupIfPresent(instance.rootGroupId);
+}
+
+/**
+ * Remove every `[e2e] `-noted group invitation, for the file that creates them (PF-014).
+ *
+ * The same shape as `deleteE2eSystemMessages` and for the same reason: the notes are this suite's
+ * own, nothing else writes them, and a link left behind by a run that died is offered to anyone who
+ * opens the group's settings. Indiscriminate on purpose -- a run that never reached its own
+ * teardown cannot say which links it made.
+ */
+export async function deleteE2eGroupInvitations(): Promise<void> {
+  const token = await coreApiToken();
+  const groups = await coreApi<{ id: string }[]>("/groups?archived=true", token);
+  for (const group of groups) {
+    const invitations = await coreApi<{ id: string; note: string | null }[]>(
+      `/groups/${group.id}/invitations`,
+      token,
+    ).catch(() => []);
+    for (const invitation of invitations) {
+      if (!invitation.note?.startsWith("[e2e] ")) continue;
+      await fetch(`${coreApiBase}/group-invitations/${invitation.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => undefined);
+    }
+  }
+}
+
+/**
+ * Every configuration variable of an exercise, flattened, for a spec that has to assert what was
+ * written rather than what a form shows (X-001).
+ *
+ * The configuration is nested three deep -- environment, test, pipeline -- and a variable's meaning
+ * comes from its name, not its position, so this flattens to `{name, value}` pairs and lets the
+ * caller look for the ones it cares about. Read straight from core-api because the screen shows
+ * one test's configuration at a time: an import writes several, and what matters is that each
+ * knows its own two files.
+ */
+export async function exerciseConfigVariables(
+  exerciseId: string,
+): Promise<{ name: string; value: unknown }[]> {
+  const token = await coreApiToken();
+  const config = await coreApi<
+    { tests?: { pipelines?: { variables?: { name: string; value: unknown }[] }[] }[] }[]
+  >(`/exercises/${exerciseId}/config`, token);
+  return config.flatMap((environment) =>
+    (environment.tests ?? []).flatMap((test) =>
+      (test.pipelines ?? []).flatMap((pipeline) => pipeline.variables ?? []),
+    ),
+  );
+}
+
 export async function deleteExerciseIfPresent(exerciseId: string): Promise<void> {
   const token = await coreApiToken();
   await fetch(`${coreApiBase}/exercises/${exerciseId}`, {
@@ -311,6 +410,25 @@ export async function seededSolutionWithOpenReview(): Promise<{ id: string }> {
  * found through. Clearing the flag that was set is not the same as restoring what it displaced,
  * which is why this exists as well as the specs writing on the classmate.
  */
+/**
+ * Erase the review on a solution, for a spec's own cleanup (PF-014).
+ *
+ * `solution-sources.spec.ts` starts a supervisor's review, closes it, and erases it at the end of
+ * the test body -- so a failure in between leaves a review standing, and the next run finds no
+ * "Start review" button because the review it wanted to start is already there. That is the leak
+ * biting its own spec rather than a neighbour's, which is how it was found.
+ *
+ * Erasing also does not restore the `reviewRequest` that closing the review cleared, which is why
+ * the caller pairs this with `restoreSeededReviewRequest` (DEC-133).
+ */
+export async function eraseReviewIfPresent(solutionId: string): Promise<void> {
+  const token = await coreApiToken();
+  await fetch(`${coreApiBase}/assignment-solutions/${solutionId}/review`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => undefined);
+}
+
 export async function restoreSeededReviewRequest(): Promise<void> {
   const { id } = await firstSeededSolution(SEEDED_CORRECT_NOTE);
   await setReviewRequestedDirectly(id, true);

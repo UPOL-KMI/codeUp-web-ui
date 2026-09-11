@@ -1,6 +1,5 @@
-import { test } from "@playwright/test";
-
 import { deleteExerciseIfPresent } from "./core-api";
+import { cleanUpCreated } from "./created";
 
 /**
  * Removes the exercises a spec file created, whether or not its tests reached their own teardown
@@ -23,19 +22,10 @@ import { deleteExerciseIfPresent } from "./core-api";
  * assertions that follow the creation, because a failure in those is the case this exists for.
  */
 export function cleanUpCreatedExercises(): (editUrl: string) => string | null {
-  const created: string[] = [];
+  const track = cleanUpCreated(deleteExerciseIfPresent);
 
-  test.afterEach(async () => {
-    // Popped rather than iterated, so a failure part-way through still shortens the list and the
-    // next hook does not retry what already succeeded.
-    while (created.length > 0) await deleteExerciseIfPresent(created.pop()!);
-  });
-
-  return (editUrl: string) => {
-    // Guarded: an empty id would aim the cleanup's DELETE at the collection rather than at a
-    // member of it.
-    const id = /\/exercises\/([0-9a-f-]+)/.exec(editUrl)?.[1] ?? null;
-    if (id !== null) created.push(id);
-    return id;
-  };
+  return (editUrl: string) =>
+    // Guarded by `track`: an empty id would aim the cleanup's DELETE at the collection rather than
+    // at a member of it.
+    track(/\/exercises\/([0-9a-f-]+)/.exec(editUrl)?.[1]);
 }

@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
-import { seededInvitationIds } from "./helpers/core-api";
+import { deleteE2eGroupInvitations, seededInvitationIds } from "./helpers/core-api";
 
 /**
  * The page a group invitation link leads to (S-023), read as the seeded student.
@@ -109,6 +109,15 @@ test.describe("managing the links", () => {
   const NOTE = "[e2e] a link this test made";
   const RENAMED = "[e2e] and then renamed";
 
+  // A link left behind is offered to whoever next opens the group's settings, and the test below
+  // deletes its own only if it gets that far. Through core-api rather than the screen, because the
+  // run this exists for is the one where the page is what died (PF-014). Indiscriminate over the
+  // `[e2e] ` prefix for the same reason `deleteE2eSystemMessages` is: a run that never reached its
+  // teardown cannot say which links were its own.
+  test.afterEach(async () => {
+    await deleteE2eGroupInvitations();
+  });
+
   test.beforeEach(async ({ page }) => {
     const cookie = await loginAndGetCookie(SUPERADMIN);
     await page.context().addCookies([{ ...cookie, url: baseURL }]);
@@ -131,16 +140,7 @@ test.describe("managing the links", () => {
       .filter({ has: page.getByRole("heading", { name: "Invitation links" }) });
     await expect(section).toBeVisible();
 
-    // Leftovers from a run that died mid-test, so this starts from a known state either way.
-    for (const note of [NOTE, RENAMED]) {
-      const stale = section.locator("li").filter({ hasText: note });
-      while ((await stale.count()) > 0) {
-        await stale.first().getByRole("button", { name: "Delete" }).click();
-        await page.getByRole("alertdialog").getByRole("button", { name: "Confirm" }).click();
-        await expect(page.getByText("The link was deleted.", { exact: true })).toBeVisible();
-      }
-    }
-
+    // No sweep here any more: the `afterEach` above leaves nothing to start from (PF-014).
     const before = await section.locator("li").count();
 
     // A date already gone is refused by the form itself, before core-api is asked.

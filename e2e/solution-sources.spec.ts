@@ -4,7 +4,8 @@ import type { Browser, Page } from "@playwright/test";
 import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
-import { restoreSeededReviewRequest } from "./helpers/core-api";
+import { eraseReviewIfPresent, restoreSeededReviewRequest } from "./helpers/core-api";
+import { cleanUpCreated } from "./helpers/created";
 import type { SeedAccount } from "./helpers/accounts";
 
 /**
@@ -131,6 +132,12 @@ test("a solution submitted as an archive reads as the files inside it", async ({
   await expect(page.locator("#solution-zip-greeting-py-L1")).toBeVisible();
 });
 
+// Registered once for the file (PF-014). The test below erases its own review -- that is the last
+// thing it asserts -- so this finds nothing to do in the ordinary case; it exists for the run that
+// dies in between, which left a review standing and the next run with no "Start review" button to
+// press.
+const trackReview = cleanUpCreated(eraseReviewIfPresent);
+
 test("a supervisor's review reaches the student only when it is closed", async ({
   browser,
 }: {
@@ -147,6 +154,8 @@ test("a supervisor's review reaches the student only when it is closed", async (
   await signIn(supervisorPage, SUPERVISOR, sourcesUrl);
 
   const supervisorMain = supervisorPage.getByRole("main");
+  // Remembered before the review exists, so the sweep covers the click itself failing part-way.
+  trackReview(/\/solutions\/([0-9a-f-]+)/.exec(sourcesUrl)?.[1]);
   await supervisorPage.getByRole("button", { name: "Start review" }).click();
   await expect(supervisorPage.getByRole("button", { name: "Close review" })).toBeVisible();
 

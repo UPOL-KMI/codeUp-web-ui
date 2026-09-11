@@ -5,6 +5,8 @@ import { STUDENT, SUPERADMIN, SUPERVISOR, SUPERVISOR_STUDENT } from "./helpers/a
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { deleteUserByEmailIfPresent } from "./helpers/core-api";
+import { cleanUpCreated } from "./helpers/created";
 
 /**
  * The user directory (AD-001).
@@ -31,6 +33,11 @@ import { baseURL } from "./helpers/base-url";
  * core-api, and filed as Q-021.
  */
 const probeEmail = () => `e2e.ad001.probe.${Date.now()}@seed.recodex.local`;
+
+// Registered once for the file (PF-014). The test below deletes its own account -- that deletion is
+// what it asserts -- so in the ordinary case this finds it already gone; it exists for the run that
+// fails before getting there and would otherwise leave a live account named like a seeded student.
+const trackUser = cleanUpCreated(deleteUserByEmailIfPresent);
 
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
@@ -140,7 +147,7 @@ test("never offers to disable the reader's own account", async ({ page }) => {
 test("asks about a name collision before creating, then creates and deletes", async ({ page }) => {
   await signIn(page, SUPERADMIN, "/en/users");
   const main = page.getByRole("main");
-  const email = probeEmail();
+  const email = trackUser(probeEmail())!;
 
   await main.getByRole("button", { name: "Create a user" }).click();
   const form = page.getByRole("dialog");
