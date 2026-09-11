@@ -7,6 +7,7 @@ import remarkMath from "remark-math";
 import { getHighlighter } from "@/lib/code/highlight";
 import { PLAINTEXT } from "@/lib/code/languages";
 import { remarkEscapeRawHtml, remarkLegacyMathDelimiters } from "@/lib/markdown/legacy-compat";
+import { rehypeShikiPalette } from "@/lib/markdown/shiki-palette";
 
 import "katex/dist/katex.min.css";
 
@@ -22,7 +23,9 @@ import "katex/dist/katex.min.css";
  *
  * Code fences are highlighted by Shiki rather than by the legacy app's `highlight.js`, sharing
  * D-009's highlighter instance so a fenced block in an exercise text and a submitted solution file
- * use the same grammars and themes.
+ * use the same grammars and themes. `rehypeShikiPalette` then does to a fence what PF-009 did to
+ * the code viewer: the token colours become a class and a rule instead of an inline `style` on
+ * every span, which measured ~7 kB off an exercise page carrying a 42-line fence.
  *
  * **This component is `async` for a reason that only shows up at run time.** react-markdown
  * executes its plugin pipeline **synchronously** (`runSync`), so the ordinary `@shikijs/rehype`
@@ -53,6 +56,8 @@ export async function Markdown({ source }: { source: string }) {
               fallbackLanguage: PLAINTEXT,
             },
           ],
+          // After Shiki, because it rewrites what Shiki emits (PF-015).
+          rehypeShikiPalette,
         ]}
         components={{
           // The scroll box is focusable because nothing inside it is: a scroll container no
