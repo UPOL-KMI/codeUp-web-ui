@@ -42,8 +42,18 @@ test("awards points the evaluation did not, and clears them again", async ({ pag
     await main.getByRole("button", { name: `Award full marks (${maxPoints})` }).click();
     await expect(main.getByText(`${maxPoints}/${maxPoints}`).first()).toBeVisible();
 
+    // **Wait for the *field*, not for the summary, before typing into it.** Since PF-016 the
+    // seeded solution genuinely scores full marks, so "10/10" is on screen before this click as
+    // well as after it -- the assertion above now resolves immediately and no longer stands in for
+    // "the save finished". Typing into the form while the `router.refresh()` behind that save is
+    // still in flight let the re-render put the old value back, and the next save sent 10 where
+    // the test meant 3. The field carrying the awarded value is the honest signal that the round
+    // trip is done.
+    const override = main.getByLabel("Points instead of the evaluated ones");
+    await expect(override).toHaveValue(String(maxPoints));
+
     // And the number in between, typed.
-    await main.getByLabel("Points instead of the evaluated ones").fill("3");
+    await override.fill("3");
     await main.getByLabel("Bonus", { exact: true }).fill("2");
     await main.getByRole("button", { name: "Save the points" }).click();
     await expect(main.getByText(`3/${maxPoints}`).first()).toBeVisible();

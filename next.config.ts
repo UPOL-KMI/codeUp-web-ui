@@ -40,6 +40,135 @@ const nextConfig: NextConfig = {
     "/**": ["./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**"],
   },
 
+  // **Where every legacy URL goes** (plan 004 in the compose repo, table in `docs/ROUTES.md`).
+  // Needed the moment this app answers on the address the legacy one used to, which is what the
+  // cutover does: otherwise every bookmark, every link in an old email and every `/app/...` path
+  // anybody wrote down answers 404.
+  //
+  // **None of these carries a locale, and that is the point.** `redirects()` runs *before*
+  // `proxy.ts`, so it cannot know what language the visitor wants. Sending to the unprefixed path
+  // costs one more hop and lets `proxy.ts` negotiate; hardcoding `/en` would be cheaper and wrong
+  // for half the people here.
+  //
+  // Order matters: Next takes the first match, so the rules that need a query string or drop a
+  // path segment come before the generic `/app/:path*` sweep at the end.
+  async redirects() {
+    return [
+      // Six legacy group screens are one screen with tabs now (DEC-071, DEC-074).
+      {
+        source: "/app/group/:groupId/info",
+        destination: "/groups/:groupId?tab=info",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/assignments",
+        destination: "/groups/:groupId?tab=assignments",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/students",
+        destination: "/groups/:groupId?tab=students",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/exams",
+        destination: "/groups/:groupId?tab=exams",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/exams/:examId",
+        destination: "/groups/:groupId?tab=exams&exam=:examId",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/edit",
+        destination: "/groups/:groupId?tab=settings",
+        permanent: true,
+      },
+      {
+        source: "/app/group/:groupId/user/:userId",
+        destination: "/groups/:groupId/users/:userId",
+        permanent: true,
+      },
+
+      // A solution is a first-class entity here, so it no longer carries its assignment.
+      { source: "/app/assignment/:a/solution/:s", destination: "/solutions/:s", permanent: true },
+      {
+        source: "/app/assignment/:a/solution/:s/sources",
+        destination: "/solutions/:s/sources",
+        permanent: true,
+      },
+      {
+        source: "/app/assignment/:a/solution/:s/plagiarisms",
+        destination: "/solutions/:s/plagiarisms",
+        permanent: true,
+      },
+      // ROUTES.md recorded this one as having nowhere to go "until G-005 is built". It is.
+      {
+        source: "/app/assignment/:a/solution/:s/diff/:other",
+        destination: "/solutions/:s/diff/:other",
+        permanent: true,
+      },
+
+      // Singular to plural, and the `/app` prefix dropped.
+      { source: "/app/assignment/:id", destination: "/assignments/:id", permanent: true },
+      {
+        source: "/app/assignment/:id/:rest*",
+        destination: "/assignments/:id/:rest*",
+        permanent: true,
+      },
+      // Likewise recorded as unbuilt, and shipped with G-009. Before the bare rule below it.
+      {
+        source: "/app/shadow-assignment/:id/edit",
+        destination: "/shadow-assignments/:id/edit",
+        permanent: true,
+      },
+      {
+        source: "/app/shadow-assignment/:id",
+        destination: "/shadow-assignments/:id",
+        permanent: true,
+      },
+      { source: "/app/user/:id/edit", destination: "/users/:id/edit", permanent: true },
+      { source: "/app/user/:id", destination: "/users/:id", permanent: true },
+
+      // Screens that merged into another.
+      {
+        source: "/app/exercises/:e/reference-solution/:r",
+        destination: "/exercises/:e/reference-solutions/:r",
+        permanent: true,
+      },
+      {
+        source: "/app/pipelines/:id/edit-struct",
+        destination: "/pipelines/:id/edit",
+        permanent: true,
+      },
+      { source: "/app/instance/:id", destination: "/admin/instances/:id", permanent: true },
+      { source: "/admin/instances/:id/edit", destination: "/admin/instances/:id", permanent: true },
+      { source: "/app/server", destination: "/admin", permanent: true },
+
+      // Anonymous routes that were renamed.
+      { source: "/registration", destination: "/register", permanent: true },
+      { source: "/forgotten-password", destination: "/forgot-password", permanent: true },
+      {
+        source: "/forgotten-password/change",
+        destination: "/forgot-password/change",
+        permanent: true,
+      },
+      // **ROUTES.md's `/login/:redirect*` rule is deliberately not here**, and the reason is worth
+      // keeping. Written as the table has it, it matched bare `/login` and sent it to `/login`:
+      // a permanent self-redirect on the one route an unauthenticated visitor must be able to
+      // reach, and the exact path this app's own logout lands on (F-017 303s to the locale-neutral
+      // `/login` and lets `proxy.ts` pick the language). Two specs caught it as a login page that
+      // would not load. What it would have bought is a legacy URL nobody bookmarks -- the legacy
+      // app put its redirect target in a path segment, and the table already threw that target
+      // away -- so the rule costs more than it is worth and `/login/<target>` is left to 404.
+      //
+      // The sweep, last, so every rule above wins over it.
+      { source: "/app", destination: "/dashboard", permanent: true },
+      { source: "/app/:path*", destination: "/:path*", permanent: true },
+    ];
+  },
+
   experimental: {
     // Enables forbidden()/unauthorized() + forbidden.tsx/unauthorized.tsx (still
     // experimental as of 16.3.1, but there's no non-experimental way to get a real

@@ -5846,3 +5846,37 @@ came with it — the seeded group has a subgroup whose name contains its own.
 **And the fixtures survive the suite.** Snapshotted before and after a full run and compared: four
 solutions on the primary assignment, one on the second-deadline one, none on the deliberately-empty
 one, one instance, six groups, 26 exercises, an empty failure queue. Identical.
+
+---
+
+### 2026-09-11 — the cutover, and two races only real verdicts could expose
+
+**Tickets:** none new; the compose repo's plan 004 moved `/` to this app.
+**Status:** done. Five static checks, 287 unit tests, and the full e2e suite green.
+
+The deployment serves this app at its own address now, so every legacy URL needed somewhere to go:
+`next.config.ts` gained the `redirects()` block `docs/ROUTES.md` has been carrying, and **two of its
+rules were written as gaps** — `/app/assignment/:a/solution/:s/diff/:other` and
+`/app/shadow-assignment/:id/edit` were recorded as having nowhere to land "until those are built",
+and G-005 and G-009 built them.
+
+**One rule from that table is deliberately not here, and the reason is the interesting part.**
+`/login/:redirect*` matched bare `/login` and redirected it to `/login` — a permanent self-redirect
+on the one route an unauthenticated visitor must be able to reach, and exactly where this app's own
+logout lands (F-017 303s to the locale-neutral `/login`). `account.spec.ts` and
+`session-expiry.spec.ts` both caught it as a login page that would not load.
+
+**The diagnosis went wrong first, and that is worth recording.** Removing the rule appeared not to
+fix it, which nearly sent the investigation somewhere else. The fault was the harness: those probes
+ran against `pnpm start`, which Next itself warns does not work with `output: standalone`. Driving
+the same paths through the **container** was unambiguous — without the rule `/login` answers `307
+/en/login`, with it a 308 loop. Redirects are verified through the container from now on.
+
+**And a genuine test race, newly reachable because the fixtures now grade.**
+`solution-verdict.spec.ts` clicked "Award full marks (10)", waited for `10/10` in the summary, then
+typed `3` into the override field. Since PF-016 the seeded solution _already_ scores 10/10, so that
+assertion resolves before the save round trip finishes — the typing landed while `router.refresh()`
+was in flight, the re-render put `10` back, and the next save sent the wrong number. It waits for
+the **field** to carry the awarded value now, which is the honest signal that the save completed.
+This is the failure that looked like a flake earlier in the day and was not: it only became
+deterministic once every seeded solution had a real verdict.
