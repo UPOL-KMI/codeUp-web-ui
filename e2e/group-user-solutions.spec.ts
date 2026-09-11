@@ -60,7 +60,11 @@ test("the roster leads to one student's submissions across the whole group", asy
 
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { name: "Alice Student", level: 1 })).toBeVisible();
-  await expect(main.getByText(/submissions across \d+ assignments/)).toBeVisible();
+  // `assignments?`, because the plural is not guaranteed and the count is not this test's subject.
+  // Alice's three attempts are all on one assignment, which the seed intends -- the line reads
+  // "across 1 assignment", and insisting on the plural failed a correct summary. The aggregation
+  // across more than one is asserted further down, on the classmate, who has exactly that.
+  await expect(main.getByText(/\d+ submissions across \d+ assignments?\./)).toBeVisible();
   // The column that makes this list different from an assignment's own (T-003), which names the
   // author instead -- here every row is the same person.
   await expect(main.getByRole("columnheader", { name: "Assignment" })).toBeVisible();

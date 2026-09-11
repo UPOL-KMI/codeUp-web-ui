@@ -57,8 +57,10 @@ test("a profile whose crumb chain cannot be resolved is Not found, not an error"
   // **Waited for longer than the default, and PF-008 says why.** Here the interrupt is raised
   // after streaming has begun, so Next cannot rewind the markup it has already sent: it marks the
   // boundary and the client renders the Not found page after hydration. What this assertion waits
-  // on is therefore the client bundle rather than a server response, and five seconds is not
-  // always enough for it with the rest of the suite running beside it.
+  // on is therefore the client bundle rather than a server response. (The intermittent failure
+  // this test used to show was not the timeout -- it was `getUserGroups` letting a raw 404 out of
+  // its 403 carve-out, so `ProfileView`'s `Promise.all` raced a plain error against two
+  // interrupts. Fixed in `lib/api/user-profile.ts`; the headroom stays.)
   await expect(main.getByText("The page you're looking for doesn't exist.")).toBeVisible({
     timeout: 15_000,
   });

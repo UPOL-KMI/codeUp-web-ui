@@ -4,6 +4,7 @@ import type { Browser, Page } from "@playwright/test";
 import { STUDENT, SUPERVISOR } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { restoreSeededReviewRequest } from "./helpers/core-api";
 import type { SeedAccount } from "./helpers/accounts";
 
 /**
@@ -198,6 +199,14 @@ test("a supervisor's review reaches the student only when it is closed", async (
   await supervisorPage.getByRole("button", { name: "Erase review" }).click();
   await supervisorPage.getByRole("button", { name: "Erase review" }).last().click();
   await expect(supervisorPage.getByRole("button", { name: "Start review" })).toBeVisible();
+
+  // **Closing a review withdraws the request, and erasing it does not put the request back.**
+  // `AssignmentSolution::setReviewedAt()` clears `reviewRequest` whenever a review is closed --
+  // in the entity, so it is invisible in the presenter and in the response. That is the right
+  // product behaviour (the teacher has answered) but this solution's request is a *fixture*: the
+  // row the teacher dashboard's "reviews students have asked for" queue is read through. Closing
+  // a review here consumed it, and the dashboard spec then failed in the other worker (DEC-133).
+  await restoreSeededReviewRequest();
 
   await studentContext.close();
   await supervisorContext.close();

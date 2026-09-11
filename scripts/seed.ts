@@ -1572,8 +1572,13 @@ async function main() {
     primaryAssignment.id,
     `${SEED_PREFIX} correct`,
   );
+  // **Opened by the course's own supervisor, not by the site admin.** "Reviews you have open" is
+  // the reviews *this reader* started, and "Reviews students have asked for" is the requests in
+  // groups *this reader* supervises -- so opening it as the admin, who supervises nothing, left no
+  // single account with both, and the teacher dashboard's two queues could not be read together.
+  // Sam administers this group, which is also who would really be reading them.
   await ensureReviewOpened(
-    admin.token,
+    supervisor1.token,
     student1.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} wrong`,

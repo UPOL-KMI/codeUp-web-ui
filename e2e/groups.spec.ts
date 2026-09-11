@@ -24,11 +24,20 @@ test.describe("the group list", () => {
   test("filters without a round trip and keeps the filter in the URL", async ({ page }) => {
     await signIn(page, SUPERADMIN);
 
-    const rowsBefore = await page.getByRole("row").count();
-    await page.getByPlaceholder("Filter groups").fill("Large Lecture");
+    // **Scoped to `main`, and PF-010 records why the unscoped form was a strict-mode violation.**
+    // The row that filed it guessed the app renders this control twice for its responsive layouts;
+    // it does not -- `data-table.tsx` renders one input, and the second match is React's own. Since
+    // PF-002 the page streams, so a Suspense boundary's content is delivered into a staging `div`
+    // at the end of `<body>` and relocated into place by an inline script: while that is in flight
+    // the document genuinely holds two copies of everything inside the boundary, one in
+    // `main#main-content` and one in `div#S:2`. An unscoped `page.getBy*` matches both, which is
+    // why this failed on some instances and not others -- it is a race, not a layout.
+    const main = page.getByRole("main");
+    const rowsBefore = await main.getByRole("row").count();
+    await main.getByPlaceholder("Filter groups").fill("Large Lecture");
     await expect(page).toHaveURL(/groups-q=Large\+Lecture/);
-    await expect(page.getByRole("row")).not.toHaveCount(rowsBefore);
-    await expect(page.getByRole("row", { name: /Large Lecture/ })).toBeVisible();
+    await expect(main.getByRole("row")).not.toHaveCount(rowsBefore);
+    await expect(main.getByRole("row", { name: /Large Lecture/ })).toBeVisible();
   });
 
   test("marks what kind of group a row is", async ({ page }) => {
