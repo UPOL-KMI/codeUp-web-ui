@@ -70,9 +70,10 @@ export default async function ExercisesPage({
   const authors = query.author ? [query.author] : [];
   const page = Math.max(0, Number(query.page ?? "0") || 0);
 
-  const [t, catalog, allEnvironments, allTags, allAuthors, viewer, mine, breadcrumbs] =
+  const [t, tImport, catalog, allEnvironments, allTags, allAuthors, viewer, mine, breadcrumbs] =
     await Promise.all([
       getTranslations("Exercises"),
+      getTranslations("ExerciseImport"),
       getExerciseCatalog({ search, archived, environments, tags, authors, page }, locale),
       getRuntimeEnvironments(),
       getExerciseTags(),
@@ -131,6 +132,18 @@ export default async function ExercisesPage({
     <PageShell title={t("title")} subtitle={t("subtitle")} breadcrumbs={breadcrumbs}>
       <div className="flex flex-col gap-4">
         <CreateExercise groups={mine.teaching} />
+
+        {/* Offered beside "new exercise" because it is the other way to get one, and only to
+            somebody who could create one at all -- the import screen's own check is the same
+            (X-001). */}
+        {mine.teaching.length > 0 && (
+          <Link
+            href="/exercises/import"
+            className="self-start text-sm underline hover:no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {tImport("title")}
+          </Link>
+        )}
 
         {/* A plain GET form: the filters are the server's business, and the URL they produce is
             the shareable view (brief §9). The page resets to the first whenever they change,

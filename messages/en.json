@@ -1485,6 +1485,69 @@
       }
     }
   },
+  "ExerciseImport": {
+    "title": "Import from GitHub Classroom",
+    "subtitle": "Turn an assignment's autograding.json into a draft exercise.",
+    "intro": "Paste the assignment's autograding.json and, if you have it, the template repository's README. Nothing is created until you have read what could and could not be carried over.",
+    "groupLabel": "Create the exercise in",
+    "groupChoose": "Choose a course",
+    "nameLabel": "Exercise name",
+    "namePlaceholder": "What this exercise is called here",
+    "autogradingLabel": "autograding.json",
+    "readmeLabel": "Exercise text (the template's README, optional)",
+    "environmentLabel": "Language",
+    "environmentGuessed": "Guessed from the run commands.",
+    "environmentUnknown": "The run commands say nothing recognisable — choose the language yourself.",
+    "check": "Read the file",
+    "import": "Create the draft exercise",
+    "importing": "Creating…",
+    "parseFailed": "That is not an autograding.json: it has no tests array.",
+    "reportHeading": "What this would import",
+    "declared": "{declared, plural, =1 {One test declared} other {# tests declared}}, {mapped, plural, =0 {none of which map} =1 {one of which maps} other {# of which map}}.",
+    "mappedHeading": "Tests that would be created",
+    "notesHeading": "What could not be carried over exactly",
+    "noNotes": "Everything in the file maps.",
+    "nothingMapped": "Nothing in this file maps onto a ReCodEx test, so there is nothing to create.",
+    "notAssignable": "An imported exercise cannot be assigned yet: ReCodEx requires a reference solution, and a Classroom template does not carry one. Add one on the exercise's own screen, along with the limits and anything else the tests need.",
+    "testJudgeExact": "byte-exact output",
+    "testJudgeToken": "output compared token by token",
+    "testWeight": "weight {weight}",
+    "notes": {
+      "regex-comparison": "Its comparison is a regular expression, which no judge here can do. Nothing was created for it.",
+      "containment-comparison": "Classroom looked for the expected text somewhere in the output. No judge does that, so this test compares token by token instead — which accepts more than an exact match and less than containment. Check it.",
+      "framework-run": "Its run command hands the decision to a test framework, which cannot become a stdin/stdout pair. It could be one test judged on the exit code, but that turns a whole suite into one pass or fail, so nothing was created for it.",
+      "no-input-or-output": "It declares neither input nor expected output, so there is no pair to carry. Nothing was created for it.",
+      "setup-command": "Its setup command was dropped — there is nowhere here to run one. The language's runtime has to already provide whatever it installed.",
+      "timeout-clamped": "Its timeout was longer than a wall-time limit may be here, so it was reduced.",
+      "duplicate-name": "Another test has the same name, and the score configuration is keyed by name, so this one was numbered.",
+      "unnamed-test": "It has no name, so it was named after its position.",
+      "renamed-test": "Its name uses characters ReCodEx does not allow in a test name, so it was rewritten.",
+      "rounded-points": "Its points are not a whole number, and a weight has to be, so it was rounded. Classroom's totals and ReCodEx's do not match either way."
+    },
+    "severity": {
+      "dropped": "Not imported",
+      "approximated": "Imported, with a difference"
+    },
+    "imported": "The draft exercise was created.",
+    "errors": {
+      "noGroup": "Choose the course to create the exercise in.",
+      "noName": "Give the exercise a name.",
+      "noEnvironment": "Choose the language the solutions are written in.",
+      "noTests": "There is nothing to import: no test in this file maps onto a ReCodEx test.",
+      "uploadFailed": "The test data could not be uploaded, so nothing was created.",
+      "unknown": "no reason given",
+      "nothingCreated": "nothing was created",
+      "stepFailed": "The import failed at {step}: {reason}. The exercise it left behind is {exercise}.",
+      "steps": {
+        "create": "creating the exercise",
+        "settings": "writing its name and text",
+        "environment": "setting the language",
+        "files": "attaching the test data",
+        "tests": "creating the tests",
+        "config": "writing the test configuration"
+      }
+    }
+  },
   "ExerciseConfig": {
     "title": "Tests and evaluation",
     "settings": "Basic settings",

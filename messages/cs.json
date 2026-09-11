@@ -1485,6 +1485,69 @@
       }
     }
   },
+  "ExerciseImport": {
+    "title": "Import z GitHub Classroom",
+    "subtitle": "Z autograding.json úlohy vznikne rozpracované cvičení.",
+    "intro": "Vlož autograding.json úlohy a, pokud ho máš, README šablonového repozitáře. Nic se nevytvoří, dokud si nepřečteš, co se přenést dá a co ne.",
+    "groupLabel": "Vytvořit cvičení v",
+    "groupChoose": "Vyber kurz",
+    "nameLabel": "Název cvičení",
+    "namePlaceholder": "Jak se cvičení bude jmenovat tady",
+    "autogradingLabel": "autograding.json",
+    "readmeLabel": "Text cvičení (README šablony, nepovinné)",
+    "environmentLabel": "Jazyk",
+    "environmentGuessed": "Odhadnuto z příkazů run.",
+    "environmentUnknown": "Příkazy run neříkají nic rozpoznatelného — vyber jazyk sám.",
+    "check": "Přečíst soubor",
+    "import": "Vytvořit rozpracované cvičení",
+    "importing": "Vytvářím…",
+    "parseFailed": "Tohle není autograding.json: chybí pole tests.",
+    "reportHeading": "Co by se naimportovalo",
+    "declared": "{declared, plural, =1 {Jeden deklarovaný test} few {# deklarované testy} other {# deklarovaných testů}}, {mapped, plural, =0 {z toho žádný se nemapuje} =1 {z toho jeden se mapuje} few {z toho # se mapují} other {z toho # se mapuje}}.",
+    "mappedHeading": "Testy, které by vznikly",
+    "notesHeading": "Co se nedá přenést přesně",
+    "noNotes": "Všechno v souboru se mapuje.",
+    "nothingMapped": "Nic v tomhle souboru se nemapuje na test v ReCodExu, takže není co vytvořit.",
+    "notAssignable": "Naimportované cvičení ještě nelze zadat: ReCodEx vyžaduje referenční řešení a šablona z Classroomu žádné nenese. Přidej ho na obrazovce cvičení, spolu s limity a čímkoli dalším, co testy potřebují.",
+    "testJudgeExact": "výstup přesně na bajt",
+    "testJudgeToken": "výstup porovnaný po tokenech",
+    "testWeight": "váha {weight}",
+    "notes": {
+      "regex-comparison": "Porovnání je regulární výraz, což tady neumí žádný posuzovač. Nic pro něj nevzniklo.",
+      "containment-comparison": "Classroom hledal očekávaný text někde ve výstupu. To neumí žádný posuzovač, takže tenhle test porovnává po tokenech — což připouští víc než přesnou shodu a méně než obsažení. Zkontroluj ho.",
+      "framework-run": "Příkaz run nechává rozhodnutí na testovacím frameworku, a to se na pár stdin/stdout převést nedá. Mohl by z toho být jeden test posuzovaný podle návratového kódu, ale tím se z celé sady stane jediné prošel/neprošel, takže pro něj nic nevzniklo.",
+      "no-input-or-output": "Nedeklaruje ani vstup, ani očekávaný výstup, takže není co přenést. Nic pro něj nevzniklo.",
+      "setup-command": "Jeho příkaz setup byl zahozen — tady ho není kde spustit. Runtime jazyka už musí obsahovat to, co instaloval.",
+      "timeout-clamped": "Jeho timeout byl delší, než jaký tady smí být limit na čas, takže byl zkrácen.",
+      "duplicate-name": "Jiný test se jmenuje stejně a konfigurace skóre se klíčuje jménem, takže tenhle dostal číslo.",
+      "unnamed-test": "Nemá jméno, takže byl pojmenován podle pozice.",
+      "renamed-test": "V jeho jméně jsou znaky, které ReCodEx ve jméně testu nepovoluje, takže bylo přepsáno.",
+      "rounded-points": "Jeho body nejsou celé číslo a váha být musí, takže se zaokrouhlily. Součty v Classroomu a v ReCodExu si tak jako tak neodpovídají."
+    },
+    "severity": {
+      "dropped": "Neimportováno",
+      "approximated": "Importováno s rozdílem"
+    },
+    "imported": "Rozpracované cvičení bylo vytvořeno.",
+    "errors": {
+      "noGroup": "Vyber kurz, ve kterém cvičení vznikne.",
+      "noName": "Pojmenuj cvičení.",
+      "noEnvironment": "Vyber jazyk, ve kterém jsou řešení napsaná.",
+      "noTests": "Není co importovat: žádný test v tomhle souboru se nemapuje na test v ReCodExu.",
+      "uploadFailed": "Testovací data se nepodařilo nahrát, takže nic nevzniklo.",
+      "unknown": "bez uvedeného důvodu",
+      "nothingCreated": "nic nevzniklo",
+      "stepFailed": "Import selhal v kroku {step}: {reason}. Cvičení, které po něm zůstalo, je {exercise}.",
+      "steps": {
+        "create": "vytváření cvičení",
+        "settings": "zápis názvu a textu",
+        "environment": "nastavení jazyka",
+        "files": "připojení testovacích dat",
+        "tests": "vytváření testů",
+        "config": "zápis konfigurace testů"
+      }
+    }
+  },
   "ExerciseConfig": {
     "title": "Testy a vyhodnocení",
     "settings": "Základní nastavení",
