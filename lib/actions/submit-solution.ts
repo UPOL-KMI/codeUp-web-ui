@@ -25,15 +25,28 @@ import { submitSolutionSchema, type SubmitSolutionValues } from "./submit-soluti
 export interface PreSubmitResult {
   /** Runtime environments core-api considers plausible for the uploaded file names. */
   environments: string[];
+  /**
+   * The environments whose configuration leaves the entry point to the submitter.
+   *
+   * An exercise config may bind `entry-point` to the sentinel `$entry-point`, which makes it a
+   * *submit-time* variable: core-api refuses the submission outright
+   * (`Variable 'entry-point' was not provided on submit`) unless `solutionParams` carries it. This
+   * is the only such variable ReCodEx defines, so it is reported as a list of environments rather
+   * than as a general variable table -- a table nothing would read the other columns of.
+   */
+  entryPointEnvironments: string[];
   countLimitOk: boolean;
   sizeLimitOk: boolean;
 }
 
 interface PreSubmitPayload {
   environments: string[];
+  submitVariables?: { runtimeEnvironmentId: string; variables: { name: string }[] }[];
   countLimitOK: boolean;
   sizeLimitOK: boolean;
 }
+
+const ENTRY_POINT_VARIABLE = "entry-point";
 
 export async function preSubmitSolution(
   assignmentId: string,
@@ -50,6 +63,11 @@ export async function preSubmitSolution(
       success: true,
       data: {
         environments: payload.environments ?? [],
+        entryPointEnvironments: (payload.submitVariables ?? [])
+          .filter((entry) =>
+            entry.variables.some((variable) => variable.name === ENTRY_POINT_VARIABLE),
+          )
+          .map((entry) => entry.runtimeEnvironmentId),
         countLimitOk: payload.countLimitOK,
         sizeLimitOk: payload.sizeLimitOK,
       },
@@ -99,6 +117,16 @@ export async function submitSolution(
         note: parsed.data.note,
         files: parsed.data.files,
         runtimeEnvironmentId: parsed.data.runtimeEnvironmentId,
+        // Sent only when the form resolved one: core-api stores `solutionParams` on the solution
+        // and replays them on a re-run, so an empty entry here would be persisted as an empty
+        // entry point rather than read as "no such variable".
+        ...(parsed.data.entryPoint
+          ? {
+              solutionParams: {
+                variables: [{ name: ENTRY_POINT_VARIABLE, value: parsed.data.entryPoint }],
+              },
+            }
+          : {}),
       },
       { pathParams: { id: assignmentId } },
     );

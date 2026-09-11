@@ -16,6 +16,13 @@ export const submitSolutionSchema = z.object({
   files: z.array(z.uuid()).check(z.minLength(1)),
   runtimeEnvironmentId: z.string().check(z.minLength(1)),
   note: z.string().check(z.maxLength(1024)),
+  /**
+   * The submitted file to start, for an exercise whose configuration leaves that to the submitter.
+   * A file *name*, not an id -- it names a file inside the sandbox, which core-api matches against
+   * the uploaded names. Absent for every other exercise, where sending one would bind a variable
+   * the configuration does not have.
+   */
+  entryPoint: z.optional(z.string()),
 });
 
 export type SubmitSolutionValues = z.infer<typeof submitSolutionSchema>;

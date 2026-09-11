@@ -171,6 +171,59 @@ test.describe("submitting a solution", () => {
     if (solutionId !== null) await deleteSolutionIfPresent(solutionId);
   });
 
+  test("asks which file to start when a solution has several, and grades what it runs", async ({
+    page,
+  }) => {
+    // DEC-137. The seeded exercise leaves the entry point to the submitter (`$entry-point`), so
+    // core-api refuses a submission that does not name one -- with one file or twenty. With one
+    // file the form answers that on the reader's behalf, which the test above covers; this is the
+    // other half, and the only place the picker appears at all.
+    const cookie = await loginAndGetCookie(STUDENT);
+    await page.context().addCookies([{ ...cookie, url: baseURL }]);
+    await page.goto("/en/dashboard");
+    await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
+    await page.getByRole("link", { name: "Submit a solution" }).click();
+
+    await page.setInputFiles('input[type="file"]', [
+      {
+        name: "main.py",
+        mimeType: "text/x-python",
+        buffer: Buffer.from("from greeting import GREETING\n\nprint(GREETING)\n"),
+      },
+      {
+        name: "greeting.py",
+        mimeType: "text/x-python",
+        buffer: Buffer.from('GREETING = "Hello, ReCodEx!"\n'),
+      },
+    ]);
+
+    const environment = page.getByLabel("Language", { exact: true });
+    await expect(environment).toBeEnabled({ timeout: 30_000 });
+
+    // **The submit is blocked until the question is answered**, because the default is sort order
+    // and `greeting.py` sorts first -- taking it would run the module that only defines a constant
+    // and score zero, which is a wrong answer that looks like a wrong solution.
+    const entryPoint = page.getByLabel("File to start");
+    await expect(entryPoint).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit", exact: true })).toBeDisabled();
+
+    await entryPoint.selectOption("main.py");
+    await page.getByLabel("Note").fill("submitted by the e2e suite");
+    await page.getByRole("button", { name: "Submit", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\?monitor=[^&]+&tasks=\d+$/, {
+      timeout: 30_000,
+    });
+
+    // ...and the file it was told to start is the one that ran: this solution prints the expected
+    // greeting only if `main.py` was the entry point.
+    const solutionId = trackSolution(page.url());
+    await expect(page.getByRole("main").getByText("Passed", { exact: true }).first()).toBeVisible({
+      timeout: 60_000,
+    });
+    if (solutionId !== null) await deleteSolutionIfPresent(solutionId);
+  });
+
   test("refuses to submit before a file exists", async ({ page }) => {
     const cookie = await loginAndGetCookie(STUDENT);
     await page.context().addCookies([{ ...cookie, url: baseURL }]);

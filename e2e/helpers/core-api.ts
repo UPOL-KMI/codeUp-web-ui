@@ -17,14 +17,14 @@ export const coreApiBase = process.env.PLAYWRIGHT_API_BASE ?? "http://localhost/
  * operator has in their own courses first, and reports it as a fixture. `seededAttemptsOfOneAuthor`
  * did exactly that: it walked every group and returned two attempts on an assignment inside
  * somebody's `Jazyk Python`, left by a seed run that predates `chooseInstance` -- so the spec that
- * needs the seed's ZIP submission got two plain ones and failed on the fixture (PF-013).
+ * needs the seed's multi-file submission got two plain ones and failed on the fixture (PF-013).
  */
 export const SEEDED_GROUP_NAME = "[seed] Intro to Programming";
 
 /** Notes the seed puts on the solutions it submits, so a spec can name the one it means to act on
  *  rather than taking whichever is first. */
 export const SEEDED_WRONG_NOTE = "[seed] wrong";
-export const SEEDED_ZIP_NOTE = "[seed] zip archive";
+export const SEEDED_MULTI_FILE_NOTE = "[seed] multi-file";
 export const SEEDED_CORRECT_NOTE = "[seed] correct";
 
 async function seededGroup(token: string): Promise<{
@@ -473,16 +473,25 @@ export async function solutionSubmissionIds(solutionId: string): Promise<string[
  * permanent (core-api has no un-resolve), so the queue drained by one per run until it was empty
  * and three tests went red for a reason that had nothing to do with them.
  *
- * A re-run of a seeded solution is the cheapest honest way to mint one: this host's sandbox cannot
- * run at all (DEC-031), so every job fails within a second. The caller deletes the submission
- * afterwards, which takes the failure with it.
+ * A re-run of a seeded solution used to be the cheapest honest way to mint one: the sandbox could
+ * not run at all, so every job failed within a second. **That is no longer true** -- evaluation
+ * works, and a re-run now produces an ordinary verdict. Nothing this suite can reach from core-api
+ * makes a job fail on purpose any more: it takes a hardware group no worker serves, and this
+ * deployment defines exactly one. So the two tests that need a failure say why they cannot run
+ * instead of waiting twenty seconds for one that will not appear (filed as **PF-017**).
+ *
+ * Returns `null` rather than throwing, so the caller skips rather than fails: the screen is fine,
+ * the fixture is missing.
  */
-export async function mintSubmissionFailure(): Promise<{ submissionId: string; jobId: string }> {
+export async function mintSubmissionFailure(): Promise<{
+  submissionId: string;
+  jobId: string;
+} | null> {
   const token = await coreApiToken();
   // Its own solution, named. Three specs resubmit "the first seeded solution" and they run in
   // parallel -- one adding a run while another counts them is a failure with no defect behind it
   // (PF-013).
-  const { id } = await firstSeededSolution(SEEDED_ZIP_NOTE);
+  const { id } = await firstSeededSolution(SEEDED_MULTI_FILE_NOTE);
   const before = new Set(await solutionSubmissionIds(id));
 
   const response = await fetch(`${coreApiBase}/assignment-solutions/${id}/resubmit`, {
@@ -492,9 +501,9 @@ export async function mintSubmissionFailure(): Promise<{ submissionId: string; j
   });
   if (!response.ok) throw new Error(`could not resubmit: HTTP ${response.status}`);
 
-  // The job is rejected by the sandbox rather than queued, but core-api records the failure a
-  // moment after answering the resubmit -- so this waits for the row rather than assuming it.
-  for (let attempt = 0; attempt < 40; attempt++) {
+  // Short, because the expected answer is now "there is no failure": the run is evaluated instead.
+  // Long enough that a deployment whose sandbox really is broken still mints one here.
+  for (let attempt = 0; attempt < 10; attempt++) {
     const added = (await solutionSubmissionIds(id)).filter((one) => !before.has(one));
     const submissionId = added[0];
     if (submissionId !== undefined) {
@@ -509,7 +518,11 @@ export async function mintSubmissionFailure(): Promise<{ submissionId: string; j
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error("no submission failure appeared for the re-run");
+
+  // The run that did not fail is still a run, and leaving it behind is what PF-011 was about.
+  const added = (await solutionSubmissionIds(id)).filter((one) => !before.has(one));
+  for (const submissionId of added) await deleteSubmissionIfPresent(submissionId);
+  return null;
 }
 
 /** Delete one evaluation run of a solution, for a spec that caused an extra one (G-002). */
@@ -737,4 +750,42 @@ export async function seededInvitationIds(): Promise<Map<string, string>> {
     }
   }
   return found;
+}
+
+/**
+ * Delete a reference solution a spec submitted, by the description it gave it (PF-016).
+ *
+ * **Sixth entity to need this**, after PF-007's exercises, PF-011's solutions and PF-014's four --
+ * and this one bit its own next run rather than a neighbour's, which is the hardest kind to read.
+ * `reference-solutions.spec.ts` submits one as the supervisor and deletes it as its last assertion;
+ * a failure before that leaves it behind, and because it is now **the supervisor's own**, the next
+ * run's "a colleague's private answers are not this reader's" assertion sees a list with one row in
+ * it and fails on the fixture rather than on the app.
+ *
+ * By description rather than by id, for PF-014's reason: the screen does not put the new id
+ * anywhere the test can read, and the description is what the test already holds.
+ */
+export async function deleteReferenceSolutionByDescription(description: string): Promise<void> {
+  const token = await coreApiToken();
+  const exerciseId = await seededExerciseId(token);
+  const solutions = await coreApi<{ id: string; description: string }[]>(
+    `/reference-solutions/exercise/${exerciseId}`,
+    token,
+  ).catch(() => []);
+  for (const solution of solutions.filter((one) => one.description === description)) {
+    await fetch(`${coreApiBase}/reference-solutions/${solution.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => undefined);
+  }
+}
+
+/** The seeded exercise every assignment in the seeded group is made from. */
+async function seededExerciseId(token: string): Promise<string> {
+  const { primary } = await seededAssignments();
+  const assignment = await coreApi<{ exerciseId: string }>(
+    `/exercise-assignments/${primary}`,
+    token,
+  );
+  return assignment.exerciseId;
 }

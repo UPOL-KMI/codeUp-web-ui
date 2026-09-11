@@ -1935,7 +1935,9 @@
       "submit": "Odevzdat",
       "submitting": "Odevzdávám…",
       "submitted": "Odevzdáno. Právě se vyhodnocuje.",
-      "failed": "Nepovedlo se."
+      "failed": "Nepovedlo se.",
+      "entryPoint": "Spouštěný soubor",
+      "chooseEntryPoint": "Vyberte spouštěný soubor"
     },
     "detail": {
       "untitled": "Řešení bez popisu",
@@ -3110,6 +3112,9 @@
     "uploadFirst": "Nejprve nahrajte soubor",
     "detecting": "Zjišťuji…",
     "choose": "Vyberte jazyk",
+    "entryPoint": "Spouštěný soubor",
+    "chooseEntryPoint": "Vyberte spouštěný soubor",
+    "entryPointHelp": "Vaše řešení má víc souborů, proto ReCodExu určete, který z nich je program.",
     "note": "Poznámka",
     "notePlaceholder": "Co jste změnili?",
     "noteHelp": "Vidíte ji jen vy a vaši vyučující.",

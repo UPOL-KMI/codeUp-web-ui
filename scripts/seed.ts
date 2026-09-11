@@ -10,8 +10,6 @@
  * something this script does or assumes -- see docs/SEED_ACCOUNTS.md for how to reset.
  */
 
-import { crc32 } from "node:zlib";
-
 const API_BASE = process.env.API_BASE_INTERNAL ?? process.env.API_BASE_PUBLIC;
 if (!API_BASE) {
   throw new Error("API_BASE_INTERNAL or API_BASE_PUBLIC must be set (see .env.local).");
@@ -73,61 +71,6 @@ async function apiUpload(
     );
   }
   return json.payload as { id: string };
-}
-
-/**
- * A ZIP archive with no compression (method 0), written by hand.
- *
- * Node ships no ZIP writer and shelling out to `zip(1)` would make this script depend on a tool
- * the operator's machine may not have -- portability that a previous review pass already asked
- * for once. Stored entries need no deflate, so the whole format here is: a local header per file,
- * a central directory, and the end-of-directory record. core-api accepts it as a real archive
- * (`isZipArchive()`), which is the whole point: a solution submitted as a single ZIP is stored as
- * a `SolutionZipFile` and is the only way to produce the `zipEntries` the source viewer (S-017)
- * expands.
- */
-function storedZip(entries: [name: string, content: string][]): Uint8Array<ArrayBuffer> {
-  const parts: Buffer[] = [];
-  const central: Buffer[] = [];
-  let offset = 0;
-
-  for (const [name, content] of entries) {
-    const nameBuf = Buffer.from(name, "utf8");
-    const data = Buffer.from(content, "utf8");
-    const crc = crc32(data);
-
-    const local = Buffer.alloc(30);
-    local.writeUInt32LE(0x04034b50, 0);
-    local.writeUInt16LE(20, 4); // version needed
-    local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(data.length, 18);
-    local.writeUInt32LE(data.length, 22);
-    local.writeUInt16LE(nameBuf.length, 26);
-    parts.push(local, nameBuf, data);
-
-    const entry = Buffer.alloc(46);
-    entry.writeUInt32LE(0x02014b50, 0);
-    entry.writeUInt16LE(20, 4); // version made by
-    entry.writeUInt16LE(20, 6); // version needed
-    entry.writeUInt32LE(crc, 16);
-    entry.writeUInt32LE(data.length, 20);
-    entry.writeUInt32LE(data.length, 24);
-    entry.writeUInt16LE(nameBuf.length, 28);
-    entry.writeUInt32LE(offset, 42);
-    central.push(entry, nameBuf);
-
-    offset += local.length + nameBuf.length + data.length;
-  }
-
-  const directory = Buffer.concat(central);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(entries.length, 8);
-  end.writeUInt16LE(entries.length, 10);
-  end.writeUInt32LE(directory.length, 12);
-  end.writeUInt32LE(offset, 16);
-
-  return Buffer.concat([...parts, directory, end]);
 }
 
 function log(msg: string) {
@@ -395,8 +338,30 @@ const EXPECTED_OUTPUT = "Hello, ReCodEx!\n";
 // different ones, and the constant broke the moment the stack was stood up on another machine --
 // precisely the one-command bootstrap DEC-052 was asked for.
 const PYTHON_STDOUT_PIPELINE_NAME = "Python execution & evaluation [stdout]";
+const PYTHON_COMPILATION_PIPELINE_NAME = "Compilation source files pass-through";
+/** What an exercise config writes into `entry-point` to mean "the submitter names the file". */
+const ENTRY_POINT_SENTINEL = "$entry-point";
+
 const TEST_NAME = "Test 1";
 const HW_GROUP_ID = "01-default"; // matches WORKER_HWGROUP in the compose repo's .env
+
+/**
+ * The `solutionParams` every submission to the seeded exercise has to carry.
+ *
+ * Its config binds `entry-point` to the sentinel, which makes the entry point a *submit-time*
+ * variable: without this core-api refuses the submission outright ("Variable 'entry-point' was not
+ * provided on submit").
+ *
+ * **The file started is the first one listed, not the first by name.** S-014's form defaults to
+ * the first by sort order and then makes the reader confirm it whenever a solution has more than
+ * one file -- which is the right behaviour for someone who has just dragged files in, and the
+ * wrong rule for a fixture: `greeting.py` sorts before `main.py`, so deriving it would seed a
+ * solution that imports the program and never runs it. Found exactly that way, as a seeded
+ * solution scoring zero.
+ */
+function entryPointParams(files: { name: string }[]) {
+  return { variables: [{ name: "entry-point", value: files[0]!.name }] };
+}
 
 interface ExerciseRecord {
   id: string;
@@ -684,7 +649,14 @@ async function getOrCreateBaseExercise(
       environmentConfigs: [
         {
           runtimeEnvironmentId: "python3",
-          variablesTable: [{ name: "source-files", type: "file[]", value: ["*.py"] }],
+          // **The wildcard is a scalar, not a one-element array, and the difference decides
+          // whether anything is ever graded.** `VariablesResolver::resolveFileInputsRegexp`
+          // returns the variable untouched when `isValueArray()` is true, so `["*.py"]` is carried
+          // into the job verbatim and the compiled task reads
+          // `cp ${SOURCE_DIR}/*.py ${SOURCE_DIR}/Test 1/*.py` -- a file literally named `*.py`.
+          // Written as `"*.py"` it is matched against the submitted file names and expands to
+          // them. This is the shape ReCodEx's own python3 runtime declares in `defaultVariables`.
+          variablesTable: [{ name: "source-files", type: "file[]", value: "*.py" }],
         },
       ],
     },
@@ -747,25 +719,45 @@ async function getOrCreateBaseExercise(
     body: { files: [expectedUpload.id] },
   });
 
-  // Resolved once and reused: the config below refers to the same pipeline by id, and looking it
-  // up twice would be two round trips for one answer.
-  const pipelineId = await findPipelineId(adminToken, PYTHON_STDOUT_PIPELINE_NAME, "python3");
-
-  const variables = await api<{ variables: { name: string; type: string; value: unknown }[] }[]>(
-    "POST",
-    `/exercises/${id}/config/variables`,
-    {
-      token: adminToken,
-      body: { runtimeEnvironmentId: "python3", pipelinesIds: [pipelineId] },
-    },
+  // **A test needs both of the environment's pipelines, compilation first.** The execution
+  // pipeline's `source-files` is an *input* it expects a preceding pipeline to bind; on its own it
+  // is bound to nothing, and the submitted file never reaches the sandbox under its real name.
+  // Python compiles nothing, so its "compilation" is a pass-through -- which is why leaving it out
+  // looked harmless and was not. This is the order core-api's own executor reads them in, and the
+  // same pair `lib/exercise-config/simple-config.ts` writes from the exercise editor.
+  const compilationPipelineId = await findPipelineId(
+    adminToken,
+    PYTHON_COMPILATION_PIPELINE_NAME,
+    "python3",
   );
-  const firstVariableSet = variables[0];
-  if (!firstVariableSet)
+  const executionPipelineId = await findPipelineId(
+    adminToken,
+    PYTHON_STDOUT_PIPELINE_NAME,
+    "python3",
+  );
+
+  const variables = await api<
+    { id: string; variables: { name: string; type: string; value: unknown }[] }[]
+  >("POST", `/exercises/${id}/config/variables`, {
+    token: adminToken,
+    body: {
+      runtimeEnvironmentId: "python3",
+      pipelinesIds: [compilationPipelineId, executionPipelineId],
+    },
+  });
+  const declared = new Map(variables.map((entry) => [entry.id, entry.variables] as const));
+  const executionVariables = declared.get(executionPipelineId);
+  if (!executionVariables)
     throw new Error("POST /exercises/{id}/config/variables returned no variable set.");
-  const varMap = new Map(firstVariableSet.variables.map((v) => [v.name, v] as const));
+  const varMap = new Map(executionVariables.map((v) => [v.name, v] as const));
   varMap.set("expected-output", { ...varMap.get("expected-output")!, value: "expected.txt" });
   varMap.set("judge-type", { ...varMap.get("judge-type")!, value: "recodex-judge-normal" });
   varMap.set("success-exit-codes", { ...varMap.get("success-exit-codes")!, value: ["0"] });
+  // **`$entry-point` is a reference, not a literal, and an empty string is not "no entry point".**
+  // Left empty the compiled job runs `python3 <runner> ${EVAL_DIR}/` with nothing to run; the
+  // sentinel makes it a submit-time variable, which every submission then has to name a file for
+  // (`solutionParams`, as `submitSolutionWithEntryPoint` below and S-014's form both do).
+  varMap.set("entry-point", { ...varMap.get("entry-point")!, value: ENTRY_POINT_SENTINEL });
 
   await api("POST", `/exercises/${id}/config`, {
     token: adminToken,
@@ -776,7 +768,13 @@ async function getOrCreateBaseExercise(
           tests: [
             {
               name: testId,
-              pipelines: [{ name: pipelineId, variables: Array.from(varMap.values()) }],
+              pipelines: [
+                {
+                  name: compilationPipelineId,
+                  variables: declared.get(compilationPipelineId) ?? [],
+                },
+                { name: executionPipelineId, variables: Array.from(varMap.values()) },
+              ],
             },
           ],
         },
@@ -837,6 +835,7 @@ async function getOrCreateBaseExercise(
         note: referenceNote,
         files: [solutionUpload.id],
         runtimeEnvironmentId: "python3",
+        solutionParams: entryPointParams([{ name: "solution.py" }]),
       },
     });
     log(`reference solution submitted`);
@@ -999,8 +998,7 @@ async function submitSolution(
   studentId: string,
   assignmentId: string,
   note: string,
-  code: string | Uint8Array<ArrayBuffer>,
-  file: { name: string; mimeType: string } = { name: "solution.py", mimeType: "text/plain" },
+  files: { name: string; content: string }[],
 ) {
   const existing = await api<{ note: string }[]>(
     "GET",
@@ -1012,10 +1010,17 @@ async function submitSolution(
     return;
   }
 
-  const upload = await apiUpload(studentToken, "/uploaded-files", file.name, code, file.mimeType);
+  const uploads = await Promise.all(
+    files.map((file) => apiUpload(studentToken, "/uploaded-files", file.name, file.content)),
+  );
   await api("POST", `/exercise-assignments/${assignmentId}/submit`, {
     token: studentToken,
-    body: { note, files: [upload.id], runtimeEnvironmentId: "python3" },
+    body: {
+      note,
+      files: uploads.map((upload) => upload.id),
+      runtimeEnvironmentId: "python3",
+      solutionParams: entryPointParams(files),
+    },
   });
   log(`submitted: ${note}`);
 }
@@ -1537,30 +1542,37 @@ async function main() {
     student1.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} correct`,
-    `print("${EXPECTED_OUTPUT.trim()}")\n`,
+    [{ name: "solution.py", content: `print("${EXPECTED_OUTPUT.trim()}")\n` }],
   );
   await submitSolution(
     student1.token,
     student1.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} wrong`,
-    `print("Nope")\n`,
+    [{ name: "solution.py", content: `print("Nope")\n` }],
   );
 
-  // A solution submitted as a single ZIP archive (S-017). core-api stores exactly this case as a
-  // `SolutionZipFile` and reports its `zipEntries` instead of its contents, which is the one input
-  // that makes the source viewer expand entries into first-class files
-  // (`solution.zip#main.py`) -- and the only way to produce it is to submit a real archive.
+  // A solution made of **more than one file**, which is the fixture G-005's diff viewer and
+  // G-030's hand-pairing exist for: it shares no filename with any other attempt, so the pairing
+  // by name leaves something unpaired. It is also the only seeded submission that reaches S-014's
+  // entry-point picker, which appears exactly when a solution has several files.
+  //
+  // **This used to be a single ZIP archive and can no longer be one.** `Solution::getFileNames()`
+  // reports the uploaded name (`solution.zip`), not the entries inside it, so the exercise's
+  // `source-files` wildcard `*.py` matches nothing and core-api refuses the submission outright.
+  // That refusal is upstream behaviour rather than a limitation of this seed -- it was simply
+  // invisible while the broken configuration skipped wildcard matching altogether. A real
+  // multi-file solution keeps every property this fixture is used for, and grades.
   await submitSolution(
     student1.token,
     student1.userId,
     primaryAssignment.id,
-    `${SEED_PREFIX} zip archive`,
-    storedZip([
-      ["main.py", "from greeting import GREETING\n\nprint(GREETING)\n"],
-      ["greeting.py", `GREETING = "${EXPECTED_OUTPUT.trim()}"\n`],
-    ]),
-    { name: "solution.zip", mimeType: "application/zip" },
+    `${SEED_PREFIX} multi-file`,
+    // `main.py` first because that is the one that is started -- see `entryPointParams`.
+    [
+      { name: "main.py", content: "from greeting import GREETING\n\nprint(GREETING)\n" },
+      { name: "greeting.py", content: `GREETING = "${EXPECTED_OUTPUT.trim()}"\n` },
+    ],
   );
 
   // Teacher-facing fixtures (S-002): one solution whose author has asked for a review, and one
@@ -1641,7 +1653,7 @@ async function main() {
     student2.userId,
     primaryAssignment.id,
     `${SEED_PREFIX} borrowed`,
-    bobSource,
+    [{ name: "solution.py", content: bobSource }],
   );
 
   const aliceSolution = await findSolutionByNote(
@@ -1681,7 +1693,7 @@ async function main() {
     student2.userId,
     secondDeadlineAssignment.id,
     `${SEED_PREFIX} second try`,
-    `print("${EXPECTED_OUTPUT.trim()}")\n`,
+    [{ name: "solution.py", content: `print("${EXPECTED_OUTPUT.trim()}")\n` }],
   );
 
   await sweepUnintendedSeedSolutions(
@@ -1690,7 +1702,7 @@ async function main() {
     [
       { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "correct" },
       { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "wrong" },
-      { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "zip archive" },
+      { assignmentId: primaryAssignment.id, authorId: student1.userId, note: "multi-file" },
       { assignmentId: primaryAssignment.id, authorId: student2.userId, note: "borrowed" },
       { assignmentId: secondDeadlineAssignment.id, authorId: student2.userId, note: "second try" },
     ],
@@ -1793,9 +1805,11 @@ async function main() {
 
   log("done");
   log(
-    "NOTE: this dev machine's isolate sandbox cannot run cgroup v1 (see the compose repo's README.md) -- " +
-      "submissions above will resolve to an infrastructure evaluation-failure state here, not genuine " +
-      "pass/fail. Re-verify pass/fail states on a cgroup v1 host (production, or a fixed local Docker config).",
+    "NOTE: a solution this script skipped because it already exists keeps whatever evaluation it " +
+      "already had. On an instance seeded before evaluation worked at all, those carry an " +
+      "infrastructure failure and cannot be refreshed in place -- a re-run of a stored solution " +
+      "has no entry point recorded, so core-api refuses it. Delete the solution and re-run this " +
+      "script to have it submitted again.",
   );
 }
 

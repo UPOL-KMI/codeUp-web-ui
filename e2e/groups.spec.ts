@@ -250,18 +250,19 @@ test("shows points per student and per assignment, and says which cells were nev
   await expect(matrix.getByRole("link", { name: /Echo Greeting/ }).first()).toBeVisible();
   await expect(alice.getByRole("link", { name: "Alice Student" })).toBeVisible();
 
-  // The distinction the table exists for. On this machine no evaluation can succeed (DEC-031), so
-  // every attempted cell is the "everything failed" state and the rest are "nothing submitted" --
-  // the assertion is that both appear and are not the same mark. Read from the decorative span
-  // rather than the cell: P-002 moved the explanation out of a `title` attribute and into visually
-  // hidden text beside the glyph, and sr-only text is clipped, not hidden, so it is part of the
-  // cell's innerText.
+  // The distinction the table exists for: a cell nobody attempted is not a cell worth nothing.
+  // **This assertion used to be the other way round** -- while no evaluation could succeed, every
+  // attempted cell was the "everything failed" `!` and the pair being told apart was `!` against
+  // `—`. Since PF-016 an attempt carries real points, so the pair is a score against `—`, and the
+  // failure glyph is the one with no fixture left (PF-017).
+  //
+  // The `—` is read from the decorative span rather than the cell: P-002 moved the explanation out
+  // of a `title` attribute and into visually hidden text beside the glyph, and sr-only text is
+  // clipped, not hidden, so it is part of the cell's innerText.
   const marks = await matrix.locator('tbody td span[aria-hidden="true"]').allTextContents();
-  expect(marks.some((mark) => mark.trim() === "!")).toBe(true);
   expect(marks.some((mark) => mark.trim() === "—")).toBe(true);
-
-  // And that each glyph is backed by a sentence, which is the point of the change: the state was
-  // previously reachable only by hovering.
   await expect(matrix.getByText("Nothing submitted").first()).toBeAttached();
-  await expect(matrix.getByText(/none of which produced a result/).first()).toBeAttached();
+
+  // ...and at least one cell that *was* attempted shows what it scored.
+  await expect(alice.getByText(/^\d+\s*\/\s*\d+$/).first()).toBeVisible();
 });

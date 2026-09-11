@@ -107,6 +107,9 @@ export async function deleteReferenceSolution(
   }
 }
 
+/** The one submit-time variable ReCodEx defines; see S-014's action and DEC-137. */
+const ENTRY_POINT_VARIABLE = "entry-point";
+
 /**
  * Submitting a new one. Two calls, as the student submission path is (S-014): `pre-submit` asks
  * core-api what the uploaded files amount to -- which environments they could be, and which files
@@ -117,6 +120,9 @@ export async function deleteReferenceSolution(
 export interface PreSubmitAnswer {
   /** Environment ids the uploaded files could belong to, decided by core-api from their names. */
   environments: string[];
+  /** Those of them whose configuration leaves the entry point to the submitter — see S-014's
+   *  `entryPointEnvironments`, which this mirrors, and DEC-137 for the rule. */
+  entryPointEnvironments: string[];
 }
 
 export async function preSubmitReferenceSolution(
@@ -127,12 +133,25 @@ export async function preSubmitReferenceSolution(
   if (uploadedFileIds.length === 0) return { success: false, formError: t("noFiles") };
 
   try {
-    const answer = await apiPost<{ environments?: string[] }>(
+    const answer = await apiPost<{
+      environments?: string[];
+      submitVariables?: { runtimeEnvironmentId: string; variables: { name: string }[] }[];
+    }>(
       "/v1/reference-solutions/exercise/{exerciseId}/pre-submit",
       { files: uploadedFileIds },
       { pathParams: { exerciseId } },
     );
-    return { success: true, data: { environments: answer.environments ?? [] } };
+    return {
+      success: true,
+      data: {
+        environments: answer.environments ?? [],
+        entryPointEnvironments: (answer.submitVariables ?? [])
+          .filter((entry) =>
+            entry.variables.some((variable) => variable.name === ENTRY_POINT_VARIABLE),
+          )
+          .map((entry) => entry.runtimeEnvironmentId),
+      },
+    };
   } catch (error) {
     return failure(error, "preSubmitFailed");
   }
@@ -140,7 +159,13 @@ export async function preSubmitReferenceSolution(
 
 export async function submitReferenceSolution(
   exerciseId: string,
-  values: { uploadedFileIds: string[]; environmentId: string; note: string },
+  values: {
+    uploadedFileIds: string[];
+    environmentId: string;
+    note: string;
+    /** The submitted file to start, when the exercise leaves that to the submitter (DEC-137). */
+    entryPoint?: string;
+  },
 ): Promise<ActionResult<{ id: string }>> {
   const t = await getTranslations("ReferenceSolutions.errors");
   if (values.uploadedFileIds.length === 0) return { success: false, formError: t("noFiles") };
@@ -153,6 +178,13 @@ export async function submitReferenceSolution(
         note: values.note.trim(),
         files: values.uploadedFileIds,
         runtimeEnvironmentId: values.environmentId,
+        ...(values.entryPoint
+          ? {
+              solutionParams: {
+                variables: [{ name: ENTRY_POINT_VARIABLE, value: values.entryPoint }],
+              },
+            }
+          : {}),
       },
       { pathParams: { exerciseId } },
     );

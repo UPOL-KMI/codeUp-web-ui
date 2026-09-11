@@ -38,16 +38,27 @@ export function SubmitReferenceSolution({
   const toast = useToast();
   const [uploaded, setUploaded] = useState<UploadedFile[]>([]);
   const [environments, setEnvironments] = useState<string[] | null>(null);
+  const [entryPointEnvironments, setEntryPointEnvironments] = useState<string[]>([]);
   const [environment, setEnvironment] = useState("");
+  const [entryPoint, setEntryPoint] = useState("");
   const [note, setNote] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // DEC-137, on the author's side of the same rule: an exercise that leaves the entry point to the
+  // submitter refuses a submission that does not name one, so one is always sent, and the author is
+  // only asked when a reference solution has more than one file to choose between.
+  const entryPointChoices = uploaded.map((file) => file.name).sort((a, b) => a.localeCompare(b));
+  const needsEntryPoint = environment !== "" && entryPointEnvironments.includes(environment);
+  const mustChooseEntryPoint = needsEntryPoint && entryPointChoices.length > 1 && !entryPoint;
 
   function filesChanged(files: UploadedFile[]) {
     setUploaded(files);
     // Any change to the file set invalidates what core-api said about the previous one.
     setEnvironments(null);
+    setEntryPointEnvironments([]);
     setEnvironment("");
+    setEntryPoint("");
     setError(null);
   }
 
@@ -64,6 +75,7 @@ export function SubmitReferenceSolution({
       return;
     }
     setEnvironments(result.data.environments);
+    setEntryPointEnvironments(result.data.entryPointEnvironments);
     setEnvironment(result.data.environments[0] ?? "");
   }
 
@@ -74,6 +86,7 @@ export function SubmitReferenceSolution({
       uploadedFileIds: uploaded.map((file) => file.id),
       environmentId: environment,
       note,
+      entryPoint: needsEntryPoint ? entryPoint || entryPointChoices[0] || "" : "",
     });
     setPending(false);
     if (!result.success) {
@@ -83,7 +96,9 @@ export function SubmitReferenceSolution({
     toast.success(t("submitted"));
     setUploaded([]);
     setEnvironments(null);
+    setEntryPointEnvironments([]);
     setEnvironment("");
+    setEntryPoint("");
     setNote("");
     router.refresh();
   }
@@ -139,9 +154,27 @@ export function SubmitReferenceSolution({
               ))}
             </select>
           </label>
+          {needsEntryPoint && entryPointChoices.length > 1 && (
+            <label className="flex flex-col gap-1 text-sm">
+              {t("entryPoint")}
+              <select
+                className={input}
+                aria-label={t("entryPoint")}
+                value={entryPoint}
+                onChange={(event) => setEntryPoint(event.target.value)}
+              >
+                <option value="">{t("chooseEntryPoint")}</option>
+                {entryPointChoices.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button
             type="button"
-            disabled={pending || !environment}
+            disabled={pending || !environment || mustChooseEntryPoint}
             onClick={() => void submit()}
             className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >

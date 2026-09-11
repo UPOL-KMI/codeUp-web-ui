@@ -30,8 +30,12 @@ async function signIn(page: Page, account: SeedAccount, path: string): Promise<v
 
 test("opens on the queue, not on the history", async ({ page }) => {
   // Its own row, for the same reason the resolve test makes one: an empty queue is a legitimate
-  // state of this instance and would otherwise read as a broken screen (PF-006).
-  const { submissionId } = await mintSubmissionFailure();
+  // state of this instance and would otherwise read as a broken screen (PF-006). Since evaluation
+  // works, a re-run is evaluated rather than refused and there is nothing left that mints a failure
+  // on demand -- PF-017.
+  const minted = await mintSubmissionFailure();
+  test.skip(minted === null, "this deployment can no longer mint a submission failure (PF-017)");
+  const { submissionId } = minted!;
   try {
     await signIn(page, SUPERADMIN, "/en/submission-failures");
 
@@ -66,13 +70,26 @@ test("a reference solution's failure links to the screen that shows it", async (
   await signIn(page, SUPERADMIN, "/en/submission-failures?scope=all");
   const main = page.getByRole("main");
 
+  // **This row was residue, and since PF-016 there is none.** The failures it read were left by a
+  // deployment where nothing could be evaluated; deleting a reference solution takes its failures
+  // with it, and re-seeding one now produces a verdict rather than a failure. Minting one on
+  // demand is PF-017, so this says why it cannot run rather than asserting against whatever an
+  // earlier run happened to leave. Checked on the **filter**, which an empty queue does not render
+  // at all -- so there is nothing to type into either.
+  const filter = main.getByPlaceholder("Filter by description or kind");
+  test.skip((await filter.count()) === 0, "this instance has no submission failures (PF-017)");
+
   // core-api names the job's kind in the description, which is the only thing telling these rows
-  // apart from the student submissions filling the same list -- and every one of them is resolved,
-  // so the history is where they are.
-  await main.getByPlaceholder("Filter by description or kind").fill("type: 'reference'");
+  // apart from the student submissions filling the same list.
+  await filter.fill("type: 'reference'");
+
+  const link = main.getByRole("link", { name: "A reference solution" }).first();
+  test.skip(
+    (await link.count()) === 0,
+    "no reference-solution failure exists to link from (PF-017)",
+  );
 
   // Addressed by both ids, because that is how T-011's route is addressed (G-029).
-  const link = main.getByRole("link", { name: "A reference solution" }).first();
   await expect(link).toHaveAttribute(
     "href",
     /\/en\/exercises\/[0-9a-f-]+\/reference-solutions\/[0-9a-f-]+$/,
@@ -85,8 +102,10 @@ test("a reference solution's failure links to the screen that shows it", async (
 
 test("resolving one takes it out of the queue for good", async ({ page }) => {
   // This suite's own failure, made and removed here, so resolving it permanently costs the shared
-  // queue nothing (PF-006).
-  const { submissionId, jobId: job } = await mintSubmissionFailure();
+  // queue nothing (PF-006) -- when one can still be made at all, which is PF-017.
+  const minted = await mintSubmissionFailure();
+  test.skip(minted === null, "this deployment can no longer mint a submission failure (PF-017)");
+  const { submissionId, jobId: job } = minted!;
   try {
     await signIn(page, SUPERADMIN, "/en/submission-failures");
     const main = page.getByRole("main");

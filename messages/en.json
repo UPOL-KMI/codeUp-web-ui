@@ -1935,7 +1935,9 @@
       "submit": "Submit it",
       "submitting": "Submitting…",
       "submitted": "Submitted. It is being evaluated now.",
-      "failed": "That did not work."
+      "failed": "That did not work.",
+      "entryPoint": "File to start",
+      "chooseEntryPoint": "Choose the file to start"
     },
     "detail": {
       "untitled": "Untitled solution",
@@ -3110,6 +3112,9 @@
     "uploadFirst": "Upload a file first",
     "detecting": "Detecting…",
     "choose": "Choose a language",
+    "entryPoint": "File to start",
+    "chooseEntryPoint": "Choose the file to start",
+    "entryPointHelp": "Your solution has several files, so tell ReCodEx which one is the program.",
     "note": "Note",
     "notePlaceholder": "What did you change?",
     "noteHelp": "Only you and your teachers see this.",

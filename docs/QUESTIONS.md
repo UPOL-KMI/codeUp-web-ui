@@ -665,3 +665,50 @@ author is gone is no longer rendered as a row — `/v1/assignment-solvers` repor
 `solverId: null`, and it had been reaching the class-progress table as a person with no name,
 sorted first by the empty string, whose link pointed at `/users/null` (PF-013). Nothing else is
 worked around: an endpoint that 500s is an endpoint that 500s.
+
+---
+
+## Q-031: a delete that fails still destroys the solution's files (PF-016)
+
+Deleting an assignment solution that a plagiarism record points at answers **HTTP 500**:
+
+```
+Unexpected Error Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException
+```
+
+which is already the wrong answer — a refusal core-api can see coming should be a 4xx that says
+what holds the row, the way `checkDeleteSubmission` refuses deleting the last evaluation run.
+
+**The damage is worse than the status code.** The stored files are removed _before_ the row
+deletion fails, and nothing puts them back. What is left is a solution that still lists its files
+through `GET /assignment-solutions/{id}/files` — name, size, uploader, all intact — whose bytes
+are gone: `GET /assignment-solutions/{id}/download-solution` answers 404, the source viewer shows
+nothing, and no screen says why. Reproduced twice on the development instance, on `[seed] correct`
+and `[seed] borrowed`, which are exactly the two solutions the seed's similarity fixture points at.
+
+**There is no way back through the API.** `/plagiarism` has routes to create a batch, add
+similarities and read them, and none to delete any of it — so the record that blocks the delete
+cannot be removed, and the solution can be neither repaired nor deleted. Clearing the two rows
+directly in the database and re-running `pnpm seed` is what recovered it here.
+
+**What this app does about it:** nothing, and there is nothing sensible it could do. It is worth
+knowing before anyone deletes a seeded solution, and it is a real report for the ReCodEx team:
+either take the plagiarism records with the solution, or refuse before touching storage.
+
+---
+
+## Q-032: a submission refused at compilation still leaves a solution behind (PF-016)
+
+`POST /exercise-assignments/{id}/submit` that fails while compiling the job — a missing submit
+variable, or a `source-files` pattern that matched nothing — answers 400 with a clear message, and
+**the `Solution` row it had already created stays**. It appears in the assignment's solution list
+with no evaluation, no points and no submission, indistinguishable at a glance from one that is
+still being evaluated.
+
+Seen three times while establishing PF-016: `[probe-zip] main.py`, `[probe4] no solutionParams` and
+one more all survived a refused submit and had to be deleted by hand.
+
+**Why it matters here rather than being tidiness:** a spec or a seed that submits something
+core-api will refuse now leaks a row per attempt, and the sweep in `scripts/seed.ts` is note-based,
+so it only catches the ones carrying the seed's prefix. Worth knowing before writing a test that
+deliberately submits something invalid.

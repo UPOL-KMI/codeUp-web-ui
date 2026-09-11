@@ -115,21 +115,27 @@ test("the solution screen links to its own source code", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("heading", { name: "Source code" })).toBeVisible();
 });
 
-test("a solution submitted as an archive reads as the files inside it", async ({ page }) => {
-  // The one genuinely slow test in the suite: it seeds a real ZIP submission through the chunked
-  // upload path and waits for core-api to unpack it. It takes ~17s alone and began timing out at
-  // the default 30s once the suite grew past two hundred tests sharing this machine's core-api --
-  // slow work, not a hang, so it gets more room rather than a retry.
+test("a solution of several files reads as each of them", async ({ page }) => {
+  // The one genuinely slow test in the suite: it walks the dashboard to find the seeded multi-file
+  // submission. It takes ~17s alone and began timing out at the default 30s once the suite grew
+  // past two hundred tests sharing this machine's core-api -- slow work, not a hang, so it gets
+  // more room rather than a retry.
+  //
+  // **This fixture used to be a single ZIP archive and cannot be one any more.** core-api matches
+  // an exercise's `source-files` wildcard against the *uploaded* names, and `solution.zip` matches
+  // no `*.py` pattern, so such a submission is refused outright -- see `scripts/seed.ts`. Several
+  // real files exercise the same thing this test is for: one solution, more than one file, each
+  // rendered in its own right.
   test.slow();
   await signIn(page, STUDENT, "/en/dashboard");
-  await openSourcesContaining(page, "solution.zip#main.py");
+  await openSourcesContaining(page, "main.py");
 
   const main = page.getByRole("main");
-  await expect(main.getByText("solution.zip#greeting.py").first()).toBeVisible();
+  await expect(main.getByText("greeting.py").first()).toBeVisible();
   await expect(main).toContainText("from greeting import GREETING");
-  // Each entry is a file in its own right, with its own line anchors.
-  await expect(page.locator("#solution-zip-main-py-L1")).toBeVisible();
-  await expect(page.locator("#solution-zip-greeting-py-L1")).toBeVisible();
+  // Each file is one in its own right, with its own line anchors.
+  await expect(page.locator("#main-py-L1")).toBeVisible();
+  await expect(page.locator("#greeting-py-L1")).toBeVisible();
 });
 
 // Registered once for the file (PF-014). The test below erases its own review -- that is the last

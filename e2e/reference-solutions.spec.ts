@@ -5,20 +5,28 @@ import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { cleanUpCreated } from "./helpers/created";
+import { deleteReferenceSolutionByDescription } from "./helpers/core-api";
 
 /**
  * An exercise's reference solutions (T-011).
  *
  * The seeded exercise is read; everything that writes happens to a solution this spec submits and
- * deletes again. **This machine cannot produce a real pass or fail** (DEC-031), so every reference
- * solution here reports an infrastructure failure -- which is what the assertions expect, and is
- * the honest state of this deployment rather than a stubbed one.
+ * deletes again. **Since PF-016 a reference solution is genuinely evaluated here**, so what these
+ * assertions expect is the verdict an exercise author actually gets -- where they used to expect an
+ * infrastructure failure, which was the only state this deployment could produce.
  */
 async function signIn(page: Page, account: SeedAccount, path: string): Promise<void> {
   const cookie = await loginAndGetCookie(account);
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await page.goto(path);
 }
+
+// Registered once for the file (PF-014's tracker, PF-016's entity). The submit test deletes its own
+// solution as its last assertion, so this finds nothing to do in the ordinary case; it exists for
+// the run that dies in between and would otherwise leave the supervisor a reference solution of
+// their own, which is precisely what the next run asserts they do not have.
+const trackReferenceSolution = cleanUpCreated(deleteReferenceSolutionByDescription);
 
 // The seeded reference solutions are the superadmin's own and are private, and core-api filters
 // this list one solution at a time -- so they are readable by their author and by nobody else.
@@ -53,9 +61,10 @@ test("lists an exercise's reference solutions and opens one", async ({ page }) =
     /^\/api\/reference-solutions\/[0-9a-f-]+\/download$/,
   );
   await expect(main.getByRole("heading", { name: "What the pipeline did" })).toBeVisible();
-  // This machine cannot evaluate, so the honest state is an infrastructure failure -- and the
-  // screen must say it is not the reader's fault rather than dressing it up as a test result.
-  await expect(main.getByText("Isolate init error", { exact: false })).toBeVisible();
+  // **Asserted the opposite until PF-016**, when the only reachable state was an infrastructure
+  // failure and this line read "Isolate init error". The reference solution is evaluated now, so
+  // what the author of an exercise sees here is the thing the solution exists to prove: it passes.
+  await expect(main.getByText("1 of 1 tests passed")).toBeVisible();
 });
 
 test("keeps every run of a reference solution, and reads or removes one", async ({ page }) => {
@@ -137,7 +146,7 @@ test("submits a reference solution, and refuses files no language of the exercis
     mimeType: "text/x-python",
     buffer: Buffer.from('print("Hello, ReCodEx!")\n'),
   });
-  await main.getByLabel("Description").fill("[e2e] a second answer");
+  await main.getByLabel("Description").fill(trackReferenceSolution("[e2e] a second answer")!);
   const check2 = main.getByRole("button", { name: "Check the files" });
   await expect(check2).toBeEnabled({ timeout: 30_000 });
   await check2.click();

@@ -5683,3 +5683,98 @@ trigger for revisiting it is now written down.
 **F-028 was re-checked yesterday and nothing has moved**, so the backlog's only open rows are it and
 the two open questions this session did not close (Q-029, Q-030), both of which are core-api's to
 answer rather than ours.
+
+---
+
+### 2026-09-11 — PF-016: a submission is actually graded, for the first time
+
+**Tickets:** PF-016 (done), PF-017, Q-031, Q-032, DEC-137, DEC-138 (all new).
+**Status:** done. Five static checks and **287** unit tests green. **The seeded fixtures carry
+genuine verdicts**: `[seed] correct` 10/10 with Test 1 OK, `[seed] wrong` 0/10 FAILED, and
+`[seed] multi-file`, `[seed] borrowed` and `[seed] second try` 10/10 — the first real evaluation
+this deployment has ever produced.
+
+This came from the compose repo's plan 002, whose step 1 was a discriminator: configure the same
+exercise through this app's own screens, diff it against the seed's, and let the answer decide
+which repository the work lands in. It landed entirely here, and **the discriminator did not decide
+it on its own** — the two configs differ, but rewriting the seeded exercise through T-009's editor
+and re-running the solution produced a byte-identical job. An assignment holds a _snapshot_ of its
+exercise (which `ensureAssignmentSynced` already knew, for the environment config), so nothing
+moved until the assignment was synced. With that done it came apart into three faults.
+
+**1. `source-files` was an array where ReCodEx wants a scalar.** The seed wrote
+`{type: "file[]", value: ["*.py"]}`. core-api's `VariablesResolver::resolveFileInputsRegexp`
+returns the variable untouched when `isValueArray()` is true, so the wildcard was never matched
+against the submitted names and the compiled job read
+`cp ${SOURCE_DIR}/*.py ${SOURCE_DIR}/Test 1/*.py` — a file literally called `*.py`. The type is an
+array and the value is **one pattern**: that is what ReCodEx's own python3 runtime declares in
+`defaultVariables`, and exactly one pattern is possible, which is a design limit worth knowing.
+
+**2. A test needs both of the environment's pipelines.** Only
+`Python execution & evaluation [stdout]` was attached. Its `source-files` is an _input_ that a
+preceding pipeline binds, and Python's "compilation" is `Compilation source files pass-through` —
+a no-op whose whole job is to bind it, which is why leaving it out looked harmless. `entry-point`
+was `""` rather than the `$entry-point` sentinel, which is what rendered the run as
+`python3 <runner> ${EVAL_DIR}/`. **Two bugs, not one** — the question plan 002 left open.
+
+**3. And a third that fixing the first two exposed, which is the one that mattered to the
+product.** The sentinel makes the entry point a _submit-time_ variable, and core-api refuses a
+submission that does not carry it — with one file or twenty. Legacy sends `solutionParams`; this
+app never did. So the seed fix alone would have broken S-014's submit screen, and the gap was
+invisible only because no exercise here had ever asked for the variable. `preSubmitSolution` now
+reports which environments ask, the form resolves the value legacy's way and the action sends it
+(**DEC-137**). **The same gap was in T-011's reference-solution form**, and it was the e2e suite
+that found it rather than review -- that form submits through its own action, which nothing had
+reason to look at while no exercise demanded the variable.
+
+**The ZIP fixture could not survive the fix, and is better for it (DEC-138).**
+`Solution::getFileNames()` reports the uploaded name, not the entries inside, so `solution.zip`
+matches no `*.py` pattern and core-api refuses the submission outright. It never graded either —
+the broken config skipped matching altogether. It is `main.py` + `greeting.py` now, which keeps
+what G-005 and G-030 used it for, grades, and is the only fixture that reaches DEC-137's picker.
+**The entry point is the first file listed, not the first by name:** `greeting.py` sorts before
+`main.py`, so deriving it the way the form does seeded a solution that imports the program and
+never runs it — found as a fixture scoring zero, which is what a verdict being real is good for.
+
+**What the working sandbox costs the suite, filed as PF-017.** `mintSubmissionFailure()` re-ran a
+seeded solution and relied on every job failing within a second. A re-run is evaluated now, so it
+returns `null` and two tests skip with a reason instead of waiting twenty seconds. Minting one
+takes a hardware group no worker serves and this deployment defines one; the fixture needs a
+decision, not code.
+
+**Two core-api defects, filed as Q-031 and Q-032**, both found by clearing up after the
+investigation rather than by looking for them. Deleting a solution a plagiarism record points at
+answers 500 **after** removing the stored files, leaving a solution whose file listing is intact
+and whose bytes are gone — and `/plagiarism` has no delete route, so it can be neither repaired nor
+deleted through the API. It hit `[seed] correct` and `[seed] borrowed` here, and clearing two rows
+directly in the database plus a re-seed is what recovered them; four e2e tests were red in between,
+for damage rather than for a regression. And a submit refused at compilation still leaves its
+`Solution` row behind.
+
+**What the suite had to give up, and it is the change working.** Five specs asserted the broken
+state in so many words, which plan 002 predicted: `solutions.spec.ts` and
+`reference-solutions.spec.ts` each had a test whose whole subject was "Isolate init error" and now
+assert the verdict a reader actually gets; `groups.spec.ts`'s points matrix told apart the
+"everything failed" glyph and "nothing submitted" and now tells apart a score and "nothing
+submitted". `solution-diff.spec.ts` took **the first two attempts**, which stopped sharing a
+filename once the multi-file fixture became a third — named now, which is PF-010's own lesson one
+spec further. And a **sixth entity joined PF-014's tracker**: the reference-solution submit test
+deletes its solution as its last assertion, so a failure before that left the _supervisor_ one of
+their own — and the next run's "a colleague's private answers are not this reader's" then read a
+list with a row in it and failed on the fixture rather than on the app. It is tracked by
+description, for PF-014's reason.
+
+**One new test rather than only repaired ones:** the entry-point picker had no coverage at all,
+being new UI on a path nothing had exercised. `assignments.spec.ts` now uploads two files, asserts
+the submit is **blocked** until the question is answered, answers it, and checks the solution passed
+— which it only can if the file it named is the one that ran.
+
+**One failure seen once and not explained, recorded rather than chased.**
+`solution-verdict.spec.ts`'s "awards points the evaluation did not" failed in one full run and
+passed in two later full runs, on its own, and paired with the spec that now shares its fixture.
+The suspicion was this session's own doing — `solutions.spec.ts` now reads `[seed] correct`, which
+that spec writes to, and DEC-133 is exactly about sharing a written fixture across two workers —
+but it does not hold up: the read asserts the evaluation table, which a points override does not
+touch, and a GET cannot disturb the writer anyway. So it is left alone and written down: if it
+recurs, `[seed] correct` has several readers now (`plagiarism`, `dashboard`, `solutions`) and one
+writer, and that is where to look first.
