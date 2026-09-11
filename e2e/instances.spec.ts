@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN, SUPERVISOR } from "./helpers/accounts";
 import type { SeedAccount } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
-import { deleteGroupIfPresent, deleteInstanceIfPresent } from "./helpers/core-api";
+import { deleteGroupIfPresent, deleteInstanceIfPresent, instanceName } from "./helpers/core-api";
 import { cleanUpCreated } from "./helpers/created";
 import { baseURL } from "./helpers/base-url";
 
@@ -86,7 +86,7 @@ test("lists the instances with who runs them", async ({ page }) => {
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "Instances", level: 1 })).toBeVisible();
-  const row = main.getByRole("row").filter({ hasText: "Frankenstein University" });
+  const row = main.getByRole("row").filter({ hasText: await instanceName() });
   await expect(row).toContainText("Admin Admin");
   await expect(row).toContainText("Open for registration");
 });
@@ -95,7 +95,7 @@ test("says an instance needs no licence rather than claiming it has one", async 
   await signIn(page, SUPERADMIN, "/en/admin/instances");
   await page
     .getByRole("main")
-    .getByRole("link", { name: /Frankenstein University/ })
+    .getByRole("link", { name: await instanceName() })
     .click();
   const main = page.getByRole("main");
 
@@ -112,7 +112,7 @@ test("never offers to delete the instance the reader belongs to", async ({ page 
   await signIn(page, SUPERADMIN, "/en/admin/instances");
   await page
     .getByRole("main")
-    .getByRole("link", { name: /Frankenstein University/ })
+    .getByRole("link", { name: await instanceName() })
     .click();
   const main = page.getByRole("main");
 

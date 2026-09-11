@@ -5817,3 +5817,32 @@ now this instance's ordinary state. The three tests that need a row say why they
 saying what it was: importing the C# runtime package by hand through `docker compose exec` runs as
 root, and php-fpm serves as `www-data`, so the imported blob was unreadable and the worker's next
 job failed to fetch it. The compose repo's `COMPATIBILITY.md` carries that step now.
+
+---
+
+### 2026-09-11 — a wipe-and-reseed, and the five tests it caught
+
+**Tickets:** none new; the compose repo's plan 003 gained its real verification.
+**Status:** done. **311 e2e pass, 3 skip, 0 fail**, twice, against a database built from nothing —
+and the seeded fixtures are **unchanged** after both runs.
+
+The instance was wiped to earn the stronger verification the previous verified set had and this
+one did not. Three things came out of it.
+
+**The seed produces correctly graded fixtures from nothing.** `[seed] correct`, `[seed] multi-file`,
+`[seed] borrowed` and `[seed] second try` all score 10/10 with `Test 1` OK, `[seed] wrong` 0/10
+FAILED, and the reference solution 1.0 — straight from `pnpm seed`, with no repair by hand. That is
+what says PF-016's fix is in the script rather than in one instance's data.
+
+**Five tests hardcoded the instance's name**, and the compose repo's plan 003 had claimed none did.
+That claim was checked against `landing.spec.ts` — which PF-010 had already fixed — and generalised
+from one file to the suite. `instances.spec.ts` (three tests), `groups.spec.ts` and
+`command-palette.spec.ts` all said `Frankenstein`, because **an instance's name is also its root
+group's**, so it appears in the group list and in search as well as on the instances screen. They
+read it through a new `instanceName()` helper now; the command palette searches the **seeded group**
+instead, which is a fixture this suite owns rather than something an operator names. `exact: true`
+came with it — the seeded group has a subgroup whose name contains its own.
+
+**And the fixtures survive the suite.** Snapshotted before and after a full run and compared: four
+solutions on the primary assignment, one on the second-deadline one, none on the deliberately-empty
+one, one instance, six groups, 26 exercises, an empty failure queue. Identical.

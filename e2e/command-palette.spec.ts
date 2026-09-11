@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 import { SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { SEEDED_GROUP_NAME } from "./helpers/core-api";
 
 /**
  * The command palette (D-015). Authenticated: it searches real core-api data and is mounted inside
@@ -35,10 +36,13 @@ test("asks for a longer query before searching", async ({ page }) => {
 });
 
 test("finds a real group and navigates to it", async ({ page }) => {
+  // The seeded group rather than the instance root: it is a fixture this suite owns, where the
+  // instance's name is whatever the operator called their university (plan 003).
   await page.keyboard.press("Control+k");
-  await page.getByPlaceholder("Search groups, exercises and people…").fill("Frankenstein");
+  await page.getByPlaceholder("Search groups, exercises and people…").fill(SEEDED_GROUP_NAME);
 
-  const hit = page.getByRole("option", { name: /Frankenstein/ });
+  // `exact`, because the seed gives that group a subgroup whose name contains this one.
+  const hit = page.getByRole("option", { name: SEEDED_GROUP_NAME, exact: true });
   await expect(hit).toBeVisible();
   await hit.click();
   await expect(page).toHaveURL(/\/en\/groups\//);

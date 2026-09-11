@@ -792,3 +792,24 @@ async function seededExerciseId(token: string): Promise<string> {
   );
   return assignment.exerciseId;
 }
+
+/**
+ * The name this deployment's instance goes by, read rather than assumed.
+ *
+ * **Hardcoded as "Frankenstein University, Atlantida" in five tests until plan 003**, which is
+ * upstream's own fixture text and stopped being true the moment a deployment named itself
+ * (`RECODEX_INSTANCE_NAME`). The instance's name is also its root group's, so the same string is
+ * what the group list, the command palette and the instances screen all show -- five failures from
+ * one rename, on a database that was simply seeded by a different operator.
+ *
+ * `/v1/instances` is granted to the unauthenticated reader, which is what the landing page relies
+ * on (PF-010 fixed that one the same way); this asks with a token anyway, since every caller has
+ * one.
+ */
+export async function instanceName(): Promise<string> {
+  const token = await coreApiToken();
+  const instances = await coreApi<{ name: string }[]>("/instances", token);
+  const first = instances[0];
+  if (!first) throw new Error("this deployment has no instance at all");
+  return first.name;
+}

@@ -4,6 +4,7 @@ import type { Page } from "@playwright/test";
 import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
+import { instanceName } from "./helpers/core-api";
 import type { SeedAccount } from "./helpers/accounts";
 
 async function signIn(page: Page, account: SeedAccount, path = "/en/groups"): Promise<void> {
@@ -45,7 +46,7 @@ test.describe("the group list", () => {
 
     // The instance root is the one public group on this instance. (No seeded group is
     // organizational, so that badge has no data behind it here -- see F-029.)
-    const row = page.getByRole("row", { name: /Frankenstein/ }).first();
+    const row = page.getByRole("row", { name: await instanceName() }).first();
     await expect(row.getByText("Public")).toBeVisible();
   });
 
