@@ -82,7 +82,7 @@ where a course cannot exist.
 
 ## 1. API change requests
 
-Twenty-three API change requests, every one of them traced to a ticket that hit it while building a real screen against the live instance. They fall into five kinds. **The contract itself is missing**: core-api's 7409-line `swagger.yaml` carries zero response schemas across ~250 operations and is not served over HTTP at all, so every frontend maintains a private guess at every payload — and the exercise-configuration vocabulary, the hardest part of the product, is published nowhere and now exists in three hand-copied versions. **Permission hints are absent almost everywhere**: `permissionHints` is emitted for exactly one entity in the entire API (`GroupFormat`), so five screens had to restate ACL rules the brief explicitly forbids them from restating. **Collection endpoints are inconsistent and silently permissive**: paging exists on some and not others, `/groups` returns a bare array where `/users` and `/exercises` return an envelope, `/users` takes `filters[search]` where the others take `search`, and an unrecognised parameter is ignored with an HTTP 200 — which shipped two real bugs whose output looked plausible enough to survive for weeks. **Three outright defects were reproduced with `curl` against the live instance**: a 500 with a raw Doctrine exception when an address is deleted a second time (Q-021), a licence validity flag that can be set true and never false because of a PHP truthiness test (Q-022), and an instance deletion that leaves its root group orphaned and still listed (Q-023). And **a set of missing verbs and missing fields** — no assignment collection, no bulk anything, no logout, no un-verify, no un-resolve, no way to validate an invitation token, no `admin` key on a user's groups — each of which cost this project either a round trip, a workaround, or a capability. The single highest-value item is the first: schemas on the responses. The single most damaging one found is the fifth: `/v1/users/{id}/groups` omitting administered groups meant the teacher sidebar had never rendered for anybody on this deployment, and nothing could have caught it.
+Twenty-seven API change requests, every one of them traced to a ticket that hit it while building a real screen against the live instance. (Entries 1.25-1.27 were added after the retrospective was first written, by the sessions that made evaluation work: they are what running real submissions through the API found, and the count above had said twenty-three while the list held twenty-four.) They fall into five kinds. **The contract itself is missing**: core-api's 7409-line `swagger.yaml` carries zero response schemas across ~250 operations and is not served over HTTP at all, so every frontend maintains a private guess at every payload — and the exercise-configuration vocabulary, the hardest part of the product, is published nowhere and now exists in three hand-copied versions. **Permission hints are absent almost everywhere**: `permissionHints` is emitted for exactly one entity in the entire API (`GroupFormat`), so five screens had to restate ACL rules the brief explicitly forbids them from restating. **Collection endpoints are inconsistent and silently permissive**: paging exists on some and not others, `/groups` returns a bare array where `/users` and `/exercises` return an envelope, `/users` takes `filters[search]` where the others take `search`, and an unrecognised parameter is ignored with an HTTP 200 — which shipped two real bugs whose output looked plausible enough to survive for weeks. **Three outright defects were reproduced with `curl` against the live instance**: a 500 with a raw Doctrine exception when an address is deleted a second time (Q-021), a licence validity flag that can be set true and never false because of a PHP truthiness test (Q-022), and an instance deletion that leaves its root group orphaned and still listed (Q-023). And **a set of missing verbs and missing fields** — no assignment collection, no bulk anything, no logout, no un-verify, no un-resolve, no way to validate an invitation token, no `admin` key on a user's groups — each of which cost this project either a round trip, a workaround, or a capability. The single highest-value item is the first: schemas on the responses. The single most damaging one found is the fifth: `/v1/users/{id}/groups` omitting administered groups meant the teacher sidebar had never rendered for anybody on this deployment, and nothing could have caught it.
 
 ### 1.1 The published API contract has no response schemas at all, and is not even served
 
@@ -323,6 +323,37 @@ Collected because none of them justifies its own paragraph but together they des
 **Why it matters.** Low individually, cumulative in aggregate. These are the items a backend developer could clear in a week and that would remove a dozen small workarounds from every client.
 
 _Cited from:_ `D-014`, `S-002`, `T-001`, `T-008`, `T-014`, `F-025`, `D-005`, `DEC-093`, `DEC-098`, `docs/PROGRESS.md:2294-2299`, `docs/PROGRESS.md:2500-2503`, `docs/PROGRESS.md:3431-3436`, `docs/PROGRESS.md:2358-2362`, `docs/PROGRESS.md:564-566`, `docs/PROGRESS.md:1213-1215`, `docs/PROGRESS.md:1964-1966`
+
+### 1.25 Deleting a solution that plagiarism detection has touched destroys its files and then fails
+
+`DELETE /assignment-solutions/{id}` answers **HTTP 500** with a raw
+`Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException` for any solution named in a detection record — two foreign keys do it (`plagiarism_detected_similarity.tested_solution_id` and `plagiarism_detected_similar_file.solution_id`) and neither cascades — and **there is no route that removes such a record**: `createPlagiarismRoutes` registers list, detail, create, update and add-similarities, and no `DELETE` at batch, similarity or file level. The state is terminal through the API in both directions. **What PF-016 added to this, by hitting it twice on the development instance, is that the failure is not clean:** the solution's stored files are removed _before_ the row deletion fails, and nothing puts them back. What is left is a solution that still lists its files through `GET /assignment-solutions/{id}/files` — name, size, uploader, all intact — whose bytes are gone: `download-solution` answers 404, the source viewer renders nothing, and no screen can say why. Recovering it needed two rows cleared straight in the database and a re-seed. So a delete that the API refuses has already destroyed data by the time it refuses.
+
+**What would fix it.** Check the references **before** touching storage and refuse with a 4xx that names what holds the row — the way `checkDeleteSubmission` already refuses deleting the last evaluation run — and add a `DELETE` for plagiarism batches and similarities so the refusal is not permanent.
+
+**Why it matters.** High, and higher than Q-029 alone reads. A 500 on an unsupported delete is an annoyance; a 500 that silently empties a student's submission is data loss, and the entity it leaves behind looks intact from every endpoint an app can ask.
+
+_Cited from:_ `Q-029`, `Q-031`, `PF-012`, `PF-016`, `docs/QUESTIONS.md Q-029`, `docs/QUESTIONS.md Q-031`
+
+### 1.26 A submission refused while its job is compiled still leaves the solution behind
+
+`POST /exercise-assignments/{id}/submit` creates the `Solution` before it compiles the job configuration, so a submission refused at that point — a missing submit-time variable, or a `source-files` pattern that matched nothing — answers a clear 400 **and keeps the row**. It appears in the assignment's solution list with no evaluation, no points and no submission, indistinguishable at a glance from one still being evaluated. Seen three times while establishing PF-016, each needing deletion by hand.
+
+**What would fix it.** Compile the job before persisting the solution, or roll the solution back when compilation refuses.
+
+**Why it matters.** Medium. It is invisible until something submits invalid input deliberately — a test suite, a seed, an importer — and then it leaks one row per attempt into a list real people read. A note-based sweep only catches the ones that carry a prefix.
+
+_Cited from:_ `Q-032`, `PF-016`, `docs/QUESTIONS.md Q-032`
+
+### 1.27 A solution whose author was deleted makes the view factory throw
+
+`/v1/exercise-assignments/{id}/solutions` reports a solution whose author is gone with `authorId: null` — a state core-api itself publishes — and reading that solution through the view factory then throws `AssignmentSolutionViewFactory.php:69`: `findBestSolution(): Argument #2 ($user) must be of type User, null given`. core-api already knows the case exists and guards it in one place; this is the place it does not.
+
+**What would fix it.** Guard the null author in `AssignmentSolutionViewFactory`, the way the payload that publishes `authorId: null` already implies.
+
+**Why it matters.** Medium. Deleting a user is ordinary administration, and it leaves endpoints that 500 for everyone afterwards. This app stopped rendering such a solver as a row (they reached the class-progress table as a person with no name whose link pointed at `/users/null`), but an endpoint that 500s is an endpoint that 500s.
+
+_Cited from:_ `Q-030`, `PF-013`, `docs/QUESTIONS.md Q-030`
 
 ---
 

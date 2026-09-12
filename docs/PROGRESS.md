@@ -5880,3 +5880,33 @@ was in flight, the re-render put `10` back, and the next save sent the wrong num
 the **field** to carry the awarded value now, which is the honest signal that the save completed.
 This is the failure that looked like a flake earlier in the day and was not: it only became
 deterministic once every seeded solution had a real verdict.
+
+---
+
+### 2026-09-12 — every environment grades, and the API defects are written up for the ReCodEx team
+
+**Tickets:** none new. `RETROSPECTIVE.md` §1 gains three entries; the compose repo carries the
+worker fix and the verification.
+**Status:** done. Five static checks and 287 unit tests green; no product code changed here.
+
+**All six runtime environments grade**, verified one exercise at a time on the real stack and then
+deleted: `bash`, `c-gcc-linux`, `cxx-gcc-linux`, `python3`, `cs-dotnet-core` and `java`, each 1.0
+with `Test 1` OK. That finishes the question plan 002 left open about C#, and answers it for the
+other four at the same time.
+
+**C and C++ had never compiled on this deployment**, and nothing could have noticed until a
+submission reached a compiler. Their pipelines hardcode `/usr/local/recodex-gcc/bin/gcc`, which is
+where ReCodEx's own production images build one; this image has Debian's in `/usr/bin`. The compose
+repo's worker Dockerfile links the expected path at the real one — rather than editing a pipeline
+that the next `runtimes:import` would overwrite. Third of its family, after the sandbox's `PATH`
+and the `/opt` binding: **a toolchain the sandbox cannot reach at the path its runtime package
+names, which reads like a missing toolchain every time.**
+
+**Three API change requests were added to `RETROSPECTIVE.md` §1**, which is the document the
+ReCodEx team can act on. Two are new (a submission refused during job compilation keeps its
+`Solution` row; a solution whose author was deleted makes the view factory throw), and one
+**escalates Q-029 rather than repeating it**: deleting a solution that plagiarism detection has
+touched does not merely fail with a 500, it removes the stored files _first_, leaving a solution
+whose file listing is intact and whose bytes are gone. That is data loss behind a refusal, and it
+was found by hitting it twice rather than by reading. The section's own count was corrected on the
+way — it claimed twenty-three while listing twenty-four.
