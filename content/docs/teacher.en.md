@@ -53,6 +53,31 @@ until they are all there.
 Submit the reference solution and read its verdict before going further. If it does not score
 full marks, the exercise is not finished, and every student would have hit the same wall.
 
+### Assignments that are not programs
+
+Not everything can be run and tested. An essay, measured data, a presentation, a scan — that is
+what the **Data** environment is for: it accepts **any file** whatever its extension, and compiles
+and runs nothing. The only thing that happens to a submission is the check you attach to the
+exercise yourself.
+
+That check is **not optional**, and it is the one thing a data-only exercise goes wrong on. Without
+it every submission comes back `FAILED`, reading `/box/: Is a directory`, on an exercise that
+otherwise looks correctly configured. If all you want is to collect the file and mark it yourself,
+attach a two-line script as an exercise file:
+
+```bash
+#!/bin/bash
+echo "Submitted. Awaiting the teacher's review."
+exit 0
+```
+
+The submission then scores full marks on the automatic part, that sentence appears to the student
+among the results, and you award the real points by hand on the solution screen. If you do want to
+check something — comparing submitted data against a model answer, say — it is an ordinary program
+that receives the submitted files and decides.
+
+A data-only exercise needs a reference solution too. It is simply a file you submit yourself.
+
 ### Importing from GitHub Classroom
 
 An assignment template with an `autograding.json` can be imported instead of retyped. Its

@@ -33,6 +33,14 @@ Then **Submit a solution**:
 Evaluation takes seconds for a small program. The page follows along and shows the result when it
 lands, without your reloading anything.
 
+## When the assignment is not a program
+
+Not every assignment is a program. A teacher may ask for an essay, measured data, a presentation or
+a scan — you hand it in the same way, except nothing is compiled or run. The result then usually
+carries only a confirmation that the submission arrived, and the real points follow by hand once
+your teacher has read it. Deadlines, attempts and feedback all work exactly as they do for
+programs.
+
 ## Reading the result
 
 A solution's screen shows the score, and then each test with what happened in it:

@@ -32,6 +32,13 @@ Pak **Odevzdat řešení**:
 U malého programu trvá vyhodnocení pár sekund. Stránka to sleduje sama a výsledek ukáže, jakmile
 dorazí — nemusíte nic načítat znovu.
 
+## Když zadání není program
+
+Ne každé zadání je program. Vyučující může chtít esej, naměřená data, prezentaci nebo sken —
+odevzdává se stejně, jen se nic nepřekládá a nespouští. Výsledek pak obvykle nese jen potvrzení, že
+odevzdání dorazilo, a skutečné body doplní vyučující ručně, až si práci přečte. Termín, počet
+pokusů i zpětná vazba fungují stejně jako u programů.
+
 ## Čtení výsledku
 
 Obrazovka řešení ukazuje skóre a pak každý test s tím, co se v něm stalo:

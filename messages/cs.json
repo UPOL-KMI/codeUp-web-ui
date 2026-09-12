@@ -4,24 +4,23 @@
   },
   "HomePage": {
     "title": "UPolníček",
-    "tagline": "Procvičujte programování a hned se dozvíte, jestli to funguje.",
-    "what": "UPolníček odevzdaný kód přeloží a spustí v izolovaném prostředí a řekne, co prošlo a co ne. Studenti mají odpověď během vteřin místo za týden; vyučující tráví čas tím, jak je řešení napsané, a ne tím, jestli vůbec běží.",
+    "tagline": "Systém pro odevzdávání studentských prací, jejich hodnocení a sledování termínů.",
+    "what": "Vyučující zakládá zadání s termínem a body, student do něj odevzdá řešení. Programátorské úlohy systém sám přeloží, spustí v izolovaném prostředí proti připraveným testům a vrátí výsledek během několika sekund. U prací, které stroj posoudit neumí — dokumentů, dat, prezentací — eviduje odevzdání a termín a hodnocení zapíše vyučující. Body, zpětná vazba i historie pokusů zůstávají u konkrétního odevzdání.",
     "signIn": "Přihlásit se",
     "faq": "Časté otázky",
     "instance": {
       "title": "Tato instance",
-      "noDescription": "Tato instance se nijak nepopsala.",
       "support": "Technická podpora"
     },
     "quickStart": {
-      "title": "Jak to do sebe zapadá",
+      "title": "Jak systém funguje?",
       "groups": {
         "title": "Skupiny",
         "body": "Všechno se děje ve skupině — v předmětu, na cvičení, v soutěži. Skupiny tvoří strom, díky čemuž může předmět obsahovat vlastní skupiny na cvičení a správce předmětu spravuje i je. Skupina má členy, zadání a vlastní pravidla pro body."
       },
       "exercises": {
         "title": "Úlohy",
-        "body": "Úloha je šablona: text, který studenti čtou, testy, proti kterým se jejich kód pouští, a čas a paměť, které smí spotřebovat. Dokud úloha není zadaná, studenti ji nevidí; napsat se dá jednou a sdílet mezi předměty. Zadat ji nejde, dokud alespoň jedno referenční řešení nedoloží, že funguje."
+        "body": "Úloha je šablona: text, který studenti čtou, a pravidla, podle kterých se jejich odevzdání posoudí — u programů testy a limity času a paměti, u ostatních prací postup, kterým se odevzdání zkontroluje. Dokud úloha není zadaná, studenti ji nevidí; napsat se dá jednou a sdílet mezi předměty. Zadat ji nelze, dokud alespoň jedno referenční řešení nedoloží, že funguje."
       },
       "assignments": {
         "title": "Zadání",
@@ -29,11 +28,15 @@
       },
       "solutions": {
         "title": "Řešení",
-        "body": "Student odevzdá zdrojové soubory nebo archiv; UPolníček je přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům to běželo. Vyučující vidí každý pokus, může kód okomentovat řádek po řádku a body přepsat."
+        "body": "Student odevzdá soubory nebo archiv. Programátorské úlohy systém přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům řešení běželo; u ostatních prací odevzdání zaznamená a posouzení nechá na vyučujícím. Vyučující vidí každý pokus, může odevzdaný text okomentovat řádek po řádku a body přepsat."
       },
       "shadow": {
-        "title": "Práce, kterou UPolníček nevyhodnotí",
-        "body": "Ústní zkoušky, prezentace, docházka — stínové zadání nese body, které vyučující udělí ručně, takže součet ve skupině odpovídá celému předmětu, ne jen té části, kterou umí ohodnotit stroj."
+        "title": "Body bez odevzdání",
+        "body": "Ústní zkouška, prezentace, docházka — stínové zadání nese body, které vyučující udělí ručně, takže součet ve skupině odpovídá celému předmětu, ne jen té části, která se odevzdává."
+      },
+      "deadlines": {
+        "title": "Termíny a kalendář",
+        "body": "Každé zadání má termín, nejvyšší možný zisk a případně druhý termín za snížený počet bodů. Na přehledu najde student měsíční kalendář všech svých termínů a vedle něj seznam těch blížících se, seřazený podle toho, co hoří nejdřív. Vyučující vidí totéž za předměty, které učí, a k tomu bodovou matici skupiny a frontu řešení čekajících na posouzení."
       }
     },
     "acknowledgement": "UPolníček je rozšíření ReCodExu — otevřeného systému, který vznikl s podporou Studentského grantového programu Matematicko-fyzikální fakulty Univerzity Karlovy a který spravuje její Informatická sekce. UPolníček vyvíjí Katedra informatiky Přírodovědecké fakulty Univerzity Palackého v Olomouci.",
@@ -46,7 +49,8 @@
       "title": "Dokumentace",
       "body": "Jak to nainstalovat, jak v tom učit a jak do toho odevzdávat.",
       "link": "Otevřít průvodce"
-    }
+    },
+    "operator": "Provozuje Katedra informatiky Přírodovědecké fakulty Univerzity Palackého v Olomouci."
   },
   "NotFound": {
     "title": "Stránka nenalezena",
@@ -73,7 +77,7 @@
   },
   "Login": {
     "title": "Přihlášení",
-    "subtitle": "UPolníček — vaše zadání, vaše řešení a jak byla vyhodnocena.",
+    "subtitle": "Odevzdávání studentských prací, termíny a hodnocení — Katedra informatiky PřF UP.",
     "email": "E-mail",
     "password": "Heslo",
     "signIn": "Přihlásit se",
@@ -93,8 +97,8 @@
   },
   "Register": {
     "title": "Vytvoření účtu",
-    "explain": "Účet je váš: vaše řešení, vaše body, vaše termíny.",
-    "closedShort": "Na této instanci UPolníčku ne.",
+    "explain": "S účtem odevzdáváte práce, sledujete termíny svých předmětů a čtete hodnocení.",
+    "closedShort": "Účty na této instanci nevznikají samostatnou registrací.",
     "closed": "Tato instance nedovoluje zakládat si účty samostatně. Účty zřizuje její správce — obvykle fakulta nebo vyučující — nebo vznikají přihlášením přes přihlašovací službu instituce.",
     "haveAccount": "Účet už mám",
     "firstName": "Jméno",
@@ -3709,7 +3713,7 @@
   },
   "Docs": {
     "title": "Dokumentace",
-    "intro": "Tři průvodci: jeden pro toho, kdo provozuje server, jeden pro výuku, jeden pro odevzdávání.",
+    "intro": "Tři průvodci — pro správu nasazení, pro vedení kurzu a pro odevzdávání prací.",
     "loadError": "Tohoto průvodce se nepodařilo načíst. Možná kvůli chybné konfiguraci aplikace.",
     "guides": {
       "install": {

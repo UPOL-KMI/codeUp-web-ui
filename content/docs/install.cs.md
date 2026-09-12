@@ -94,6 +94,10 @@ Image workeru instaluje `bash`, C a C++ (GCC), Python 3.13, .NET 8 SDK pro C# a 
 při prvním startu importuje odpovídající pipeline. Prostředí potřebuje **obojí**: nástroje v image
 workeru a pipeline v databázi, která říká, jak se kompiluje, spouští a soudí.
 
+Vedle nich je nainstalované prostředí **Data** (`data-linux`), které žádný nástrojový řetěz
+nepotřebuje: přijímá libovolný soubor a nespouští nic než kontrolu, kterou k cvičení přiloží jeho
+autor. Slouží pro odevzdávání prací, které nejsou program.
+
 Přidat jazyk znamená doinstalovat nástroje do `services/worker/Dockerfile`, přidat jeho jméno do
 `headers.env` v `services/worker/config.yml.template`, přidat balíček do `services/api/Dockerfile`,
 znovu sestavit a pak — na už existující databázi — balíček jednou ručně naimportovat:

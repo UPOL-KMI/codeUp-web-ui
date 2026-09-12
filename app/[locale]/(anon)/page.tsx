@@ -40,7 +40,14 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const instance = instances[0] ?? null;
   const helpdesk = process.env.EXTERNAL_AUTH_HELPDESK_URL ?? "";
 
-  const sections = ["groups", "exercises", "assignments", "solutions", "shadow"] as const;
+  const sections = [
+    "groups",
+    "exercises",
+    "assignments",
+    "deadlines",
+    "solutions",
+    "shadow",
+  ] as const;
 
   return (
     <RouteMessages>
@@ -48,6 +55,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         <header className="flex flex-col gap-4">
           <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-lg text-muted-foreground">{t("tagline")}</p>
+          <p className="text-sm text-muted-foreground">{t("operator")}</p>
           <p className="text-sm">{t("what")}</p>
           <div className="flex flex-wrap gap-2">
             <Link
@@ -77,11 +85,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               {t("instance.title")}
             </h2>
             <p className="text-sm font-medium">{instance.name}</p>
-            {instance.description ? (
-              <Markdown source={instance.description} />
-            ) : (
-              <p className="text-sm text-muted-foreground">{t("instance.noDescription")}</p>
-            )}
+            {instance.description && <Markdown source={instance.description} />}
             {helpdesk !== "" && (
               <p className="text-sm">
                 <a

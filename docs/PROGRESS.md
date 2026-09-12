@@ -6089,3 +6089,45 @@ arrived after `goto` resolved -- so the cleanup deleted nothing and said nothing
 nothing is also its correct behaviour when the message is already gone. It waits for the table
 first now. **Fourth of that family**, after PF-007, PF-011 and PF-014: every one of them a cleanup
 whose failure mode is silence.
+
+---
+
+### 2026-09-12 — the public copy, after the first round of real testing
+
+**Ticket:** X-004. **Status:** done.
+
+The operator started testing and the first thing he sent back was the landing page: vague, reads
+like an unfinished thing rather than a faculty's product. He quoted the tagline — _"Procvičujte
+programování a hned se dozvíte, jestli to funguje."_ — and he was right about more than he said.
+
+**Three faults, one of them mine from this morning.** The tagline is the only place in the whole
+app that claims this is about practising programming: an imperative, addressed to students alone,
+silent on submission and deadlines. `what`, `quickStart.exercises` and `quickStart.solutions` all
+assume the submission is source code — which **stopped being true the same day**, when
+`data-linux` went in. And deadlines had no section at all.
+
+**His correction is worth recording, because I had the facts wrong.** The plan said the landing
+page "is silent about deadlines" as though the product only listed them. It does more:
+`components/dashboard/deadline-calendar.tsx` renders a real month grid of every deadline a reader
+has, in the groups they study in _and_ the ones they teach, beside the "coming up" list. The new
+section names the calendar instead of describing a list, because the page should say the true and
+more useful thing.
+
+**One behaviour change, not just copy.** An instance with no description used to announce it —
+_"Tato instance se nijak nepopsala."_ He asked where the description is filled in, and the answer
+is that it belongs to the instance's **root group** and is edited there (`POST /instances/{id}`
+takes only `isOpen`; the app says as much in `Instances.about.nameLivesOnGroup`), or once at
+creation, or from `RECODEX_INSTANCE_DESCRIPTION` on first boot. None of that is a visitor's
+business, so the line is gone and the section simply ends at the instance's name.
+
+**The tagline went through two drafts, and the second was his catch too.** _"…evidenci termínů a
+jejich hodnocení"_ binds `jejich` to `termínů` — "grading deadlines". Reordered so it sits against
+`prací`.
+
+**The guides gained what the day had taught them and they had not**: data-only exercises accept any
+file, and their judge is _not optional_ — without one every submission fails with
+`/box/: Is a directory`, on an exercise that looks correctly configured.
+
+Deliberately untouched: the group and assignment copy, which is specific and correct and would only
+have churned; the FAQ's error string, which mirrors the legacy app's own sentence on purpose; and
+everything behind the login, which the operator scoped into its own pass.

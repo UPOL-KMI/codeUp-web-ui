@@ -4,24 +4,23 @@
   },
   "HomePage": {
     "title": "UPolníček",
-    "tagline": "Practise programming, and find out straight away whether it works.",
-    "what": "UPolníček compiles and runs submitted code in a sandbox and reports back what passed and what did not. Students get an answer in seconds instead of waiting a week; teachers spend their time on how a solution is written rather than on whether it runs.",
+    "tagline": "A system for submitting student work, grading it, and keeping track of deadlines.",
+    "what": "A teacher creates an assignment with a deadline and a number of points; a student submits work to it. Programming assignments are compiled and run in a sandbox against prepared tests, with a result in seconds. Work a machine cannot judge — documents, data, presentations — is collected against the same deadline and graded by the teacher. Points, feedback and the history of attempts all stay with the submission they belong to.",
     "signIn": "Sign in",
     "faq": "Frequently asked questions",
     "instance": {
       "title": "This instance",
-      "noDescription": "This instance has not described itself.",
       "support": "Technical support"
     },
     "quickStart": {
-      "title": "How it fits together",
+      "title": "How does the system work?",
       "groups": {
         "title": "Groups",
         "body": "Everything happens in a group — a course, a lab, a competition. Groups form a tree, which is how a course can hold its own lab groups, and how somebody who administers a course administers those too. A group has members and assignments, and its own rules for points."
       },
       "exercises": {
         "title": "Exercises",
-        "body": "An exercise is the template: the text students read, the tests their code is run against, and the time and memory it is allowed. Exercises are invisible to students until they are assigned, and they can be written once and shared between courses. An exercise cannot be assigned until at least one reference solution has proved it works."
+        "body": "An exercise is the template: the text students read, and the rules their submission is judged by — tests and time and memory limits for programs, and for other work the procedure that checks what was handed in. Exercises are invisible to students until they are assigned, and they can be written once and shared between courses. An exercise cannot be assigned until at least one reference solution has proved it works."
       },
       "assignments": {
         "title": "Assignments",
@@ -29,11 +28,15 @@
       },
       "solutions": {
         "title": "Solutions",
-        "body": "A student submits source files or an archive; UPolníček compiles it, runs it against every test, and shows which passed, what the compiler said, and how close to the limits it ran. Teachers see every attempt, can review the code line by line, and can override the points."
+        "body": "A student submits files or an archive. Programming assignments are compiled, run against every test, and reported with what passed, what the compiler said and how close to the limits the solution ran; other work is recorded and left for the teacher to judge. Teachers see every attempt, can comment on the submitted text line by line, and can override the points."
       },
       "shadow": {
-        "title": "Work UPolníček cannot evaluate",
-        "body": "Oral exams, presentations, attendance — a shadow assignment carries points a teacher awards by hand, so a group's total is the whole course rather than only the part a machine can mark."
+        "title": "Points without a submission",
+        "body": "Oral exams, presentations, attendance — a shadow assignment carries points a teacher awards by hand, so a group's total covers the whole course rather than only the part that is handed in."
+      },
+      "deadlines": {
+        "title": "Deadlines and the calendar",
+        "body": "Every assignment carries a deadline, the points available, and optionally a second deadline worth fewer of them. A student's overview holds a month calendar of all their deadlines and, beside it, the list of the ones coming up, soonest first. A teacher sees the same for the courses they teach, plus the group's matrix of points and the queue of solutions waiting to be looked at."
       }
     },
     "acknowledgement": "UPolníček extends ReCodEx — the open-source system created with the support of the Student Grant Program of the Faculty of Mathematics and Physics, Charles University, and maintained by its School of Computer Science. UPolníček is developed by the Department of Computer Science, Faculty of Science, Palacký University Olomouc.",
@@ -46,7 +49,8 @@
       "title": "Documentation",
       "body": "How to install it, how to teach with it, and how to submit to it.",
       "link": "Read the guides"
-    }
+    },
+    "operator": "Run by the Department of Computer Science, Faculty of Science, Palacký University Olomouc."
   },
   "NotFound": {
     "title": "Page not found",
@@ -73,7 +77,7 @@
   },
   "Login": {
     "title": "Sign in",
-    "subtitle": "UPolníček — your assignments, your solutions and how they were evaluated.",
+    "subtitle": "Submitting student work, deadlines and grading — Department of Computer Science, Faculty of Science, UP Olomouc.",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
@@ -93,8 +97,8 @@
   },
   "Register": {
     "title": "Create account",
-    "explain": "An account here is yours: your solutions, your points, your deadlines.",
-    "closedShort": "Not on this UPolníček instance.",
+    "explain": "An account lets you submit work, follow your courses' deadlines, and read the grading.",
+    "closedShort": "This instance does not create accounts through self-registration.",
     "closed": "This instance does not let people create their own accounts. Accounts are made by whoever administers it — usually your faculty or your teacher — or by signing in through the institution's own login service.",
     "haveAccount": "I already have an account",
     "firstName": "Given name",
@@ -3709,7 +3713,7 @@
   },
   "Docs": {
     "title": "Documentation",
-    "intro": "Three guides: one for whoever runs the server, one for teaching, one for submitting work.",
+    "intro": "Three guides — one for running the deployment, one for teaching a course, one for submitting work.",
     "loadError": "This guide could not be loaded. Possibly due to the misconfiguration of the application.",
     "guides": {
       "install": {

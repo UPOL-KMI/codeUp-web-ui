@@ -13,7 +13,9 @@ test("tells a visitor what UPolníček is, and which instance this is", async ({
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "UPolníček", level: 1 })).toBeVisible();
-  await expect(main.getByText("Practise programming")).toBeVisible();
+  await expect(main.getByText("A system for submitting student work")).toBeVisible();
+  // Who runs this, said above the fold rather than only in the footer.
+  await expect(main.getByText("Palacký University Olomouc").first()).toBeVisible();
 
   // The instance names itself from `/v1/instances`, which core-api grants to the unauthenticated
   // role -- the same read the registration form makes. **Asked of that endpoint rather than pinned
@@ -26,7 +28,13 @@ test("tells a visitor what UPolníček is, and which instance this is", async ({
   ).toBeVisible();
 
   // The quick-start sections, which are the legacy Home page's substance.
-  for (const heading of ["Groups", "Exercises", "Assignments", "Solutions"]) {
+  for (const heading of [
+    "Groups",
+    "Exercises",
+    "Assignments",
+    "Deadlines and the calendar",
+    "Solutions",
+  ]) {
     await expect(main.getByRole("heading", { name: heading, level: 3 })).toBeVisible();
   }
 
@@ -42,7 +50,9 @@ test("carries the anonymous shell, landmark and language switch included", async
   await expect(page.getByRole("navigation", { name: "Interface language" })).toBeVisible();
 
   await page.goto("/cs");
-  await expect(page.getByRole("main").getByText("Procvičujte programování")).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("Systém pro odevzdávání studentských prací"),
+  ).toBeVisible();
 });
 
 test("offers no external sign-in where no provider is configured", async ({ page }) => {

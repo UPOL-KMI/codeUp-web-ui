@@ -95,6 +95,10 @@ for Java, and the API imports the matching pipelines on first boot. An environme
 the toolchain in the worker image, and a pipeline in the database that says how to compile, run and
 judge it.
 
+Alongside them sits the **Data** environment (`data-linux`), which needs no toolchain at all:
+it accepts any file and runs nothing but the check the exercise author attaches to it. It is what
+makes the deployment usable for work that is not a program.
+
 Adding a language means installing its toolchain in `services/worker/Dockerfile`, adding its name
 to `headers.env` in `services/worker/config.yml.template`, adding its package to
 `services/api/Dockerfile`, rebuilding, and then — on a database that already exists — importing the

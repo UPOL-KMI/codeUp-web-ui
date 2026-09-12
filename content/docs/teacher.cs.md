@@ -50,6 +50,30 @@ nedovolí zadat.
 Referenční řešení odevzdejte a přečtěte jeho verdikt, než půjdete dál. Pokud nedostane plný počet
 bodů, cvičení není hotové — a každý student by narazil na tutéž zeď.
 
+### Úkoly, které nejsou program
+
+Ne všechno se dá spustit a otestovat. Esej, naměřená data, prezentace, sken — na to slouží
+prostředí **Data**: přijímá **libovolný soubor** bez ohledu na příponu a nic nekompiluje ani
+nespouští. Jediné, co u něj proběhne, je kontrola, kterou k cvičení přiložíte vy.
+
+Ta kontrola **není volitelná**, a je to ta jediná věc, na které se u data-only cvičení dá pohořet.
+Bez ní skončí každé odevzdání jako `FAILED` s hláškou `/box/: Is a directory` — na cvičení, které
+jinak vypadá správně nastavené. Pokud chcete jen soubor vybrat a ohodnotit ho sami, přiložte jako
+soubor cvičení dvouřádkový skript:
+
+```bash
+#!/bin/bash
+echo "Odevzdáno. Čeká na posouzení vyučujícím."
+exit 0
+```
+
+Odevzdání pak dostane plný počet bodů z automatické části, ta věta se studentovi ukáže mezi
+výsledky a skutečné body mu udělíte ručně na obrazovce řešení. Pokud naopak kontrolovat chcete —
+třeba porovnat odevzdaná data se vzorem — je to obyčejný program, který dostane odevzdané soubory
+a rozhodne.
+
+Referenční řešení potřebuje i data-only cvičení. Je jím prostě soubor, který sami odevzdáte.
+
 ### Import z GitHub Classroom
 
 Zadání s `autograding.json` jde naimportovat místo přepisování. Jeho testy typu `input`/`output` se
