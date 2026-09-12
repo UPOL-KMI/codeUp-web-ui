@@ -62,6 +62,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   "/admin/instances/[instanceId]": [
     "Dialog",
     "Error",
+    "Instances.errors",
     "Instances.licences",
     "Instances.settings",
     "Nav",
@@ -537,6 +538,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages",
     "SystemMessages.active",
     "SystemMessages.editor",
+    "SystemMessages.errors",
     "SystemMessages.types",
     "Toast",
   ],

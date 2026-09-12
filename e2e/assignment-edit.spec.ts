@@ -69,6 +69,41 @@ test("changes a setting and puts it back", async ({ page }) => {
   }
 });
 
+/**
+ * The deadline a teacher types is the deadline that is stored, whatever zone the server runs in.
+ *
+ * This is the one field where that can be checked from the outside: type a wall-clock time, save,
+ * come back, and read the picker again. It fails by exactly the offset between the browser's zone
+ * and the server's, which is why nothing caught it until the suite was pointed at the deployment's
+ * container (UTC) instead of a local `next start` (the host's own zone, the browser's too).
+ * `lib/actions/datetime-boundary.test.ts` guards the same rule structurally.
+ */
+test("stores the deadline the picker shows, not the one the server's clock reads", async ({
+  page,
+}) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await openSeededAssignment(page);
+
+  await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  const main = page.getByRole("main");
+  const deadline = main.getByLabel("First deadline", { exact: true });
+  const original = await deadline.inputValue();
+
+  // Between the seeded assignment's two deadlines -- the form refuses a first deadline past the
+  // second, which is the rule the test above covers -- and at a minute far enough from midnight
+  // that a whole-day shift would be as visible as an hourly one.
+  const typed = "2026-09-16T13:37";
+  for (const value of [typed, original]) {
+    await deadline.fill(value);
+    await main.getByRole("button", { name: "Save the settings" }).click();
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+
+    await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+    await expect(main.getByLabel("First deadline", { exact: true })).toHaveValue(value);
+  }
+});
+
 test("asks for a second deadline only when there is one, and refuses one before the first", async ({
   page,
 }) => {

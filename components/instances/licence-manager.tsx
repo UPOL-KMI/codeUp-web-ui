@@ -5,7 +5,11 @@ import { FormProvider } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { createLicence, deleteLicence } from "@/lib/actions/instances";
-import { licenceSchema, type LicenceValues } from "@/lib/actions/instances.schema";
+import {
+  licenceFormSchema,
+  licenceFormToValues,
+  type LicenceFormValues,
+} from "@/lib/actions/instances.schema";
 import type { Licence } from "@/lib/api/instances";
 import { DATE_ONLY_FORMAT } from "@/lib/format/date-time";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
@@ -56,6 +60,7 @@ export function LicenceManager({
   hasValidLicence: boolean;
 }) {
   const t = useTranslations("Instances.licences");
+  const tErrors = useTranslations("Instances.errors");
   const format = useFormatter();
   const router = useRouter();
   const toast = useToast();
@@ -63,10 +68,15 @@ export function LicenceManager({
   const [confirming, setConfirming] = useState<Licence | null>(null);
   const [pending, setPending] = useState(false);
 
-  const { form, onSubmit, isPending } = useServerActionForm<LicenceValues, { id: string }>({
-    schema: licenceSchema,
+  const { form, onSubmit, isPending } = useServerActionForm<LicenceFormValues, { id: string }>({
+    schema: licenceFormSchema,
     defaultValues: { note: "", validUntil: "" },
-    action: (values) => createLicence(instanceId, values),
+    action: (values) => {
+      const payload = licenceFormToValues(values);
+      return payload === null
+        ? Promise.resolve({ success: false as const, formError: tErrors("badDate") })
+        : createLicence(instanceId, payload);
+    },
     onSuccess: () => {
       form.reset();
       toast.success(t("added"));

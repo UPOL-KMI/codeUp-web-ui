@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { updateAssignment } from "@/lib/actions/assignment";
 import type { AssignmentSettingsValues } from "@/lib/actions/assignment.schema";
 import type { AssignmentSettings } from "@/lib/api/assignment-edit";
-import { toDateTimeLocal } from "@/lib/format/datetime-local";
+import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
@@ -158,13 +158,27 @@ function Toggle({
   );
 }
 
+/**
+ * The three dates stay wall-clock strings while they are being edited and become unix seconds on
+ * the way to the action, because that conversion has to happen in the reader's own zone
+ * (`lib/format/datetime-local.ts`).
+ */
+type DraftValues = Omit<
+  AssignmentSettingsValues,
+  "visibleFrom" | "firstDeadline" | "secondDeadline"
+> & {
+  visibleFrom: string;
+  firstDeadline: string;
+  secondDeadline: string;
+};
+
 export function AssignmentForm({ assignment }: { assignment: AssignmentSettings }) {
   const t = useTranslations("AssignmentEdit");
   const router = useRouter();
   const toast = useToast();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [draft, setDraft] = useState<AssignmentSettingsValues>({
+  const [draft, setDraft] = useState<DraftValues>({
     isPublic: assignment.isPublic,
     isBonus: assignment.isBonus,
     isExam: assignment.isExam,
@@ -191,20 +205,24 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     sendNotification: false,
   });
 
-  const set = <K extends keyof AssignmentSettingsValues>(
-    key: K,
-    value: AssignmentSettingsValues[K],
-  ) => setDraft((current) => ({ ...current, [key]: value }));
+  const set = <K extends keyof DraftValues>(key: K, value: DraftValues[K]) =>
+    setDraft((current) => ({ ...current, [key]: value }));
 
   const becomingPublic = draft.isPublic && !assignment.isPublic;
 
   async function save() {
     setPending(true);
     setError(null);
+    const values: AssignmentSettingsValues = {
+      ...draft,
+      visibleFrom: fromDateTimeLocal(draft.visibleFrom),
+      firstDeadline: fromDateTimeLocal(draft.firstDeadline),
+      secondDeadline: fromDateTimeLocal(draft.secondDeadline),
+    };
     const result: ActionResult<unknown> = await updateAssignment(
       assignment.id,
       assignment.version,
-      draft,
+      values,
     );
     setPending(false);
     if (result.success) {

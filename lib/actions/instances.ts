@@ -3,7 +3,6 @@
 import { getTranslations } from "next-intl/server";
 
 import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
-import { fromDateTimeLocal } from "@/lib/format/datetime-local";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import {
@@ -114,13 +113,10 @@ export async function createLicence(
   const parsed = licenceSchema.safeParse(values);
   if (!parsed.success) return { success: false, formError: t("invalid") };
 
-  const validUntil = fromDateTimeLocal(parsed.data.validUntil);
-  if (validUntil === null) return { success: false, formError: t("badDate") };
-
   try {
     const created = await apiPost<{ id: string }>(
       "/v1/instances/{id}/licences",
-      { note: parsed.data.note, validUntil },
+      { note: parsed.data.note, validUntil: parsed.data.validUntil },
       { pathParams: { id: instanceId } },
     );
     return { success: true, data: { id: created.id } };

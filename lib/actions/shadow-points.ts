@@ -3,7 +3,6 @@
 import { getTranslations } from "next-intl/server";
 
 import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
-import { fromDateTimeLocal } from "@/lib/format/datetime-local";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { shadowPointsSchema, type ShadowPointsValues } from "./shadow-points.schema";
@@ -25,11 +24,10 @@ async function failure(error: unknown, fallbackKey: string): Promise<ActionResul
 }
 
 function body(values: ShadowPointsValues) {
-  const awardedAt = values.awardedAt ? fromDateTimeLocal(values.awardedAt) : null;
   return {
     points: values.points,
     note: values.note,
-    ...(awardedAt !== null && { awardedAt }),
+    ...(values.awardedAt !== null && { awardedAt: values.awardedAt }),
   };
 }
 

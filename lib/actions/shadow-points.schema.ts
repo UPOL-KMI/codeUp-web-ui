@@ -12,8 +12,12 @@ import * as z from "zod/mini";
 export const shadowPointsSchema = z.object({
   points: z.number().check(z.int()),
   note: z.string().check(z.trim(), z.maxLength(1024)),
-  /** A datetime-local string, or empty for "no date recorded". */
-  awardedAt: z.string(),
+  /**
+   * Unix seconds, or null for "no date recorded". The picker's wall-clock string is resolved in
+   * the browser (`lib/format/datetime-local.ts`), never here -- a server in another zone reads the
+   * same string as a different instant.
+   */
+  awardedAt: z.nullable(z.number().check(z.int())),
 });
 
 export type ShadowPointsValues = z.infer<typeof shadowPointsSchema>;

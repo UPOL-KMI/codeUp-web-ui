@@ -3,7 +3,6 @@
 import { getTranslations } from "next-intl/server";
 
 import { ApiError, apiDelete, apiPost } from "@/lib/api/client";
-import { fromDateTimeLocal } from "@/lib/format/datetime-local";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { systemMessageSchema, type SystemMessageValues } from "./system-messages.schema";
@@ -60,12 +59,6 @@ async function body(
     };
   }
 
-  const visibleFrom = fromDateTimeLocal(parsed.data.visibleFrom);
-  const visibleTo = fromDateTimeLocal(parsed.data.visibleTo);
-  if (visibleFrom === null || visibleTo === null) {
-    return { error: { success: false, formError: t("badDate") } };
-  }
-
   return {
     body: {
       // Always global. Targeting a message at groups is a capability core-api has and the legacy
@@ -73,8 +66,8 @@ async function body(
       // out empty (T-024's shape: an unexposed field is not a dropped feature until somebody can
       // point at where it was exposed).
       groupsIds: [],
-      visibleFrom,
-      visibleTo,
+      visibleFrom: parsed.data.visibleFrom,
+      visibleTo: parsed.data.visibleTo,
       role: parsed.data.role,
       type: parsed.data.type,
       // A language left blank is a language this message is not written in, and core-api takes the

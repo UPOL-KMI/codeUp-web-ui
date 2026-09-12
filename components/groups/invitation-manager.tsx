@@ -9,6 +9,7 @@ import {
   updateGroupInvitation,
 } from "@/lib/actions/group-invitation";
 import type { InvitationValues } from "@/lib/actions/group-invitation.schema";
+import { fromDateTimeLocal } from "@/lib/format/datetime-local";
 import type { GroupInvitationSummary } from "@/lib/api/group-invitation";
 import { toDateTimeLocal } from "@/lib/format/datetime-local";
 import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
@@ -31,6 +32,17 @@ import { useToast } from "@/components/toast/toast-provider";
  * two are genuinely different: an expired link can be given a new date, a deleted one 404s
  * forever. The screen offers both.
  */
+/**
+ * The expiry stays a wall-clock string while it is being typed and becomes unix seconds on the way
+ * to the action, because only the browser knows which zone the reader typed it in
+ * (`lib/format/datetime-local.ts`). An empty picker is a link that never expires.
+ */
+type InvitationDraft = { note: string; expiresAt: string };
+
+function submitted(draft: InvitationDraft): InvitationValues {
+  return { note: draft.note, expiresAt: fromDateTimeLocal(draft.expiresAt) };
+}
+
 export function InvitationManager({
   groupId,
   invitations,
@@ -49,7 +61,7 @@ export function InvitationManager({
   const [pending, setPending] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState<InvitationValues>({ note: "", expiresAt: "" });
+  const [draft, setDraft] = useState<InvitationDraft>({ note: "", expiresAt: "" });
 
   const input =
     "rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring";
@@ -144,7 +156,10 @@ export function InvitationManager({
                   submitLabel={t("save")}
                   onCancel={() => setEditing(null)}
                   onSubmit={() =>
-                    void run(() => updateGroupInvitation(invitation.id, draft), "updated")
+                    void run(
+                      () => updateGroupInvitation(invitation.id, submitted(draft)),
+                      "updated",
+                    )
                   }
                   labels={{
                     note: t("note"),
@@ -168,7 +183,9 @@ export function InvitationManager({
             setDraft={setDraft}
             pending={pending}
             submitLabel={t("create")}
-            onSubmit={() => void run(() => createGroupInvitation(groupId, draft), "created")}
+            onSubmit={() =>
+              void run(() => createGroupInvitation(groupId, submitted(draft)), "created")
+            }
             labels={{
               note: t("note"),
               expiresAt: t("expiresAt"),
@@ -204,8 +221,8 @@ function InvitationFields({
   labels,
   classes,
 }: {
-  draft: InvitationValues;
-  setDraft: (values: InvitationValues) => void;
+  draft: InvitationDraft;
+  setDraft: (values: InvitationDraft) => void;
   pending: boolean;
   submitLabel: string;
   onSubmit: () => void;

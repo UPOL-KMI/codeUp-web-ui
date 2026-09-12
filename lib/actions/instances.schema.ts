@@ -1,4 +1,5 @@
 import * as z from "zod/mini";
+import { fromDateTimeLocal } from "@/lib/format/datetime-local";
 
 /**
  * What an administrator types about an instance and its licences (AD-004/AD-008). Its own module
@@ -18,10 +19,24 @@ export const createInstanceSchema = z.object({
 
 export type CreateInstanceValues = z.infer<typeof createInstanceSchema>;
 
-export const licenceSchema = z.object({
+export const licenceFormSchema = z.object({
   note: z.string().check(z.trim(), z.minLength(2, "tooShort"), z.maxLength(255, "tooLong")),
-  /** `datetime-local`, converted to unix seconds by the action. */
+  /** `datetime-local`, as the picker speaks it. */
   validUntil: z.string().check(z.minLength(1, "required")),
 });
 
+export type LicenceFormValues = z.infer<typeof licenceFormSchema>;
+
+/** The same licence as core-api takes it: `validUntil` in unix seconds. */
+export const licenceSchema = z.object({
+  note: z.string().check(z.trim(), z.minLength(2, "tooShort"), z.maxLength(255, "tooLong")),
+  validUntil: z.number().check(z.int()),
+});
+
 export type LicenceValues = z.infer<typeof licenceSchema>;
+
+/** Resolved in the browser, the only clock that knows what the reader typed. */
+export function licenceFormToValues(values: LicenceFormValues): LicenceValues | null {
+  const validUntil = fromDateTimeLocal(values.validUntil);
+  return validUntil === null ? null : { note: values.note, validUntil };
+}

@@ -10,8 +10,9 @@ import {
   updateSystemMessage,
 } from "@/lib/actions/system-messages";
 import {
-  systemMessageSchema,
-  type SystemMessageValues,
+  systemMessageFormSchema,
+  systemMessageFormToValues,
+  type SystemMessageFormValues,
 } from "@/lib/actions/system-messages.schema";
 import { USER_ROLES } from "@/lib/api/user-roles";
 import { MESSAGE_TYPES } from "@/lib/api/message-types";
@@ -205,7 +206,7 @@ export function MessageManager({
 }
 
 /** Seeds a new message a week long, starting now, addressed to everybody. */
-function newMessageValues(locales: readonly string[]): SystemMessageValues {
+function newMessageValues(locales: readonly string[]): SystemMessageFormValues {
   const start = new Date();
   const end = new Date(start.getTime() + 7 * 24 * 3600 * 1000);
   return {
@@ -230,8 +231,13 @@ function MessageEditor({
   const router = useRouter();
   const toast = useToast();
 
-  const { form, onSubmit, isPending } = useServerActionForm<SystemMessageValues, { id: string }>({
-    schema: systemMessageSchema,
+  const tErrors = useTranslations("SystemMessages.errors");
+
+  const { form, onSubmit, isPending } = useServerActionForm<
+    SystemMessageFormValues,
+    { id: string }
+  >({
+    schema: systemMessageFormSchema,
     defaultValues: message
       ? {
           // Every language gets a field, seeded from whichever the message was written in.
@@ -240,13 +246,18 @@ function MessageEditor({
             text: message.texts.find((text) => text.locale === locale)?.text ?? "",
           })),
           type: message.type,
-          role: message.role as SystemMessageValues["role"],
+          role: message.role as SystemMessageFormValues["role"],
           visibleFrom: toDateTimeLocal(message.visibleFrom),
           visibleTo: toDateTimeLocal(message.visibleTo),
         }
       : newMessageValues(locales),
-    action: (values) =>
-      message ? updateSystemMessage(message.id, values) : createSystemMessage(values),
+    action: (values) => {
+      const payload = systemMessageFormToValues(values);
+      if (payload === null) {
+        return Promise.resolve({ success: false as const, formError: tErrors("badDate") });
+      }
+      return message ? updateSystemMessage(message.id, payload) : createSystemMessage(payload);
+    },
     onSuccess: () => {
       toast.success(t(message ? "saved" : "created"));
       onClose();

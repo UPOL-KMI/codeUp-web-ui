@@ -30,10 +30,6 @@ async function failure(error: unknown, fallbackKey: string): Promise<ActionResul
   };
 }
 
-function timestamp(value: string): number {
-  return Math.floor(Date.parse(value) / 1000);
-}
-
 export async function updateAssignment(
   assignmentId: string,
   version: number,
@@ -44,6 +40,12 @@ export async function updateAssignment(
   if (!parsed.success) return { success: false, formError: t("invalid") };
 
   const data = parsed.data;
+  const firstDeadline = data.firstDeadline;
+  const secondDeadline = data.secondDeadline;
+  if (firstDeadline === null || (data.allowSecondDeadline && secondDeadline === null)) {
+    return { success: false, formError: t("invalid") };
+  }
+
   try {
     await apiPost(
       "/v1/exercise-assignments/{id}",
@@ -52,12 +54,12 @@ export async function updateAssignment(
         isPublic: data.isPublic,
         isBonus: data.isBonus,
         isExam: data.isExam,
-        ...(data.visibleFrom !== "" && { visibleFrom: timestamp(data.visibleFrom) }),
-        firstDeadline: timestamp(data.firstDeadline),
+        ...(data.visibleFrom !== null && { visibleFrom: data.visibleFrom }),
+        firstDeadline,
         maxPointsBeforeFirstDeadline: data.maxPointsFirst,
         allowSecondDeadline: data.allowSecondDeadline,
         ...(data.allowSecondDeadline && {
-          secondDeadline: timestamp(data.secondDeadline),
+          secondDeadline,
           maxPointsBeforeSecondDeadline: data.maxPointsSecond,
         }),
         maxPointsDeadlineInterpolation: data.interpolatePoints,

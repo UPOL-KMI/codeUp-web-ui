@@ -60,11 +60,6 @@ async function invitationFailure(
   };
 }
 
-function expiryTimestamp(expiresAt: string): number | null {
-  if (expiresAt === "") return null;
-  return Math.floor(Date.parse(expiresAt) / 1000);
-}
-
 export async function createGroupInvitation(
   groupId: string,
   values: InvitationValues,
@@ -76,7 +71,7 @@ export async function createGroupInvitation(
   try {
     const created = await apiPost<{ id: string }>(
       "/v1/groups/{groupId}/invitations",
-      { expireAt: expiryTimestamp(parsed.data.expiresAt), note: parsed.data.note },
+      { expireAt: parsed.data.expiresAt, note: parsed.data.note },
       { pathParams: { groupId } },
     );
     return { success: true, data: { invitationId: created.id } };
@@ -96,7 +91,7 @@ export async function updateGroupInvitation(
   try {
     await apiPost(
       "/v1/group-invitations/{id}",
-      { expireAt: expiryTimestamp(parsed.data.expiresAt), note: parsed.data.note },
+      { expireAt: parsed.data.expiresAt, note: parsed.data.note },
       { pathParams: { id: invitationId } },
     );
     return { success: true, data: { invitationId } };

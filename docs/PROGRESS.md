@@ -5910,3 +5910,67 @@ touched does not merely fail with a 500, it removes the stored files _first_, le
 whose file listing is intact and whose bytes are gone. That is data loss behind a refusal, and it
 was found by hitting it twice rather than by reading. The section's own count was corrected on the
 way — it claimed twenty-three while listing twenty-four.
+
+---
+
+### 2026-09-12 — the suite is pointed at the deployment, and finds two things that only exist there
+
+**Tickets:** PF-018, PF-019; **PF-020** filed. **Status:** done. Five static checks, 288 unit
+tests, and **312 e2e pass, 3 skip, 0 fail through the deployment's own address** -- which is the
+part that is new. The suite had never been run through the proxy before.
+
+The operator asked whether the new frontend was ready to be tested properly. Answering it meant
+running the suite where they would actually click, rather than where it has always run, and that
+alone produced both defects below. Neither is reachable from a development machine.
+
+**The proxy was swallowing this app's own `/api/` routes (PF-019).** `location /api/` has sent
+`/api/` at core-api since long before this app existed, and the cutover deliberately left it alone
+-- plan 004 reasoned that "the new app calls core-api through the public URL", which is true and
+beside the point: **every Route Handler this app owns is under `/api/` too.** `/api/auth/login`
+answered `404` with `X-Powered-By: Nette Framework 3`, so **nobody could log in through the
+deployment's address at all**, while the same container on its own port was fine. The e2e suite
+never saw it because it drives the app directly -- plan 004's step 5 says so in as many words, and
+that sentence is the whole blind spot. Narrowed to `location /api/v1`, which is all of core-api's
+public surface: `services/web-app/env.json.template` and this app's `API_BASE_PUBLIC` both address
+it that way. The diff went to the operator before it was committed, per constraint 1.
+
+**Every date typed into a form was being read in the server's zone (PF-018).** The container runs
+UTC, a reader's browser here runs Europe/Prague, and a `datetime-local` string carries no offset --
+so `new Date("2026-09-12T06:41")` is 06:41 in whichever zone the process happens to be. Five Server
+Actions resolved that string themselves: **a deadline typed as 12:00 was stored as 14:00**, and the
+same for system-message windows, invitation expiries, licence validity and shadow points.
+
+`lib/format/datetime-local.ts` has stated the rule since S-008 -- both conversions happen in the
+browser -- and `assignment.schema.ts` claimed in a comment to be following it. The forms convert
+now and hand their actions unix seconds, which are the same instant everywhere; S-008's exam window
+turned out to be the one surface already doing it right (`examFormToPeriod` runs in the browser),
+and it is the shape the other four were rewritten into.
+
+**What makes this one worth reading twice is why it was invisible.** Typecheck, lint and build all
+pass either way -- the types are identical. The e2e suite ran against a local `next start`, whose
+zone _is_ the browser's, so the wrong parse and the right display cancelled exactly. It reproduces
+only where the server's zone differs from the reader's, which is every real deployment and no
+development machine. So the guard is structural rather than per-call-site:
+`lib/actions/datetime-boundary.test.ts` asserts that **no `"use server"` module mentions
+`fromDateTimeLocal` or `Date.parse(` at all** (32 server modules scanned; it would have failed on
+five of them). Alongside it, one e2e spec now types a deadline, saves, reopens and reads the picker
+back -- the check no spec was making, on the field that matters most.
+
+**One honest correction on the way.** The first pass at listing what was affected named the exam
+window on the strength of a grep for `fromDateTimeLocal` in `group-exam.schema.ts`. Reading the
+call path showed the opposite: the action re-validates with `examPeriodSchema`, which is already
+unix seconds, and the client converts. Exams were never affected.
+
+**`INVENTORY.md` is unchanged deliberately** -- both of these are defects in rows that were already
+`done`, and neither changes what is reachable.
+
+**And verifying the fix turned up its display half, which is filed rather than folded in.**
+`toDateTimeLocal` also runs during SSR -- a client component is rendered on the server too -- so a
+picker's _initial_ value arrives in the server's zone and hydration corrects it a moment later.
+Fetched from the deployment directly, the assignment edit page ships `value="2026-09-15T00:42"` for
+a deadline that is `02:42` here. Nothing is stored wrong (a submit happens after hydration, and the
+conversion on submit is now right), but footgun 6 calls a hydration mismatch an error, and seven
+components initialize a picker this way. That is **PF-020**, and it wants one shared client hook
+rather than seven patches.
+
+The suite runs against the deployment's address from now on.

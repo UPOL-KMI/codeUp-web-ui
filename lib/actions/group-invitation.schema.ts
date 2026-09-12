@@ -12,18 +12,17 @@ import * as z from "zod/mini";
 export const invitationSchema = z
   .object({
     note: z.string().check(z.trim(), z.maxLength(1024)),
-    /** `datetime-local` value, or empty for a link that never expires. */
-    expiresAt: z.string(),
+    /**
+     * Unix seconds, or null for a link that never expires. The picker's wall-clock string is
+     * resolved in the browser (`lib/format/datetime-local.ts`) -- comparing two absolute instants
+     * here is zone-free, reading a wall clock here would not be.
+     */
+    expiresAt: z.nullable(z.number().check(z.int())),
   })
   .check(
     z.superRefine((values, ctx) => {
-      if (values.expiresAt === "") return;
-      const parsed = Date.parse(values.expiresAt);
-      if (Number.isNaN(parsed)) {
-        ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "invalidDate" });
-        return;
-      }
-      if (parsed <= Date.now()) {
+      if (values.expiresAt === null) return;
+      if (values.expiresAt * 1000 <= Date.now()) {
         ctx.addIssue({ code: "custom", path: ["expiresAt"], message: "pastDate" });
       }
     }),

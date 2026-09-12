@@ -9,7 +9,7 @@ import {
   updateShadowPoints,
 } from "@/lib/actions/shadow-points";
 import type { ShadowPointsRecord } from "@/lib/api/shadow-assignment";
-import { toDateTimeLocal } from "@/lib/format/datetime-local";
+import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local";
 import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
 import type { ActionResult } from "@/lib/forms/action-result";
 
@@ -74,7 +74,7 @@ export function ShadowPointsTable({
   const values = () => ({
     points: Number.parseInt(draft.points, 10) || 0,
     note: draft.note,
-    awardedAt: draft.awardedAt,
+    awardedAt: fromDateTimeLocal(draft.awardedAt),
   });
 
   const input =
