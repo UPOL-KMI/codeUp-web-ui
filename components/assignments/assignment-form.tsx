@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { updateAssignment } from "@/lib/actions/assignment";
 import type { AssignmentSettingsValues } from "@/lib/actions/assignment.schema";
 import type { AssignmentSettings } from "@/lib/api/assignment-edit";
-import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local";
+import { fromDateTimeLocal } from "@/lib/format/datetime-local";
+import { useDateTimeLocalField } from "@/lib/format/use-datetime-local";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
@@ -159,18 +160,15 @@ function Toggle({
 }
 
 /**
- * The three dates stay wall-clock strings while they are being edited and become unix seconds on
- * the way to the action, because that conversion has to happen in the reader's own zone
- * (`lib/format/datetime-local.ts`).
+ * The three dates are not in the draft at all: they stay wall-clock strings while they are being
+ * edited, they become unix seconds on the way to the action, and they are seeded after mount --
+ * all three because the reader's zone is the only one that can read or write them
+ * (`lib/format/datetime-local.ts`, `use-datetime-local.ts`).
  */
 type DraftValues = Omit<
   AssignmentSettingsValues,
   "visibleFrom" | "firstDeadline" | "secondDeadline"
-> & {
-  visibleFrom: string;
-  firstDeadline: string;
-  secondDeadline: string;
-};
+>;
 
 export function AssignmentForm({ assignment }: { assignment: AssignmentSettings }) {
   const t = useTranslations("AssignmentEdit");
@@ -182,12 +180,8 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     isPublic: assignment.isPublic,
     isBonus: assignment.isBonus,
     isExam: assignment.isExam,
-    visibleFrom: assignment.visibleFrom === null ? "" : toDateTimeLocal(assignment.visibleFrom),
-    firstDeadline: toDateTimeLocal(assignment.firstDeadline),
     maxPointsFirst: assignment.maxPointsFirst,
     allowSecondDeadline: assignment.allowSecondDeadline,
-    secondDeadline:
-      assignment.secondDeadline === null ? "" : toDateTimeLocal(assignment.secondDeadline),
     maxPointsSecond: assignment.maxPointsSecond,
     interpolatePoints: assignment.interpolatePoints,
     pointsThreshold: assignment.pointsThreshold,
@@ -205,6 +199,10 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     sendNotification: false,
   });
 
+  const [visibleFrom, setVisibleFrom] = useDateTimeLocalField(assignment.visibleFrom);
+  const [firstDeadline, setFirstDeadline] = useDateTimeLocalField(assignment.firstDeadline);
+  const [secondDeadline, setSecondDeadline] = useDateTimeLocalField(assignment.secondDeadline);
+
   const set = <K extends keyof DraftValues>(key: K, value: DraftValues[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
@@ -215,9 +213,9 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     setError(null);
     const values: AssignmentSettingsValues = {
       ...draft,
-      visibleFrom: fromDateTimeLocal(draft.visibleFrom),
-      firstDeadline: fromDateTimeLocal(draft.firstDeadline),
-      secondDeadline: fromDateTimeLocal(draft.secondDeadline),
+      visibleFrom: fromDateTimeLocal(visibleFrom),
+      firstDeadline: fromDateTimeLocal(firstDeadline),
+      secondDeadline: fromDateTimeLocal(secondDeadline),
     };
     const result: ActionResult<unknown> = await updateAssignment(
       assignment.id,
@@ -256,8 +254,8 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
           id="assignment-visible-from"
           label={t("visibility.visibleFrom")}
           hint={t("visibility.visibleFromHint")}
-          value={draft.visibleFrom}
-          onChange={(value) => set("visibleFrom", value)}
+          value={visibleFrom}
+          onChange={setVisibleFrom}
         />
         <Toggle
           id="assignment-is-bonus"
@@ -293,8 +291,8 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
             id="assignment-first-deadline"
             label={t("deadlines.first")}
             required
-            value={draft.firstDeadline}
-            onChange={(value) => set("firstDeadline", value)}
+            value={firstDeadline}
+            onChange={setFirstDeadline}
           />
           <NumberField
             id="assignment-max-points-first"
@@ -318,8 +316,8 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
               <DateTimeField
                 id="assignment-second-deadline"
                 label={t("deadlines.second")}
-                value={draft.secondDeadline}
-                onChange={(value) => set("secondDeadline", value)}
+                value={secondDeadline}
+                onChange={setSecondDeadline}
               />
               <NumberField
                 id="assignment-max-points-second"

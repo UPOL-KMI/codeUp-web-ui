@@ -104,6 +104,37 @@ test("stores the deadline the picker shows, not the one the server's clock reads
   }
 });
 
+/**
+ * The other half of the same rule (PF-020): the server may not render a time either.
+ *
+ * `toDateTimeLocal` reads `getHours()`, so a picker seeded during SSR carries the container's zone
+ * and hydration replaces it -- a mismatch, and a moment of showing a teacher the wrong deadline.
+ * Asserted against the raw HTML rather than the rendered page, because by the time the page is
+ * interactive the client has already corrected it and there is nothing left to see. This is the
+ * check that found it.
+ */
+test("ships no time in its own HTML, because the server is in the wrong zone to know one", async ({
+  page,
+}) => {
+  const cookie = await loginAndGetCookie(SUPERADMIN);
+  await page.context().addCookies([{ ...cookie, url: baseURL }]);
+  await openSeededAssignment(page);
+  await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+
+  const html = await (await page.request.get(page.url())).text();
+  const seeded = [...html.matchAll(/type="datetime-local"[^>]*value="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  expect(seeded).toEqual([]);
+
+  // And the picker does carry the deadline once the browser has had its say, so the assertion
+  // above is about *where* the value comes from rather than whether there is one.
+  await expect(
+    page.getByRole("main").getByLabel("First deadline", { exact: true }),
+  ).not.toHaveValue("");
+});
+
 test("asks for a second deadline only when there is one, and refuses one before the first", async ({
   page,
 }) => {

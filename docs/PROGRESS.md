@@ -5970,7 +5970,27 @@ picker's _initial_ value arrives in the server's zone and hydration corrects it 
 Fetched from the deployment directly, the assignment edit page ships `value="2026-09-15T00:42"` for
 a deadline that is `02:42` here. Nothing is stored wrong (a submit happens after hydration, and the
 conversion on submit is now right), but footgun 6 calls a hydration mismatch an error, and seven
-components initialize a picker this way. That is **PF-020**, and it wants one shared client hook
-rather than seven patches.
+components initialize a picker this way. That is **PF-020**, taken in the same session and closed below.
 
 The suite runs against the deployment's address from now on.
+
+**PF-020, closed the same day, and the seven turned out to be two.** The hook is
+`lib/format/use-datetime-local.ts`: the field starts empty, which is true in every zone, and takes
+its value in an effect that runs **once** -- the parent re-renders after a save, and re-seeding
+then would discard whatever the reader had typed since. `assignment-form` and
+`shadow-assignment-form` use it.
+
+The row's own claim of seven components was wrong, and it was wrong because it was arrived at by
+reading imports. Fetching each page's HTML instead shows the other five never ship a time:
+`invitation-manager`, `shadow-points-table` and `message-manager` seed a picker from a click,
+`exam-form` mounts its dialog closed so the defaults are computed in the browser, and
+`licence-manager` has no seed at all. The same correction as the exam window earlier in the day --
+a grep names candidates, the call path decides.
+
+The guard is a spec that reads the **raw HTML** of the edit page and asserts no `datetime-local`
+carries a value, with a second assertion that the rendered picker does carry one. That split is the
+point: this defect is invisible in a rendered page, because hydration has already corrected it
+before anything can look.
+
+**313 e2e pass, 3 skip, 0 fail** through the deployment's address, with the five static checks and
+288 unit tests alongside.

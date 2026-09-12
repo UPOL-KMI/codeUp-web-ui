@@ -10,7 +10,8 @@ import {
   type ShadowAssignmentValues,
 } from "@/lib/actions/shadow-assignment.schema";
 import type { ShadowAssignmentSettings } from "@/lib/api/shadow-assignment";
-import { fromDateTimeLocal, toDateTimeLocal } from "@/lib/format/datetime-local";
+import { fromDateTimeLocal } from "@/lib/format/datetime-local";
+import { useDateTimeLocalField } from "@/lib/format/use-datetime-local";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
@@ -37,9 +38,7 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
   const toast = useToast();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [deadlineInput, setDeadlineInput] = useState(
-    assignment.deadline === null ? "" : toDateTimeLocal(assignment.deadline),
-  );
+  const [deadlineInput, setDeadlineInput] = useDateTimeLocalField(assignment.deadline);
 
   const { form, onSubmit, isPending } = useServerActionForm<
     ShadowAssignmentValues,
