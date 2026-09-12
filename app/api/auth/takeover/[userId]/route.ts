@@ -2,7 +2,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { establishSession, SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
+import { decodeJwtPayload } from "@/lib/auth/jwt";
+import {
+  establishSession,
+  ORIGIN_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+  sessionCookieOptions,
+} from "@/lib/auth/session-cookie";
 
 const paramsSchema = z.object({ userId: z.uuid() });
 
@@ -63,6 +69,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
   }
 
   const { payload } = (await apiResponse.json()) as { payload: { accessToken: string } };
+
+  // **The administrator's own token is kept before it is replaced.** That it was not is the whole
+  // of why returning was impossible (DROP-C01): core-api's takeover token names nobody, so once
+  // the session cookie was overwritten there was nothing left to go back to. The stash expires
+  // with the token in it, so it cannot outlive the session that created it.
+  const ownClaims = decodeJwtPayload(sessionToken);
+  if (ownClaims) {
+    cookieStore.set(
+      ORIGIN_COOKIE_NAME,
+      sessionToken,
+      sessionCookieOptions(Math.max(0, Math.floor(ownClaims.exp - Date.now() / 1000))),
+    );
+  }
 
   if (!(await establishSession(payload.accessToken))) {
     throw new Error("Takeover response from core-api did not contain a decodable access token.");

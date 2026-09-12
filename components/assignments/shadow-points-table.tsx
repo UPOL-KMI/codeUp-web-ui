@@ -15,7 +15,6 @@ import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
-import { UserPicker } from "@/components/groups/user-picker";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -26,18 +25,27 @@ import { useToast } from "@/components/toast/toast-provider";
  * were earned, which need not be when the record was created, and the legacy screen keeps the two
  * apart the same way.
  *
- * The award form is a `UserPicker` (S-009's), not a list of the group's students: core-api takes a
- * user id and decides for itself whether that person may be awarded here, and rebuilding the
- * roster on this screen would be a second, drifting answer to who belongs to the group.
+ * **The award form picks from the group's roster, and used to search every user on the instance.**
+ * That was a deliberate choice -- core-api takes a user id and decides for itself, so the screen
+ * did not have to answer "who belongs here" a second time -- and testing killed it: the search
+ * offered people who are not in the group, awarding them failed with core-api's own
+ * `User is not member of the group`, and that sentence reaches a Czech teacher in English. An
+ * offer that cannot succeed is worse than a shorter list (brief §3.4).
  */
 export function ShadowPointsTable({
   shadowId,
   points,
   canAward,
+  students,
+  maxPoints,
 }: {
   shadowId: string;
   points: ShadowPointsRecord[];
   canAward: boolean;
+  /** What the assignment is worth. core-api accepts more, so this only warns. */
+  maxPoints: number;
+  /** The group's own students -- the only people core-api will accept here. */
+  students: { id: string; name: string }[];
 }) {
   const t = useTranslations("Shadow.points");
   const format = useFormatter();
@@ -47,6 +55,18 @@ export function ShadowPointsTable({
   const [editing, setEditing] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
   const [draft, setDraft] = useState({ points: "0", note: "", awardedAt: "" });
+  const [awardee, setAwardee] = useState("");
+
+  // **A warning, not a rule.** core-api stores whatever it is given -- 999 against a maximum of 10
+  // is accepted and kept -- and a teacher may well mean it, as a bonus. What it must not do is
+  // take a typo silently, which is what it did before.
+  const entered = Number.parseInt(draft.points, 10);
+  const overMax = Number.isFinite(entered) && entered > maxPoints;
+
+  // Whoever is in the group and has no points on this assignment yet -- core-api refuses a second
+  // award to the same person, which is what the old picker's `excludeIds` was for.
+  const awarded = new Set(points.map((record) => record.awardeeId));
+  const candidates = students.filter((student) => !awarded.has(student.id));
 
   async function run(call: () => Promise<ActionResult<unknown>>, successKey: string) {
     setPending(true);
@@ -253,15 +273,43 @@ export function ShadowPointsTable({
               />
             </label>
           </div>
-          <UserPicker
-            label={t("award.who")}
-            actionLabel={t("award.button")}
-            pending={pending}
-            excludeIds={points.map((record) => record.awardeeId ?? "")}
-            onPick={(userId) =>
-              void run(() => awardShadowPoints(shadowId, userId, values()), "toast.awarded")
-            }
-          />
+          {overMax && (
+            <p role="status" className="text-sm text-warning">
+              {t("award.overMax", { max: maxPoints })}
+            </p>
+          )}
+          <div className="flex flex-col gap-1 text-sm">
+            <label htmlFor={`${shadowId}-awardee`}>{t("award.who")}</label>
+            {candidates.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("award.noCandidates")}</p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  id={`${shadowId}-awardee`}
+                  className={`${input} w-72`}
+                  value={awardee}
+                  onChange={(event) => setAwardee(event.target.value)}
+                >
+                  <option value="">{t("award.choose")}</option>
+                  {candidates.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name || student.id}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={pending || awardee === ""}
+                  onClick={() =>
+                    void run(() => awardShadowPoints(shadowId, awardee, values()), "toast.awarded")
+                  }
+                  className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                >
+                  {t("award.button")}
+                </button>
+              </div>
+            )}
+          </div>
         </section>
       )}
 

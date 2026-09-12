@@ -41,9 +41,12 @@ test("reads a configured exercise without changing it", async ({ page }) => {
 
   await expect(main.getByRole("heading", { name: "Tests and evaluation", level: 1 })).toBeVisible();
 
-  // The test, the language and the per-test values all come off the live configuration.
-  await expect(main.getByRole("textbox", { name: "Name" })).toHaveValue("Test 1");
+  // The test, the language and the per-test values all come off the live configuration. The screen
+  // opens on the languages tab (T-033), so the rest is read from the tests tab.
   await expect(main.getByRole("checkbox", { name: /Python 3/ })).toBeChecked();
+
+  await main.getByRole("link", { name: "Tests", exact: true }).click();
+  await expect(main.getByRole("textbox", { name: "Name" })).toHaveValue("Test 1");
   await expect(main.getByRole("combobox", { name: "Expected output" })).toHaveValue("expected.txt");
   await expect(main.getByRole("combobox", { name: "Comparison" })).toHaveValue(
     "recodex-judge-normal",
@@ -71,7 +74,7 @@ test("takes a new exercise from broken to configured, and removes it again", asy
   const editUrl = page.url();
   const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
 
-  await page.goto(configUrl);
+  await page.goto(`${configUrl}?tab=tests`);
   await expect(main.getByRole("heading", { name: "Tests and evaluation", level: 1 })).toBeVisible();
 
   // Nothing to configure yet, and the screen says which of the two reasons apply rather than
@@ -87,11 +90,13 @@ test("takes a new exercise from broken to configured, and removes it again", asy
   await expect(page.getByText("Tests saved.", { exact: true })).toBeVisible();
 
   // A language. Adding one rewrites the configuration, which is why the page reloads after.
+  await page.goto(`${configUrl}?tab=languages`);
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();
 
   // Now the per-test form is there, with the fields Python's pipelines declare.
+  await page.goto(`${configUrl}?tab=tests`);
   await expect(main.getByRole("button", { name: "Save configuration" })).toBeVisible();
   await expect(main.getByText("Small input")).toBeVisible();
   await expect(main.getByRole("combobox", { name: "Entry point" })).toBeVisible();
@@ -130,7 +135,7 @@ test("takes a new exercise from broken to configured, and removes it again", asy
   // The exercise is no longer broken for want of tests or languages -- only for the pieces this
   // screen does not own.
   await page.reload();
-  await expect(main.getByText("It has no tests.")).toHaveCount(0);
+  await expect(main.getByText("The exercise has no tests.")).toHaveCount(0);
   await expect(main.getByText("No language has been selected for it.")).toHaveCount(0);
 
   // Put it back, through the product.

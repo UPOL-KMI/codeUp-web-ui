@@ -19,6 +19,13 @@ export interface DataTableColumn<T> {
    *  to `String(cell(row))` if omitted. */
   filterValue?: (row: T) => string;
   className?: string;
+  /**
+   * Which edge the column reads from. **Not a class**, deliberately: a right-aligned numeric
+   * column has to align its *heading* too, and a sortable heading is a flex button, where
+   * `text-align` does nothing at all. Passing it as data lets the header place the button and the
+   * cell place its text from the same decision.
+   */
+  align?: "left" | "right";
 }
 
 export interface DataTableProps<T> {
@@ -295,7 +302,7 @@ function DataTableInner<T>({
                   <th
                     key={column.id}
                     scope="col"
-                    className={`px-3 py-2 text-left font-medium ${column.className ?? ""}`}
+                    className={`px-3 py-2 font-medium ${column.align === "right" ? "text-right" : "text-left"} ${column.className ?? ""}`}
                     aria-sort={
                       column.sortable
                         ? active
@@ -310,7 +317,9 @@ function DataTableInner<T>({
                       <button
                         type="button"
                         onClick={() => handleSort(column.id)}
-                        className="flex items-center gap-1 hover:text-foreground"
+                        className={`flex w-full items-center gap-1 hover:text-foreground ${
+                          column.align === "right" ? "justify-end" : ""
+                        }`}
                       >
                         {column.header}
                         {active && (
@@ -358,7 +367,10 @@ function DataTableInner<T>({
                       </td>
                     )}
                     {columns.map((column) => (
-                      <td key={column.id} className={`px-3 py-2 ${column.className ?? ""}`}>
+                      <td
+                        key={column.id}
+                        className={`px-3 py-2 ${column.align === "right" ? "text-right" : ""} ${column.className ?? ""}`}
+                      >
                         {column.cell(row)}
                       </td>
                     ))}

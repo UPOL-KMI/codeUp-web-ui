@@ -98,7 +98,8 @@ export function AssignmentTable({
     {
       id: "maxPoints",
       header: t("columns.maxPoints"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (assignment) => assignment.maxPoints,
       cell: (assignment) => assignment.maxPoints,
@@ -108,7 +109,8 @@ export function AssignmentTable({
           {
             id: "myPoints",
             header: t("columns.myPoints"),
-            className: "text-right tabular-nums",
+            align: "right" as const,
+            className: "tabular-nums",
             sortable: true,
             sortValue: (assignment: GroupAssignment) => assignment.stats?.gained ?? -1,
             cell: (assignment: GroupAssignment) =>

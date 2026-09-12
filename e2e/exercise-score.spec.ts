@@ -30,7 +30,8 @@ async function exerciseWithTests(page: Page): Promise<string> {
   trackExercise(page.url());
   const editUrl = page.url();
 
-  await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));
+  // The tests and the score they add up to are one tab (T-033).
+  await page.goto(`${editUrl.replace(/\/edit$/, "/edit-config")}?tab=tests`);
   await main.getByRole("button", { name: "Add a test" }).click();
   await main.getByRole("textbox", { name: "Name" }).fill("Small input");
   await main.getByRole("button", { name: "Add a test" }).click();

@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { CreateGroup } from "@/components/groups/create-group";
 import { Markdown } from "@/components/markdown/markdown";
 import { Badge } from "@/components/status/badge";
+import { Hint } from "@/components/status/hint";
 
 /**
  * The group's Info tab (S-005): what this group is, who runs it, what it contains, and -- for
@@ -31,7 +32,14 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-export async function GroupInfo({ group }: { group: GroupDetail }) {
+export async function GroupInfo({
+  group,
+  staffView,
+}: {
+  group: GroupDetail;
+  /** The reader administers, supervises or observes this group. */
+  staffView: boolean;
+}) {
   const [t, format, attributes] = await Promise.all([
     getTranslations("Group.info"),
     getFormatter(),
@@ -66,9 +74,11 @@ export async function GroupInfo({ group }: { group: GroupDetail }) {
             <span className="ml-2 text-sm font-normal text-muted-foreground">{t("points")}</span>
             {group.myStats.hasLimit && (
               <span className="ml-3 align-middle">
-                <Badge tone={group.myStats.passesLimit ? "success" : "warning"}>
-                  {group.myStats.passesLimit ? t("limitMet") : t("limitNotMet")}
-                </Badge>
+                <Hint text={t("thresholdExplain")}>
+                  <Badge tone={group.myStats.passesLimit ? "success" : "warning"}>
+                    {group.myStats.passesLimit ? t("limitMet") : t("limitNotMet")}
+                  </Badge>
+                </Hint>
               </span>
             )}
           </p>
@@ -91,7 +101,19 @@ export async function GroupInfo({ group }: { group: GroupDetail }) {
             </InfoRow>
           )}
           <InfoRow label={t("assignments")}>
-            {group.organizational ? t("organizationalNote") : group.assignmentCount}
+            {group.organizational ? (
+              t("organizationalNote")
+            ) : (
+              <>
+                {group.assignmentCount}
+                {group.shadowAssignmentCount > 0 && (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ({t("shadowCount", { count: group.shadowAssignmentCount })})
+                  </span>
+                )}
+              </>
+            )}
           </InfoRow>
           {group.studentCount !== null && (
             <InfoRow label={t("students")}>{group.studentCount}</InfoRow>
@@ -102,9 +124,22 @@ export async function GroupInfo({ group }: { group: GroupDetail }) {
           {group.threshold !== null && group.threshold > 0 && (
             <InfoRow label={t("threshold")}>
               {format.number(group.threshold, { style: "percent", maximumFractionDigits: 1 })}
+              {/* A percentage of what, in the reader's own numbers. Only where the reader has a
+                  total of their own -- a teacher has none, and inventing one would be a guess. */}
+              {group.myStats !== null && group.myStats.points.total > 0 && (
+                <span className="text-muted-foreground">
+                  {" "}
+                  ({Math.ceil(group.threshold * group.myStats.points.total)}/
+                  {group.myStats.points.total})
+                </span>
+              )}
             </InfoRow>
           )}
-          <InfoRow label={t("publicStats")}>{group.publicStats ? t("yes") : t("no")}</InfoRow>
+          {/* A group setting, and the group's staff are who it is about: a student reading "no"
+              learns only that they cannot see something they were not looking for. */}
+          {staffView && (
+            <InfoRow label={t("publicStats")}>{group.publicStats ? t("yes") : t("no")}</InfoRow>
+          )}
           {group.detaining && <InfoRow label={t("detaining")}>{t("detainingNote")}</InfoRow>}
         </dl>
       </section>

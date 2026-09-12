@@ -45,10 +45,13 @@ export function ExercisePeople({
   exercise,
   teachingGroups,
   canFork,
+  sections = ["rights", "fork"],
 }: {
   exercise: ExerciseDetail;
   teachingGroups: { id: string; name: string }[];
   canFork: boolean;
+  /** Which halves to render: who may touch the exercise, and forking it into another group. */
+  sections?: ("rights" | "fork")[];
 }) {
   const t = useTranslations("ExerciseEdit.people");
   const router = useRouter();
@@ -91,121 +94,132 @@ export function ExercisePeople({
   const input =
     "rounded-md border border-input bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring";
 
+  const showRights = sections.includes("rights");
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">{t("author")}</h3>
-        <p className="text-sm">{exercise.author.name || t("unknownPerson")}</p>
-        {!canChangeAuthor && <p className="text-xs text-muted-foreground">{t("cannotHandOver")}</p>}
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">{t("admins")}</h3>
-        <p className="text-sm text-muted-foreground">{t("adminsExplain")}</p>
-        {exercise.admins.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("noAdmins")}</p>
-        ) : (
-          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
-            {exercise.admins.map((admin) => (
-              <li key={admin.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                <span className="text-sm">{admin.name || admin.id}</span>
-                {canUpdateAdmins && (
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() =>
-                      void run(
-                        () =>
-                          setExerciseAdmins(
-                            exercise.id,
-                            adminIds.filter((id) => id !== admin.id),
-                          ),
-                        "adminRemoved",
-                      )
-                    }
-                    className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
-                  >
-                    {t("removeAdmin")}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {(canUpdateAdmins || canChangeAuthor) && (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("findPeople")}</h3>
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="flex flex-col gap-1 text-sm">
-              {t("search")}
-              <input
-                type="search"
-                className={`${input} w-64`}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    search();
-                  }
-                }}
-              />
-            </label>
-            <button
-              type="button"
-              disabled={isSearching || query.trim().length < 2}
-              onClick={search}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
-            >
-              {isSearching ? t("searching") : t("searchButton")}
-            </button>
+      {showRights && (
+        <>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("author")}</h3>
+            <p className="text-sm">{exercise.author.name || t("unknownPerson")}</p>
+            {!canChangeAuthor && (
+              <p className="text-xs text-muted-foreground">{t("cannotHandOver")}</p>
+            )}
           </div>
 
-          {searched && hits.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t("noPeople")}</p>
-          )}
-          {hits.length > 0 && (
-            <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
-              {hits.map((person) => (
-                <li key={person.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                  <span className="text-sm">{person.name}</span>
-                  <span className="flex gap-2">
-                    {canUpdateAdmins && !adminIds.includes(person.id) && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("admins")}</h3>
+            <p className="text-sm text-muted-foreground">{t("adminsExplain")}</p>
+            {exercise.admins.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("noAdmins")}</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+                {exercise.admins.map((admin) => (
+                  <li key={admin.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                    <span className="text-sm">{admin.name || admin.id}</span>
+                    {canUpdateAdmins && (
                       <button
                         type="button"
                         disabled={pending}
                         onClick={() =>
                           void run(
-                            () => setExerciseAdmins(exercise.id, [...adminIds, person.id]),
-                            "adminAdded",
+                            () =>
+                              setExerciseAdmins(
+                                exercise.id,
+                                adminIds.filter((id) => id !== admin.id),
+                              ),
+                            "adminRemoved",
                           )
                         }
                         className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
                       >
-                        {t("addAdmin")}
+                        {t("removeAdmin")}
                       </button>
                     )}
-                    {canChangeAuthor && person.id !== exercise.author.id && (
-                      <button
-                        type="button"
-                        disabled={pending}
-                        onClick={() => setHandingOver(person)}
-                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
-                      >
-                        {t("makeAuthor")}
-                      </button>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {(canUpdateAdmins || canChangeAuthor) && (
+            <div className="flex flex-col gap-2">
+              <h3 className="text-sm font-medium">{t("findPeople")}</h3>
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="flex flex-col gap-1 text-sm">
+                  {t("search")}
+                  <input
+                    type="search"
+                    className={`${input} w-64`}
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        search();
+                      }
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={isSearching || query.trim().length < 2}
+                  onClick={search}
+                  className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+                >
+                  {isSearching ? t("searching") : t("searchButton")}
+                </button>
+              </div>
+
+              {searched && hits.length === 0 && (
+                <p className="text-sm text-muted-foreground">{t("noPeople")}</p>
+              )}
+              {hits.length > 0 && (
+                <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+                  {hits.map((person) => (
+                    <li
+                      key={person.id}
+                      className="flex items-center justify-between gap-3 px-3 py-2"
+                    >
+                      <span className="text-sm">{person.name}</span>
+                      <span className="flex gap-2">
+                        {canUpdateAdmins && !adminIds.includes(person.id) && (
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() =>
+                              void run(
+                                () => setExerciseAdmins(exercise.id, [...adminIds, person.id]),
+                                "adminAdded",
+                              )
+                            }
+                            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                          >
+                            {t("addAdmin")}
+                          </button>
+                        )}
+                        {canChangeAuthor && person.id !== exercise.author.id && (
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() => setHandingOver(person)}
+                            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                          >
+                            {t("makeAuthor")}
+                          </button>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
 
-      {canFork && (
+      {sections.includes("fork") && canFork && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-medium">{t("fork")}</h3>
           <p className="text-sm text-muted-foreground">{t("forkExplain")}</p>

@@ -22,6 +22,11 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.47 0.18 27.325);
   --destructive-foreground: oklch(0.985 0 0);
+  /* An **opaque** wash of `destructive`, for surfaces that float over the page (PF-026). A `/10`
+     tint is fine on a badge sitting on the page's own background and wrong on a toast, where
+     whatever it covers reads straight through it. Mixed once here rather than per component, so
+     the tint is the same everywhere and still a token. */
+  --destructive-surface: oklch(0.961 0.021 20);
   /* Status semantics (D-011). The base set this theme started from has only `destructive`, but
      evaluation and deadline states need "succeeded" and "nearly/at risk" as first-class tokens --
      brief §9's "dark mode via tokens from day one; never hardcode a colour" applies to status
@@ -53,6 +58,7 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.205 0 0);
+  --destructive-surface: oklch(0.271 0.056 22);
   --success: oklch(0.72 0.15 149);
   --success-foreground: oklch(0.205 0 0);
   --warning: oklch(0.79 0.15 75);
@@ -88,6 +94,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-surface: var(--destructive-surface);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);

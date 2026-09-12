@@ -91,8 +91,18 @@ export default async function GroupPage({
     ...(group.can.viewAssignments && !group.organizational
       ? [{ id: "assignments", label: t("tabs.assignments") }]
       : []),
-    ...(group.can.viewStudents ? [{ id: "students", label: t("tabs.students") }] : []),
-    ...(showExamsTab(group) ? [{ id: "exams", label: t("tabs.exams") }] : []),
+    // **Neither tab belongs on an organizational group**, and for two different reasons.
+    // core-api *refuses* students there outright ("It is forbidden to add students to
+    // organizational groups"), so the tab offered something that could never happen -- its own
+    // panel below already rendered nothing, which is what gave the oversight away. An exam
+    // period core-api does accept, but an exam locks students into a group and this kind of
+    // group has none, so it is inert rather than forbidden (DEC-140).
+    ...(group.can.viewStudents && !group.organizational
+      ? [{ id: "students", label: t("tabs.students") }]
+      : []),
+    ...(showExamsTab(group) && !group.organizational
+      ? [{ id: "exams", label: t("tabs.exams") }]
+      : []),
     ...(showSettingsTab(group) ? [{ id: "settings", label: t("tabs.settings") }] : []),
   ];
   const current = tabs.some((candidate) => candidate.id === query.tab) ? query.tab! : "info";
@@ -136,7 +146,12 @@ export default async function GroupPage({
       )}
       {/* No boundary: the Info tab is a rendering of the group this page already holds, so it has
           nothing to wait for and a skeleton would only flash. */}
-      {current === "info" && <GroupInfo group={group} />}
+      {current === "info" && (
+        <GroupInfo
+          group={group}
+          staffView={group.members.some((member) => member.id === viewer.id)}
+        />
+      )}
     </PageShell>
   );
 }
@@ -453,14 +468,24 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
 
 async function StudentsTab({ groupId }: { groupId: string }) {
   const locale = await getLocale();
-  const [t, tPoints, group, viewer, students, matrix] = await Promise.all([
+  const [t, tPoints, group, viewer, students] = await Promise.all([
     getTranslations("Group.students"),
     getTranslations("Group.points"),
     getGroupDetail(groupId, locale),
     getCurrentUser(),
     getGroupStudents(groupId),
-    getGroupPointsMatrix(groupId, locale),
   ]);
+
+  // **The roster and the points matrix are two permissions, not one.** core-api grants a plain
+  // student `viewStudents` -- they may see who else is in the course -- while `viewStats` stays
+  // false where the group does not publish results. The matrix reads `/assignment-solvers`, which
+  // answers 403 in that case, and fetching it unconditionally turned the whole tab into a refusal
+  // for a page the reader was entitled to. Found by the operator, on a group configured exactly
+  // that way.
+  const matrix =
+    group.can.viewStats === true
+      ? await getGroupPointsMatrix(groupId, locale)
+      : { columns: [], rows: [] };
 
   if (students.length === 0) {
     return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
@@ -484,6 +509,12 @@ async function StudentsTab({ groupId }: { groupId: string }) {
         viewerId={viewer.id}
         staffView={staffView}
       />
+
+      {/* **Measured, not assumed**: with `publicStats` off, `/students/stats` answers an
+          administrator with every row and a student with one -- their own. The table cannot tell
+          the difference between "one student in the course" and "one row you are allowed to see",
+          so it says so rather than letting the reader draw the wrong conclusion. */}
+      {!staffView && <p className="text-sm text-muted-foreground">{t("partialList")}</p>}
 
       {/* T-006. Both tables come out of the same `/students/stats` response, so the matrix costs
           one call for the assignment names and nothing for the data. */}

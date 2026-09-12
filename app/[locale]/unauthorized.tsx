@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
+import { BackButton } from "@/components/state/back-button";
 import { StatusState } from "@/components/state/status-state";
-import { Link } from "@/i18n/navigation";
 
 // Renders when unauthorized() is called (experimental.authInterrupts, see next.config.ts) --
 // 401, not signed in. Distinct from forbidden.tsx (403, signed in but lacks permission).
@@ -16,12 +16,7 @@ export default async function Unauthorized() {
         description={t("description")}
         action={
           <div className="flex flex-wrap justify-center gap-2">
-            <Link
-              href="/"
-              className="rounded-md border border-input px-3 py-1.5 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {t("homeLink")}
-            </Link>
+            <BackButton className="rounded-md border border-input px-3 py-1.5 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring" />
             {/* The way out of a refusal, and it has to be here: this page renders outside the app
                 shell, so there is no navigation and no sign-out on it, and `proxy.ts` sends a
                 signed-in visitor from `/login` to `/dashboard` -- which is itself refused when the

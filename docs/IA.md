@@ -112,14 +112,14 @@
 
 The sidebar is collapsible and shows _context-aware_ navigation:
 
-| Section         | Contents                                    | Visibility                                     |
-| --------------- | ------------------------------------------- | ---------------------------------------------- |
-| **Dashboard**   | Home, Calendar                              | Always                                         |
-| **My Groups**   | Groups where I am a member (any role)       | Always, if any                                 |
-| **My Teaching** | Groups where I am supervisor/admin          | Only if any exist                              |
-| **Exercises**   | Exercise catalog, Pipelines                 | Always                                         |
-| **People**      | Users (my profile, search)                  | Always                                         |
-| **Admin**       | Server, Instances, System Messages, Archive | Only if `superadmin` or `empowered-supervisor` |
+| Section         | Contents                                                          | Visibility                                     |
+| --------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
+| **Dashboard**   | Home, Calendar                                                    | Always                                         |
+| **My Groups**   | All groups (the list), then groups where I am a member (any role) | Always                                         |
+| **My Teaching** | Groups where I am supervisor/admin                                | Only if any exist                              |
+| **Exercises**   | Exercise catalog, Pipelines                                       | Always                                         |
+| **People**      | Users (my profile, search)                                        | Always                                         |
+| **Admin**       | Server, Instances, System Messages, Archive                       | Only if `superadmin` or `empowered-supervisor` |
 
 **Note:** "My Groups" and "My Teaching" are not mutually exclusive. A user in both sees both sections. The API returns per-group membership arrays (`admins`, `supervisors`, `observers`, `students`), and the sidebar derives visibility from those arrays, not from the global role.
 

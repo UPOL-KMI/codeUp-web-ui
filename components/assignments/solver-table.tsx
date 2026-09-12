@@ -51,7 +51,8 @@ export function SolverTable({
     {
       id: "attempts",
       header: t("columns.attempts"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (solver) => solver.attempts,
       cell: (solver) =>
@@ -60,7 +61,8 @@ export function SolverTable({
     {
       id: "points",
       header: t("columns.points"),
-      className: "text-right tabular-nums whitespace-nowrap",
+      align: "right" as const,
+      className: "tabular-nums whitespace-nowrap",
       sortable: true,
       sortValue: (solver) => solver.gained ?? -1,
       cell: (solver) =>

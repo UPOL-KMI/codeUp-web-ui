@@ -90,9 +90,13 @@ export async function addExerciseTag(
 ): Promise<ActionResult<{ tag: string }>> {
   const t = await getTranslations("ExerciseEdit.errors");
   const name = tag.trim();
-  // core-api's own shape for a tag: it goes in the path, so anything that is not a plain word
-  // would be a broken URL rather than a rejected value.
-  if (!/^[\w.-]{1,32}$/.test(name)) return { success: false, formError: t("invalidTag") };
+  // **core-api's own rule, character for character** (`ExerciseTags::verifyTagName`,
+  // `/^[-a-zA-Z0-9_]{1,32}$/`). It used to be `[\w.-]`, which is neither: `\w` without the `u`
+  // flag is ASCII-only, so a Czech tag was refused here with our message and no explanation, while
+  // a dot was *accepted* here and refused by core-api in English. Checked against the running
+  // instance rather than read: `řazení` and `s.teckou` are refused, `s_podtrzitkem` and `UPPER`
+  // are not.
+  if (!/^[-a-zA-Z0-9_]{1,32}$/.test(name)) return { success: false, formError: t("invalidTag") };
 
   try {
     await apiPost("/v1/exercises/{id}/tags/{name}", undefined, {

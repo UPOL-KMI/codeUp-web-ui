@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
+import { ORIGIN_COOKIE_NAME, SESSION_COOKIE_NAME } from "@/lib/auth/session-cookie";
 import { buildAbsoluteUrl } from "@/lib/http/absolute-url";
 
 /**
@@ -26,6 +26,8 @@ import { buildAbsoluteUrl } from "@/lib/http/absolute-url";
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
+  // Takes the takeover stash with it: an administrator's token must not outlive their session.
+  cookieStore.delete(ORIGIN_COOKIE_NAME);
 
   return NextResponse.redirect(buildAbsoluteUrl(request, "/login"), 303);
 }

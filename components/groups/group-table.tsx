@@ -81,7 +81,8 @@ export function GroupTable({ groups, tableId }: { groups: GroupListEntry[]; tabl
     {
       id: "students",
       header: t("columns.students"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (group) => group.studentCount ?? -1,
       cell: (group) => group.studentCount ?? "—",
@@ -89,7 +90,8 @@ export function GroupTable({ groups, tableId }: { groups: GroupListEntry[]; tabl
     {
       id: "assignments",
       header: t("columns.assignments"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (group) => group.assignmentCount ?? -1,
       cell: (group) => (group.organizational ? "—" : (group.assignmentCount ?? "—")),

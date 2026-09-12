@@ -66,14 +66,20 @@ export function GroupSettingsForm({
       isPublic: group.public,
       publicStats: group.publicStats,
       detaining: group.detaining,
+      // **Zero is "nothing required", not "require zero".** core-api stores an unset threshold as
+      // `0` rather than as null, and reading that as "percentage mode, value 0" put the form into
+      // a state it then refused to save: the field showed 0, the browser's own `min` complained,
+      // and the schema wanted at least 1. Reported from the settings screen of a freshly created
+      // group, where 0 is what every group starts with.
       passMode:
-        group.threshold !== null
+        group.threshold !== null && group.threshold > 0
           ? "threshold"
-          : group.pointsLimit !== null
+          : group.pointsLimit !== null && group.pointsLimit > 0
             ? "pointsLimit"
             : "none",
-      threshold: group.threshold !== null ? Math.round(group.threshold * 100) : null,
-      pointsLimit: group.pointsLimit,
+      threshold:
+        group.threshold !== null && group.threshold > 0 ? Math.round(group.threshold * 100) : null,
+      pointsLimit: group.pointsLimit !== null && group.pointsLimit > 0 ? group.pointsLimit : null,
     },
     action: (values) => updateGroupSettings(group.id, values),
     onSuccess: () => {
@@ -147,14 +153,21 @@ export function GroupSettingsForm({
             <input type="checkbox" className="size-4" {...register("isPublic")} />
             {t("isPublic")}
           </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="size-4" {...register("publicStats")} />
-            {t("publicStats")}
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="size-4" {...register("detaining")} />
-            {t("detaining")}
-          </label>
+          {/* Both are about students, and an organizational group cannot have any -- core-api
+              refuses them. The settings tab itself stays: it is where the organizational flag is
+              turned off again. */}
+          {!group.organizational && (
+            <>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="size-4" {...register("publicStats")} />
+                {t("publicStats")}
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="size-4" {...register("detaining")} />
+                {t("detaining")}
+              </label>
+            </>
+          )}
         </div>
 
         <fieldset className="flex flex-col gap-2 text-sm">

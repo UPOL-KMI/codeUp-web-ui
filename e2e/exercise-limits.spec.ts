@@ -28,8 +28,8 @@ test("reads a configured exercise's limits without changing them", async ({ page
   const main = page.getByRole("main");
 
   await main.getByRole("link", { name: "[seed] Echo Greeting" }).click();
-  await main.getByRole("link", { name: "Execution limits" }).click();
-  await expect(main.getByRole("heading", { name: "Execution limits", level: 1 })).toBeVisible();
+  await main.getByRole("link", { name: "Resource limits" }).click();
+  await expect(main.getByRole("heading", { name: "Resource limits", level: 1 })).toBeVisible();
 
   // The instance's one hardware group, chosen for this exercise, and its own grid.
   await expect(main.getByRole("checkbox", { name: /Default Group/ })).toBeChecked();
@@ -66,11 +66,13 @@ test("sets limits on a new exercise, and refuses ones the machine will not allow
   await expect(main.getByText("the exercise has no tests", { exact: true })).toBeVisible();
   await expect(main.getByText("no machine is selected", { exact: true })).toBeVisible();
 
-  await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));
+  const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
+  await page.goto(`${configUrl}?tab=tests`);
   await main.getByRole("button", { name: "Add a test" }).click();
   await main.getByRole("textbox", { name: "Name" }).fill("Small input");
   await main.getByRole("button", { name: "Save tests" }).click();
   await expect(page.getByText("Tests saved.", { exact: true })).toBeVisible();
+  await page.goto(`${configUrl}?tab=languages`);
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();

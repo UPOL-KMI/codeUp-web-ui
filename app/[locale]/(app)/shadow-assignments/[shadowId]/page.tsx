@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { getGroupStudents } from "@/lib/api/group-detail";
 import { getShadowAssignment } from "@/lib/api/shadow-assignment";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { formatPoints } from "@/lib/format/points";
@@ -47,6 +48,15 @@ export default async function ShadowAssignmentPage({
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/shadow-assignments/${shadowId}`, locale);
   const canSeeEveryone = assignment.can.viewAllPoints === true;
+
+  // **Only the group's own students can be awarded**, and core-api says so by refusing anybody
+  // else with "User is not member of the group". Offering a search across the whole instance
+  // therefore offered a dead end, in somebody else's language -- so the roster is read here and
+  // the picker chooses from it. Costs one call, and only for a reader who may award at all.
+  const roster =
+    assignment.can.createPoints === true && assignment.groupId
+      ? await getGroupStudents(assignment.groupId)
+      : [];
 
   return (
     <PageShell
@@ -168,6 +178,8 @@ export default async function ShadowAssignmentPage({
               shadowId={shadowId}
               points={assignment.points}
               canAward={assignment.can.createPoints === true}
+              students={roster.map((student) => ({ id: student.id, name: student.fullName }))}
+              maxPoints={assignment.maxPoints}
             />
           </section>
         )}

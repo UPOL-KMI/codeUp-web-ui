@@ -14,6 +14,8 @@ import { ExerciseFiles } from "@/components/exercises/exercise-files";
 import { ExerciseForm } from "@/components/exercises/exercise-form";
 import { ExercisePeople } from "@/components/exercises/exercise-people";
 import { PageShell } from "@/components/page-shell";
+import { PageTabs, type PageTab } from "@/components/page-tabs";
+import { describeValidationError, validationErrorHref } from "@/lib/status/exercise-validation";
 
 export async function generateMetadata({
   params,
@@ -46,12 +48,15 @@ export async function generateMetadata({
  */
 export default async function EditExercisePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ exerciseId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, exercise] = await Promise.all([
+  const [{ exerciseId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
+  const [t, tExercise, exercise] = await Promise.all([
     getTranslations("ExerciseEdit"),
+    getTranslations("Exercise"),
     getExerciseDetail(exerciseId, locale),
   ]);
 
@@ -73,6 +78,17 @@ export default async function EditExercisePage({
     resolveBreadcrumbs(`/exercises/${exerciseId}/edit`, locale),
   ]);
 
+  const tabs: PageTab[] = [
+    { id: "settings", label: t("tabs.settings") },
+    { id: "tags", label: t("tabs.tags") },
+    { id: "groups", label: t("tabs.groups") },
+    { id: "notify", label: t("tabs.notify") },
+    { id: "files", label: t("tabs.files") },
+    { id: "people", label: t("tabs.people") },
+  ];
+  const current = tabs.some((tab) => tab.id === query.tab) ? query.tab! : "settings";
+  const readOnly = exercise.can.update !== true || exercise.archivedAt !== null;
+
   return (
     <PageShell
       title={t("title")}
@@ -86,46 +102,118 @@ export default async function EditExercisePage({
           {t("backToExercise")}
         </Link>
       }
+      tabs={
+        <PageTabs
+          basePath={`/exercises/${exerciseId}/edit`}
+          tabs={tabs}
+          current={current}
+          label={t("tabs.label")}
+        />
+      }
     >
-      <div className="flex flex-col gap-10">
-        {exercise.archivedAt !== null || exercise.can.update !== true ? (
+      <div className="flex flex-col gap-8">
+        {/* **Whether this exercise can be given to anybody, said once and at the top.** It is the
+            question the whole screen exists to answer, and it was only visible on the exercise's
+            own detail page -- so an author could fill this form in, save it, and still not know
+            why the assign button was refusing them. `validationErrors` is core-api's own list of
+            what is missing. */}
+        {exercise.isBroken ? (
+          <section
+            aria-labelledby="exercise-status"
+            className="rounded-lg border border-destructive bg-destructive-surface p-4 text-sm"
+          >
+            <h2 id="exercise-status" className="font-medium">
+              {tExercise("broken.title")}
+            </h2>
+            <p className="mt-1 text-muted-foreground">{tExercise("broken.explain")}</p>
+            <ul className="mt-2 list-disc pl-5">
+              {exercise.validationErrors.map((error) => (
+                <li key={error}>
+                  {validationErrorHref(error, exerciseId) === null ? (
+                    describeValidationError(error, tExercise)
+                  ) : (
+                    <Link
+                      href={validationErrorHref(error, exerciseId)!}
+                      className="underline underline-offset-4 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {describeValidationError(error, tExercise)}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : (
+          <p className="rounded-lg border border-success bg-success/10 p-4 text-sm">
+            {t("status.assignable")}
+          </p>
+        )}
+
+        {(exercise.archivedAt !== null || exercise.can.update !== true) && (
           <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
             {exercise.archivedAt !== null ? t("archivedNotice") : t("readOnlyNotice")}
           </p>
-        ) : (
-          <section aria-labelledby="exercise-settings" className="flex flex-col gap-3">
-            <h2 id="exercise-settings" className="text-base font-semibold tracking-tight">
-              {t("settings")}
-            </h2>
-            <ExerciseForm exercise={exercise} locales={routing.locales} />
-          </section>
         )}
 
-        <ExerciseControls exercise={exercise} teachingGroups={mine.teaching} />
+        {current === "settings" && (
+          <>
+            {!readOnly && <ExerciseForm exercise={exercise} locales={routing.locales} />}
+            <ExercisePeople
+              exercise={exercise}
+              teachingGroups={mine.teaching}
+              canFork={exercise.can.fork === true}
+              sections={["fork"]}
+            />
+            <ExerciseControls
+              exercise={exercise}
+              teachingGroups={mine.teaching}
+              sections={["lifecycle"]}
+            />
+          </>
+        )}
 
-        <section aria-labelledby="exercise-files" className="flex flex-col gap-3">
-          <h2 id="exercise-files" className="text-base font-semibold tracking-tight">
-            {t("files.title")}
-          </h2>
+        {current === "tags" && (
+          <ExerciseControls
+            exercise={exercise}
+            teachingGroups={mine.teaching}
+            sections={["tags"]}
+          />
+        )}
+
+        {current === "groups" && (
+          <ExerciseControls
+            exercise={exercise}
+            teachingGroups={mine.teaching}
+            sections={["groups"]}
+          />
+        )}
+
+        {current === "notify" && (
+          <ExerciseControls
+            exercise={exercise}
+            teachingGroups={mine.teaching}
+            sections={["notify"]}
+          />
+        )}
+
+        {current === "files" && (
           <ExerciseFiles
             exerciseId={exerciseId}
             files={exercise.files}
             links={exercise.fileLinks}
             archiveUrl={`/api/exercises/${exerciseId}/files`}
-            readOnly={exercise.can.update !== true || exercise.archivedAt !== null}
+            readOnly={readOnly}
           />
-        </section>
+        )}
 
-        <section aria-labelledby="exercise-people" className="flex flex-col gap-3">
-          <h2 id="exercise-people" className="text-base font-semibold tracking-tight">
-            {t("people.title")}
-          </h2>
+        {current === "people" && (
           <ExercisePeople
             exercise={exercise}
             teachingGroups={mine.teaching}
             canFork={exercise.can.fork === true}
+            sections={["rights"]}
           />
-        </section>
+        )}
       </div>
     </PageShell>
   );

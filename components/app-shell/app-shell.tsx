@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
+import { ORIGIN_COOKIE_NAME } from "@/lib/auth/session-cookie";
 import { getMyGroups } from "@/lib/api/groups";
 import { getActiveSystemMessages } from "@/lib/api/system-messages";
 
@@ -112,7 +114,15 @@ async function Sidebar() {
     {
       id: "groups",
       title: t("myGroups"),
-      items: groups.member.map((group) => ({ href: `/groups/${group.id}`, label: group.name })),
+      // **The list itself comes first, and it was missing.** `IA.md` §3.1 specified this section
+      // as the groups you belong to, and nothing anywhere linked to `/groups` -- so a reader in no
+      // groups saw an empty section, and the screen that creates one was reachable only by typing
+      // its address. Found by the operator on a fresh instance, where an administrator belongs to
+      // nothing by definition.
+      items: [
+        { href: "/groups", label: t("allGroups") },
+        ...groups.member.map((group) => ({ href: `/groups/${group.id}`, label: group.name })),
+      ],
     },
     // IA §3.1: shown "only if any exist" -- an empty teaching section on a student's sidebar is
     // noise, whereas an empty "My Groups" still tells a new student where their courses will
@@ -207,8 +217,9 @@ async function SessionNotices() {
 /** The signed-in reader's name and the sign-out control. Renders nothing if the read fails --
  *  chrome that cannot load is not worth an error page over the content it decorates. */
 async function CurrentSession() {
-  const name = await currentReaderName();
-  return name === null ? null : <SessionBar fullName={name} />;
+  const [name, cookieStore] = await Promise.all([currentReaderName(), cookies()]);
+  if (name === null) return null;
+  return <SessionBar fullName={name} takenOver={cookieStore.has(ORIGIN_COOKIE_NAME)} />;
 }
 
 /** The read is kept out of the JSX: a failure here must not take down the page this decorates,

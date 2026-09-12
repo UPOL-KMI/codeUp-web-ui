@@ -29,10 +29,15 @@ export const groupSettingsSchema = z
     publicStats: z.boolean(),
     detaining: z.boolean(),
     passMode: z.enum(PASS_MODES),
-    /** Whole percent, only read when `passMode` is `threshold`. */
-    threshold: z.nullable(z.number().check(z.int(), z.minimum(1), z.maximum(100))),
-    /** Absolute points, only read when `passMode` is `pointsLimit`. */
-    pointsLimit: z.nullable(z.number().check(z.int(), z.minimum(1))),
+    /**
+     * Whole percent, only read when `passMode` is `threshold` -- and **only checked then**. The
+     * range used to live on the field itself, which meant the value left behind by the mode the
+     * reader had switched *away* from was still validated, and a form with a perfectly good
+     * points limit was refused because of a hidden percentage field it no longer used.
+     */
+    threshold: z.nullable(z.number()),
+    /** Absolute points, only read when `passMode` is `pointsLimit`. Same reasoning as above. */
+    pointsLimit: z.nullable(z.number()),
   })
   .check(
     z.superRefine((values, ctx) => {
@@ -43,11 +48,17 @@ export const groupSettingsSchema = z
       if (!values.texts.some((text) => text.name.trim() !== "")) {
         ctx.addIssue({ code: "custom", path: ["texts"], message: "nameRequired" });
       }
-      if (values.passMode === "threshold" && values.threshold === null) {
-        ctx.addIssue({ code: "custom", path: ["threshold"], message: "thresholdRequired" });
+      if (values.passMode === "threshold") {
+        const value = values.threshold;
+        if (value === null || !Number.isInteger(value) || value < 1 || value > 100) {
+          ctx.addIssue({ code: "custom", path: ["threshold"], message: "thresholdRequired" });
+        }
       }
-      if (values.passMode === "pointsLimit" && values.pointsLimit === null) {
-        ctx.addIssue({ code: "custom", path: ["pointsLimit"], message: "pointsLimitRequired" });
+      if (values.passMode === "pointsLimit") {
+        const value = values.pointsLimit;
+        if (value === null || !Number.isInteger(value) || value < 1) {
+          ctx.addIssue({ code: "custom", path: ["pointsLimit"], message: "pointsLimitRequired" });
+        }
       }
     }),
   );

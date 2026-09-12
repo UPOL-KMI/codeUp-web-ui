@@ -3,6 +3,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { ApiError, apiGet, apiPost } from "@/lib/api/client";
+import { DATA_ONLY_TEST_NAME, isDataOnly } from "@/lib/status/exercise-validation";
 import type { ActionResult } from "@/lib/forms/action-result";
 import {
   relevantPipelines,
@@ -134,6 +135,31 @@ export async function updateExerciseEnvironments(
       { environmentConfigs },
       { pathParams: { id: exerciseId } },
     );
+
+    // **A data-only exercise gets its one test written for it** (DEC-141). core-api requires at
+    // least one test of every exercise -- `ExerciseConfigChecker` has no exemption -- because a
+    // test is the unit its judge runs in and the thing points hang off. For an exercise that
+    // collects files rather than running code that is a formality with exactly one right answer,
+    // and making a teacher discover it through a validation error is the screen failing them. The
+    // guard is `length === 0`: an exercise that already has tests is somebody's own arrangement.
+    if (isDataOnly(parsed.data.environments)) {
+      const tests = await apiGet<ExerciseTest[]>("/v1/exercises/{id}/tests", {
+        pathParams: { id: exerciseId },
+      });
+      if (tests.length === 0) {
+        // **Not translated, and it cannot be.** core-api's test names are
+        // `[-a-zA-Z0-9_()[].! ]` (`ExercisesConfigPresenter`), so the Czech "Odevzdání" was
+        // refused with `test name contains illicit characters` -- found by the operator one
+        // message after it shipped. A name they can change afterwards beats one that fails to be
+        // created.
+        await apiPost(
+          "/v1/exercises/{id}/tests",
+          { tests: [{ name: DATA_ONLY_TEST_NAME }] },
+          { pathParams: { id: exerciseId } },
+        );
+      }
+    }
+
     return { success: true, data: { count: environmentConfigs.length } };
   } catch (error) {
     return failure(error, "environmentsFailed");

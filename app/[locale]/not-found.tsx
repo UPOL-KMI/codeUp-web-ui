@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
+import { BackButton } from "@/components/state/back-button";
 import { StatusState } from "@/components/state/status-state";
-import { Link } from "@/i18n/navigation";
 
 // Renders for notFound() calls within the [locale] segment, and for any locale-prefixed URL
 // that doesn't match a route (proxy.ts redirects unprefixed paths into a locale first, so this
@@ -17,12 +17,7 @@ export default async function NotFound() {
         title={t("title")}
         description={t("description")}
         action={
-          <Link
-            href="/"
-            className="rounded-md border border-input px-3 py-1.5 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {t("homeLink")}
-          </Link>
+          <BackButton className="rounded-md border border-input px-3 py-1.5 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring" />
         }
       />
     </main>

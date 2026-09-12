@@ -103,7 +103,8 @@ export function SolutionsTable({
     {
       id: "attempt",
       header: t("columns.attempt"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (solution) => solution.attemptIndex,
       // The row's way into the solution itself. In `lead="author"` mode the name above is that
@@ -136,7 +137,8 @@ export function SolutionsTable({
     {
       id: "points",
       header: t("columns.points"),
-      className: "text-right tabular-nums",
+      align: "right" as const,
+      className: "tabular-nums",
       sortable: true,
       sortValue: (solution) => solution.overridden ?? solution.gained ?? -1,
       cell: (solution) =>

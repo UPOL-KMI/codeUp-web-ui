@@ -43,19 +43,16 @@
   },
   "NotFound": {
     "title": "Stránka nenalezena",
-    "description": "Stránka, kterou hledáte, neexistuje.",
-    "homeLink": "Zpět na hlavní stránku"
+    "description": "Stránka, kterou hledáte, neexistuje."
   },
   "Forbidden": {
     "title": "Přístup odepřen",
     "description": "Nemáte oprávnění přistupovat k tomuto zdroji.",
-    "homeLink": "Zpět na hlavní stránku",
     "signOutLink": "Odhlásit se a přihlásit jiným účtem"
   },
   "Unauthorized": {
     "title": "Vyžadováno přihlášení",
     "description": "Pro pokračování se prosím přihlaste.",
-    "homeLink": "Zpět na hlavní stránku",
     "signOutLink": "Odhlásit se a přihlásit jiným účtem"
   },
   "Error": {
@@ -73,7 +70,7 @@
     "password": "Heslo",
     "signIn": "Přihlásit se",
     "signingIn": "Přihlašuji…",
-    "signInRequired": "Stránka, kterou jste chtěli otevřít, je jen pro přihlášené. Po přihlášení se na ni dostanete.",
+    "signInRequired": "Hledaná stránka je dostupná pouze pro přihlášené uživatele.",
     "externalAuthFailed": "Přihlášení přes externí službu se nepovedlo. Zkuste to znovu, nebo použijte heslo k UPolníčku níže.",
     "shortSession": "Krátká relace ({minutes, plural, one {# minuta} few {# minuty} many {# minuty} other {# minut}})",
     "shortSessionHint": "Pro veřejný počítač: relace skončí dřív, i když se zapomenete odhlásit.",
@@ -327,7 +324,7 @@
       "action": "Nová skupina",
       "title": "Nová skupina",
       "subgroupTitle": "Nová podskupina",
-      "explain": "Zadejte název a skupina vznikne. Vše ostatní – kdo ji uvidí, jak se prochází, zda jde o zkouškovou skupinu – nastavíte na kartě nastavení, na kterou budete přesměrováni.",
+      "explain": "Nejprve zadejte název skupiny. Přístupová práva a další nastavení můžete nakonfigurovat po založení záznamu.",
       "name": "Název ({locale})",
       "submit": "Vytvořit skupinu",
       "submitting": "Vytvářím…",
@@ -364,7 +361,7 @@
       "limitNotMet": "Pod hranicí",
       "metadata": "Podrobnosti",
       "parent": "Nadřazená skupina",
-      "assignments": "Zadání",
+      "assignments": "Počet zadání",
       "organizationalNote": "Žádná — tato skupina pouze sdružuje jiné skupiny",
       "students": "Studenti",
       "pointsLimit": "Body potřebné k absolvování",
@@ -388,7 +385,9 @@
         "service": "Služba",
         "key": "Klíč",
         "value": "Hodnota"
-      }
+      },
+      "thresholdExplain": "Průběžný stav: počítá se z bodů získaných zatím, ne z konečného výsledku předmětu.",
+      "shadowCount": "{count, plural, one {# stínové zadání} few {# stínová zadání} other {# stínových zadání}}"
     },
     "membership": {
       "join": "Vstoupit do skupiny",
@@ -451,13 +450,14 @@
         "name": "Student",
         "points": "Body",
         "solved": "Vyřešeno",
-        "threshold": "Hranice"
+        "threshold": "Hranice",
+        "actions": "Akce"
       },
       "empty": {
         "title": "Žádní studenti",
         "description": "Do této skupiny se zatím nepřihlásil žádný student."
       },
-      "viewSolutions": "Odevzdání",
+      "viewSolutions": "Odevzdaná řešení",
       "caption": "Všichni studenti této skupiny, jejich body a počet vyřešených zadání.",
       "mail": {
         "title": "Hromadný e-mail skupině",
@@ -470,7 +470,9 @@
           "summary": "Zobrazit adresy jako text",
           "label": "Všechny zpřístupněné adresy v této skupině, oddělené čárkami"
         }
-      }
+      },
+      "thresholdExplain": "Průběžný stav: počítá se z bodů, které student získal zatím, ne z konečného výsledku předmětu.",
+      "partialList": "Kvůli nastavení práv mohou být některé záznamy skryté."
     },
     "points": {
       "title": "Body po jednotlivých zadáních",
@@ -759,7 +761,7 @@
     },
     "invitations": {
       "title": "Odkazy s pozvánkou",
-      "explain": "Kdokoli, kdo některý z těchto odkazů otevře, přihlásí se a je studentem této instance, může jeho pomocí do skupiny vstoupit. Sdílejte odkaz jen s lidmi, které chcete pozvat.",
+      "explain": "Vytvořené odkazy slouží k jednoduchému přiřazení uživatelů do skupiny. Odkaz nasdílejte s lidmi, které chcete do skupiny pozvat. Po otevření odkazu a přihlášení budou uživatelé automaticky přiřazeni do této skupiny.",
       "empty": "Tato skupina nemá žádné odkazy s pozvánkou.",
       "createTitle": "Nový odkaz",
       "create": "Vytvořit odkaz",
@@ -1229,7 +1231,7 @@
     "untitled": "Nepojmenovaná úloha",
     "backToCatalog": "Zpět do katalogu",
     "configure": "Testy a vyhodnocení",
-    "limits": "Limity spuštění",
+    "limits": "Omezení zdrojů",
     "assignmentsLink": "Kde je zadaná",
     "referenceSolutionsLink": "Vzorová řešení",
     "text": "Co má student udělat",
@@ -1266,7 +1268,7 @@
     "version": "verze {version}",
     "forkedFrom": "Odvozeno z",
     "theOriginal": "Původní úloha",
-    "noReferenceSolution": "Zatím nebylo odevzdáno vzorové řešení, takže úlohu nelze zadat. Vzorové řešení je důkaz, že testy vůbec jdou projít.",
+    "noReferenceSolution": "Nebylo odevzdáno vzorové řešení – úlohu nelze zadat. Vzorové řešení je důkaz, že testy i limity fungují.",
     "flags": {
       "archived": "Archivovaná",
       "private": "Neveřejná",
@@ -1277,17 +1279,17 @@
       "explain": "Tato úloha je archivovaná. Zůstává čitelná i navázaná na zadání, která z ní už vznikla, ale nepřekáží při hledání něčeho, co jde zadat."
     },
     "broken": {
-      "title": "Tuto úlohu zatím nelze zadat",
-      "explain": "UPolníček úlohu před zadáním kontroluje. Toto v ní chybí:"
+      "title": "Tuto úlohu nelze zadat",
+      "explain": "Nalezené chyby:"
     },
     "validation": {
-      "no-texts": "Nemá zadání v žádném jazyce.",
-      "no-tests": "Nemá žádné testy.",
+      "no-texts": "Úloha nemá zadání v žádném jazyce.",
+      "no-tests": "Úloha nemá vytvořené žádné testy.",
       "score": "Není nastaven způsob výpočtu úspěšnosti řešení.",
-      "no-runtimes": "Nebyl pro ni vybrán žádný jazyk.",
+      "no-runtimes": "Nebyl vybrán žádný jazyk.",
       "runtimes": "Vybrané jazyky nemají konfiguraci.",
       "no-configs": "Některé testy jsou nastaveny špatně, nebo vůbec.",
-      "no-hwgroups": "Nebyla pro ni vybrána hardwarová skupina.",
+      "no-hwgroups": "Nebyla vybrána žádná HW skupina.",
       "config": "Některé testy mají neúplnou konfiguraci — typicky poté, co byl odebrán test nebo soubor.",
       "limits": "Paměťové nebo časové limity nejsou správně nastavené."
     },
@@ -1307,7 +1309,7 @@
       "description": "Krátký popis",
       "descriptionHint": "Vidí jen učitelé — poznámka, k čemu úloha je.",
       "link": "Externí zadání",
-      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
+      "linkHint": "URL adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
       "difficulty": "Obtížnost",
       "difficulties": {
         "easy": "Lehká",
@@ -1315,11 +1317,11 @@
         "hard": "Těžká"
       },
       "isPublic": "Ostatní učitelé smí úlohu vidět a zadávat",
-      "isLocked": "Zamčeno — i tak ji nesmí nikdo zadat",
+      "isLocked": "Zamčeno — úlohu nelze zadat do žádné skupiny",
       "mergeJudgeLogs": "Sloučit chybový výstup soudce do běžného",
-      "solutionFilesLimit": "Souborů na řešení",
-      "solutionSizeLimit": "Celková velikost (v bajtech)",
-      "solutionSizeLimitHint": "Prázdné znamená bez vlastního limitu.",
+      "solutionFilesLimit": "Maximální počet souborů v jednom řešení",
+      "solutionSizeLimit": "Maximální velikost řešení (v bajtech)",
+      "solutionSizeLimitHint": "Bez omezení",
       "save": "Uložit nastavení",
       "saved": "Nastavení bylo uloženo.",
       "errors": {
@@ -1329,7 +1331,7 @@
     },
     "tags": {
       "title": "Štítky",
-      "explain": "Štítky jsou společné pro celou instanci a katalog podle nich filtruje.",
+      "explain": "Štítky jsou volitelné a slouží k hledání: v katalogu úloh se podle nich filtruje, takže označená úloha se dá najít i tomu, kdo nezná její název. Jsou společné pro celou instanci, takže stejný štítek použijte pro stejný typ úlohy napříč předměty — na to, kdo úlohu vidí a kdo ji smí zadat, nemají vliv.",
       "none": "Zatím žádné štítky.",
       "add": "Nový štítek",
       "addAction": "Přidat",
@@ -1385,7 +1387,7 @@
       "invalid": "Zkontrolujte formulář a zkuste to znovu.",
       "createFailed": "Úlohu se nepodařilo vytvořit.",
       "saveFailed": "Nastavení se nepodařilo uložit.",
-      "invalidTag": "Štítek smí obsahovat jen písmena, číslice, tečky a pomlčky.",
+      "invalidTag": "Štítek smí obsahovat jen písmena bez diakritiky, číslice, pomlčku a podtržítko, nejvýše 32 znaků. Tečky ani mezery v něm být nemohou.",
       "tagFailed": "Štítek se nepodařilo změnit.",
       "groupFailed": "Skupinu se nepodařilo změnit.",
       "archiveFailed": "Úlohu se nepodařilo archivovat.",
@@ -1480,6 +1482,18 @@
         "noGroupChosen": "Nejdřív vyberte skupinu.",
         "forkFailed": "Kopii se nepodařilo vytvořit."
       }
+    },
+    "tabs": {
+      "label": "Části nastavení",
+      "settings": "Základní nastavení",
+      "tags": "Štítky",
+      "groups": "Skupiny",
+      "notify": "Upozornění vyučujícím",
+      "files": "Soubory",
+      "people": "Přístupová práva"
+    },
+    "status": {
+      "assignable": "Úloha je nakonfigurovaná a lze ji zadat do skupiny."
     }
   },
   "ExerciseImport": {
@@ -1548,12 +1562,13 @@
   "ExerciseConfig": {
     "title": "Testy a vyhodnocení",
     "settings": "Základní nastavení",
-    "limits": "Limity spuštění",
+    "limits": "Omezení zdrojů",
     "backToExercise": "Zpět na úlohu",
     "archivedNotice": "Tato úloha je archivovaná, takže její konfigurace je jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
     "readOnlyNotice": "Tuto konfiguraci si můžete přečíst, ale nemůžete ji měnit.",
-    "broken": {
-      "title": "Tuto úlohu zatím nelze zadat"
+    "tabs": {
+      "label": "Části konfigurace",
+      "advanced": "Pokročilé nastavení"
     },
     "advanced": {
       "environments": "Tato úloha používá vlastní konfiguraci, jejíž běhové prostředí se volí spolu s pipelinami. Její úprava tu zatím není.",
@@ -1592,7 +1607,7 @@
       "explain": "V čem smí být řešení napsané. V každém jazyce se řešení staví a spouští jinak, a právě proto se část nastavení testu níže zadává zvlášť pro každý z nich.",
       "exclusive": "(nelze kombinovat)",
       "exclusiveConflict": "{environments} nemůže být v úloze spolu s jiným jazykem. Zvolte jej samostatně, nebo jej odeberte.",
-      "noneSelected": "Není zvolen žádný jazyk, takže do této úlohy nejde nic odevzdat.",
+      "noneSelected": "Není zvolen žádný jazyk – do této úlohy nejde nic odevzdat.",
       "save": "Uložit jazyky",
       "saving": "Ukládám…",
       "saved": "Jazyky uloženy.",
@@ -1738,7 +1753,7 @@
     }
   },
   "ExerciseScore": {
-    "title": "Vlastní úspěšnost",
+    "title": "Vlastní hodnocení úspěšnosti",
     "explain": "Místo průměru může být úspěšnost řešení libovolný výraz nad výsledky testů — test, který musí projít, než se ostatní počítají, omezený bonus, část úlohy s nulovou vahou.",
     "expression": "Výraz",
     "syntax": "Výsledek testu je jeho jméno v uvozovkách a je to číslo od 0 do 1. Používejte + - * / a závorky a funkce avg, min, max, sum, mul a clamp (která hodnotu vtáhne do 0…1).",
@@ -1751,8 +1766,8 @@
     "saved": "Výraz uložen.",
     "switchIn": {
       "explain": "Přepnutí vyjde z toho, co úloha dělá teď — stejné váhy se stanou průměrem, různé součtem přes celek — takže hodnotí přesně jako předtím, jen ve tvaru, který jde měnit.",
-      "action": "Napsat si vlastní úspěšnost",
-      "done": "Úloha má teď vlastní úspěšnost.",
+      "action": "Napsat si vlastní hodnocení úspěšnosti",
+      "done": "Úloha má teď vlastní hodnocení úspěšnosti.",
       "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, UPolníček neuloží."
     },
     "switchOut": {
@@ -1784,7 +1799,7 @@
     }
   },
   "ExerciseLimits": {
-    "title": "Limity spuštění",
+    "title": "Omezení zdrojů",
     "configure": "Testy a vyhodnocení",
     "backToExercise": "Zpět na úlohu",
     "archivedNotice": "Tato úloha je archivovaná, takže její limity jsou jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
@@ -1793,7 +1808,7 @@
       "title": "Stroje",
       "explain": "Na jaké třídě strojů má úloha běžet. Hardwarová skupina popisuje, co stroj má, a její stropy jsou to, vůči čemu se limity níže měří. Úlohu bez jediné skupiny nelze zadat.",
       "ceilings": "Nejvýš {memory, number} KiB paměti, {cpu, number} s procesorového času nebo {wall, number} s reálného času na test.",
-      "noneSelected": "Není zvolen žádný stroj, takže tuto úlohu nelze zadat.",
+      "noneSelected": "Není zvolen žádný stroj – tuto úlohu nelze zadat.",
       "save": "Uložit stroje",
       "saving": "Ukládám…",
       "saved": "Stroje uloženy.",
@@ -1802,7 +1817,7 @@
     },
     "form": {
       "title": "Limity",
-      "explain": "Kolik smí každý test spotřebovat, za každý jazyk zvlášť. Řešení, které limit překročí, ten test neprojde.",
+      "explain": "Kolik smí každý test spotřebovat, za každý jazyk zvlášť. Řešení, které limity překročí, skončí chybou.",
       "unavailable": "Zatím není pro co limity nastavovat:",
       "noTests": "úloha nemá žádné testy",
       "noEnvironments": "není zvolen žádný jazyk",
@@ -1859,7 +1874,7 @@
     "assign": {
       "title": "Zadat ji někam",
       "explain": "Vyberte skupiny. Každá se zadává zvlášť, takže skupina, kam zadávat nesmíte, nezastaví ostatní.",
-      "broken": "Tuto úlohu zatím nelze zadat — co jí chybí, je vidět na obrazovce úlohy.",
+      "broken": "Tuto úlohu nelze zadat — co jí chybí, je vidět na obrazovce úlohy.",
       "noGroups": "Neučíte žádnou skupinu, kam by šlo zadat.",
       "already": "tady už zadaná je",
       "assign": "{count, plural, =0 {Zadat} one {Zadat do # skupiny} few {Zadat do # skupin} other {Zadat do # skupin}}",
@@ -1881,7 +1896,7 @@
     "list": {
       "title": "Odpovědi",
       "explain": "Vzorové řešení je vaše vlastní odpověď, prohnaná přesně toutéž pipelinou jako řešení studenta. Právě ono dokazuje, že úloha je řešitelná — úlohu bez jediného nelze zadat.",
-      "none": "Tato úloha nemá žádné vzorové řešení, takže ji nelze zadat. Odevzdejte jedno níže.",
+      "none": "Tato úloha nemá žádné vzorové řešení – nelze ji zadat. Odevzdejte jedno níže.",
       "allHidden": "Tato úloha vzorová řešení má, ale žádné z nich není vaše — soukromé odpovědi patří jen svému autorovi. Odevzdejte níže vlastní.",
       "untitled": "Řešení bez popisu",
       "description": "Popis",
@@ -2333,7 +2348,8 @@
       "description": "Co se stalo",
       "what": "Kde",
       "created": "Kdy",
-      "state": "Stav"
+      "state": "Stav",
+      "actions": "Akce"
     },
     "what": {
       "solution": "Řešení",
@@ -2492,7 +2508,7 @@
   "Profile": {
     "title": "Profil",
     "unnamed": "Uživatel bez jména",
-    "thisIsYou": "To jste vy",
+    "thisIsYou": "Váš účet",
     "overview": "Účet",
     "name": "Jméno",
     "email": "E-mail",
@@ -2511,9 +2527,9 @@
     "unverified": "E-mail neověřen",
     "disabled": "Účet zablokován",
     "groups": "Skupiny",
-    "groupSolutions": "Odevzdání",
+    "groupSolutions": "Odevzdaná řešení",
     "membership": {
-      "student": "Studuje zde",
+      "student": "Zapsán",
       "supervisor": "Vyučuje zde"
     },
     "noGroups": {
@@ -2683,7 +2699,8 @@
       "second-chance": "Druhý termín",
       "closed": "Uzavřeno"
     },
-    "loading": "Načítání"
+    "loading": "Načítání",
+    "back": "Zpět"
   },
   "Nav": {
     "primary": "Hlavní navigace",
@@ -2732,7 +2749,9 @@
         "superadmin": "Superadministrátor"
       }
     },
-    "signOut": "Odhlásit se"
+    "signOut": "Odhlásit se",
+    "allGroups": "Všechny skupiny",
+    "returnToOwnAccount": "Zpět na svůj účet"
   },
   "Palette": {
     "label": "Hledání",
@@ -2923,8 +2942,8 @@
       "attemptsHint": "Kolikrát smí jeden student odevzdat.",
       "threshold": "Bodová hranice (%)",
       "thresholdHint": "Jaká část testů musí projít, než se přidělí jakékoli body. Nula znamená bez hranice.",
-      "files": "Souborů na řešení",
-      "size": "Celková velikost řešení (bajty)",
+      "files": "Maximální počet souborů v jednom řešení",
+      "size": "Maximální velikost řešení (v bajtech)",
       "unlimitedHint": "Nechte prázdné, pokud nemá platit žádný limit.",
       "environments": "Běhová prostředí",
       "environmentsHint": "Odškrtnutím zakážete odevzdávání v daném prostředí. Která existují, určuje úloha."
@@ -2949,7 +2968,7 @@
       "text": "Zadání",
       "textHint": "Markdown. Tohle čte student.",
       "link": "Externí zadání",
-      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
+      "linkHint": "URL adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
       "save": "Uložit zadání",
       "saving": "Ukládám…",
       "saved": "Zadání bylo uloženo.",
@@ -3198,7 +3217,10 @@
       "award": {
         "title": "Udělit body",
         "who": "Komu",
-        "button": "Udělit"
+        "button": "Udělit",
+        "choose": "Vyberte studenta…",
+        "noCandidates": "Ve skupině není nikdo, komu by šlo body udělit.",
+        "overMax": "Zadáváte víc bodů, než kolik zadání nabízí ({max}). Uloží se to tak, jak jste zadali."
       },
       "toast": {
         "awarded": "Body byly uděleny.",

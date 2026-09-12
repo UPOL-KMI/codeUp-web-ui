@@ -7,6 +7,7 @@ import { updateExercise } from "@/lib/actions/exercise";
 import { DIFFICULTIES, type ExerciseSettingsValues } from "@/lib/actions/exercise.schema";
 import { exerciseSettingsSchema } from "@/lib/actions/exercise.schema";
 import type { ExerciseDetail } from "@/lib/api/exercise-detail";
+import { formatBytes } from "@/lib/format/bytes";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
@@ -81,8 +82,13 @@ export function ExerciseForm({
 
   const {
     register,
+    watch,
     formState: { errors },
   } = form;
+
+  // The limit is typed in bytes because that is what core-api stores, and nobody reads 1572864 as
+  // "1.5 MB" -- so the form says it back in the units a person thinks in, as they type.
+  const sizeLimit = watch("solutionSizeLimit");
 
   const input =
     "rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring aria-invalid:border-destructive";
@@ -211,7 +217,9 @@ export function ExerciseForm({
               })}
             />
             <span id="solutionSizeLimit-hint" className="text-xs text-muted-foreground">
-              {t("solutionSizeLimitHint")}
+              {typeof sizeLimit === "number" && sizeLimit > 0
+                ? formatBytes(sizeLimit)
+                : t("solutionSizeLimitHint")}
             </span>
           </div>
         </div>

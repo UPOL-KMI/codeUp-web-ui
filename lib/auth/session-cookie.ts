@@ -9,6 +9,18 @@ import { decodeJwtPayload } from "./jwt";
 export const SESSION_COOKIE_NAME = `${process.env.SESSION_COOKIE_PREFIX ?? "recodex"}_session`;
 
 /**
+ * Where an administrator's own token waits while they are signed in as somebody else (PF-025).
+ *
+ * A takeover is a sign-in, not a mode: core-api issues an ordinary token for the target carrying
+ * nothing that names the administrator, which is why `DROPPED.md`'s DROP-C01 recorded "no way
+ * back" as a drop rather than a defect. The way back is to keep the administrator's own token, and
+ * the only safe place for it is where the session already lives -- an httpOnly cookie with the
+ * same flags. Set at takeover, consumed by the return route, cleared by signing out, so it never
+ * outlives the session that created it.
+ */
+export const ORIGIN_COOKIE_NAME = `${process.env.SESSION_COOKIE_PREFIX ?? "recodex"}_origin`;
+
+/**
  * The one place the `secure` flag can be wrong (brief §5): `secure: true` on a plain `http://`
  * deployment makes the browser silently drop the cookie, so login *looks* like it succeeded while
  * never actually signing anyone in -- a confusing failure mode the brief explicitly warns not to

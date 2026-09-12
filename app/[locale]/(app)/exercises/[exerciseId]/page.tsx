@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
-import { describeValidationError } from "@/lib/status/exercise-validation";
+import { describeValidationError, validationErrorHref } from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
 import { Discussion } from "@/components/comments/discussion";
@@ -125,7 +125,18 @@ export default async function ExercisePage({
             <p className="mt-1 text-muted-foreground">{t("broken.explain")}</p>
             <ul className="mt-2 list-disc pl-5">
               {exercise.validationErrors.map((error) => (
-                <li key={error}>{describeValidationError(error, t)}</li>
+                <li key={error}>
+                  {validationErrorHref(error, exerciseId) === null ? (
+                    describeValidationError(error, t)
+                  ) : (
+                    <Link
+                      href={validationErrorHref(error, exerciseId)!}
+                      className="underline underline-offset-4 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {describeValidationError(error, t)}
+                    </Link>
+                  )}
+                </li>
               ))}
             </ul>
           </section>

@@ -6254,3 +6254,27 @@ which would defeat the point of the exercise.
 was refused with `554 5.2.252 SendAsDenied` — Exchange will not let that mailbox send as
 `noreply@…` without explicit rights — so `MAIL_FROM` is the authenticated address for now. Proven
 by driving SMTP directly from the API container: `STARTTLS`, `AUTH LOGIN`, `250 2.0.0 OK`.
+
+**The configuration screen is three tabs.** The operator's verdict on four forms in one column was
+"nepřehledné", and he named the split himself: Jazyky, Testy, Pokročilé nastavení. The scoring
+stayed with the tests rather than moving to the third tab, because the choice it belongs to is half
+in the tests form (the weights) and half in the score editor — a tab boundary through the middle of
+one decision. Pokročilé nastavení holds a configuration of the exercise's own: the switch into one,
+or the editor for one once it has it, so a teacher who switches does not land on a tab with nothing
+of theirs on it. The reasons an exercise is broken now link to the tab that answers each, because a
+link that lands on the wrong tab is barely better than no link.
+
+**The same sentence in two catalogues drifted apart, and the operator reported it twice.** The
+configuration screen had a `broken.title` of its own saying what `Exercise.broken.title` said; one
+got fixed and the other did not. The duplicate is gone and both screens now render the shared
+banner from the shared strings.
+
+Text, all his: _Limity spuštění_ → **Omezení zdrojů**, a limit that is exceeded now _skončí chybou_
+rather than "ten test neprojde", and the validation reasons name their subject (_Úloha nemá
+vytvořené žádné testy_) instead of starting with a bare "Nemá".
+
+**Five e2e specs were rewritten for the tab split and none of them has been run.** They drive the
+configuration screen section by section, and each section is now behind a `?tab=`. The suite still
+cannot run against this deployment — it reads the `[seed]` fixtures, which the clean install
+removed. The tabs themselves were verified by hand against the running stack: each `?tab=` renders
+its own sections and nothing else.

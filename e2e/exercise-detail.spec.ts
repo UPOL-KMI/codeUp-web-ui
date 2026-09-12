@@ -46,11 +46,11 @@ test("an exercise that cannot be assigned says which parts are missing", async (
   await main.getByRole("link", { name: "[seed] Merge Sort" }).click();
 
   await expect(
-    main.getByRole("heading", { name: "This exercise cannot be assigned yet" }),
+    main.getByRole("heading", { name: "This exercise cannot be assigned" }),
   ).toBeVisible();
   // core-api's `@no-runtimes`/`@no-hwgroups`/`@no-tests` in words, not as a red badge alone.
   await expect(main.getByText("No language has been selected for it.")).toBeVisible();
-  await expect(main.getByText("It has no tests.")).toBeVisible();
+  await expect(main.getByText("The exercise has no tests.")).toBeVisible();
   await expect(main.getByText("Not assigned anywhere")).toBeVisible();
 });
 

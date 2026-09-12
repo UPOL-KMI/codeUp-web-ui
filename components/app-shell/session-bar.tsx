@@ -19,10 +19,29 @@ import { useRouter } from "@/i18n/navigation";
  * session produced; without it the shell keeps rendering the previous reader's sidebar until
  * something else invalidates it.
  */
-export function SessionBar({ fullName }: { fullName: string }) {
+export function SessionBar({
+  fullName,
+  takenOver,
+}: {
+  fullName: string;
+  /** An administrator is signed in as somebody else and their own token is waiting (PF-025). */
+  takenOver: boolean;
+}) {
   const t = useTranslations("Nav");
   const router = useRouter();
   const [pending, setPending] = useState(false);
+
+  async function returnToOwnAccount() {
+    setPending(true);
+    const response = await fetch("/api/auth/takeover/return", { method: "POST" }).catch(
+      () => undefined,
+    );
+    setPending(false);
+    // A stash that has expired leaves nothing to return to, and the route has already cleared it,
+    // so the honest next step is signing in rather than pretending the click did something.
+    router.push(response?.ok ? "/dashboard" : "/login");
+    router.refresh();
+  }
 
   async function signOut() {
     setPending(true);
@@ -34,6 +53,16 @@ export function SessionBar({ fullName }: { fullName: string }) {
   return (
     <div className="flex items-center justify-end gap-3 px-4 pt-4 text-sm sm:px-6 lg:px-8">
       <span className="truncate text-muted-foreground">{fullName}</span>
+      {takenOver && (
+        <button
+          type="button"
+          onClick={() => void returnToOwnAccount()}
+          disabled={pending}
+          className="rounded-md border border-warning px-2.5 py-1 text-sm font-medium text-warning outline-none hover:bg-warning/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+        >
+          {t("returnToOwnAccount")}
+        </button>
+      )}
       <button
         type="button"
         onClick={() => void signOut()}

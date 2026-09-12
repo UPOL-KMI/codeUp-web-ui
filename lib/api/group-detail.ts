@@ -65,6 +65,9 @@ export interface GroupDetail {
   members: GroupMember[];
   studentCount: number | null;
   assignmentCount: number;
+  /** Shadow assignments count toward what a course asks of a student, and are listed separately
+   *  because nothing about them is submitted. */
+  shadowAssignmentCount: number;
   /** The reader's own standing, when they study here. */
   myStats: GroupStudentStats | null;
   /** Ids of the group's students, when this reader may see them -- the exam roster is built from these. */
@@ -127,7 +130,10 @@ export const getGroupDetail = cache(async function getGroupDetail(
   locale: string,
 ): Promise<GroupDetail> {
   const group = await pageRead(fetchGroup(groupId));
-  const priv = group.privateData;
+  // `shadowAssignments` is in the response and missing from the generated types -- read from the
+  // spec, which does not describe it, rather than from the payload, which carries it.
+  const priv = group.privateData as
+    (NonNullable<typeof group.privateData> & { shadowAssignments?: string[] }) | undefined;
 
   const memberRoles: [string, GroupMember["role"]][] = [
     ...(priv?.admins ?? []).map((id): [string, GroupMember["role"]] => [id, "admin"]),
@@ -191,6 +197,7 @@ export const getGroupDetail = cache(async function getGroupDetail(
     })),
     studentCount: priv?.students?.length ?? null,
     assignmentCount: priv?.assignments?.length ?? 0,
+    shadowAssignmentCount: priv?.shadowAssignments?.length ?? 0,
     myStats: statsByGroup.get(groupId) ?? null,
     studentIds: priv?.students ?? [],
     examTerm:

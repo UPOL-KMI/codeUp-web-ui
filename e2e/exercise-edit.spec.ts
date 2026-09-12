@@ -95,7 +95,7 @@ test("creates an exercise, configures it, and removes it again", async ({ page }
   await main.getByRole("link", { name: "Back to the exercise" }).click();
   await expect(main.getByRole("heading", { name: "[e2e] Sorting Hat", level: 1 })).toBeVisible();
   await expect(main.getByText("Sort the input ascending.")).toBeVisible();
-  await expect(main.getByText("It has no tests.")).toBeVisible();
+  await expect(main.getByText("The exercise has no tests.")).toBeVisible();
 
   // Put it back, through the product.
   await page.goto(editUrl);

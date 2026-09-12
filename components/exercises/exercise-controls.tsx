@@ -42,10 +42,15 @@ import { useToast } from "@/components/toast/toast-provider";
 export function ExerciseControls({
   exercise,
   teachingGroups,
+  sections,
 }: {
   exercise: ExerciseDetail;
   teachingGroups: { id: string; name: string }[];
+  /** Which sections to render. The settings screen puts each on its own tab (T-033), and they are
+   *  independent calls rather than one form, so splitting them costs nothing but saying which. */
+  sections: ("tags" | "groups" | "notify" | "lifecycle")[];
 }) {
+  const shows = (section: "tags" | "groups" | "notify" | "lifecycle") => sections.includes(section);
   const t = useTranslations("ExerciseEdit");
   const router = useRouter();
   const toast = useToast();
@@ -82,133 +87,140 @@ export function ExerciseControls({
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="exercise-tags" className="flex flex-col gap-2">
-        <h2 id="exercise-tags" className="text-base font-semibold tracking-tight">
-          {t("tags.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("tags.explain")}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          {exercise.tags.length === 0 && (
-            <span className="text-sm text-muted-foreground">{t("tags.none")}</span>
-          )}
-          {exercise.tags.map((name) => (
-            <span key={name} className="flex items-center gap-1">
-              <Badge>{name}</Badge>
-              {exercise.can.removeTag === true && (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() =>
-                    void run(() => removeExerciseTag(exercise.id, name), "tags.removed")
-                  }
-                  aria-label={t("tags.remove", { tag: name })}
-                  className="rounded-md px-1 text-xs text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-                >
-                  ×
-                </button>
-              )}
-            </span>
-          ))}
-        </div>
-        {exercise.can.addTag === true && (
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="flex flex-col gap-1 text-sm">
-              {t("tags.add")}
-              <input
-                type="text"
-                value={tag}
-                onChange={(event) => setTag(event.target.value)}
-                maxLength={32}
-                className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-            </label>
-            <button
-              type="button"
-              disabled={pending || tag.trim() === ""}
-              onClick={() =>
-                void run(() => addExerciseTag(exercise.id, tag), "tags.added").then((ok) => {
-                  if (ok) setTag("");
-                })
-              }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-            >
-              {t("tags.addAction")}
-            </button>
+      {shows("tags") && (
+        <section aria-labelledby="exercise-tags" className="flex flex-col gap-2">
+          <h2 id="exercise-tags" className="text-base font-semibold tracking-tight">
+            {t("tags.title")}
+          </h2>
+          <p className="text-xs text-muted-foreground">{t("tags.explain")}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {exercise.tags.length === 0 && (
+              <span className="text-sm text-muted-foreground">{t("tags.none")}</span>
+            )}
+            {exercise.tags.map((name) => (
+              <span key={name} className="flex items-center gap-1">
+                <Badge>{name}</Badge>
+                {exercise.can.removeTag === true && (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() =>
+                      void run(() => removeExerciseTag(exercise.id, name), "tags.removed")
+                    }
+                    aria-label={t("tags.remove", { tag: name })}
+                    className="rounded-md px-1 text-xs text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            ))}
           </div>
-        )}
-      </section>
-
-      <section aria-labelledby="exercise-groups" className="flex flex-col gap-2">
-        <h2 id="exercise-groups" className="text-base font-semibold tracking-tight">
-          {t("groups.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("groups.explain")}</p>
-        <ul className="flex flex-col gap-2 text-sm">
-          {exercise.groups.map((attached) => (
-            <li
-              key={attached.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
-            >
-              <span>{attached.name}</span>
-              {canDetach && (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() =>
-                    void run(() => detachExerciseGroup(exercise.id, attached.id), "groups.detached")
-                  }
-                  className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-                >
-                  {t("groups.detach")}
-                </button>
-              )}
-            </li>
-          ))}
-          {exercise.undisclosedGroups > 0 && (
-            <li className="text-xs text-muted-foreground">
-              {t("groups.undisclosed", { count: exercise.undisclosedGroups })}
-            </li>
-          )}
-        </ul>
-        {attachable.length > 0 && (
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="flex flex-col gap-1 text-sm">
-              {t("groups.attach")}
-              <select
-                value={group}
-                onChange={(event) => setGroup(event.target.value)}
-                className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+          {exercise.can.addTag === true && (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex flex-col gap-1 text-sm">
+                {t("tags.add")}
+                <input
+                  type="text"
+                  value={tag}
+                  onChange={(event) => setTag(event.target.value)}
+                  maxLength={32}
+                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                />
+              </label>
+              <button
+                type="button"
+                disabled={pending || tag.trim() === ""}
+                onClick={() =>
+                  void run(() => addExerciseTag(exercise.id, tag), "tags.added").then((ok) => {
+                    if (ok) setTag("");
+                  })
+                }
+                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
               >
-                <option value="">{t("groups.choose")}</option>
-                {attachable.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>
-                    {candidate.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              disabled={pending || group === ""}
-              onClick={() =>
-                void run(() => attachExerciseGroup(exercise.id, group), "groups.attached").then(
-                  (ok) => {
-                    if (ok) setGroup("");
-                  },
-                )
-              }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-            >
-              {t("groups.attachAction")}
-            </button>
-          </div>
-        )}
-      </section>
+                {t("tags.addAction")}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {shows("groups") && (
+        <section aria-labelledby="exercise-groups" className="flex flex-col gap-2">
+          <h2 id="exercise-groups" className="text-base font-semibold tracking-tight">
+            {t("groups.title")}
+          </h2>
+          <p className="text-xs text-muted-foreground">{t("groups.explain")}</p>
+          <ul className="flex flex-col gap-2 text-sm">
+            {exercise.groups.map((attached) => (
+              <li
+                key={attached.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
+              >
+                <span>{attached.name}</span>
+                {canDetach && (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() =>
+                      void run(
+                        () => detachExerciseGroup(exercise.id, attached.id),
+                        "groups.detached",
+                      )
+                    }
+                    className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                  >
+                    {t("groups.detach")}
+                  </button>
+                )}
+              </li>
+            ))}
+            {exercise.undisclosedGroups > 0 && (
+              <li className="text-xs text-muted-foreground">
+                {t("groups.undisclosed", { count: exercise.undisclosedGroups })}
+              </li>
+            )}
+          </ul>
+          {attachable.length > 0 && (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex flex-col gap-1 text-sm">
+                {t("groups.attach")}
+                <select
+                  value={group}
+                  onChange={(event) => setGroup(event.target.value)}
+                  className="rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">{t("groups.choose")}</option>
+                  {attachable.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                disabled={pending || group === ""}
+                onClick={() =>
+                  void run(() => attachExerciseGroup(exercise.id, group), "groups.attached").then(
+                    (ok) => {
+                      if (ok) setGroup("");
+                    },
+                  )
+                }
+                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+              >
+                {t("groups.attachAction")}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* G-019. The legacy button's own gate: `update` and not archived -- an archived exercise
           has nothing to announce, and core-api's rule requires the same. Nothing here can be
           verified end to end on this deployment, which has no outbound SMTP (Q-007). */}
-      {exercise.can.update === true && !frozen && (
+      {shows("notify") && exercise.can.update === true && !frozen && (
         <section aria-labelledby="exercise-notify" className="flex flex-col gap-2">
           <h2 id="exercise-notify" className="text-base font-semibold tracking-tight">
             {t("notify.title")}
@@ -267,7 +279,7 @@ export function ExerciseControls({
         </section>
       )}
 
-      {exercise.can.archive === true && (
+      {shows("lifecycle") && exercise.can.archive === true && (
         <section aria-labelledby="exercise-archive" className="flex flex-col gap-2">
           <h2 id="exercise-archive" className="text-base font-semibold tracking-tight">
             {t("archive.title")}
@@ -291,7 +303,7 @@ export function ExerciseControls({
         </section>
       )}
 
-      {exercise.can.remove === true && (
+      {shows("lifecycle") && exercise.can.remove === true && (
         <section aria-labelledby="exercise-delete" className="flex flex-col gap-2">
           <h2 id="exercise-delete" className="text-base font-semibold tracking-tight">
             {t("delete.title")}

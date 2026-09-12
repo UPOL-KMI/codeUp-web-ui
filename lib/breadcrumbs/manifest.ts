@@ -30,6 +30,15 @@ interface DynamicManifestEntry {
   pattern: string;
   /** Resolves this segment's own label from its matched params -- e.g. fetch a group's name. */
   resolve: (params: Record<string, string>, locale: string) => Promise<string>;
+  /**
+   * Crumbs that belong **before** this one and are not in the URL.
+   *
+   * An assignment's address says nothing about the course it was set in, so the trail opened with
+   * a generic "Assignments" heading and a reader two clicks deep had no way back to the group.
+   * Where this is given, it replaces every crumb derived from the path prefixes above -- the
+   * owning group is better context than the section name it stands in for.
+   */
+  ancestors?: (params: Record<string, string>, locale: string) => Promise<BreadcrumbItem[]>;
 }
 
 type ManifestEntry = StaticManifestEntry | DynamicManifestEntry;
@@ -162,9 +171,21 @@ const MANIFEST: ManifestEntry[] = [
       );
       return localizedName(assignment.localizedTexts, locale);
     },
+    ancestors: async (params, locale) => {
+      const assignment = await apiRead<{ groupId: string }>("/v1/shadow-assignments/{id}", {
+        pathParams: { id: params.shadowId! },
+      });
+      return groupCrumb(assignment.groupId, locale);
+    },
   },
   {
     pattern: "/assignments/:assignmentId",
+    ancestors: async (params, locale) => {
+      const assignment = await apiRead<{ groupId: string }>("/v1/exercise-assignments/{id}", {
+        pathParams: { id: params.assignmentId! },
+      });
+      return groupCrumb(assignment.groupId, locale);
+    },
     resolve: async (params, locale) => {
       const assignment = await apiRead<{ localizedTexts?: LocalizedText[] }>(
         "/v1/exercise-assignments/{id}",
@@ -276,6 +297,17 @@ async function resolveLabel(
 }
 
 /**
+ * The course an assignment was set in, as a crumb. Both kinds of assignment carry `groupId`, and
+ * the group's own name lives in `localizedTexts` like every other named entity here.
+ */
+async function groupCrumb(groupId: string, locale: string): Promise<BreadcrumbItem[]> {
+  const group = await apiRead<{ localizedTexts?: LocalizedText[] }>("/v1/groups/{id}", {
+    pathParams: { id: groupId },
+  });
+  return [{ label: localizedName(group.localizedTexts, locale), href: `/groups/${groupId}` }];
+}
+
+/**
  * Resolves the full breadcrumb chain for a locale-stripped pathname (e.g. "/forgot-password/change"
  * -> two crumbs: "Reset password" (linked) then "Change forgotten password" (current page, no
  * link)) by walking every prefix of the path and looking each up in `MANIFEST`. Throws for any
@@ -313,10 +345,22 @@ export async function resolveBreadcrumbs(
   const failure = settled.find((result) => result.status === "rejected");
   if (failure) throw (failure as PromiseRejectedResult).reason;
 
-  return matched.map(({ prefix, entry }, index) => ({
+  const crumbs = matched.map(({ prefix, entry }, index) => ({
     label: (settled[index] as PromiseFulfilledResult<string>).value,
     href: index === matched.length - 1 || entry.unlinked ? undefined : prefix,
   }));
+
+  // The deepest entry that knows its own ancestors wins, and what it returns stands in for
+  // everything above it. Resolved after the labels rather than alongside them, so a refusal on the
+  // page's own entity still surfaces first and in path order (PF-005).
+  for (let index = matched.length - 1; index >= 0; index -= 1) {
+    const { entry, params } = matched[index]!;
+    const ancestors = "ancestors" in entry ? entry.ancestors : undefined;
+    if (!ancestors) continue;
+    return [...(await ancestors(params, locale)), ...crumbs.slice(index)];
+  }
+
+  return crumbs;
 }
 
 /** Convenience entry point for static pages that already identify themselves by namespace

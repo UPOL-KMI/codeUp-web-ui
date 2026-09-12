@@ -43,19 +43,16 @@
   },
   "NotFound": {
     "title": "Page not found",
-    "description": "The page you're looking for doesn't exist.",
-    "homeLink": "Go home"
+    "description": "The page you're looking for doesn't exist."
   },
   "Forbidden": {
     "title": "Forbidden",
     "description": "You don't have permission to access this resource.",
-    "homeLink": "Go home",
     "signOutLink": "Sign out and use another account"
   },
   "Unauthorized": {
     "title": "Sign-in required",
     "description": "Please sign in to continue.",
-    "homeLink": "Go home",
     "signOutLink": "Sign out and use another account"
   },
   "Error": {
@@ -73,7 +70,7 @@
     "password": "Password",
     "signIn": "Sign in",
     "signingIn": "Signing in…",
-    "signInRequired": "That page is for signed-in users. Sign in and you will be taken there.",
+    "signInRequired": "The page you are looking for is available to signed-in users only.",
     "externalAuthFailed": "Signing in through the external service did not work. Try again, or use your UPolníček password below.",
     "shortSession": "Short session ({minutes} minutes)",
     "shortSessionHint": "For a public computer: the session ends sooner, even if you forget to sign out.",
@@ -327,7 +324,7 @@
       "action": "New group",
       "title": "New group",
       "subgroupTitle": "New subgroup",
-      "explain": "Name it, and it is created. Everything else -- who may see it, how it is passed, whether it is an exam group -- is set on the settings tab you land on.",
+      "explain": "Start with the group's name. Access rights and the other settings can be configured once the record exists.",
       "name": "Name ({locale})",
       "submit": "Create the group",
       "submitting": "Creating…",
@@ -388,7 +385,9 @@
         "service": "Service",
         "key": "Key",
         "value": "Value"
-      }
+      },
+      "thresholdExplain": "Interim state: computed from the points earned so far, not from a final result for the course.",
+      "shadowCount": "{count, plural, one {# shadow assignment} other {# shadow assignments}}"
     },
     "membership": {
       "join": "Join this group",
@@ -451,13 +450,14 @@
         "name": "Student",
         "points": "Points",
         "solved": "Solved",
-        "threshold": "Threshold"
+        "threshold": "Threshold",
+        "actions": "Actions"
       },
       "empty": {
         "title": "No students",
         "description": "Nobody has joined this group as a student yet."
       },
-      "viewSolutions": "Submissions",
+      "viewSolutions": "Submitted solutions",
       "caption": "Every student in this group, their points, and how much they have solved.",
       "mail": {
         "title": "Mailing this group",
@@ -470,7 +470,9 @@
           "summary": "Show the addresses as text",
           "label": "Every disclosed address in this group, separated by commas"
         }
-      }
+      },
+      "thresholdExplain": "Interim state: computed from the points earned so far, not from a final result for the course.",
+      "partialList": "Some records may be hidden by the group's permissions."
     },
     "points": {
       "title": "Points, assignment by assignment",
@@ -759,7 +761,7 @@
     },
     "invitations": {
       "title": "Invitation links",
-      "explain": "Anyone who opens one of these links, signs in, and is a student of this instance can join the group with it. Share a link only with the people you mean to invite.",
+      "explain": "These links are a simple way to enrol people in the group. Share a link with the people you want to invite. Once they open it and sign in, they are enrolled in this group automatically.",
       "empty": "This group has no invitation links.",
       "createTitle": "New link",
       "create": "Create the link",
@@ -1229,7 +1231,7 @@
     "untitled": "Unnamed exercise",
     "backToCatalog": "Back to the catalog",
     "configure": "Tests and evaluation",
-    "limits": "Execution limits",
+    "limits": "Resource limits",
     "assignmentsLink": "Where it is assigned",
     "referenceSolutionsLink": "Reference solutions",
     "text": "What the student is asked to do",
@@ -1266,7 +1268,7 @@
     "version": "version {version}",
     "forkedFrom": "Forked from",
     "theOriginal": "The exercise it came from",
-    "noReferenceSolution": "No reference solution has been submitted yet, so this exercise cannot be assigned. A reference solution is what proves the tests can be passed at all.",
+    "noReferenceSolution": "No reference solution has been submitted – the exercise cannot be assigned. A reference solution is the proof that the tests and limits work.",
     "flags": {
       "archived": "Archived",
       "private": "Private",
@@ -1277,17 +1279,17 @@
       "explain": "This exercise is archived. It stays readable and stays attached to the assignments already made from it, but it is out of the way of anybody looking for something to assign."
     },
     "broken": {
-      "title": "This exercise cannot be assigned yet",
-      "explain": "UPolníček checks an exercise before letting anyone assign it. These are the parts it found missing:"
+      "title": "This exercise cannot be assigned",
+      "explain": "Problems found:"
     },
     "validation": {
-      "no-texts": "It has no text in any language.",
-      "no-tests": "It has no tests.",
+      "no-texts": "The exercise has no text in any language.",
+      "no-tests": "The exercise has no tests.",
       "score": "The way a solution's correctness is calculated is not set up.",
-      "no-runtimes": "No language has been selected for it.",
+      "no-runtimes": "No language has been selected.",
       "runtimes": "The selected languages have no configuration.",
       "no-configs": "Some tests are configured incorrectly, or not at all.",
-      "no-hwgroups": "No hardware group has been selected for it.",
+      "no-hwgroups": "No hardware group has been selected.",
       "config": "Some tests are incompletely configured — this usually happens after a test or a file is removed.",
       "limits": "Memory or time limits are not set properly."
     },
@@ -1307,7 +1309,7 @@
       "description": "Short description",
       "descriptionHint": "Only teachers see this — a note about what the exercise is for.",
       "link": "External text",
-      "linkHint": "An address holding the full text, when it is kept outside UPolníček.",
+      "linkHint": "URL of the full assignment, where it is kept outside UPolníček.",
       "difficulty": "Difficulty",
       "difficulties": {
         "easy": "Easy",
@@ -1315,11 +1317,11 @@
         "hard": "Hard"
       },
       "isPublic": "Other teachers may see and assign this exercise",
-      "isLocked": "Locked — nobody may assign it, even so",
+      "isLocked": "Locked — the exercise cannot be assigned to any group",
       "mergeJudgeLogs": "Fold the judge's error output into its normal output",
-      "solutionFilesLimit": "Files per solution",
-      "solutionSizeLimit": "Total size (bytes)",
-      "solutionSizeLimitHint": "Leave empty for no limit of its own.",
+      "solutionFilesLimit": "Most files allowed in one solution",
+      "solutionSizeLimit": "Largest solution allowed (in bytes)",
+      "solutionSizeLimitHint": "No limit",
       "save": "Save settings",
       "saved": "The settings were saved.",
       "errors": {
@@ -1329,7 +1331,7 @@
     },
     "tags": {
       "title": "Tags",
-      "explain": "Tags are shared across the whole instance and are what the catalog filters by.",
+      "explain": "Tags are optional and exist for finding things: the exercise catalog filters by them, so a tagged exercise can be found by somebody who does not know its name. They are shared across the whole instance, so use the same tag for the same kind of exercise between courses. They have no effect on who may see or assign an exercise.",
       "none": "No tags yet.",
       "add": "New tag",
       "addAction": "Add",
@@ -1385,7 +1387,7 @@
       "invalid": "Check the form and try again.",
       "createFailed": "The exercise could not be created.",
       "saveFailed": "The settings could not be saved.",
-      "invalidTag": "A tag can only hold letters, digits, dots and dashes.",
+      "invalidTag": "A tag may contain letters without diacritics, digits, hyphens and underscores, up to 32 characters. Dots and spaces are not allowed.",
       "tagFailed": "The tag could not be changed.",
       "groupFailed": "The group could not be changed.",
       "archiveFailed": "The exercise could not be archived.",
@@ -1480,6 +1482,18 @@
         "noGroupChosen": "Choose a group first.",
         "forkFailed": "The copy could not be made."
       }
+    },
+    "tabs": {
+      "label": "Settings sections",
+      "settings": "Basic settings",
+      "tags": "Tags",
+      "groups": "Groups",
+      "notify": "Notify teachers",
+      "files": "Files",
+      "people": "Access rights"
+    },
+    "status": {
+      "assignable": "The exercise is configured and can be assigned to a group."
     }
   },
   "ExerciseImport": {
@@ -1548,12 +1562,13 @@
   "ExerciseConfig": {
     "title": "Tests and evaluation",
     "settings": "Basic settings",
-    "limits": "Execution limits",
+    "limits": "Resource limits",
     "backToExercise": "Back to the exercise",
     "archivedNotice": "This exercise is archived, so its configuration is read-only. Unarchive it on the settings screen to change anything.",
     "readOnlyNotice": "You may read this configuration but not change it.",
-    "broken": {
-      "title": "This exercise cannot be assigned yet"
+    "tabs": {
+      "label": "Configuration sections",
+      "advanced": "Advanced"
     },
     "advanced": {
       "environments": "This exercise uses a custom configuration, whose runtime environment is chosen together with its pipelines. Editing it is not available here yet.",
@@ -1592,7 +1607,7 @@
       "explain": "Which languages a solution may be written in. Each one brings its own way of building and running a solution, which is what the per-test settings below are asked separately for.",
       "exclusive": "(cannot be combined)",
       "exclusiveConflict": "{environments} cannot share an exercise with another language. Select it on its own, or deselect it.",
-      "noneSelected": "No language is selected, so nothing can be submitted to this exercise.",
+      "noneSelected": "No language is selected – nothing can be submitted to this exercise.",
       "save": "Save languages",
       "saving": "Saving…",
       "saved": "Languages saved.",
@@ -1738,7 +1753,7 @@
     }
   },
   "ExerciseScore": {
-    "title": "A score of your own",
+    "title": "Custom scoring",
     "explain": "Instead of an average, the correctness of a solution can be any expression over the test results — a test that must pass before the others count, a bonus that is capped, a part of the exercise weighted to nothing.",
     "expression": "Expression",
     "syntax": "A test result is its name in quotes and is a number from 0 to 1. Use + - * / and brackets, and the functions avg, min, max, sum, mul and clamp (which pulls a value into 0…1).",
@@ -1751,8 +1766,8 @@
     "saved": "The expression was saved.",
     "switchIn": {
       "explain": "Switching starts from what this exercise already does — equal weights become an average, unequal ones the sum over the total — so it grades exactly as before, in a form you can then change.",
-      "action": "Write the score myself",
-      "done": "This exercise now has a score of its own.",
+      "action": "Write a custom scoring expression",
+      "done": "The exercise now has custom scoring.",
       "noTests": "Add a test first: an expression with nothing to refer to is not one UPolníček will store."
     },
     "switchOut": {
@@ -1784,7 +1799,7 @@
     }
   },
   "ExerciseLimits": {
-    "title": "Execution limits",
+    "title": "Resource limits",
     "configure": "Tests and evaluation",
     "backToExercise": "Back to the exercise",
     "archivedNotice": "This exercise is archived, so its limits are read-only. Unarchive it on the settings screen to change them.",
@@ -1793,7 +1808,7 @@
       "title": "Machines",
       "explain": "Which class of worker this exercise is meant to run on. A hardware group describes what a machine has, and its ceilings are what the limits below are measured against. An exercise with none cannot be assigned.",
       "ceilings": "At most {memory, number} KiB of memory, {cpu, number} s of processor time or {wall, number} s of elapsed time per test.",
-      "noneSelected": "No machine is selected, so this exercise cannot be assigned.",
+      "noneSelected": "No machine is selected – this exercise cannot be assigned.",
       "save": "Save machines",
       "saving": "Saving…",
       "saved": "Machines saved.",
@@ -1802,7 +1817,7 @@
     },
     "form": {
       "title": "Limits",
-      "explain": "How much each test may use, per language. A solution that runs past either limit fails that test.",
+      "explain": "How much each test may use, per language. A solution that exceeds a limit ends in an error.",
       "unavailable": "There is nothing to set limits for yet:",
       "noTests": "the exercise has no tests",
       "noEnvironments": "no language is selected",
@@ -1859,7 +1874,7 @@
     "assign": {
       "title": "Assign it somewhere",
       "explain": "Pick the groups. Each one is assigned on its own, so a group you may not assign in does not stop the others.",
-      "broken": "This exercise cannot be assigned yet — see what it is missing on the exercise screen.",
+      "broken": "This exercise cannot be assigned — see what it is missing on the exercise screen.",
       "noGroups": "You do not teach any group to assign this in.",
       "already": "already assigned here",
       "assign": "{count, plural, =0 {Assign} one {Assign to # group} other {Assign to # groups}}",
@@ -1881,7 +1896,7 @@
     "list": {
       "title": "The answers",
       "explain": "A reference solution is your own answer, run through the very pipeline a student's would be. It is what proves the exercise is possible — an exercise with none of them cannot be assigned.",
-      "none": "This exercise has no reference solution, so it cannot be assigned. Submit one below.",
+      "none": "This exercise has no reference solution – it cannot be assigned. Submit one below.",
       "allHidden": "This exercise does have reference solutions, but none of them is yours to read — an author's private answers are theirs alone. Submit your own below.",
       "untitled": "Untitled solution",
       "description": "Description",
@@ -2333,7 +2348,8 @@
       "description": "What happened",
       "what": "Where",
       "created": "When",
-      "state": "State"
+      "state": "State",
+      "actions": "Actions"
     },
     "what": {
       "solution": "The solution",
@@ -2492,7 +2508,7 @@
   "Profile": {
     "title": "Profile",
     "unnamed": "Unnamed user",
-    "thisIsYou": "This is you",
+    "thisIsYou": "Your account",
     "overview": "Account",
     "name": "Name",
     "email": "Email",
@@ -2511,9 +2527,9 @@
     "unverified": "Email not verified",
     "disabled": "Account disabled",
     "groups": "Groups",
-    "groupSolutions": "Submissions",
+    "groupSolutions": "Submitted solutions",
     "membership": {
-      "student": "Studies here",
+      "student": "Enrolled",
       "supervisor": "Teaches here"
     },
     "noGroups": {
@@ -2683,7 +2699,8 @@
       "second-chance": "Second deadline",
       "closed": "Closed"
     },
-    "loading": "Loading"
+    "loading": "Loading",
+    "back": "Back"
   },
   "Nav": {
     "primary": "Primary navigation",
@@ -2732,7 +2749,9 @@
         "superadmin": "Superadministrator"
       }
     },
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "allGroups": "All groups",
+    "returnToOwnAccount": "Back to my account"
   },
   "Palette": {
     "label": "Search",
@@ -2923,8 +2942,8 @@
       "attemptsHint": "How many times one student may submit.",
       "threshold": "Points threshold (%)",
       "thresholdHint": "How much of the test suite must pass before any points are awarded. Zero means no threshold.",
-      "files": "Files per solution",
-      "size": "Total size per solution (bytes)",
+      "files": "Most files allowed in one solution",
+      "size": "Largest solution allowed (in bytes)",
       "unlimitedHint": "Leave empty for no limit.",
       "environments": "Runtime environments",
       "environmentsHint": "Unchecking one stops students submitting in it. The exercise decides which exist."
@@ -2949,7 +2968,7 @@
       "text": "Text",
       "textHint": "Markdown. This is what a student reads.",
       "link": "External text",
-      "linkHint": "An address holding the full text, when it is kept outside UPolníček.",
+      "linkHint": "URL of the full assignment, where it is kept outside UPolníček.",
       "save": "Save the text",
       "saving": "Saving…",
       "saved": "The text was saved.",
@@ -3198,7 +3217,10 @@
       "award": {
         "title": "Award points",
         "who": "To whom",
-        "button": "Award"
+        "button": "Award",
+        "choose": "Choose a student…",
+        "noCandidates": "There is nobody in the group left to award.",
+        "overMax": "That is more than the assignment is worth ({max}). It will be saved as entered."
       },
       "toast": {
         "awarded": "The points were awarded.",

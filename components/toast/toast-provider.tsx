@@ -80,7 +80,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             data-slot="toast"
             className={`flex items-start gap-3 rounded-md border p-4 shadow-lg data-[state=closed]:animate-toast-out data-[state=open]:animate-toast-in ${
               item.variant === "error"
-                ? "border-destructive bg-destructive/10 text-foreground"
+                ? "border-destructive bg-destructive-surface text-foreground"
                 : "border-border bg-card text-card-foreground"
             }`}
           >

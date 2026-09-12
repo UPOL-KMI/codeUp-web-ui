@@ -134,7 +134,7 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
     },
     {
       id: "resolve",
-      header: "",
+      header: t("columns.actions"),
       cell: (failure) =>
         failure.resolvedAt === null ? (
           <button

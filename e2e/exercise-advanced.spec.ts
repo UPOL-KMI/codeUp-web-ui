@@ -36,17 +36,20 @@ test("takes an exercise to a configuration of its own and back again", async ({ 
 
   // A test and a language first: the advanced editor asks core-api which variables the chosen
   // pipelines need, and it can only answer for a real environment.
-  await page.goto(configUrl);
+  await page.goto(`${configUrl}?tab=tests`);
   await main.getByRole("button", { name: "Add a test" }).click();
   await main.getByRole("textbox", { name: "Name" }).fill("Test 1");
   await main.getByRole("button", { name: "Save tests" }).click();
   await expect(page.getByText("Tests saved.", { exact: true })).toBeVisible();
+  await page.goto(`${configUrl}?tab=languages`);
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();
 
-  // The way out of the standard form. Going *to* the advanced kind loses nothing, so it does not
-  // confirm -- the configuration in place is kept and the other editor reads it.
+  // The way out of the standard form, which is what the advanced tab holds until an exercise
+  // takes it. Going *to* the advanced kind loses nothing, so it does not confirm -- the
+  // configuration in place is kept and the other editor reads it.
+  await page.goto(`${configUrl}?tab=advanced`);
   await expect(main.getByRole("heading", { name: "A configuration of your own" })).toBeVisible();
   await main.getByRole("button", { name: "Configure it myself" }).click();
   await expect(
@@ -84,8 +87,10 @@ test("takes an exercise to a configuration of its own and back again", async ({ 
     page.getByText("This exercise now uses the standard form.", { exact: true }),
   ).toBeVisible();
 
-  // Back where it started: the standard form, with the judge it was given carried across, because
+  // Back where it started: the standard form -- which lives under Tests again, the advanced tab
+  // having gone back to holding the switch -- with the judge it was given carried across, because
   // `judge-type` is one of the variables that form does know.
+  await page.goto(`${configUrl}?tab=tests`);
   await expect(main.getByRole("button", { name: "Save configuration" })).toBeVisible();
   await expect(main.getByRole("combobox", { name: "Comparison" })).toHaveValue(
     "recodex-judge-float",
@@ -109,13 +114,16 @@ test("the standard form is not offered to an exercise that has its own configura
   trackExercise(page.url());
   const editUrl = page.url();
 
-  await page.goto(editUrl.replace(/\/edit$/, "/edit-config"));
+  const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
+  await page.goto(`${configUrl}?tab=tests`);
   await main.getByRole("button", { name: "Add a test" }).click();
   await main.getByRole("textbox", { name: "Name" }).fill("Test 1");
   await main.getByRole("button", { name: "Save tests" }).click();
+  await page.goto(`${configUrl}?tab=languages`);
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();
+  await page.goto(`${configUrl}?tab=advanced`);
   await main.getByRole("button", { name: "Configure it myself" }).click();
   await expect(
     page.getByText("This exercise now has a configuration of its own.", { exact: true }),
@@ -123,6 +131,7 @@ test("the standard form is not offered to an exercise that has its own configura
 
   // The language section says the choice moved rather than showing a form that would fight the
   // pipeline list, and the per-test simple form is gone entirely.
+  await page.goto(`${configUrl}?tab=languages`);
   await expect(
     main.getByText("whose runtime environment is chosen together with its pipelines"),
   ).toBeVisible();

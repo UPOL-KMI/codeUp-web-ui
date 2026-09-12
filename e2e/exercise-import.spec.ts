@@ -148,7 +148,7 @@ test("creates a draft exercise with the tests the file described", async ({ page
 
   // The tests really exist, under the names the file gave them. Read off the fields' *values*
   // rather than the page text, because that is where a test's name lives on this screen.
-  await page.goto(page.url().replace(/\/edit$/, "/edit-config"));
+  await page.goto(`${page.url().replace(/\/edit$/, "/edit-config")}?tab=tests`);
   await expect(main.getByRole("heading", { name: "Tests", exact: true })).toBeVisible();
   const fieldValues = async () =>
     main
