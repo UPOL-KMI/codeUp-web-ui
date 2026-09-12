@@ -7,7 +7,7 @@ export const PATHNAME_HEADER = "x-recodex-pathname";
  * Which of the message catalogue a page actually hands to the browser (PF-001).
  *
  * `<NextIntlClientProvider>` rendered without `messages` defaults to the **whole** catalogue --
- * 126,514 bytes, 85% of a document like `/faq`, all 63 namespaces on every page whether or not any
+ * 126,514 bytes, 85% of a document like `/docs`, all 63 namespaces on every page whether or not any
  * client component there can reach one. P-003 measured it as the largest single saving in the
  * project.
  *

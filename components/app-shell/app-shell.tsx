@@ -9,6 +9,7 @@ import { ActiveMessages } from "@/components/messages/active-messages";
 
 import { ViewAsBanner } from "./view-as-banner";
 
+import { SessionBar } from "./session-bar";
 import { SidebarNav, SkipToContent, type NavSection } from "./sidebar-nav";
 
 /**
@@ -54,6 +55,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           heading in the page cannot be confused with the identically-named sidebar section.
           `tabIndex={-1}` so the skip link moves focus rather than only the scroll position. */}
       <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+        {/* Its own boundary: the shell must not wait on a user read to paint the page (PF-002). */}
+        <Suspense fallback={null}>
+          <CurrentSession />
+        </Suspense>
         {/* Above the page rather than behind a bell in a header: a broadcast worth writing is
             worth reading without opening a dropdown, and this shell has no header to hang one on
             (DEC-115). Its fallback is nothing at all, which is also what it renders on the far
@@ -197,4 +202,21 @@ async function SessionNotices() {
       <ActiveMessages messages={unread} userId={user.id} />
     </>
   );
+}
+
+/** The signed-in reader's name and the sign-out control. Renders nothing if the read fails --
+ *  chrome that cannot load is not worth an error page over the content it decorates. */
+async function CurrentSession() {
+  const name = await currentReaderName();
+  return name === null ? null : <SessionBar fullName={name} />;
+}
+
+/** The read is kept out of the JSX: a failure here must not take down the page this decorates,
+ *  and constructing JSX inside a `try` catches nothing, since rendering happens after it. */
+async function currentReaderName(): Promise<string | null> {
+  try {
+    return (await getCurrentUser()).fullName;
+  } catch {
+    return null;
+  }
 }

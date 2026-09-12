@@ -68,7 +68,6 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "EmailVerification", pattern: "/email-verification" },
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "GroupInvitation", pattern: "/accept-group-invitation", unlinked: true },
-  { namespace: "Faq", pattern: "/faq" },
   { namespace: "Docs", pattern: "/docs" },
   {
     pattern: "/docs/:slug",
@@ -321,7 +320,7 @@ export async function resolveBreadcrumbs(
 }
 
 /** Convenience entry point for static pages that already identify themselves by namespace
- *  (`/faq`, `/archive`, `/pipelines`, ...) rather than knowing their own full pathname. */
+ *  (`/docs`, `/archive`, `/pipelines`, ...) rather than knowing their own full pathname. */
 export async function resolveBreadcrumbsForNamespace(
   namespace: string,
   locale: string,

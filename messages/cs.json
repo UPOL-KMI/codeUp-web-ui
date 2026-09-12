@@ -7,7 +7,6 @@
     "tagline": "Systém pro odevzdávání studentských prací, jejich hodnocení a sledování termínů.",
     "what": "Vyučující zakládá zadání s termínem a body, student do něj odevzdá řešení. Programátorské úlohy systém sám přeloží, spustí v izolovaném prostředí proti připraveným testům a vrátí výsledek během několika sekund. U prací, které stroj posoudit neumí — dokumentů, dat, prezentací — eviduje odevzdání a termín a hodnocení zapíše vyučující. Body, zpětná vazba i historie pokusů zůstávají u konkrétního odevzdání.",
     "signIn": "Přihlásit se",
-    "faq": "Časté otázky",
     "instance": {
       "title": "Instance",
       "support": "Technická podpora"
@@ -50,12 +49,14 @@
   "Forbidden": {
     "title": "Přístup odepřen",
     "description": "Nemáte oprávnění přistupovat k tomuto zdroji.",
-    "homeLink": "Zpět na hlavní stránku"
+    "homeLink": "Zpět na hlavní stránku",
+    "signOutLink": "Odhlásit se a přihlásit jiným účtem"
   },
   "Unauthorized": {
     "title": "Vyžadováno přihlášení",
     "description": "Pro pokračování se prosím přihlaste.",
-    "homeLink": "Zpět na hlavní stránku"
+    "homeLink": "Zpět na hlavní stránku",
+    "signOutLink": "Odhlásit se a přihlásit jiným účtem"
   },
   "Error": {
     "title": "Něco se pokazilo",
@@ -83,7 +84,8 @@
     "passwordChanged": "Heslo bylo změněno. Přihlaste se novým.",
     "createAccount": "Vytvořit účet",
     "externalIntro": "Přihlásit vás může i vaše instituce.",
-    "externalSignIn": "Přihlásit se přes {name}"
+    "externalSignIn": "Přihlásit se přes {name}",
+    "backToHome": "Úvodní stránka"
   },
   "Register": {
     "title": "Vytvoření účtu",
@@ -220,10 +222,6 @@
     "errors": {
       "acceptFailed": "Vstup do skupiny se nezdařil. Zkontrolujte odkaz na pozvánku a zkuste to znovu."
     }
-  },
-  "Faq": {
-    "title": "FAQ",
-    "loadError": "Obsah stránky FAQ se nepodařilo načíst. Pravděpodobně se tak stalo kvůli nesprávné konfiguraci aplikace."
   },
   "Dashboard": {
     "title": "Přehled",
@@ -2717,7 +2715,6 @@
     "instances": "Instance",
     "skipToContent": "Přeskočit na obsah",
     "breadcrumb": "Drobečková navigace",
-    "faq": "Časté dotazy",
     "qr": {
       "open": "QR kód této stránky",
       "title": "QR kód této stránky",
@@ -2734,7 +2731,8 @@
         "empowered-supervisor": "Cvičící s rozšířenými právy",
         "superadmin": "Superadministrátor"
       }
-    }
+    },
+    "signOut": "Odhlásit se"
   },
   "Palette": {
     "label": "Hledání",
@@ -3703,20 +3701,20 @@
   },
   "Docs": {
     "title": "Dokumentace",
-    "intro": "Tři průvodci — pro správu nasazení, pro vedení kurzu a pro odevzdávání prací.",
+    "intro": "Tři průvodci — pro studenty, pro vyučující a pro administrátory.",
     "loadError": "Tohoto průvodce se nepodařilo načíst. Možná kvůli chybné konfiguraci aplikace.",
     "guides": {
-      "install": {
-        "title": "Instalace a provoz nasazení",
-        "summary": "Pro správce: požadavky, instalace, první účet, aktualizace a zálohy."
+      "student": {
+        "title": "Pro studenty",
+        "summary": "Návody, jak se připojit do kurzu nebo správně odevzdat řešení úloh."
       },
       "teacher": {
-        "title": "Vedení kurzu",
-        "summary": "Pro učitele: skupiny, cvičení, zadání a termíny, kontrola řešení, zkoušky."
+        "title": "Pro vyučující",
+        "summary": "Jak založit kurz, vytvořit úlohu, nastavit termíny a posoudit odevzdaná řešení."
       },
-      "student": {
-        "title": "Odevzdávání řešení",
-        "summary": "Pro studenty: připojení do kurzu, odevzdání řešení a čtení verdiktu."
+      "install": {
+        "title": "Pro administrátory",
+        "summary": "Jak aplikaci nainstalovat, provozovat, aktualizovat a zálohovat."
       }
     }
   }

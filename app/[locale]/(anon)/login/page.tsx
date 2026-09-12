@@ -48,6 +48,26 @@ export default async function LoginPage({
   return (
     <RouteMessages>
       <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-16">
+        {/* The way back out. `proxy.ts` sends a visitor here from any page that needs a session,
+            so this is where somebody who did not mean to sign in ends up. */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 self-start text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M12 4 6 10l6 6" />
+          </svg>
+          {t("backToHome")}
+        </Link>
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>

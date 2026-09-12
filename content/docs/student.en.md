@@ -1,101 +1,95 @@
-This guide is for students: getting in, finding your courses, submitting a solution, and
-understanding what came back.
+How to sign in, join a course, submit a solution and read the result of its evaluation.
 
-## Getting in
+## Signing in
 
-If your school signs you in with its own account, use that button on the sign-in page and you are
-done. Otherwise register with an email address and a password, and confirm the address from the
-message you receive.
+Sign in with your institution's account if the sign-in page offers it. Otherwise register with an
+email address and a password, and confirm the address using the link you receive.
 
-If you were sent an **invitation link** to a course, opening it and accepting puts you in that
-course. You can create an account from the same link if you do not have one yet.
+An invitation link enrols you in the course once you accept it. If you do not have an account yet,
+you can create one from the same link.
 
-## Finding your courses
+## Courses and deadlines
 
-The **dashboard** is what you see after signing in. It shows the assignments you have not finished,
-nearest deadline first, with what each is worth and where it stands.
+Signing in opens the **Overview**: a month calendar of submission deadlines and a list of the
+assignments you have not finished, ordered by the nearest deadline. Each row shows the points
+available and the state of your attempts.
 
-**Groups** lists every course you are in. A public course you are not in yet can be joined from
-there; a private one needs your teacher to add you or send an invitation.
+**Groups** lists the courses you are enrolled in. A public course can be joined from there; a
+private one is joined through a teacher or an invitation link.
 
-## Submitting
+## Submitting a solution
 
-Open the assignment and read it first: the text, what the tests expect, and the terms — the
-deadline, the points, how many attempts you have, and which languages are allowed.
+Open the assignment and read its terms: the deadline, the points, the number of attempts allowed
+and the permitted languages.
 
-Then **Submit a solution**:
+Then choose **Submit a solution**:
 
-1. Add your files. Several files are fine, and so is an archive.
-2. If the assignment allows more than one language, pick the one you wrote in.
-3. If your solution has more than one file, say which one the program starts from.
-4. Submit, and watch the evaluation run.
+1. Upload the files. An archive is accepted too.
+2. If the assignment permits several languages, select the one you used.
+3. If the solution has several files, name the program's entry point.
+4. Confirm with **Submit**.
 
-Evaluation takes seconds for a small program. The page follows along and shows the result when it
-lands, without your reloading anything.
+Evaluating an ordinary program takes a few seconds. The page follows the progress itself and shows
+the result as soon as it is available.
 
-## When the assignment is not a program
+## Assignments that are not programs
 
-Not every assignment is a program. A teacher may ask for an essay, measured data, a presentation or
-a scan — you hand it in the same way, except nothing is compiled or run. The result then usually
-carries only a confirmation that the submission arrived, and the real points follow by hand once
-your teacher has read it. Deadlines, attempts and feedback all work exactly as they do for
-programs.
+An assignment need not be a program. A teacher may require a text, measured data, a presentation or
+a scan. Submission works the same way, except nothing is compiled or run: the evaluation confirms
+receipt and the teacher awards the points by hand. Deadlines, attempts and feedback all work as
+they do for programs.
 
-## Reading the result
+## The result of an evaluation
 
-A solution's screen shows the score, and then each test with what happened in it:
+The solution screen states the score and the result of each test:
 
-| What you see              | What it means                                        |
-| ------------------------- | ---------------------------------------------------- |
-| **OK**                    | The test passed                                      |
-| **FAILED**                | The program ran and produced the wrong answer        |
-| **Time limit exceeded**   | It was too slow — usually an algorithm, not a detail |
-| **Memory limit exceeded** | It used more memory than the exercise allows         |
-| **Compilation failed**    | It did not build. The compiler's own output is shown |
-| **Runtime error**         | It crashed, or exited with a non-zero status         |
+| Result                    | Meaning                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| **OK**                    | The test passed                                            |
+| **FAILED**                | The program ran and produced an incorrect output           |
+| **Time limit exceeded**   | The time limit was exceeded                                |
+| **Memory limit exceeded** | The memory limit was exceeded                              |
+| **Compilation failed**    | The solution did not compile; the compiler output is shown |
+| **Runtime error**         | The program failed, or exited with a non-zero status       |
 
-The score is computed from which tests passed and what each is worth, so a partially correct
-solution usually gets partial marks.
+The score follows from which tests passed and how much each is worth, so a partially correct
+solution receives part of the points.
 
-Read the failing test rather than guessing: how much of the output was visible to you is the
-teacher's choice, but where it is shown, comparing what was expected against what your program
-printed usually ends the argument in one line.
+For a test that did not pass, compare the expected output against the actual one. How much of the
+output is shown is set by the teacher in the exercise configuration.
 
-You can open the files you submitted at any time, and compare two of your attempts side by side to
-see what actually changed.
+Submitted files can be opened at any time, and two attempts can be compared side by side.
 
 ## Deadlines and attempts
 
-An assignment can have a **second deadline** worth fewer points. Submitting late is then worth
-something rather than nothing — the assignment says exactly how many points, before and after.
+An assignment may carry a second deadline worth fewer points. The assignment states how many points
+apply before the first deadline and how many between the first and the second.
 
-If an assignment limits attempts, the screen says how many you have left. Test your program
-yourself before spending one: run it on the example from the text and check the output character
-for character, since whitespace is often compared too.
+Where the number of attempts is limited, the assignment screen states how many remain. Test the
+solution against the example in the assignment before submitting; tests compare the output
+including whitespace.
 
-By default, the **last** solution you submit is the one that counts — not the best one. If you
-submit something worse after something better, ask your teacher to accept the earlier attempt;
-they can.
+The **last** submitted solution is the one graded, not the best one. If an earlier attempt should
+count instead, ask your teacher — they can accept it.
 
-## Asking for a review
+## Requesting a review
 
-You can ask your teacher to look at a solution — **Request a review** on the solution screen. It
-puts your submission in their queue, and you can take the request back.
+A review can be requested from the solution screen. The solution then enters the teacher's queue;
+the request can be withdrawn.
 
-A review is comments on particular lines of your code. It appears when your teacher closes it, not
-while they are still writing, so silence after a request does not mean it was ignored.
+A review consists of comments on particular lines of the submitted solution. It becomes visible
+once the teacher closes it.
 
-## Exams
+## Exam mode
 
-During an exam your teacher can lock you into one course: while the lock holds you see that course
-and nothing else, and it releases itself when the exam ends. If you are locked out of something you
-need during an exam, that is a question for whoever is invigilating.
+For the duration of an exam a teacher may lock you into a single course. While the lock holds, other
+courses are not accessible; it is released when the exam ends.
 
-## If something looks wrong
+## Troubleshooting
 
-- **The evaluation failed rather than judging your program.** That is infrastructure, not your
-  code. Tell your teacher — it is visible to them and not something you can fix.
-- **Your solution is right and the test disagrees.** Check the whitespace and the exact wording of
-  the output first, then ask for a review and say what you think the test is doing wrong.
-- **You cannot submit.** The deadline may have passed, you may be out of attempts, or the language
-  you chose may not be allowed. The assignment screen says which, rather than just refusing.
+- **The evaluation failed with an infrastructure error.** This is not a fault in your solution.
+  Report it to your teacher.
+- **You believe the solution is correct but a test did not pass.** Check the exact output including
+  whitespace, then request a review and state where you believe the test is wrong.
+- **The submission cannot be made.** The deadline has passed, the attempts are used up, or the
+  selected language is not permitted. The assignment screen states which.

@@ -1,97 +1,93 @@
-Tenhle návod je pro studenty: jak se dostat dovnitř, najít své kurzy, odevzdat řešení a porozumět
-tomu, co se vrátilo.
+Jak se přihlásit, připojit se do kurzu, odevzdat řešení a přečíst výsledek vyhodnocení.
 
-## Přihlášení
+## Přihlášení a účet
 
-Pokud vás škola přihlašuje vlastním účtem, použijte na přihlašovací stránce to tlačítko a máte
-hotovo. Jinak se zaregistrujte e-mailem a heslem a adresu potvrďte ze zprávy, která vám přijde.
+Přihlaste se účtem školy, pokud to přihlašovací stránka nabízí. Jinak se zaregistrujte e-mailem
+a heslem a adresu potvrďte odkazem, který vám přijde.
 
-Pokud vám někdo poslal **pozvánkový odkaz** do kurzu, jeho otevřením a přijetím se do kurzu
-dostanete. Ze stejného odkazu si můžete založit účet, pokud ho ještě nemáte.
+Pozvánkový odkaz do kurzu vás po přijetí do kurzu zapíše. Pokud účet ještě nemáte, založíte si ho
+ze stejného odkazu.
 
-## Hledání kurzů
+## Kurzy a termíny
 
-**Nástěnka** je to, co vidíte po přihlášení. Ukazuje zadání, která nemáte hotová, seřazená podle
-nejbližšího termínu, s tím, kolik za co je a jak na tom stojíte.
+Po přihlášení se otevře **Přehled**: měsíční kalendář termínů odevzdání a seznam zadání, která
+nemáte hotová, seřazený podle nejbližšího termínu. U každého je vidět počet bodů a stav vašich
+pokusů.
 
-**Skupiny** vypisují každý kurz, ve kterém jste. Veřejný kurz, ve kterém ještě nejste, se dá odtud
-přidat; do neveřejného vás musí přidat vyučující nebo poslat pozvánku.
+**Skupiny** vypisují kurzy, ve kterých jste zapsáni. Veřejný kurz se dá přidat přímo odtud; do
+neveřejného vás zapíše vyučující nebo pozvánkový odkaz.
 
-## Odevzdání
+## Odevzdání řešení
 
-Otevřete zadání a nejdřív si ho přečtěte: text, co testy očekávají, a podmínky — termín, body,
-kolik máte pokusů a které jazyky jsou povolené.
+Otevřete zadání a přečtěte si jeho podmínky: termín, počet bodů, povolený počet pokusů a povolené
+jazyky.
 
-Pak **Odevzdat řešení**:
+Pak zvolte **Odevzdat řešení**:
 
-1. Přidejte soubory. Víc souborů je v pořádku, archiv taky.
-2. Pokud zadání povoluje víc jazyků, vyberte ten, ve kterém jste psali.
-3. Pokud má řešení víc souborů, řekněte, kterým program začíná.
-4. Odevzdejte a sledujte, jak vyhodnocení běží.
+1. Nahrajte soubory. Povolen je i archiv.
+2. Připouští-li zadání víc jazyků, vyberte použitý jazyk.
+3. Má-li řešení víc souborů, určete vstupní soubor programu.
+4. Potvrďte tlačítkem **Odevzdat**.
 
-U malého programu trvá vyhodnocení pár sekund. Stránka to sleduje sama a výsledek ukáže, jakmile
-dorazí — nemusíte nic načítat znovu.
+Vyhodnocení běžného programu trvá jednotky sekund. Stránka průběh sleduje sama a výsledek zobrazí,
+jakmile je k dispozici.
 
-## Když zadání není program
+## Úlohy, které nejsou program
 
-Ne každé zadání je program. Vyučující může chtít esej, naměřená data, prezentaci nebo sken —
-odevzdává se stejně, jen se nic nepřekládá a nespouští. Výsledek pak obvykle nese jen potvrzení, že
-odevzdání dorazilo, a skutečné body doplní vyučující ručně, až si práci přečte. Termín, počet
-pokusů i zpětná vazba fungují stejně jako u programů.
+Zadání nemusí být program. Vyučující může požadovat text, naměřená data, prezentaci nebo sken.
+Odevzdání probíhá stejně, jen se nic nepřekládá ani nespouští: vyhodnocení potvrdí přijetí a body
+udělí vyučující ručně. Termín, počet pokusů i zpětná vazba fungují stejně jako u programů.
 
-## Čtení výsledku
+## Výsledek vyhodnocení
 
-Obrazovka řešení ukazuje skóre a pak každý test s tím, co se v něm stalo:
+Obrazovka řešení uvádí získané skóre a výsledek každého testu:
 
-| Co vidíte                 | Co to znamená                                             |
-| ------------------------- | --------------------------------------------------------- |
-| **OK**                    | Test prošel                                               |
-| **FAILED**                | Program doběhl a vydal špatnou odpověď                    |
-| **Time limit exceeded**   | Byl příliš pomalý — obvykle jde o algoritmus, ne o detail |
-| **Memory limit exceeded** | Spotřeboval víc paměti, než cvičení dovoluje              |
-| **Compilation failed**    | Nepřeložil se. Zobrazí se výstup překladače               |
-| **Runtime error**         | Spadl, nebo skončil nenulovým návratovým kódem            |
+| Výsledek                  | Význam                                                      |
+| ------------------------- | ----------------------------------------------------------- |
+| **OK**                    | Test prošel                                                 |
+| **FAILED**                | Program doběhl a vydal nesprávný výstup                     |
+| **Time limit exceeded**   | Překročen časový limit                                      |
+| **Memory limit exceeded** | Překročen paměťový limit                                    |
+| **Compilation failed**    | Řešení se nepodařilo přeložit; zobrazí se výstup překladače |
+| **Runtime error**         | Program skončil chybou nebo nenulovým návratovým kódem      |
 
-Skóre se počítá z toho, které testy prošly a kolik který váží, takže částečně správné řešení
-obvykle dostane část bodů.
+Skóre vychází z toho, které testy prošly a jakou mají váhu, takže částečně správné řešení získá
+část bodů.
 
-Místo hádání si přečtěte ten test, který neprošel: kolik z výstupu uvidíte, rozhoduje vyučující, ale
-tam, kde se ukazuje, porovnání očekávaného výstupu s tím vaším obvykle skončí spor na jednom řádku.
+U testu, který neprošel, porovnejte očekávaný a skutečný výstup. Kolik z výstupu se zobrazuje,
+určuje vyučující v nastavení úlohy.
 
-Soubory, které jste odevzdali, si můžete kdykoli otevřít, a dva své pokusy postavit vedle sebe a
-podívat se, co se vlastně změnilo.
+Odevzdané soubory si můžete kdykoli otevřít a dva pokusy porovnat vedle sebe.
 
-## Termíny a pokusy
+## Termíny a počet pokusů
 
-Zadání může mít **druhý termín** za méně bodů. Odevzdat pozdě pak za něco stojí místo za nic —
-zadání říká přesně, kolik bodů před termínem a kolik po něm.
+Zadání může mít druhý termín odevzdání za snížený počet bodů. Zadání uvádí, kolik bodů platí před
+prvním termínem a kolik mezi prvním a druhým.
 
-Pokud zadání omezuje počet pokusů, obrazovka ukazuje, kolik jich zbývá. Než jeden utratíte,
-vyzkoušejte si program sami: pusťte ho na příkladu ze zadání a porovnejte výstup znak po znaku —
-bílé znaky se často porovnávají taky.
+Je-li počet pokusů omezen, obrazovka zadání uvádí, kolik jich zbývá. Před odevzdáním si řešení
+ověřte na příkladu ze zadání; testy porovnávají výstup včetně bílých znaků.
 
-Ve výchozím stavu se počítá **poslední** odevzdané řešení, ne to nejlepší. Když po lepším odevzdáte
-horší, požádejte vyučujícího, aby uznal ten dřívější pokus — může to udělat.
+Hodnotí se **poslední** odevzdané řešení, nikoli nejlepší. Pokud potřebujete uznat dřívější pokus,
+požádejte vyučujícího — může to udělat.
 
 ## Žádost o revizi
 
-Vyučujícího můžete požádat, aby se na řešení podíval — **Požádat o revizi** na obrazovce řešení.
-Vaše odevzdání se tím dostane do jeho fronty a žádost jde vzít zpět.
+Na obrazovce řešení lze požádat vyučujícího o revizi. Řešení se tím zařadí do jeho fronty; žádost
+je možné vzít zpět.
 
-Revize jsou komentáře ke konkrétním řádkům vašeho kódu. Objeví se, až ji vyučující uzavře, ne
-zatímco ji píše — takže ticho po žádosti neznamená, že ji někdo ignoruje.
+Revize jsou komentáře ke konkrétním řádkům odevzdaného řešení. Zobrazí se až ve chvíli, kdy ji
+vyučující uzavře.
 
-## Zkoušky
+## Zkouškový režim
 
-Během zkoušky vás vyučující může zamknout do jednoho kurzu: dokud zámek platí, vidíte jen ten kurz
-a nic jiného, a po konci zkoušky se uvolní sám. Pokud se během zkoušky nedostanete k něčemu, co
-potřebujete, je to otázka na toho, kdo zkoušku dozoruje.
+Po dobu zkoušky vás vyučující může zamknout do jednoho kurzu. Dokud zámek trvá, ostatní kurzy nejsou
+přístupné; po skončení zkoušky se zámek uvolní sám.
 
-## Když něco nevypadá správně
+## Řešení potíží
 
-- **Vyhodnocení selhalo, místo aby program posoudilo.** To je infrastruktura, ne váš kód. Řekněte to
-  vyučujícímu — vidí to a vy s tím nic neuděláte.
-- **Vaše řešení je správné a test nesouhlasí.** Nejdřív zkontrolujte bílé znaky a přesné znění
-  výstupu, pak požádejte o revizi a napište, co si myslíte, že test dělá špatně.
-- **Nejde odevzdat.** Mohl uplynout termín, mohly dojít pokusy, nebo nemusí být povolený jazyk,
-  který jste vybrali. Obrazovka zadání říká který z toho, místo aby jen odmítla.
+- **Vyhodnocení skončilo chybou infrastruktury.** Není to chyba vašeho řešení. Ohlaste to
+  vyučujícímu.
+- **Řešení považujete za správné, ale test neprošel.** Ověřte přesné znění výstupu včetně bílých
+  znaků, poté požádejte o revizi a uveďte, v čem podle vás test chybuje.
+- **Odevzdání nelze provést.** Uplynul termín, vyčerpali jste pokusy, nebo zvolený jazyk není
+  povolen. Obrazovka zadání uvádí konkrétní důvod.

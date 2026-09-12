@@ -1,7 +1,7 @@
 import { LocaleSwitch } from "@/components/app-shell/locale-switch";
 
 /**
- * Shared shell for pages reachable without a session (login, register, password reset, FAQ, ...).
+ * Shared shell for pages reachable without a session (login, register, password reset, the guides, ...).
  * Deliberately close to a passthrough -- D-series (Design System) owns the actual centered-card
  * chrome; this file is the place a later ticket edits, not something to pre-build speculatively.
  *

@@ -7,7 +7,6 @@
     "tagline": "A system for submitting student work, grading it, and keeping track of deadlines.",
     "what": "A teacher creates an assignment with a deadline and a number of points; a student submits work to it. Programming assignments are compiled and run in a sandbox against prepared tests, with a result in seconds. Work a machine cannot judge — documents, data, presentations — is collected against the same deadline and graded by the teacher. Points, feedback and the history of attempts all stay with the submission they belong to.",
     "signIn": "Sign in",
-    "faq": "Frequently asked questions",
     "instance": {
       "title": "Instance",
       "support": "Technical support"
@@ -50,12 +49,14 @@
   "Forbidden": {
     "title": "Forbidden",
     "description": "You don't have permission to access this resource.",
-    "homeLink": "Go home"
+    "homeLink": "Go home",
+    "signOutLink": "Sign out and use another account"
   },
   "Unauthorized": {
     "title": "Sign-in required",
     "description": "Please sign in to continue.",
-    "homeLink": "Go home"
+    "homeLink": "Go home",
+    "signOutLink": "Sign out and use another account"
   },
   "Error": {
     "title": "Something went wrong",
@@ -83,7 +84,8 @@
     "passwordChanged": "Your password was changed. Sign in with the new one.",
     "createAccount": "Create an account",
     "externalIntro": "Your institution can sign you in instead.",
-    "externalSignIn": "Sign in with {name}"
+    "externalSignIn": "Sign in with {name}",
+    "backToHome": "Home page"
   },
   "Register": {
     "title": "Create account",
@@ -220,10 +222,6 @@
     "errors": {
       "acceptFailed": "Joining the group did not work. Check the invitation link and try again."
     }
-  },
-  "Faq": {
-    "title": "FAQ",
-    "loadError": "FAQ content could not be loaded. Possibly due to the misconfiguration of the application."
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -2717,7 +2715,6 @@
     "instances": "Instances",
     "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb",
-    "faq": "FAQ",
     "qr": {
       "open": "QR code of this page",
       "title": "QR code of this page",
@@ -2734,7 +2731,8 @@
         "empowered-supervisor": "Empowered supervisor",
         "superadmin": "Superadministrator"
       }
-    }
+    },
+    "signOut": "Sign out"
   },
   "Palette": {
     "label": "Search",
@@ -3703,20 +3701,20 @@
   },
   "Docs": {
     "title": "Documentation",
-    "intro": "Three guides — one for running the deployment, one for teaching a course, one for submitting work.",
+    "intro": "Three guides — for students, for teachers, and for administrators.",
     "loadError": "This guide could not be loaded. Possibly due to the misconfiguration of the application.",
     "guides": {
-      "install": {
-        "title": "Installing and running the deployment",
-        "summary": "For administrators: requirements, installation, the first account, updating and backups."
+      "student": {
+        "title": "For students",
+        "summary": "How to join a course and hand your work in properly."
       },
       "teacher": {
-        "title": "Running a course",
-        "summary": "For teachers: groups, exercises, assignments and deadlines, reviewing solutions, exams."
+        "title": "For teachers",
+        "summary": "How to set up a course, create an exercise, set deadlines, and review what students submit."
       },
-      "student": {
-        "title": "Submitting your work",
-        "summary": "For students: joining a course, submitting a solution, and reading the verdict."
+      "install": {
+        "title": "For administrators",
+        "summary": "How to install the application, run it, update it and back it up."
       }
     }
   }

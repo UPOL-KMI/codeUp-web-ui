@@ -6158,3 +6158,99 @@ the catalogue test all stayed green, because the sections are read as `t(\`quick
 anything except the page itself at run time. Caught by looking at the rendered page. **A dynamic
 message key is outside every static check this repo has**, which is worth remembering the next time
 one is introduced.
+
+---
+
+### 2026-09-12 — the FAQ is removed, because it was somebody else's
+
+**Tickets:** DROP-C06, X-005 filed. **Status:** done. Five static checks and 281 unit tests green.
+
+The operator asked for the FAQ's first paragraph to be reworded: point a reader with a specific
+problem at their teacher at KI PřF UP. **The paragraph was not ours to edit**, and reading what it
+actually said changed the instruction.
+
+`FAQ_URI` fetches the document, and unset — which is how this deployment runs — it defaults to
+ReCodEx's own wiki. That document opens:
+
+> Please note that this FAQ also contains specific information that apply only to our pilot
+> instance of ReCodEx at MFF-UK. If you have a specific problem with this instance, contact the
+> administrator (`recodex@mff.cuni.cz`).
+
+So our students were being sent to **another university's administrator**. Below it: CAS
+authentication at Charles University, LDAP records at `ldap1.cuni.cz`, SIS group binding — none of
+which this deployment has (Q-004 established there is no CAS here at all) — and the whole thing in
+English, on a page a Czech student reads. Told this, the operator's instruction became: hide it
+entirely, we will write our own.
+
+**What removal actually touched**, since a public capability leaves marks in more places than the
+page: the route and its loader, the landing page's call to action, the sidebar link G-031 added,
+`proxy.ts`'s public list, the breadcrumb manifest, the `Faq` namespace in both catalogues, the
+public-route list the route specs walk, `faq.spec.ts` and the app-shell spec's own FAQ test. Nine
+files and two deletions, and the registers that exist for exactly this: `DROPPED.md` DROP-C06,
+`INVENTORY.md`'s row, `ROUTES.md`'s row.
+
+**One thing only a deletion could have exposed.** `tsconfig.json` includes `.next/dev/types/**`,
+and a `next dev` run from 2026-09-11 had left a route validator there naming the page. Deleting the
+route made `typecheck` and `build` both fail on a module that no longer exists — in a directory
+that is build output, gitignored, and a month stale. Nothing before this had ever removed a route,
+so nothing had met it. `rm -rf .next/dev` is the answer; worth knowing before it wastes somebody's
+afternoon.
+
+**Nothing in the deployment needed changing, and that was checked rather than assumed.** `FAQ_URI`
+is unset for the `web-next` service — empty inside the running container — so the page had been on
+the built-in default the whole time. The compose repo does set it, but in
+`services/web-app/env.json.template`: the **legacy** frontend's config, for the app still running on
+a port of its own as a reference. It keeps its FAQ.
+
+**What `/faq` answers now**, checked rather than left to chance: an anonymous visitor is sent to
+`/login?from=/cs/faq` and a signed-in one gets the not-found page. That is `proxy.ts`'s behaviour
+for _any_ path outside `PUBLIC_PATHNAMES`, not something this removal invented, and it is left
+alone deliberately — keeping the path public purely so it can 404 would mean listing a route that
+does not exist. `next.config.ts` has no legacy rule pointing at `/faq`, so nothing else breaks.
+
+**X-005 carries the operator's actual instruction forward.** Our own FAQ, in both languages, in
+this repo the way the guides are — and its first answer is the one he asked for: a specific problem
+goes to the teacher at KI PřF UP. Worth writing once his testing has produced real questions, since
+an invented FAQ answers nobody.
+
+---
+
+### 2026-09-12 — the operator's first hour of testing, and a clean instance
+
+**Tickets:** PF-022, PF-023, PF-024. **Status:** done. Static checks green; the e2e suite is
+**unavailable by design** — see the wipe below.
+
+Three reports, and they turned out to be one shape: **a signed-in reader could get stuck with no
+control that changes anything.**
+
+A refusal (`forbidden()`) renders outside the app shell, so no navigation and no sign-out; its one
+link goes to the public front page, which reads no session (DEC-116) and offers nothing either; and
+`proxy.ts` redirects a signed-in visitor from `/login` to `/dashboard`, so when the dashboard is
+what was refused, signing in is unreachable too. Each of those three is defensible alone. Together
+they are a trap, and the operator fell into it within the hour.
+
+**What his report was not** is also worth recording, because I spent time on it: I could not
+reproduce the refusal itself. A narrowed effective role does not forbid the dashboard (tried
+`student` and `supervisor`), no group had an exam period set, and `admin@admin.com` — the only
+non-seed account — passed every screen through the API. The cause lived in his browser's session
+and the evidence went with the wipe. The trap is fixed regardless; the refusal that triggered it is
+not explained.
+
+**Signing out existed only on the account screen**, which is DEC-115's decision showing its cost:
+no header means nowhere obvious to put it. There is a right-aligned strip at the top of the shell
+now with the reader's name and the control.
+
+**And the deployment was wiped to nothing, at the operator's request**, to test an installation the
+way a new one would arrive: `mysql_data` and `api_storage` removed, `docker compose up -d`, and the
+first boot did the rest — migrations, `db:fill init`, **all seven runtime packages including
+`data-linux`**, and naming the instance from `.env`. That last part is the morning's work paying
+off: `data-linux` is in the API image, so a fresh install has it without a hand import.
+
+One instance, one account, no groups, no exercises. **The e2e suite cannot run against this** —
+every spec reads the `[seed]` fixtures — so verification is by hand until somebody runs `pnpm seed`,
+which would defeat the point of the exercise.
+
+**SMTP is configured and proven.** Office 365, authenticated as a real mailbox. The first attempt
+was refused with `554 5.2.252 SendAsDenied` — Exchange will not let that mailbox send as
+`noreply@…` without explicit rights — so `MAIL_FROM` is the authenticated address for now. Proven
+by driving SMTP directly from the API container: `STARTTLS`, `AUTH LOGIN`, `250 2.0.0 OK`.

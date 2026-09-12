@@ -63,12 +63,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             >
               {t("docs.link")}
             </Link>
-            <Link
-              href="/faq"
-              className="rounded-md border border-input px-4 py-2 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("faq")}
-            </Link>
           </div>
         </header>
 

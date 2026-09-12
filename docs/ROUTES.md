@@ -40,7 +40,7 @@ what has to exist **before** this app takes over `/`, and it is a deployment tas
 | Old route                                | New route                                 | Change                                      | Notes                                                                                                                                                              |
 | ---------------------------------------- | ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/`                                      | `/`                                       | Locale prefix only                          | Public landing (A-001)                                                                                                                                             |
-| `/faq`                                   | `/faq`                                    | Locale prefix only                          | **Route exists, content does not** — still a placeholder, see G-024                                                                                                |
+| `/faq`                                   | — (removed)                               | **Dropped**                                 | The document was ReCodEx's own wiki, describing another university's instance. See `DROPPED.md` DROP-C06; our own FAQ is X-005                                     |
 | `/login/:redirect?`                      | `/login?redirect=…`                       | **Redirect target moved to a search param** | `/login/dashboard` → `/login?redirect=/en/dashboard`; the value is a full path now                                                                                 |
 | `/registration`                          | `/register`                               | **Renamed**                                 | Shown closed where `ALLOW_LOCAL_REGISTRATION` is off (A-003)                                                                                                       |
 | `/forgotten-password`                    | `/forgot-password`                        | **Renamed**                                 | —                                                                                                                                                                  |
@@ -272,4 +272,4 @@ this one carries its own guides.
 | —      | `/docs`        | **New** | The signpost: three guides, one per audience                           |
 | —      | `/docs/[slug]` | **New** | `install`, `teacher`, `student` — a closed set; anything else is a 404 |
 
-Both are public (`proxy.ts`), which is why they live in the `(anon)` route group alongside `/faq`.
+Both are public (`proxy.ts`), which is why they live in the `(anon)` route group.

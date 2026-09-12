@@ -17,9 +17,9 @@ const intlMiddleware = createMiddleware(routing);
 
 // Pages under app/[locale]/(anon)/... where showing the form to an already-signed-in visitor is
 // unambiguously pointless -- redirected to /dashboard if a session cookie is present. Kept
-// separate from the rest of (anon) (forgot-password, email-verification, accept-invitation, faq),
-// which stay reachable regardless of auth state -- a signed-in user resetting a password, or
-// just reading the FAQ, is a normal thing to do.
+// separate from the rest of (anon) (forgot-password, email-verification, accept-invitation, the
+// guides), which stay reachable regardless of auth state -- a signed-in user resetting a password,
+// or reading a guide, is a normal thing to do.
 const AUTH_ONLY_PATHNAMES = new Set(["/login", "/register"]);
 
 // Every other page reachable without a session -- app/[locale]/(anon)/... minus the two above,
@@ -32,7 +32,6 @@ const PUBLIC_PATHNAMES = new Set([
   "/forgot-password/change",
   "/email-verification",
   "/accept-invitation",
-  "/faq",
   "/docs",
   // D-013's component showcase. Renders no user data and calls no user-scoped endpoint, so a
   // session requirement would only make it harder to look at (its upload section does hit

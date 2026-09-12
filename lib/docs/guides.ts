@@ -21,7 +21,7 @@ import { join } from "node:path";
  * traces `content/docs` into the standalone output for exactly that reason: nothing in the code
  * references these paths statically, so the build cannot infer them.
  */
-export const GUIDE_SLUGS = ["install", "teacher", "student"] as const;
+export const GUIDE_SLUGS = ["student", "teacher", "install"] as const;
 
 export type GuideSlug = (typeof GUIDE_SLUGS)[number];
 

@@ -296,7 +296,6 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages.types",
     "Toast",
   ],
-  "/faq": ["Error", "Nav.locale", "Toast"],
   "/forgot-password": ["Error", "ForgotPassword", "Nav.locale", "Toast"],
   "/forgot-password/change": ["Error", "ForgotPasswordChange", "Nav.locale", "Toast"],
   "/groups": [

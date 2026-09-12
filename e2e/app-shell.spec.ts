@@ -57,15 +57,6 @@ test("collapses to a disclosure menu at phone width", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
 });
 
-test("offers the FAQ to a signed-in reader, not only to a visitor", async ({ page }) => {
-  // G-031: the page is public and lives outside this shell, so the link sits with the language
-  // switch at the foot of the sidebar rather than in one of the IA's sections.
-  const nav = page.getByRole("navigation", { name: "Primary navigation" });
-  await nav.getByRole("link", { name: "FAQ", exact: true }).click();
-  await expect(page).toHaveURL(/\/en\/faq$/);
-  await expect(page.getByRole("main")).toBeVisible();
-});
-
 /**
  * G-025. Two properties beyond "it appears", both of which would regress silently: the code has to
  * encode the page **including its query string** (a filtered table is the interesting thing to put

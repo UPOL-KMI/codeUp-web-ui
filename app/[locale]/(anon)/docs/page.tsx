@@ -21,7 +21,7 @@ export async function generateMetadata({
 /**
  * The signpost (X-002): three guides, one for each audience the product actually has.
  *
- * Public, like the FAQ and for the same reason -- somebody deciding whether to install this, or a
+ * Public, and the reason is the circle otherwise -- somebody deciding whether to install this, or a
  * student who cannot sign in, are both people the documentation is for, and requiring an account
  * to read how to get an account is a circle.
  */
