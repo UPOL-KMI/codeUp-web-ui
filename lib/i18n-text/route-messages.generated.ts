@@ -170,6 +170,8 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Toast",
   ],
   "/dev/design-system": ["DesignSystem", "Dialog", "Error", "Status", "Table", "Toast", "Upload"],
+  "/docs": ["Error", "Nav.locale", "Toast"],
+  "/docs/[slug]": ["Error", "Nav.locale", "Toast"],
   "/email-verification": ["EmailVerification", "Error", "Nav.locale", "Toast"],
   "/exercises": [
     "Dialog",

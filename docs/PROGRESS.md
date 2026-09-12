@@ -5994,3 +5994,43 @@ before anything can look.
 
 **313 e2e pass, 3 skip, 0 fail** through the deployment's address, with the five static checks and
 288 unit tests alongside.
+
+---
+
+### 2026-09-12 — the product documents itself, on the front page
+
+**Tickets:** X-002, DEC-139. **Status:** done. Five static checks, 288 unit tests, and **318 e2e
+pass, 3 skip, 0 fail** through the deployment's address -- five of them this ticket's own.
+
+The operator asked for documentation -- how to install the thing, and how to use it -- and then for
+it to live on the frontend with a signpost from the front page. So it is three guides, one per
+audience the product actually has: **installing and running the deployment**, **running a course**,
+and **submitting your work**. Six documents, because both locales are not optional here.
+
+**They are public.** The FAQ already established that the anonymous route group is where a document
+belongs, and the reasoning is stronger for these: whoever is deciding whether to install this has
+no account by definition, and requiring one to read how to get an account is a circle.
+
+**The text is markdown in this repository (DEC-139), not entries in `messages/`.** A catalogue is
+for interface strings; a guide is a document, and as JSON it would be one escaped line that nobody
+can review in a diff. They render through the same server-side `Markdown` component as an exercise
+text, so a table or a fenced `docker compose build` reads the way tables and fences read everywhere
+else in the product.
+
+**Three things only the real container could have shown, and it showed all three.**
+
+- **The standalone build does not trace what nothing references statically.** The guides are read
+  from disk at request time, so Node File Trace has no way to know they exist:
+  `next.config.ts` names `content/docs` in `outputFileTracingIncludes`. Without it every guide
+  renders "could not be loaded" in production and perfectly in development -- the same shape of
+  defect as this morning's timezone bug, invisible exactly where it is tested.
+- **`PUBLIC_PATHNAMES` is an exact-match set.** `/docs` would have been public and `/docs/install`
+  behind a login. A prefix, rather than three more literals, so a fourth guide needs no edit here.
+- **The page had two `h1`s.** `PageShell` renders one from the catalogue and each document opened
+  with its own `#`. The documents start at `##` now, and the spec asserts the count rather than the
+  text -- the title is maintained in one place, which is also what names the guide in the
+  breadcrumb, the browser tab and the signpost.
+
+Verified against the deployment: both locales of all three guides, the signpost from `/`, the
+markdown rendering as markdown, and a slug that is not a guide answering the 404 body Q-016
+describes.

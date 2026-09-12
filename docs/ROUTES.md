@@ -261,3 +261,15 @@ on a 404 with an extra hop. Add them to this table with the tickets.
 | R-002 | Legacy routes not in `routes.js` — links inside emails core-api sends       | **Open.** core-api builds those from its own configured frontend URL, not from this repo, so they are an operator's setting at cutover. No SMTP here (Q-007), so none has been observed |
 | R-003 | `/login/:redirect?` preserved or moved to a search param?                   | **Answered:** search param, carrying a full locale-prefixed path                                                                                                                        |
 | R-004 | Does the cutover keep the legacy app reachable at a second URL for a while? | **Open, and it decides whether the `/app/:path*` catch-all is safe.** If both apps stay up, that rule must not be added, or the legacy app becomes unreachable                          |
+
+## Documentation (X-002)
+
+Two routes with no legacy counterpart: the legacy app documents itself in a wiki elsewhere, and
+this one carries its own guides.
+
+| Legacy | New            | Change  | Notes                                                                  |
+| ------ | -------------- | ------- | ---------------------------------------------------------------------- |
+| —      | `/docs`        | **New** | The signpost: three guides, one per audience                           |
+| —      | `/docs/[slug]` | **New** | `install`, `teacher`, `student` — a closed set; anything else is a 404 |
+
+Both are public (`proxy.ts`), which is why they live in the `(anon)` route group alongside `/faq`.

@@ -41,7 +41,12 @@
       "source": "Zdrojový kód",
       "docs": "Dokumentace"
     },
-    "license": "ReCodEx je open source, vydaný pod licencí MIT."
+    "license": "ReCodEx je open source, vydaný pod licencí MIT.",
+    "docs": {
+      "title": "Dokumentace",
+      "body": "Jak to nainstalovat, jak v tom učit a jak do toho odevzdávat.",
+      "link": "Otevřít průvodce"
+    }
   },
   "NotFound": {
     "title": "Stránka nenalezena",
@@ -3701,5 +3706,24 @@
     "empty": "Zatím není co zobrazit.",
     "failed": "Text se nepodařilo vykreslit.",
     "tooLong": "Tento text je příliš dlouhý pro náhled."
+  },
+  "Docs": {
+    "title": "Dokumentace",
+    "intro": "Tři průvodci: jeden pro toho, kdo provozuje server, jeden pro výuku, jeden pro odevzdávání.",
+    "loadError": "Tohoto průvodce se nepodařilo načíst. Možná kvůli chybné konfiguraci aplikace.",
+    "guides": {
+      "install": {
+        "title": "Instalace a provoz nasazení",
+        "summary": "Pro správce: požadavky, instalace, první účet, aktualizace a zálohy."
+      },
+      "teacher": {
+        "title": "Vedení kurzu",
+        "summary": "Pro učitele: skupiny, cvičení, zadání a termíny, kontrola řešení, zkoušky."
+      },
+      "student": {
+        "title": "Odevzdávání řešení",
+        "summary": "Pro studenty: připojení do kurzu, odevzdání řešení a čtení verdiktu."
+      }
+    }
   }
 }

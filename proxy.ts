@@ -33,12 +33,25 @@ const PUBLIC_PATHNAMES = new Set([
   "/email-verification",
   "/accept-invitation",
   "/faq",
+  "/docs",
   // D-013's component showcase. Renders no user data and calls no user-scoped endpoint, so a
   // session requirement would only make it harder to look at (its upload section does hit
   // core-api, and says so). Deliberately kept out of the (anon) route group -- it isn't part of
   // the product's IA, it's developer tooling that happens to be served by the same app.
   "/dev/design-system",
 ]);
+
+/**
+ * The one public route with children (X-002). `PUBLIC_PATHNAMES` is an exact-match set, which is
+ * right for every other entry -- they are single pages -- and wrong for the guides, which are
+ * `/docs` plus one path per guide. A prefix rather than three more literals: adding a fourth guide
+ * should not mean remembering to edit this file.
+ */
+const PUBLIC_PREFIX = "/docs/";
+
+function isPublic(pathname: string): boolean {
+  return PUBLIC_PATHNAMES.has(pathname) || pathname.startsWith(PUBLIC_PREFIX);
+}
 
 function stripLocale(pathname: string): string {
   for (const locale of routing.locales) {
@@ -111,7 +124,7 @@ export default async function proxy(request: NextRequest) {
     dashboardUrl.pathname = `/${locale}/dashboard`;
     dashboardUrl.search = "";
     response = NextResponse.redirect(dashboardUrl);
-  } else if (!AUTH_ONLY_PATHNAMES.has(pathname) && !PUBLIC_PATHNAMES.has(pathname) && !hasSession) {
+  } else if (!AUTH_ONLY_PATHNAMES.has(pathname) && !isPublic(pathname) && !hasSession) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = `/${locale}/login`;
     loginUrl.search = "";

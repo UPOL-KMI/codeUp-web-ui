@@ -41,7 +41,12 @@
       "source": "Source code",
       "docs": "Documentation"
     },
-    "license": "ReCodEx is open source, released under the MIT licence."
+    "license": "ReCodEx is open source, released under the MIT licence.",
+    "docs": {
+      "title": "Documentation",
+      "body": "How to install it, how to teach with it, and how to submit to it.",
+      "link": "Read the guides"
+    }
   },
   "NotFound": {
     "title": "Page not found",
@@ -3701,5 +3706,24 @@
     "empty": "Nothing to preview yet.",
     "failed": "This could not be rendered.",
     "tooLong": "This text is too long to preview."
+  },
+  "Docs": {
+    "title": "Documentation",
+    "intro": "Three guides: one for whoever runs the server, one for teaching, one for submitting work.",
+    "loadError": "This guide could not be loaded. Possibly due to the misconfiguration of the application.",
+    "guides": {
+      "install": {
+        "title": "Installing and running the deployment",
+        "summary": "For administrators: requirements, installation, the first account, updating and backups."
+      },
+      "teacher": {
+        "title": "Running a course",
+        "summary": "For teachers: groups, exercises, assignments and deadlines, reviewing solutions, exams."
+      },
+      "student": {
+        "title": "Submitting your work",
+        "summary": "For students: joining a course, submitting a solution, and reading the verdict."
+      }
+    }
   }
 }

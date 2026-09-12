@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { getGroupInvitation } from "@/lib/api/group-invitation";
 import { apiRead } from "@/lib/api/read";
+import { isGuideSlug } from "@/lib/docs/guides";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 
 import type { BreadcrumbItem } from "@/components/page-shell";
@@ -68,6 +69,16 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "AcceptInvitation", pattern: "/accept-invitation" },
   { namespace: "GroupInvitation", pattern: "/accept-group-invitation", unlinked: true },
   { namespace: "Faq", pattern: "/faq" },
+  { namespace: "Docs", pattern: "/docs" },
+  {
+    pattern: "/docs/:slug",
+    resolve: async (params, locale) => {
+      const t = await getTranslations({ locale, namespace: "Docs" });
+      return isGuideSlug(params.slug ?? "")
+        ? t(`guides.${params.slug}.title`)
+        : (params.slug ?? "");
+    },
+  },
   { namespace: "Account", pattern: "/profile/edit" },
   { namespace: "Assignment", pattern: "/assignments", unlinked: true },
   { namespace: "Solutions", pattern: "/solutions", unlinked: true },

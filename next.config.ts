@@ -36,8 +36,14 @@ const nextConfig: NextConfig = {
   // thing missing) after `docker run` crashed with "Cannot find module
   // .../@swc/helpers/esm/_interop_require_default.js". outputFileTracingRoot alone
   // does not fix this -- verified by testing it in isolation first.
+  // The guides (X-002) are read from disk at request time, so nothing in the code names their
+  // paths statically and Node File Trace cannot infer them. Without this the pages render their
+  // "could not be loaded" state in the container and nowhere else.
   outputFileTracingIncludes: {
-    "/**": ["./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**"],
+    "/**": [
+      "./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**",
+      "./content/docs/**",
+    ],
   },
 
   // **Where every legacy URL goes** (plan 004 in the compose repo, table in `docs/ROUTES.md`).
