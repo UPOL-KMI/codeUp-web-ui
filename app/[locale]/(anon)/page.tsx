@@ -40,14 +40,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const instance = instances[0] ?? null;
   const helpdesk = process.env.EXTERNAL_AUTH_HELPDESK_URL ?? "";
 
-  const sections = [
-    "groups",
-    "exercises",
-    "assignments",
-    "deadlines",
-    "solutions",
-    "shadow",
-  ] as const;
+  const sections = ["groups", "exercises", "solutions", "deadlines"] as const;
 
   return (
     <RouteMessages>
@@ -109,21 +102,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p className="text-sm text-muted-foreground">{t(`quickStart.${section}.body`)}</p>
             </div>
           ))}
-        </section>
-
-        <section aria-labelledby="home-docs" className="flex flex-col gap-2">
-          <h2 id="home-docs" className="text-base font-semibold tracking-tight">
-            {t("docs.title")}
-          </h2>
-          <p className="text-sm text-muted-foreground">{t("docs.body")}</p>
-          <p className="text-sm">
-            <Link
-              href="/docs"
-              className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("docs.link")}
-            </Link>
-          </p>
         </section>
 
         <footer className="flex flex-col gap-3 border-t border-border pt-6">

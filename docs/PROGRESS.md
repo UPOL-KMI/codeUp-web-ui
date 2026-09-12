@@ -6131,3 +6131,30 @@ file, and their judge is _not optional_ — without one every submission fails w
 Deliberately untouched: the group and assignment copy, which is specific and correct and would only
 have churned; the FAQ's error string, which mirrors the legacy app's own sentence on purpose; and
 everything behind the login, which the operator scoped into its own pass.
+
+**Second round on the same page, from the operator reading it rather than from me.** Four sections
+became four different verdicts, and two of them were "this does not belong here at all":
+
+- **Skupiny** — reworded to his own framing: groups organise teaching into self-contained units.
+- **Úlohy** — his text, near enough verbatim: a template of two parts, the task and the rules a
+  submission is judged by, with programming exercises getting tests, resource limits and automatic
+  grading and everything else getting the teacher. The sentence about an exercise being invisible
+  until assigned went with it: **that is documentation, not a front page.**
+- **Zadání** — removed. "Není vůbec jasná" was the verdict, and a section nobody understands is
+  worse than a gap.
+- **Body bez odevzdání** — removed for the same reason. Shadow assignments are a real feature and
+  still documented; they are not how you explain what the product is.
+- **Dokumentace** — removed, because the call to action for it is already in the header. The link
+  was the only thing in that section doing any work.
+
+Also `Tato instance` → `Instance`. The remaining four sections read groups → exercises →
+solutions → deadlines, which is the order somebody meets them in.
+
+**One thing worth recording about how this nearly went wrong.** The first attempt to shorten the
+`sections` array silently did nothing: Prettier had reflowed it across six lines between the two
+edits, so a replacement written against the single-line form matched nothing. Typecheck, lint and
+the catalogue test all stayed green, because the sections are read as `t(\`quickStart.${section}\`)`
+— a template literal the catalogue scanner cannot resolve, so the removed keys were not missed by
+anything except the page itself at run time. Caught by looking at the rendered page. **A dynamic
+message key is outside every static check this repo has**, which is worth remembering the next time
+one is introduced.

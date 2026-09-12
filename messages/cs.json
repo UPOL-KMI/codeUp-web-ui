@@ -9,34 +9,26 @@
     "signIn": "Přihlásit se",
     "faq": "Časté otázky",
     "instance": {
-      "title": "Tato instance",
+      "title": "Instance",
       "support": "Technická podpora"
     },
     "quickStart": {
       "title": "Jak systém funguje?",
       "groups": {
         "title": "Skupiny",
-        "body": "Všechno se děje ve skupině — v předmětu, na cvičení, v soutěži. Skupiny tvoří strom, díky čemuž může předmět obsahovat vlastní skupiny na cvičení a správce předmětu spravuje i je. Skupina má členy, zadání a vlastní pravidla pro body."
+        "body": "Skupiny organizují výuku do ucelených jednotek — předmětů, cvičení nebo soutěží. Tvoří strom, takže předmět může obsahovat vlastní skupiny na cvičení a jeho správce spravuje i je. Každá skupina má členy, zadání a vlastní pravidla pro body."
       },
       "exercises": {
         "title": "Úlohy",
-        "body": "Úloha je šablona: text, který studenti čtou, a pravidla, podle kterých se jejich odevzdání posoudí — u programů testy a limity času a paměti, u ostatních prací postup, kterým se odevzdání zkontroluje. Dokud úloha není zadaná, studenti ji nevidí; napsat se dá jednou a sdílet mezi předměty. Zadat ji nelze, dokud alespoň jedno referenční řešení nedoloží, že funguje."
-      },
-      "assignments": {
-        "title": "Zadání",
-        "body": "Zadáním se úloha zkopíruje do skupiny a přibude termín a počet bodů. Protože jde o kopii, pozdější úpravy úlohy se zadání nedotknou, dokud je někdo vědomě nesesynchronizuje — oprava uprostřed semestru tak tiše nezmění to, za co už byli studenti hodnoceni."
+        "body": "Úloha je šablona tvořená ze dvou hlavních částí: zadání a systém pravidel, podle kterých se odevzdané řešení posuzuje. U programovacích úloh může zadavatel nastavit testy, limity použitých zdrojů a automatické hodnocení. U ostatních úloh provádí kontrolu a bodové hodnocení sám vyučující."
       },
       "solutions": {
         "title": "Řešení",
         "body": "Student odevzdá soubory nebo archiv. Programátorské úlohy systém přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům řešení běželo; u ostatních prací odevzdání zaznamená a posouzení nechá na vyučujícím. Vyučující vidí každý pokus, může odevzdaný text okomentovat řádek po řádku a body přepsat."
       },
-      "shadow": {
-        "title": "Body bez odevzdání",
-        "body": "Ústní zkouška, prezentace, docházka — stínové zadání nese body, které vyučující udělí ručně, takže součet ve skupině odpovídá celému předmětu, ne jen té části, která se odevzdává."
-      },
       "deadlines": {
         "title": "Termíny a kalendář",
-        "body": "Každé zadání má termín, nejvyšší možný zisk a případně druhý termín za snížený počet bodů. Na přehledu najde student měsíční kalendář všech svých termínů a vedle něj seznam těch blížících se, seřazený podle toho, co hoří nejdřív. Vyučující vidí totéž za předměty, které učí, a k tomu bodovou matici skupiny a frontu řešení čekajících na posouzení."
+        "body": "Každé zadání má nastavený termín odevzdání, maximální možný zisk bodů a případně sekundární odevzdávací termín za snížený počet bodů. Na přehledu najde student měsíční kalendář všech svých termínů odevzdání úkolů. Vyučující vidí totéž za předměty, které učí, a k tomu bodovou matici skupiny a frontu řešení čekajících na posouzení."
       }
     },
     "acknowledgement": "UPolníček je rozšíření ReCodExu — otevřeného systému, který vznikl s podporou Studentského grantového programu Matematicko-fyzikální fakulty Univerzity Karlovy a který spravuje její Informatická sekce. UPolníček vyvíjí Katedra informatiky Přírodovědecké fakulty Univerzity Palackého v Olomouci.",
@@ -46,8 +38,6 @@
     },
     "license": "UPolníček je open source, vydaný pod licencí MIT — stejně jako ReCodEx, ze kterého vychází.",
     "docs": {
-      "title": "Dokumentace",
-      "body": "Jak to nainstalovat, jak v tom učit a jak do toho odevzdávat.",
       "link": "Otevřít průvodce"
     },
     "operator": "Provozuje Katedra informatiky Přírodovědecké fakulty Univerzity Palackého v Olomouci."

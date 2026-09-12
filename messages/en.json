@@ -9,34 +9,26 @@
     "signIn": "Sign in",
     "faq": "Frequently asked questions",
     "instance": {
-      "title": "This instance",
+      "title": "Instance",
       "support": "Technical support"
     },
     "quickStart": {
       "title": "How does the system work?",
       "groups": {
         "title": "Groups",
-        "body": "Everything happens in a group — a course, a lab, a competition. Groups form a tree, which is how a course can hold its own lab groups, and how somebody who administers a course administers those too. A group has members and assignments, and its own rules for points."
+        "body": "Groups organise teaching into self-contained units — a course, a lab, a competition. They form a tree, so a course can hold its own lab groups and whoever administers the course administers those too. Every group has members, assignments and its own rules for points."
       },
       "exercises": {
         "title": "Exercises",
-        "body": "An exercise is the template: the text students read, and the rules their submission is judged by — tests and time and memory limits for programs, and for other work the procedure that checks what was handed in. Exercises are invisible to students until they are assigned, and they can be written once and shared between courses. An exercise cannot be assigned until at least one reference solution has proved it works."
-      },
-      "assignments": {
-        "title": "Assignments",
-        "body": "Assigning copies the exercise into a group and adds a deadline and a number of points. Because it is a copy, editing the exercise afterwards leaves the assignment alone until somebody deliberately re-synchronises it — so a correction mid-term does not silently change what a class was graded on."
+        "body": "An exercise is a template made of two main parts: the text of the task, and the set of rules a submission is judged by. For programming exercises the author can set tests, limits on the resources a solution may use, and automatic grading. For other exercises the checking and the points are the teacher's own."
       },
       "solutions": {
         "title": "Solutions",
         "body": "A student submits files or an archive. Programming assignments are compiled, run against every test, and reported with what passed, what the compiler said and how close to the limits the solution ran; other work is recorded and left for the teacher to judge. Teachers see every attempt, can comment on the submitted text line by line, and can override the points."
       },
-      "shadow": {
-        "title": "Points without a submission",
-        "body": "Oral exams, presentations, attendance — a shadow assignment carries points a teacher awards by hand, so a group's total covers the whole course rather than only the part that is handed in."
-      },
       "deadlines": {
         "title": "Deadlines and the calendar",
-        "body": "Every assignment carries a deadline, the points available, and optionally a second deadline worth fewer of them. A student's overview holds a month calendar of all their deadlines and, beside it, the list of the ones coming up, soonest first. A teacher sees the same for the courses they teach, plus the group's matrix of points and the queue of solutions waiting to be looked at."
+        "body": "Every assignment has a submission deadline, the maximum points available and optionally a second deadline worth fewer of them. A student's overview holds a month calendar of all their submission deadlines. A teacher sees the same for the courses they teach, plus the group's matrix of points and the queue of solutions waiting to be looked at."
       }
     },
     "acknowledgement": "UPolníček extends ReCodEx — the open-source system created with the support of the Student Grant Program of the Faculty of Mathematics and Physics, Charles University, and maintained by its School of Computer Science. UPolníček is developed by the Department of Computer Science, Faculty of Science, Palacký University Olomouc.",
@@ -46,8 +38,6 @@
     },
     "license": "UPolníček is open source, released under the MIT licence — as is ReCodEx, which it builds on.",
     "docs": {
-      "title": "Documentation",
-      "body": "How to install it, how to teach with it, and how to submit to it.",
       "link": "Read the guides"
     },
     "operator": "Run by the Department of Computer Science, Faculty of Science, Palacký University Olomouc."

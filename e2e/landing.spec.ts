@@ -28,13 +28,7 @@ test("tells a visitor what UPolníček is, and which instance this is", async ({
   ).toBeVisible();
 
   // The quick-start sections, which are the legacy Home page's substance.
-  for (const heading of [
-    "Groups",
-    "Exercises",
-    "Assignments",
-    "Deadlines and the calendar",
-    "Solutions",
-  ]) {
+  for (const heading of ["Groups", "Exercises", "Solutions", "Deadlines and the calendar"]) {
     await expect(main.getByRole("heading", { name: heading, level: 3 })).toBeVisible();
   }
 
