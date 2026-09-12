@@ -3,7 +3,7 @@ reading what students submitted.
 
 ## The shape of the thing
 
-ReCodEx has four nouns, and everything else is a detail of one of them.
+UPolníček has four nouns, and everything else is a detail of one of them.
 
 - A **group** is a course, or a seminar group inside one. It holds students and assignments, and it
   can hold subgroups.
@@ -56,7 +56,7 @@ full marks, the exercise is not finished, and every student would have hit the s
 ### Importing from GitHub Classroom
 
 An assignment template with an `autograding.json` can be imported instead of retyped. Its
-`input`/`output` tests map cleanly onto ReCodEx tests, the template's `README.md` becomes the
+`input`/`output` tests map cleanly onto UPolníček tests, the template's `README.md` becomes the
 exercise text, and its other files become attachments.
 
 What cannot be imported is stated rather than guessed at: a test that runs an arbitrary shell

@@ -90,7 +90,7 @@ test("reads a file that maps cleanly, and says every test maps", async ({ page }
   await expect(main.getByLabel("Language")).toHaveValue("python3");
   await expect(main.getByText("Guessed from the run commands.")).toBeVisible();
   // And it says what an import cannot give the author, before they ask for one.
-  await expect(main.getByText(/ReCodEx requires a reference solution/)).toBeVisible();
+  await expect(main.getByText(/UPolníček requires a reference solution/)).toBeVisible();
 });
 
 test("names what it could not carry over, test by test", async ({ page }) => {

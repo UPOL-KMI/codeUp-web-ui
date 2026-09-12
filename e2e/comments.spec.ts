@@ -107,7 +107,7 @@ test("a private comment is a note to oneself and nobody else has it", async ({ b
   await teacherMain.getByLabel("Keep this to myself").check();
   // The checkbox says what private means here, which is stronger than most people expect.
   await expect(
-    teacherMain.getByText("ReCodEx leaves a private comment out", { exact: false }),
+    teacherMain.getByText("UPolníček leaves a private comment out", { exact: false }),
   ).toBeVisible();
   await teacherMain.getByRole("button", { name: "Post it" }).click();
   await expect(teacher.getByText("Posted.", { exact: true })).toBeVisible();

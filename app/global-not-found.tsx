@@ -10,7 +10,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ReCodEx",
+  title: "UPolníček",
 };
 
 export default function GlobalNotFound() {

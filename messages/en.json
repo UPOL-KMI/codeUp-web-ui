@@ -1,11 +1,11 @@
 {
   "Metadata": {
-    "title": "ReCodEx"
+    "title": "UPolníček — assignment submission"
   },
   "HomePage": {
-    "title": "ReCodEx",
+    "title": "UPolníček",
     "tagline": "Practise programming, and find out straight away whether it works.",
-    "what": "ReCodEx compiles and runs submitted code in a sandbox and reports back what passed and what did not. Students get an answer in seconds instead of waiting a week; teachers spend their time on how a solution is written rather than on whether it runs.",
+    "what": "UPolníček compiles and runs submitted code in a sandbox and reports back what passed and what did not. Students get an answer in seconds instead of waiting a week; teachers spend their time on how a solution is written rather than on whether it runs.",
     "signIn": "Sign in",
     "faq": "Frequently asked questions",
     "instance": {
@@ -29,19 +29,19 @@
       },
       "solutions": {
         "title": "Solutions",
-        "body": "A student submits source files or an archive; ReCodEx compiles it, runs it against every test, and shows which passed, what the compiler said, and how close to the limits it ran. Teachers see every attempt, can review the code line by line, and can override the points."
+        "body": "A student submits source files or an archive; UPolníček compiles it, runs it against every test, and shows which passed, what the compiler said, and how close to the limits it ran. Teachers see every attempt, can review the code line by line, and can override the points."
       },
       "shadow": {
-        "title": "Work ReCodEx cannot evaluate",
+        "title": "Work UPolníček cannot evaluate",
         "body": "Oral exams, presentations, attendance — a shadow assignment carries points a teacher awards by hand, so a group's total is the whole course rather than only the part a machine can mark."
       }
     },
-    "acknowledgement": "ReCodEx was created with the support of the Student Grant Program of the Faculty of Mathematics and Physics, Charles University, and is maintained by its School of Computer Science.",
+    "acknowledgement": "UPolníček extends ReCodEx — the open-source system created with the support of the Student Grant Program of the Faculty of Mathematics and Physics, Charles University, and maintained by its School of Computer Science. UPolníček is developed by the Department of Computer Science, Faculty of Science, Palacký University Olomouc.",
     "links": {
       "source": "Source code",
-      "docs": "Documentation"
+      "docs": "ReCodEx documentation"
     },
-    "license": "ReCodEx is open source, released under the MIT licence.",
+    "license": "UPolníček is open source, released under the MIT licence — as is ReCodEx, which it builds on.",
     "docs": {
       "title": "Documentation",
       "body": "How to install it, how to teach with it, and how to submit to it.",
@@ -73,13 +73,13 @@
   },
   "Login": {
     "title": "Sign in",
-    "subtitle": "ReCodEx — your assignments, your solutions and how they were evaluated.",
+    "subtitle": "UPolníček — your assignments, your solutions and how they were evaluated.",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "signInRequired": "That page is for signed-in users. Sign in and you will be taken there.",
-    "externalAuthFailed": "Signing in through the external service did not work. Try again, or use your ReCodEx password below.",
+    "externalAuthFailed": "Signing in through the external service did not work. Try again, or use your UPolníček password below.",
     "shortSession": "Short session ({minutes} minutes)",
     "shortSessionHint": "For a public computer: the session ends sooner, even if you forget to sign out.",
     "errors": {
@@ -94,7 +94,7 @@
   "Register": {
     "title": "Create account",
     "explain": "An account here is yours: your solutions, your points, your deadlines.",
-    "closedShort": "Not on this ReCodEx instance.",
+    "closedShort": "Not on this UPolníček instance.",
     "closed": "This instance does not let people create their own accounts. Accounts are made by whoever administers it — usually your faculty or your teacher — or by signing in through the institution's own login service.",
     "haveAccount": "I already have an account",
     "firstName": "Given name",
@@ -123,7 +123,7 @@
     }
   },
   "Consent": {
-    "agree": "I agree that my personal data will be processed by ReCodEx in accordance with its GDPR policy.",
+    "agree": "I agree that my personal data will be processed by UPolníček in accordance with its GDPR policy.",
     "required": "Your agreement is needed before an account can be created."
   },
   "ForgotPassword": {
@@ -161,10 +161,10 @@
   },
   "EmailVerification": {
     "title": "Confirm your email address",
-    "explain": "This link was sent to the address on your ReCodEx account.",
+    "explain": "This link was sent to the address on your UPolníček account.",
     "verify": "Confirm the address",
     "verifying": "Confirming…",
-    "done": "The address is confirmed. ReCodEx can reach you there.",
+    "done": "The address is confirmed. UPolníček can reach you there.",
     "toDashboard": "Go to the dashboard",
     "toLogin": "Go to signing in",
     "noToken": "This address carries no confirmation link. Open the link from the email.",
@@ -172,7 +172,7 @@
       "failed": "The address was not confirmed. The link may have expired."
     },
     "callout": {
-      "explain": "Your email address has not been confirmed yet. ReCodEx sends deadlines, evaluation results and review notices there, so an unconfirmed address means silence rather than a locked account.",
+      "explain": "Your email address has not been confirmed yet. UPolníček sends deadlines, evaluation results and review notices there, so an unconfirmed address means silence rather than a locked account.",
       "resend": "Send the message again",
       "sending": "Sending…",
       "sent": "The message is on its way. Open the link in it to confirm the address.",
@@ -181,7 +181,7 @@
   },
   "AcceptInvitation": {
     "title": "Accept invitation",
-    "welcome": "You have been invited to ReCodEx. Your details are already filled in from the invitation and cannot be changed here — all that is left is to choose a password for your new account.",
+    "welcome": "You have been invited to UPolníček. Your details are already filled in from the invitation and cannot be changed here — all that is left is to choose a password for your new account.",
     "details": "The invitation",
     "invitedPerson": "Invited person",
     "email": "Email, which is also your login name",
@@ -222,7 +222,7 @@
     "expired": "This invitation link has expired. Ask whoever sent it to you for a new one.",
     "organizational": "This group is organizational — it holds other groups rather than students, so nobody can be enrolled in it.",
     "archived": "This group has been archived, and archived groups take no new students.",
-    "notAllowed": "You cannot join this group with this link. It may belong to a different ReCodEx instance, or you may be locked into an exam elsewhere.",
+    "notAllowed": "You cannot join this group with this link. It may belong to a different UPolníček instance, or you may be locked into an exam elsewhere.",
     "errors": {
       "acceptFailed": "Joining the group did not work. Check the invitation link and try again."
     }
@@ -249,7 +249,7 @@
     },
     "shadow": {
       "heading": "Graded without a submission",
-      "explain": "Work ReCodEx does not evaluate — an oral exam, a presentation, attendance. The points are awarded by hand, and the deadline is informative: whether it was missed is the teacher's call, not the system's.",
+      "explain": "Work UPolníček does not evaluate — an oral exam, a presentation, attendance. The points are awarded by hand, and the deadline is informative: whether it was missed is the teacher's call, not the system's.",
       "untitled": "Unnamed shadow assignment",
       "bonus": "Bonus",
       "noDeadline": "No deadline",
@@ -1243,7 +1243,7 @@
     "text": "What the student is asked to do",
     "noText": "This exercise has no text in any language yet.",
     "otherLocales": "Also written in: {locales}.",
-    "externalText": "The full text is kept outside ReCodEx",
+    "externalText": "The full text is kept outside UPolníček",
     "details": "Details",
     "files": "Attached files",
     "filesExplain": "Files the evaluation uses — expected outputs, test data, headers. Students do not see them.",
@@ -1286,7 +1286,7 @@
     },
     "broken": {
       "title": "This exercise cannot be assigned yet",
-      "explain": "ReCodEx checks an exercise before letting anyone assign it. These are the parts it found missing:"
+      "explain": "UPolníček checks an exercise before letting anyone assign it. These are the parts it found missing:"
     },
     "validation": {
       "no-texts": "It has no text in any language.",
@@ -1305,7 +1305,7 @@
     "title": "Exercise settings",
     "backToExercise": "Back to the exercise",
     "settings": "Basic settings",
-    "archivedNotice": "This exercise is archived, so ReCodEx will not let it be changed. Restore it below if you need to edit it.",
+    "archivedNotice": "This exercise is archived, so UPolníček will not let it be changed. Restore it below if you need to edit it.",
     "readOnlyNotice": "You may not change this exercise's settings — only the controls below are yours.",
     "form": {
       "locale": "Language: {locale}",
@@ -1315,7 +1315,7 @@
       "description": "Short description",
       "descriptionHint": "Only teachers see this — a note about what the exercise is for.",
       "link": "External text",
-      "linkHint": "An address holding the full text, when it is kept outside ReCodEx.",
+      "linkHint": "An address holding the full text, when it is kept outside UPolníček.",
       "difficulty": "Difficulty",
       "difficulties": {
         "easy": "Easy",
@@ -1512,8 +1512,8 @@
     "mappedHeading": "Tests that would be created",
     "notesHeading": "What could not be carried over exactly",
     "noNotes": "Everything in the file maps.",
-    "nothingMapped": "Nothing in this file maps onto a ReCodEx test, so there is nothing to create.",
-    "notAssignable": "An imported exercise cannot be assigned yet: ReCodEx requires a reference solution, and a Classroom template does not carry one. Add one on the exercise's own screen, along with the limits and anything else the tests need.",
+    "nothingMapped": "Nothing in this file maps onto a UPolníček test, so there is nothing to create.",
+    "notAssignable": "An imported exercise cannot be assigned yet: UPolníček requires a reference solution, and a Classroom template does not carry one. Add one on the exercise's own screen, along with the limits and anything else the tests need.",
     "testJudgeExact": "byte-exact output",
     "testJudgeToken": "output compared token by token",
     "testWeight": "weight {weight}",
@@ -1526,8 +1526,8 @@
       "timeout-clamped": "Its timeout was longer than a wall-time limit may be here, so it was reduced.",
       "duplicate-name": "Another test has the same name, and the score configuration is keyed by name, so this one was numbered.",
       "unnamed-test": "It has no name, so it was named after its position.",
-      "renamed-test": "Its name uses characters ReCodEx does not allow in a test name, so it was rewritten.",
-      "rounded-points": "Its points are not a whole number, and a weight has to be, so it was rounded. Classroom's totals and ReCodEx's do not match either way."
+      "renamed-test": "Its name uses characters UPolníček does not allow in a test name, so it was rewritten.",
+      "rounded-points": "Its points are not a whole number, and a weight has to be, so it was rounded. Classroom's totals and UPolníček's do not match either way."
     },
     "severity": {
       "dropped": "Not imported",
@@ -1538,7 +1538,7 @@
       "noGroup": "Choose the course to create the exercise in.",
       "noName": "Give the exercise a name.",
       "noEnvironment": "Choose the language the solutions are written in.",
-      "noTests": "There is nothing to import: no test in this file maps onto a ReCodEx test.",
+      "noTests": "There is nothing to import: no test in this file maps onto a UPolníček test.",
       "uploadFailed": "The test data could not be uploaded, so nothing was created.",
       "unknown": "no reason given",
       "nothingCreated": "nothing was created",
@@ -1672,7 +1672,7 @@
       "execTargetsExplain": "Which targets the build tool runs."
     },
     "errors": {
-      "invalid": "Some of these values are not something ReCodEx can store. Check the fields marked below.",
+      "invalid": "Some of these values are not something UPolníček can store. Check the fields marked below.",
       "testsFailed": "The tests could not be saved.",
       "environmentsFailed": "The languages could not be saved.",
       "configFailed": "The configuration could not be saved.",
@@ -1684,7 +1684,7 @@
     "remove": "Remove",
     "toAdvanced": {
       "title": "A configuration of your own",
-      "explain": "The form above expresses the ordinary shape of an exercise: ReCodEx picks the pipelines and knows what each field means. An exercise that does not fit that shape — a custom judge chain, a two-stage build, a language the form has no words for — can instead name its own pipelines and fill in every variable they ask for. Switching loses nothing: the configuration you have is kept and the other editor reads it.",
+      "explain": "The form above expresses the ordinary shape of an exercise: UPolníček picks the pipelines and knows what each field means. An exercise that does not fit that shape — a custom judge chain, a two-stage build, a language the form has no words for — can instead name its own pipelines and fill in every variable they ask for. Switching loses nothing: the configuration you have is kept and the other editor reads it.",
       "action": "Configure it myself",
       "done": "This exercise now has a configuration of its own."
     },
@@ -1706,7 +1706,7 @@
     },
     "pipelines": {
       "title": "Pipelines",
-      "explain": "Every test runs through these, in this order. Which variables you then have to fill in is decided by them, not by ReCodEx's assumptions.",
+      "explain": "Every test runs through these, in this order. Which variables you then have to fill in is decided by them, not by UPolníček's assumptions.",
       "none": "This deployment has no pipeline for the chosen language.",
       "save": "Save the pipelines",
       "saved": "The pipelines were saved.",
@@ -1714,7 +1714,7 @@
     },
     "values": {
       "title": "What each test supplies",
-      "explain": "Every variable the chosen pipelines ask for, per test. ReCodEx answers what those are — this is not a list this app carries.",
+      "explain": "Every variable the chosen pipelines ask for, per test. UPolníček answers what those are — this is not a list this app carries.",
       "nothing": "Choose a language and at least one pipeline first.",
       "variableOf": "{variable} for {test}",
       "save": "Save the values",
@@ -1722,7 +1722,7 @@
     },
     "toSimple": {
       "title": "Back to the standard form",
-      "explain": "The standard form only knows ReCodEx's own pipelines and a fixed set of variables, so coming back rebuilds the configuration and drops whatever it cannot express.",
+      "explain": "The standard form only knows UPolníček's own pipelines and a fixed set of variables, so coming back rebuilds the configuration and drops whatever it cannot express.",
       "action": "Use the standard form",
       "done": "This exercise now uses the standard form.",
       "confirm": {
@@ -1737,7 +1737,7 @@
     "errors": {
       "generic": "That did not work.",
       "switchFailed": "The configuration kind could not be changed.",
-      "variablesFailed": "ReCodEx could not say which variables these pipelines need.",
+      "variablesFailed": "UPolníček could not say which variables these pipelines need.",
       "pipelinesFailed": "The pipelines could not be saved.",
       "environmentFailed": "The language could not be saved.",
       "configFailed": "The values could not be saved.",
@@ -1761,7 +1761,7 @@
       "explain": "Switching starts from what this exercise already does — equal weights become an average, unequal ones the sum over the total — so it grades exactly as before, in a form you can then change.",
       "action": "Write the score myself",
       "done": "This exercise now has a score of its own.",
-      "noTests": "Add a test first: an expression with nothing to refer to is not one ReCodEx will store."
+      "noTests": "Add a test first: an expression with nothing to refer to is not one UPolníček will store."
     },
     "switchOut": {
       "action": "Go back to an average",
@@ -1774,7 +1774,7 @@
       }
     },
     "errors": {
-      "invalid": "That is not an expression ReCodEx can store.",
+      "invalid": "That is not an expression UPolníček can store.",
       "unknownTests": "No such test: {tests}",
       "noTests": "This exercise has no tests, so there is nothing for an expression to refer to.",
       "saveFailed": "The score could not be saved.",
@@ -1841,7 +1841,7 @@
       "copyAllOf": "everywhere, from the cell {test} in {environment}"
     },
     "errors": {
-      "invalid": "These limits are not something ReCodEx can store.",
+      "invalid": "These limits are not something UPolníček can store.",
       "outOfRange": "Some limits are outside what the machine allows.",
       "unknownHardwareGroup": "This exercise no longer runs on that machine. Reload the page.",
       "hardwareGroupsFailed": "The machines could not be saved.",
@@ -1930,7 +1930,7 @@
     },
     "submit": {
       "title": "Submit another",
-      "explain": "Upload the files, and ReCodEx works out which language they are before anything is run.",
+      "explain": "Upload the files, and UPolníček works out which language they are before anything is run.",
       "note": "Description",
       "noteExplain": "What is different about this one — the algorithm it uses, or what it is meant to demonstrate.",
       "check": "Check the files",
@@ -2012,7 +2012,7 @@
       "environment": "Language",
       "anyEnvironment": "Any language",
       "apply": "Apply",
-      "envIsLocal": "ReCodEx cannot filter pipelines by language, so this narrows the page you are on rather than the whole list."
+      "envIsLocal": "UPolníček cannot filter pipelines by language, so this narrows the page you are on rather than the whole list."
     },
     "summary": "Showing {from}–{to} of {total}.",
     "columns": {
@@ -2120,7 +2120,7 @@
       "deleted": "The pipeline was deleted.",
       "confirmDelete": {
         "title": "Delete this pipeline?",
-        "description": "It goes for good. ReCodEx refuses to delete one an exercise still uses, so if any do you will be told rather than surprised later.",
+        "description": "It goes for good. UPolníček refuses to delete one an exercise still uses, so if any do you will be told rather than surprised later.",
         "confirm": "Delete it"
       }
     },
@@ -2148,7 +2148,7 @@
     },
     "structure": {
       "title": "How it is wired",
-      "explain": "Boxes are operations; a variable is the wire between them. A box reads or writes a variable by naming it, so a port left unconnected is not an error ReCodEx will report — it is simply a wire that is not there.",
+      "explain": "Boxes are operations; a variable is the wire between them. A box reads or writes a variable by naming it, so a port left unconnected is not an error UPolníček will report — it is simply a wire that is not there.",
       "preview": "The pipeline as you are editing it",
       "variables": "Variables",
       "variablesExplain": "A wire, or a value the pipeline supplies itself. A value starting with $ is a hole an exercise fills in.",
@@ -2178,7 +2178,7 @@
       "addBox": "Add the box",
       "remove": "Remove",
       "broken": {
-        "title": "ReCodEx will refuse this",
+        "title": "UPolníček will refuse this",
         "writtenTwice": "{name} is written by more than one port: {ports}",
         "unread": "Nothing reads these variables: {variables}",
         "explain": "A wire can have one source, and a value nothing consumes is not a wire at all. A variable that is only read is fine — that is what a hole the exercise fills in looks like."
@@ -2186,18 +2186,18 @@
       "dangling": {
         "title": "Some ports are not wired up",
         "ports": "Connected to nothing: {ports}",
-        "explain": "ReCodEx will accept this. It will simply not do what the missing wires would have done."
+        "explain": "UPolníček will accept this. It will simply not do what the missing wires would have done."
       },
       "save": "Save the structure",
       "saving": "Saving…",
       "saved": "The structure was saved.",
-      "saveNote": "The whole structure is saved at once — ReCodEx has no call that changes one box.",
+      "saveNote": "The whole structure is saved at once — UPolníček has no call that changes one box.",
       "saveFailed": "The structure could not be saved.",
       "removeVariable": "Remove variable {index}",
       "removeBox": "Remove box {name}",
       "export": {
         "action": "Export as a file",
-        "note": "A JSON file in the same format the old frontend reads and writes, so a definition can move between instances or be edited outside ReCodEx."
+        "note": "A JSON file in the same format the old frontend reads and writes, so a definition can move between instances or be edited outside UPolníček."
       },
       "import": {
         "action": "Import a file",
@@ -2219,7 +2219,7 @@
       }
     },
     "errors": {
-      "invalid": "That is not something ReCodEx can store.",
+      "invalid": "That is not something UPolníček can store.",
       "duplicateBox": "Two boxes cannot have the same name.",
       "duplicateVariable": "Two variables cannot have the same name.",
       "settingsFailed": "The settings could not be saved.",
@@ -2281,11 +2281,11 @@
       "enable": "Enable",
       "disable": "Disable",
       "delete": "Delete",
-      "confirmEnable": "{name} will be able to sign in and use ReCodEx again. The account may have been disabled for a reason.",
+      "confirmEnable": "{name} will be able to sign in and use UPolníček again. The account may have been disabled for a reason.",
       "confirmDisable": "{name} will be refused every operation until somebody enables the account again. Their groups and solutions are kept.",
       "confirmDelete": "The account of {name} will be anonymised: the name, the email address and any external identities go for good. Submitted solutions and the points they earned stay, attached to nobody.",
       "confirmDeleteSelf": "This is your own account. It will be anonymised: your name, your email address and any external identities go for good, and you will be signed out. Submitted solutions and the points they earned stay, attached to nobody.",
-      "enabled": "{name} can use ReCodEx again.",
+      "enabled": "{name} can use UPolníček again.",
       "disabled": "{name} is disabled.",
       "deleted": "The account of {name} is gone.",
       "enableFailed": "The account could not be enabled.",
@@ -2389,7 +2389,7 @@
     },
     "resolveDialog": {
       "title": "Resolve this failure?",
-      "explain": "It leaves the queue for good — ReCodEx has no way to mark a failure open again.",
+      "explain": "It leaves the queue for good — UPolníček has no way to mark a failure open again.",
       "note": "What was done about it",
       "notePlaceholder": "Restarted the worker, resubmitted…",
       "sendEmail": "Tell the author it was looked at",
@@ -2563,7 +2563,7 @@
     "posting": "Posting…",
     "posted": "Posted.",
     "keepPrivate": "Keep this to myself",
-    "privateMeans": "Nobody else will see it — ReCodEx leaves a private comment out of everyone else's copy of the discussion, so it is a note in the margin rather than a quiet word with the staff.",
+    "privateMeans": "Nobody else will see it — UPolníček leaves a private comment out of everyone else's copy of the discussion, so it is a note in the margin rather than a quiet word with the staff.",
     "publicMeans": "It will be visible to {audience}, and they will be told about it by email.",
     "makePrivate": "Hide from others",
     "madePrivate": "Only you can see it now.",
@@ -2578,7 +2578,7 @@
     },
     "errors": {
       "empty": "Write something first.",
-      "tooLong": "That is longer than ReCodEx will store.",
+      "tooLong": "That is longer than UPolníček will store.",
       "postFailed": "The comment could not be posted.",
       "privacyFailed": "That could not be changed.",
       "deleteFailed": "The comment could not be deleted."
@@ -2731,7 +2731,7 @@
       "imageTitle": "QR code encoding the address of the current page"
     },
     "viewAs": {
-      "banner": "You are viewing ReCodEx as {role}. Some things are hidden because that role cannot reach them.",
+      "banner": "You are viewing UPolníček as {role}. Some things are hidden because that role cannot reach them.",
       "restore": "Go back to your own role",
       "roles": {
         "student": "Student",
@@ -2957,7 +2957,7 @@
       "text": "Text",
       "textHint": "Markdown. This is what a student reads.",
       "link": "External text",
-      "linkHint": "An address holding the full text, when it is kept outside ReCodEx.",
+      "linkHint": "An address holding the full text, when it is kept outside UPolníček.",
       "save": "Save the text",
       "saving": "Saving…",
       "saved": "The text was saved.",
@@ -2989,7 +2989,7 @@
   "AssignExercise": {
     "title": "Assign an exercise",
     "backToGroup": "Back to the group",
-    "explain": "Assigning creates the assignment straight away, with ReCodEx's default deadline and points — you set those on the next screen. Nobody sees it until you make it visible.",
+    "explain": "Assigning creates the assignment straight away, with UPolníček's default deadline and points — you set those on the next screen. Nobody sees it until you make it visible.",
     "searchLabel": "Search the exercise catalog",
     "searchPlaceholder": "Search by name",
     "search": "Search",
@@ -3119,7 +3119,7 @@
     "choose": "Choose a language",
     "entryPoint": "File to start",
     "chooseEntryPoint": "Choose the file to start",
-    "entryPointHelp": "Your solution has several files, so tell ReCodEx which one is the program.",
+    "entryPointHelp": "Your solution has several files, so tell UPolníček which one is the program.",
     "note": "Note",
     "notePlaceholder": "What did you change?",
     "noteHelp": "Only you and your teachers see this.",
@@ -3144,7 +3144,7 @@
     "title": "Detected similarities",
     "attempt": "Attempt {attempt}",
     "backToSolution": "Back to the solution",
-    "batch": "Reported by {tool}. ReCodEx does not detect similarities itself — an external tool uploads what it found.",
+    "batch": "Reported by {tool}. UPolníček does not detect similarities itself — an external tool uploads what it found.",
     "unknownTool": "an unnamed tool",
     "checkedAt": "Upload finished",
     "matches": "Who this was matched against",
@@ -3230,7 +3230,7 @@
       "name": "Name",
       "text": "Text",
       "link": "Link",
-      "linkHint": "Where the work lives, if it is not in ReCodEx.",
+      "linkHint": "Where the work lives, if it is not in UPolníček.",
       "maxPoints": "Points it is worth",
       "deadline": "Deadline (informative)",
       "deadlineHint": "Nothing is submitted against it and nothing is enforced by it -- you decide whether it was met.",
@@ -3297,7 +3297,7 @@
     "settings": {
       "title": "Notifications and language",
       "defaultLanguage": "Preferred language",
-      "defaultLanguageHint": "Used for the emails ReCodEx sends you.",
+      "defaultLanguageHint": "Used for the emails UPolníček sends you.",
       "languages": {
         "en": "English",
         "cs": "Czech"
@@ -3356,7 +3356,7 @@
     },
     "token": {
       "title": "Application token",
-      "explain": "A token lets a script or an outside tool act on your behalf through ReCodEx's API. The scope narrows what it may do; it can never do more than you can. Anyone holding it acts as you, so treat it as a password.",
+      "explain": "A token lets a script or an outside tool act on your behalf through UPolníček's API. The scope narrows what it may do; it can never do more than you can. Anyone holding it acts as you, so treat it as a password.",
       "scope": "Scope",
       "scopes": {
         "master": "Everything you can do",
@@ -3381,7 +3381,7 @@
       "copyFailed": "Your browser would not let the page copy it. Select the token and copy it by hand.",
       "issued": {
         "title": "Your new token",
-        "onceOnly": "This is the only time it is shown. ReCodEx keeps no copy it could show you again — if you lose it, generate another.",
+        "onceOnly": "This is the only time it is shown. UPolníček keeps no copy it could show you again — if you lose it, generate another.",
         "label": "The generated token",
         "copy": "Copy",
         "copied": "Copied"
@@ -3389,7 +3389,7 @@
     },
     "viewAs": {
       "title": "View the app as someone else",
-      "explain": "See ReCodEx as a person with fewer privileges sees it — useful for checking what your students actually get. Your account is unchanged; only this browser's session acts differently.",
+      "explain": "See UPolníček as a person with fewer privileges sees it — useful for checking what your students actually get. Your account is unchanged; only this browser's session acts differently.",
       "notContainment": "This is a preview, not a safety measure: a narrowed session can restore itself at any time, so it protects nothing and is not a way to work more safely.",
       "roles": {
         "student": "Student",
@@ -3434,11 +3434,11 @@
     "role": {
       "title": "Role",
       "label": "Role",
-      "explain": "The role decides what this person may do everywhere in ReCodEx, not only in one group.",
+      "explain": "The role decides what this person may do everywhere in UPolníček, not only in one group.",
       "save": "Change role",
       "changed": "The role is now {role}.",
       "failed": "The role could not be changed.",
-      "confirm": "{from} becomes {to}, everywhere in ReCodEx and at once.",
+      "confirm": "{from} becomes {to}, everywhere in UPolníček and at once.",
       "names": {
         "student": "Student",
         "supervisor-student": "Supervisor and student",
@@ -3490,7 +3490,7 @@
   },
   "Instances": {
     "title": "Instances",
-    "subtitle": "The separate ReCodEx worlds this deployment runs.",
+    "subtitle": "The separate UPolníček worlds this deployment runs.",
     "detailSubtitle": "What this instance is, who may join it, and what keeps it running.",
     "unnamed": "Unnamed instance",
     "columns": {

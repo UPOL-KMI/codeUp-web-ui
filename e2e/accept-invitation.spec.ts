@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * The page an emailed ReCodEx invitation leads to (S-024) -- the only screen in the product that
+ * The page an emailed UPolníček invitation leads to (S-024) -- the only screen in the product that
  * creates an account, and the only one reached with no session at all.
  *
  * Every token below is **built here, with a signature that is not real**, and that is exactly what

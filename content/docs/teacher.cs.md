@@ -3,7 +3,7 @@ studenti odevzdali.
 
 ## Jak je to poskládané
 
-ReCodEx má čtyři pojmy a všechno ostatní je detail některého z nich.
+UPolníček má čtyři pojmy a všechno ostatní je detail některého z nich.
 
 - **Skupina** je kurz nebo seminární skupina uvnitř něj. Drží studenty a zadání a může mít
   podskupiny.
@@ -53,7 +53,7 @@ bodů, cvičení není hotové — a každý student by narazil na tutéž zeď.
 ### Import z GitHub Classroom
 
 Zadání s `autograding.json` jde naimportovat místo přepisování. Jeho testy typu `input`/`output` se
-mapují na testy v ReCodExu čistě, `README.md` šablony se stane textem cvičení a ostatní soubory
+mapují na testy v UPolníčku čistě, `README.md` šablony se stane textem cvičení a ostatní soubory
 přílohami.
 
 Co naimportovat nejde, je řečeno nahlas a ne odhadnuto: test, který spouští libovolný příkaz shellu,

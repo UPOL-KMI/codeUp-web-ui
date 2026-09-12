@@ -75,7 +75,17 @@ async function publish(page: Page, text: string): Promise<void> {
 
 async function removeMessage(page: Page, text: string): Promise<void> {
   await page.goto("/en/system-messages");
-  const row = page.getByRole("main").getByRole("row").filter({ hasText: text });
+  const main = page.getByRole("main");
+
+  // **Wait for the table before counting rows (PF-021).** `count()` does not auto-wait, and this
+  // page streams: under the full suite's load the rows arrived after `goto` resolved, the count
+  // came back 0, and this cleanup returned having deleted nothing -- silently, because deleting
+  // nothing is also what it does when the message is already gone. The test then failed two
+  // assertions later, on the message still being on the dashboard, which is where the hunt
+  // started. Fourth of its family here, after PF-007, PF-011 and PF-014.
+  await expect(main.getByRole("table")).toBeVisible();
+
+  const row = main.getByRole("row").filter({ hasText: text });
   if ((await row.count()) === 0) return;
   await row.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Delete" }).click();

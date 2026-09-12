@@ -1,4 +1,4 @@
-Tenhle návod vezme stroj, na kterém běží Docker, a skončí u funkčního ReCodExu: API, databáze,
+Tenhle návod vezme stroj, na kterém běží Docker, a skončí u funkčního UPolníčku: API, databáze,
 worker, který v sandboxu opravdu známkuje odevzdaná řešení, a tento frontend jako vstupní brána.
 
 Je psaný pro toho, kdo server spravuje. Učitelé ani studenti z něj nepotřebují nic.

@@ -1,4 +1,4 @@
-This guide takes a machine with Docker on it and ends with a working ReCodEx: an API, a database,
+This guide takes a machine with Docker on it and ends with a working UPolníček: an API, a database,
 a sandboxed worker that grades real submissions, and this frontend serving the front door.
 
 It is written for whoever administers the server. Teachers and students need none of it.

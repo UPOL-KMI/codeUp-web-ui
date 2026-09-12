@@ -126,7 +126,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <p className="text-sm text-muted-foreground">{t("acknowledgement")}</p>
           <p className="flex flex-wrap gap-4 text-sm">
             <a
-              href="https://github.com/ReCodEx"
+              href="https://github.com/UPOL-KMI/upcode-web-ui"
               target="_blank"
               rel="noreferrer"
               className="hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

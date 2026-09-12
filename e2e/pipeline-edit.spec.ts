@@ -97,7 +97,7 @@ test("copies a pipeline, rewires the copy, and deletes it again", async ({ page 
   // than letting a red banner explain them afterwards. Wiring the new box to a variable something
   // else already writes breaks the first.
   await main.getByLabel("file-in, port input").selectOption("expected-output");
-  await expect(main.getByText("ReCodEx will refuse this")).toBeVisible();
+  await expect(main.getByText("UPolníček will refuse this")).toBeVisible();
   await expect(main.getByText("is written by more than one port")).toBeVisible();
   await expect(main.getByRole("button", { name: "Save the structure" })).toBeDisabled();
 
@@ -122,7 +122,7 @@ test("copies a pipeline, rewires the copy, and deletes it again", async ({ page 
     .getByRole("button", { name: "Remove" })
     .click();
   await main.getByLabel("file-in, port input").selectOption("entry-point");
-  await expect(main.getByText("ReCodEx will refuse this")).toHaveCount(0);
+  await expect(main.getByText("UPolníček will refuse this")).toHaveCount(0);
 
   await main.getByRole("button", { name: "Save the structure" }).click();
   await expect(page.getByText("The structure was saved.", { exact: true })).toBeVisible();
@@ -163,7 +163,7 @@ test("renaming a variable rewires every port that named it", async ({ page }) =>
   await expect(port).toHaveValue("renamed-files");
   // And the producing port followed too, or the variable would end up written by nobody.
   await expect(main.getByLabel("sources, port input")).toHaveValue("renamed-files");
-  await expect(main.getByText("ReCodEx will refuse this")).toHaveCount(0);
+  await expect(main.getByText("UPolníček will refuse this")).toHaveCount(0);
 
   await deleteCopy(page, copyId);
 });

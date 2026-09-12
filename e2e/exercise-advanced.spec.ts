@@ -57,7 +57,7 @@ test("takes an exercise to a configuration of its own and back again", async ({ 
   await expect(main.getByRole("heading", { name: "Pipelines", level: 3 })).toBeVisible();
   await expect(main.getByRole("button", { name: "Save configuration" })).toHaveCount(0);
 
-  // Choosing pipelines is what decides which variables have to be filled in -- and ReCodEx is the
+  // Choosing pipelines is what decides which variables have to be filled in -- and UPolníček is the
   // one that says which those are.
   await main.getByRole("checkbox", { name: "Python execution & evaluation [stdout]" }).check();
   await main.getByRole("button", { name: "Save the pipelines" }).click();

@@ -8,11 +8,11 @@ import { deploymentInstanceNames } from "./helpers/core-api";
  * product a visitor sees before they have an account, and the sign-in page's external-auth section
  * is decided by deployment configuration rather than by who is asking.
  */
-test("tells a visitor what ReCodEx is, and which instance this is", async ({ page }) => {
+test("tells a visitor what UPolníček is, and which instance this is", async ({ page }) => {
   await page.goto("/en");
   const main = page.getByRole("main");
 
-  await expect(main.getByRole("heading", { name: "ReCodEx", level: 1 })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "UPolníček", level: 1 })).toBeVisible();
   await expect(main.getByText("Practise programming")).toBeVisible();
 
   // The instance names itself from `/v1/instances`, which core-api grants to the unauthenticated

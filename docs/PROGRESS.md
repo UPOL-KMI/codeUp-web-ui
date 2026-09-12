@@ -6034,3 +6034,58 @@ else in the product.
 Verified against the deployment: both locales of all three guides, the signpost from `/`, the
 markdown rendering as markdown, and a slug that is not a guide answering the 404 body Q-016
 describes.
+
+---
+
+### 2026-09-12 — the product has its own name
+
+**Ticket:** X-003. **Status:** done.
+
+The operator settled the name after a round of candidates: **UPolníček**. It is not a new coinage
+-- the department already ships a Visual Studio extension by that name that submits assignments, so
+the word already means "where homework goes" to the people who will use this. `úkolníček` is a
+homework notebook, which is the thing the operator actually asked a name to convey; `CodeUP` and
+`UPload`, the other two finalists, needed a subtitle to say the same.
+
+**One measured advantage decided it.** Czech declines the name. Seventeen strings say `v ReCodExu`,
+`do ReCodExu`, `API ReCodExu`, and an indeclinable name like `CodeUP` would have meant rewriting
+every one of those sentences around it. `UPolníčku` simply replaces `ReCodExu`.
+
+**Three classes of mention, separated by hand rather than by `sed`.** This is the whole of the
+work, and a blind find-and-replace would have got all three wrong:
+
+- **This product** -- 62 strings per locale, the `global-not-found` title, six guide documents,
+  six e2e specs asserting on visible text. Renamed.
+- **Upstream ReCodEx** -- the footer credit, the FAQ's default wiki URL, and every code comment
+  that explains core-api or the legacy app. Unchanged, because they are about a different piece of
+  software that still exists.
+- **Seed fixture data** -- `Hello, ReCodEx!` is the seeded exercise's expected output, written into
+  `expected.txt` and into its reference solution. Renaming the constant would have left the
+  fixture ungraded until a re-seed, which is PF-016's lesson arriving from a different direction.
+  Left alone, deliberately.
+
+**The footer carries the three things the operator asked for**: that this extends ReCodEx (with
+the Charles University credit intact), that KI PřF UP develops it, and the MIT licence. The
+"Source code" link pointed at upstream and now points at this repository -- it was already wrong
+before the rename, and the rename is where it became visible. `LICENSE`'s copyright line moved to
+the university; the attribution paragraph below it was already accurate and stayed.
+
+The browser tab says **UPolníček — odevzdávání úloh** rather than the bare name: the operator's
+original question was how a student knows what the tool is for, and the answer was never the name
+alone.
+
+**PF-021 came out of the same run, and it is not the rename's.** `system-messages.spec.ts` had
+failed once before today and passed alone and in two full runs afterwards, so it was left as a
+flake; this run made it twice in five, which is a pattern rather than an accident.
+
+The assertion that failed says a deleted broadcast is still on the dashboard, which reads like
+caching -- and two measurements said otherwise. The banner's own read goes through the `no-store`
+client, and a probe against core-api created a message, deleted it, and asked `/v1/notifications`
+again at 0, 250, 500, 1000, 2000 and 4000 ms: gone every time. The API is immediately consistent.
+
+What was actually wrong is one line in the spec's cleanup: `if ((await row.count()) === 0) return;`.
+`count()` does not auto-wait, the management page streams, and under the suite's load the rows
+arrived after `goto` resolved -- so the cleanup deleted nothing and said nothing, because deleting
+nothing is also its correct behaviour when the message is already gone. It waits for the table
+first now. **Fourth of that family**, after PF-007, PF-011 and PF-014: every one of them a cleanup
+whose failure mode is silence.

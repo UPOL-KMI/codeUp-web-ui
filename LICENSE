@@ -1,8 +1,9 @@
 MIT License
 
-Copyright (c) 2025-2026 ReCodEx web-next contributors
+Copyright (c) 2025-2026 Palacky University Olomouc, Faculty of Science,
+Department of Computer Science, and the UPolnicek contributors
 
-This project is a from-scratch replacement frontend for ReCodEx
+UPolnicek is a from-scratch replacement frontend for ReCodEx
 (https://github.com/ReCodEx), the programming-assignment evaluation system
 developed at the Faculty of Mathematics and Physics, Charles University.
 ReCodEx and its original web application are themselves MIT-licensed, and

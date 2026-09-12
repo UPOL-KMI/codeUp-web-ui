@@ -8,7 +8,7 @@ import { seededFlaggedSolution } from "./helpers/core-api";
 /**
  * The detected-similarities report (S-019).
  *
- * The fixture it reads is seeded (`ensureDetectedSimilarity`): ReCodEx detects nothing itself, so
+ * The fixture it reads is seeded (`ensureDetectedSimilarity`): UPolníček detects nothing itself, so
  * the only way this screen ever has data is for a tool to have uploaded some, and the seed does
  * exactly that -- one similarity between the two seeded students' solutions to the same
  * assignment.
@@ -32,7 +32,7 @@ test("leads a teacher from a flagged solution to what was matched", async ({ pag
   await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\/plagiarisms$/);
 
   // The report says who reported it, who it matched, and shows both sides.
-  await expect(main.getByText("ReCodEx does not detect similarities itself")).toBeVisible();
+  await expect(main.getByText("UPolníček does not detect similarities itself")).toBeVisible();
   await expect(main.getByText(/Bob Classmate — \d+ % similar/)).toBeVisible();
   await expect(main.getByRole("heading", { name: /^This solution —/ })).toBeVisible();
   await expect(main.getByRole("heading", { name: /^The other solution —/ })).toBeVisible();

@@ -1,11 +1,11 @@
 {
   "Metadata": {
-    "title": "ReCodEx"
+    "title": "UPolníček — odevzdávání úloh"
   },
   "HomePage": {
-    "title": "ReCodEx",
+    "title": "UPolníček",
     "tagline": "Procvičujte programování a hned se dozvíte, jestli to funguje.",
-    "what": "ReCodEx odevzdaný kód přeloží a spustí v izolovaném prostředí a řekne, co prošlo a co ne. Studenti mají odpověď během vteřin místo za týden; vyučující tráví čas tím, jak je řešení napsané, a ne tím, jestli vůbec běží.",
+    "what": "UPolníček odevzdaný kód přeloží a spustí v izolovaném prostředí a řekne, co prošlo a co ne. Studenti mají odpověď během vteřin místo za týden; vyučující tráví čas tím, jak je řešení napsané, a ne tím, jestli vůbec běží.",
     "signIn": "Přihlásit se",
     "faq": "Časté otázky",
     "instance": {
@@ -29,19 +29,19 @@
       },
       "solutions": {
         "title": "Řešení",
-        "body": "Student odevzdá zdrojové soubory nebo archiv; ReCodEx je přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům to běželo. Vyučující vidí každý pokus, může kód okomentovat řádek po řádku a body přepsat."
+        "body": "Student odevzdá zdrojové soubory nebo archiv; UPolníček je přeloží, pustí proti všem testům a ukáže, co prošlo, co řekl překladač a jak blízko limitům to běželo. Vyučující vidí každý pokus, může kód okomentovat řádek po řádku a body přepsat."
       },
       "shadow": {
-        "title": "Práce, kterou ReCodEx nevyhodnotí",
+        "title": "Práce, kterou UPolníček nevyhodnotí",
         "body": "Ústní zkoušky, prezentace, docházka — stínové zadání nese body, které vyučující udělí ručně, takže součet ve skupině odpovídá celému předmětu, ne jen té části, kterou umí ohodnotit stroj."
       }
     },
-    "acknowledgement": "ReCodEx vznikl s podporou Studentského grantového programu Matematicko-fyzikální fakulty Univerzity Karlovy a spravuje jej její Informatická sekce.",
+    "acknowledgement": "UPolníček je rozšíření ReCodExu — otevřeného systému, který vznikl s podporou Studentského grantového programu Matematicko-fyzikální fakulty Univerzity Karlovy a který spravuje její Informatická sekce. UPolníček vyvíjí Katedra informatiky Přírodovědecké fakulty Univerzity Palackého v Olomouci.",
     "links": {
       "source": "Zdrojový kód",
-      "docs": "Dokumentace"
+      "docs": "Dokumentace ReCodExu"
     },
-    "license": "ReCodEx je open source, vydaný pod licencí MIT.",
+    "license": "UPolníček je open source, vydaný pod licencí MIT — stejně jako ReCodEx, ze kterého vychází.",
     "docs": {
       "title": "Dokumentace",
       "body": "Jak to nainstalovat, jak v tom učit a jak do toho odevzdávat.",
@@ -73,13 +73,13 @@
   },
   "Login": {
     "title": "Přihlášení",
-    "subtitle": "ReCodEx — vaše zadání, vaše řešení a jak byla vyhodnocena.",
+    "subtitle": "UPolníček — vaše zadání, vaše řešení a jak byla vyhodnocena.",
     "email": "E-mail",
     "password": "Heslo",
     "signIn": "Přihlásit se",
     "signingIn": "Přihlašuji…",
     "signInRequired": "Stránka, kterou jste chtěli otevřít, je jen pro přihlášené. Po přihlášení se na ni dostanete.",
-    "externalAuthFailed": "Přihlášení přes externí službu se nepovedlo. Zkuste to znovu, nebo použijte heslo k ReCodExu níže.",
+    "externalAuthFailed": "Přihlášení přes externí službu se nepovedlo. Zkuste to znovu, nebo použijte heslo k UPolníčku níže.",
     "shortSession": "Krátká relace ({minutes, plural, one {# minuta} few {# minuty} many {# minuty} other {# minut}})",
     "shortSessionHint": "Pro veřejný počítač: relace skončí dřív, i když se zapomenete odhlásit.",
     "errors": {
@@ -94,7 +94,7 @@
   "Register": {
     "title": "Vytvoření účtu",
     "explain": "Účet je váš: vaše řešení, vaše body, vaše termíny.",
-    "closedShort": "Na této instanci ReCodExu ne.",
+    "closedShort": "Na této instanci UPolníčku ne.",
     "closed": "Tato instance nedovoluje zakládat si účty samostatně. Účty zřizuje její správce — obvykle fakulta nebo vyučující — nebo vznikají přihlášením přes přihlašovací službu instituce.",
     "haveAccount": "Účet už mám",
     "firstName": "Jméno",
@@ -123,7 +123,7 @@
     }
   },
   "Consent": {
-    "agree": "Souhlasím se zpracováním osobních údajů systémem ReCodEx v souladu s jeho zásadami podle GDPR.",
+    "agree": "Souhlasím se zpracováním osobních údajů systémem UPolníček v souladu s jeho zásadami podle GDPR.",
     "required": "Bez vašeho souhlasu nelze účet vytvořit."
   },
   "ForgotPassword": {
@@ -161,10 +161,10 @@
   },
   "EmailVerification": {
     "title": "Potvrzení e-mailové adresy",
-    "explain": "Tento odkaz přišel na adresu vedenou u vašeho účtu v ReCodExu.",
+    "explain": "Tento odkaz přišel na adresu vedenou u vašeho účtu v UPolníčku.",
     "verify": "Potvrdit adresu",
     "verifying": "Potvrzuji…",
-    "done": "Adresa je potvrzená. ReCodEx vás na ní zastihne.",
+    "done": "Adresa je potvrzená. UPolníček vás na ní zastihne.",
     "toDashboard": "Přejít na přehled",
     "toLogin": "Přejít na přihlášení",
     "noToken": "Na této adrese žádný potvrzovací odkaz není. Otevřete odkaz z e-mailu.",
@@ -172,7 +172,7 @@
       "failed": "Adresu se nepodařilo potvrdit. Odkaz mohl vypršet."
     },
     "callout": {
-      "explain": "Vaše e-mailová adresa zatím není potvrzená. ReCodEx na ni posílá termíny, výsledky vyhodnocení i upozornění na revize — nepotvrzená adresa tedy znamená ticho, ne zamčený účet.",
+      "explain": "Vaše e-mailová adresa zatím není potvrzená. UPolníček na ni posílá termíny, výsledky vyhodnocení i upozornění na revize — nepotvrzená adresa tedy znamená ticho, ne zamčený účet.",
       "resend": "Poslat zprávu znovu",
       "sending": "Odesílám…",
       "sent": "Zpráva je na cestě. Adresu potvrdíte odkazem v ní.",
@@ -181,7 +181,7 @@
   },
   "AcceptInvitation": {
     "title": "Přijetí pozvánky",
-    "welcome": "Byli jste pozváni do ReCodExu. Vaše údaje jsou z pozvánky už vyplněné a nelze je zde měnit — zbývá jen zvolit heslo k novému účtu.",
+    "welcome": "Byli jste pozváni do UPolníčku. Vaše údaje jsou z pozvánky už vyplněné a nelze je zde měnit — zbývá jen zvolit heslo k novému účtu.",
     "details": "Pozvánka",
     "invitedPerson": "Pozvaná osoba",
     "email": "E-mail, který je zároveň přihlašovacím jménem",
@@ -222,7 +222,7 @@
     "expired": "Platnost tohoto odkazu vypršela. Požádejte o nový toho, kdo vám ho poslal.",
     "organizational": "Tato skupina je organizační — sdružuje další skupiny, nikoli studenty, takže do ní nelze nikoho zapsat.",
     "archived": "Tato skupina je archivovaná a archivované skupiny nepřijímají nové studenty.",
-    "notAllowed": "Do této skupiny se tímto odkazem přihlásit nelze. Může patřit do jiné instance ReCodExu, nebo jste zamčeni ve zkoušce jinde.",
+    "notAllowed": "Do této skupiny se tímto odkazem přihlásit nelze. Může patřit do jiné instance UPolníčku, nebo jste zamčeni ve zkoušce jinde.",
     "errors": {
       "acceptFailed": "Vstup do skupiny se nezdařil. Zkontrolujte odkaz na pozvánku a zkuste to znovu."
     }
@@ -249,7 +249,7 @@
     },
     "shadow": {
       "heading": "Hodnoceno bez odevzdání",
-      "explain": "Práce, kterou ReCodEx nevyhodnocuje — ústní zkouška, prezentace, docházka. Body uděluje vyučující ručně a termín je pouze informativní: jestli byl zmeškán, rozhoduje vyučující, ne systém.",
+      "explain": "Práce, kterou UPolníček nevyhodnocuje — ústní zkouška, prezentace, docházka. Body uděluje vyučující ručně a termín je pouze informativní: jestli byl zmeškán, rozhoduje vyučující, ne systém.",
       "untitled": "Nepojmenované stínové zadání",
       "bonus": "Bonus",
       "noDeadline": "Bez termínu",
@@ -1243,7 +1243,7 @@
     "text": "Co má student udělat",
     "noText": "Tato úloha zatím nemá zadání v žádném jazyce.",
     "otherLocales": "Napsáno také v: {locales}.",
-    "externalText": "Celé zadání je mimo ReCodEx",
+    "externalText": "Celé zadání je mimo UPolníček",
     "details": "Podrobnosti",
     "files": "Připojené soubory",
     "filesExplain": "Soubory, které používá vyhodnocení — očekávané výstupy, testovací data, hlavičky. Studenti je nevidí.",
@@ -1286,7 +1286,7 @@
     },
     "broken": {
       "title": "Tuto úlohu zatím nelze zadat",
-      "explain": "ReCodEx úlohu před zadáním kontroluje. Toto v ní chybí:"
+      "explain": "UPolníček úlohu před zadáním kontroluje. Toto v ní chybí:"
     },
     "validation": {
       "no-texts": "Nemá zadání v žádném jazyce.",
@@ -1305,7 +1305,7 @@
     "title": "Nastavení úlohy",
     "backToExercise": "Zpět na úlohu",
     "settings": "Základní nastavení",
-    "archivedNotice": "Tato úloha je archivovaná, takže ji ReCodEx nedovolí měnit. Pokud ji potřebujete upravit, obnovte ji níže.",
+    "archivedNotice": "Tato úloha je archivovaná, takže ji UPolníček nedovolí měnit. Pokud ji potřebujete upravit, obnovte ji níže.",
     "readOnlyNotice": "Nastavení této úlohy měnit nesmíte — vaše jsou jen ovládací prvky níže.",
     "form": {
       "locale": "Jazyk: {locale}",
@@ -1315,7 +1315,7 @@
       "description": "Krátký popis",
       "descriptionHint": "Vidí jen učitelé — poznámka, k čemu úloha je.",
       "link": "Externí zadání",
-      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo ReCodEx.",
+      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
       "difficulty": "Obtížnost",
       "difficulties": {
         "easy": "Lehká",
@@ -1512,8 +1512,8 @@
     "mappedHeading": "Testy, které by vznikly",
     "notesHeading": "Co se nedá přenést přesně",
     "noNotes": "Všechno v souboru se mapuje.",
-    "nothingMapped": "Nic v tomhle souboru se nemapuje na test v ReCodExu, takže není co vytvořit.",
-    "notAssignable": "Naimportované cvičení ještě nelze zadat: ReCodEx vyžaduje referenční řešení a šablona z Classroomu žádné nenese. Přidej ho na obrazovce cvičení, spolu s limity a čímkoli dalším, co testy potřebují.",
+    "nothingMapped": "Nic v tomhle souboru se nemapuje na test v UPolníčku, takže není co vytvořit.",
+    "notAssignable": "Naimportované cvičení ještě nelze zadat: UPolníček vyžaduje referenční řešení a šablona z Classroomu žádné nenese. Přidej ho na obrazovce cvičení, spolu s limity a čímkoli dalším, co testy potřebují.",
     "testJudgeExact": "výstup přesně na bajt",
     "testJudgeToken": "výstup porovnaný po tokenech",
     "testWeight": "váha {weight}",
@@ -1526,8 +1526,8 @@
       "timeout-clamped": "Jeho timeout byl delší, než jaký tady smí být limit na čas, takže byl zkrácen.",
       "duplicate-name": "Jiný test se jmenuje stejně a konfigurace skóre se klíčuje jménem, takže tenhle dostal číslo.",
       "unnamed-test": "Nemá jméno, takže byl pojmenován podle pozice.",
-      "renamed-test": "V jeho jméně jsou znaky, které ReCodEx ve jméně testu nepovoluje, takže bylo přepsáno.",
-      "rounded-points": "Jeho body nejsou celé číslo a váha být musí, takže se zaokrouhlily. Součty v Classroomu a v ReCodExu si tak jako tak neodpovídají."
+      "renamed-test": "V jeho jméně jsou znaky, které UPolníček ve jméně testu nepovoluje, takže bylo přepsáno.",
+      "rounded-points": "Jeho body nejsou celé číslo a váha být musí, takže se zaokrouhlily. Součty v Classroomu a v UPolníčku si tak jako tak neodpovídají."
     },
     "severity": {
       "dropped": "Neimportováno",
@@ -1538,7 +1538,7 @@
       "noGroup": "Vyber kurz, ve kterém cvičení vznikne.",
       "noName": "Pojmenuj cvičení.",
       "noEnvironment": "Vyber jazyk, ve kterém jsou řešení napsaná.",
-      "noTests": "Není co importovat: žádný test v tomhle souboru se nemapuje na test v ReCodExu.",
+      "noTests": "Není co importovat: žádný test v tomhle souboru se nemapuje na test v UPolníčku.",
       "uploadFailed": "Testovací data se nepodařilo nahrát, takže nic nevzniklo.",
       "unknown": "bez uvedeného důvodu",
       "nothingCreated": "nic nevzniklo",
@@ -1672,7 +1672,7 @@
       "execTargetsExplain": "Které cíle sestavovací nástroj spustí."
     },
     "errors": {
-      "invalid": "Některé z těchto hodnot ReCodEx uložit neumí. Zkontrolujte pole označená níže.",
+      "invalid": "Některé z těchto hodnot UPolníček uložit neumí. Zkontrolujte pole označená níže.",
       "testsFailed": "Testy se nepodařilo uložit.",
       "environmentsFailed": "Jazyky se nepodařilo uložit.",
       "configFailed": "Konfiguraci se nepodařilo uložit.",
@@ -1684,7 +1684,7 @@
     "remove": "Odebrat",
     "toAdvanced": {
       "title": "Vlastní konfigurace",
-      "explain": "Formulář výše vyjadřuje obvyklý tvar úlohy: ReCodEx vybere pipeliny a ví, co které pole znamená. Úloha, která se do toho tvaru nevejde — vlastní řetěz soudců, dvoufázové sestavení, jazyk, pro který formulář nemá slova — může místo toho pojmenovat vlastní pipeliny a vyplnit všechny proměnné, které si vyžádají. Přepnutím se nic neztratí: stávající konfigurace zůstane a druhý editor ji přečte.",
+      "explain": "Formulář výše vyjadřuje obvyklý tvar úlohy: UPolníček vybere pipeliny a ví, co které pole znamená. Úloha, která se do toho tvaru nevejde — vlastní řetěz soudců, dvoufázové sestavení, jazyk, pro který formulář nemá slova — může místo toho pojmenovat vlastní pipeliny a vyplnit všechny proměnné, které si vyžádají. Přepnutím se nic neztratí: stávající konfigurace zůstane a druhý editor ji přečte.",
       "action": "Nastavit si to po svém",
       "done": "Úloha má teď vlastní konfiguraci."
     },
@@ -1706,7 +1706,7 @@
     },
     "pipelines": {
       "title": "Pipeliny",
-      "explain": "Každý test projde těmito, v tomto pořadí. Které proměnné pak musíte vyplnit, určují ony, ne domněnky ReCodExu.",
+      "explain": "Každý test projde těmito, v tomto pořadí. Které proměnné pak musíte vyplnit, určují ony, ne domněnky UPolníčku.",
       "none": "Tato instalace nemá pro zvolený jazyk žádnou pipelinu.",
       "save": "Uložit pipeliny",
       "saved": "Pipeliny uloženy.",
@@ -1714,7 +1714,7 @@
     },
     "values": {
       "title": "Co dodává který test",
-      "explain": "Všechny proměnné, které si zvolené pipeliny vyžádají, za každý test. Co to je, odpoví ReCodEx — tenhle seznam si aplikace nenese.",
+      "explain": "Všechny proměnné, které si zvolené pipeliny vyžádají, za každý test. Co to je, odpoví UPolníček — tenhle seznam si aplikace nenese.",
       "nothing": "Nejdřív vyberte jazyk a alespoň jednu pipelinu.",
       "variableOf": "{variable} pro {test}",
       "save": "Uložit hodnoty",
@@ -1722,7 +1722,7 @@
     },
     "toSimple": {
       "title": "Zpět ke standardnímu formuláři",
-      "explain": "Standardní formulář zná jen vlastní pipeliny ReCodExu a pevnou sadu proměnných, takže návrat konfiguraci přestaví a zahodí, co vyjádřit neumí.",
+      "explain": "Standardní formulář zná jen vlastní pipeliny UPolníčku a pevnou sadu proměnných, takže návrat konfiguraci přestaví a zahodí, co vyjádřit neumí.",
       "action": "Použít standardní formulář",
       "done": "Úloha teď používá standardní formulář.",
       "confirm": {
@@ -1737,7 +1737,7 @@
     "errors": {
       "generic": "Nepovedlo se.",
       "switchFailed": "Druh konfigurace se nepodařilo změnit.",
-      "variablesFailed": "ReCodEx nedokázal říct, jaké proměnné tyto pipeliny potřebují.",
+      "variablesFailed": "UPolníček nedokázal říct, jaké proměnné tyto pipeliny potřebují.",
       "pipelinesFailed": "Pipeliny se nepodařilo uložit.",
       "environmentFailed": "Jazyk se nepodařilo uložit.",
       "configFailed": "Hodnoty se nepodařilo uložit.",
@@ -1761,7 +1761,7 @@
       "explain": "Přepnutí vyjde z toho, co úloha dělá teď — stejné váhy se stanou průměrem, různé součtem přes celek — takže hodnotí přesně jako předtím, jen ve tvaru, který jde měnit.",
       "action": "Napsat si vlastní úspěšnost",
       "done": "Úloha má teď vlastní úspěšnost.",
-      "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, ReCodEx neuloží."
+      "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, UPolníček neuloží."
     },
     "switchOut": {
       "action": "Zpět na průměr",
@@ -1774,7 +1774,7 @@
       }
     },
     "errors": {
-      "invalid": "Tohle není výraz, který ReCodEx umí uložit.",
+      "invalid": "Tohle není výraz, který UPolníček umí uložit.",
       "unknownTests": "Takový test není: {tests}",
       "noTests": "Tato úloha nemá testy, takže výraz nemá na co odkazovat.",
       "saveFailed": "Úspěšnost se nepodařilo uložit.",
@@ -1841,7 +1841,7 @@
       "copyAllOf": "všude, z buňky {test}, jazyk {environment}"
     },
     "errors": {
-      "invalid": "Tyto limity ReCodEx uložit neumí.",
+      "invalid": "Tyto limity UPolníček uložit neumí.",
       "outOfRange": "Některé limity jsou mimo to, co stroj dovolí.",
       "unknownHardwareGroup": "Tato úloha už na tom stroji neběží. Načtěte stránku znovu.",
       "hardwareGroupsFailed": "Stroje se nepodařilo uložit.",
@@ -1930,7 +1930,7 @@
     },
     "submit": {
       "title": "Odevzdat další",
-      "explain": "Nahrajte soubory a ReCodEx sám určí, o jaký jazyk jde, ještě než se cokoli spustí.",
+      "explain": "Nahrajte soubory a UPolníček sám určí, o jaký jazyk jde, ještě než se cokoli spustí.",
       "note": "Popis",
       "noteExplain": "Čím je tohle řešení jiné — jaký algoritmus používá nebo co má ukázat.",
       "check": "Zkontrolovat soubory",
@@ -2012,7 +2012,7 @@
       "environment": "Jazyk",
       "anyEnvironment": "Libovolný jazyk",
       "apply": "Použít",
-      "envIsLocal": "ReCodEx neumí filtrovat pipeliny podle jazyka, takže tohle zúží jen stránku, na které jste, ne celý seznam."
+      "envIsLocal": "UPolníček neumí filtrovat pipeliny podle jazyka, takže tohle zúží jen stránku, na které jste, ne celý seznam."
     },
     "summary": "Zobrazeno {from}–{to} z {total}.",
     "columns": {
@@ -2120,7 +2120,7 @@
       "deleted": "Pipeline byla smazána.",
       "confirmDelete": {
         "title": "Smazat tuto pipelinu?",
-        "description": "Zmizí nadobro. Pipelinu, kterou ještě používá nějaká úloha, ReCodEx smazat odmítne, takže se to dozvíte hned a nepřekvapí vás to později.",
+        "description": "Zmizí nadobro. Pipelinu, kterou ještě používá nějaká úloha, UPolníček smazat odmítne, takže se to dozvíte hned a nepřekvapí vás to později.",
         "confirm": "Smazat"
       }
     },
@@ -2148,7 +2148,7 @@
     },
     "structure": {
       "title": "Jak je zapojená",
-      "explain": "Boxy jsou operace, proměnná je drát mezi nimi. Box čte nebo zapisuje proměnnou tím, že ji pojmenuje — nezapojený port tedy není chyba, kterou by ReCodEx ohlásil, prostě tam ten drát není.",
+      "explain": "Boxy jsou operace, proměnná je drát mezi nimi. Box čte nebo zapisuje proměnnou tím, že ji pojmenuje — nezapojený port tedy není chyba, kterou by UPolníček ohlásil, prostě tam ten drát není.",
       "preview": "Pipeline tak, jak ji právě upravujete",
       "variables": "Proměnné",
       "variablesExplain": "Drát, nebo hodnota, kterou pipeline dodá sama. Hodnota začínající na $ je díra, kterou vyplní úloha.",
@@ -2178,7 +2178,7 @@
       "addBox": "Přidat box",
       "remove": "Odebrat",
       "broken": {
-        "title": "ReCodEx to odmítne",
+        "title": "UPolníček to odmítne",
         "writtenTwice": "Do proměnné {name} zapisuje víc než jeden port: {ports}",
         "unread": "Tyto proměnné nikdo nečte: {variables}",
         "explain": "Drát může mít jen jeden zdroj a hodnota, kterou nikdo nespotřebuje, není drát. Proměnná, která se jen čte, je v pořádku — přesně tak vypadá díra, kterou vyplní úloha."
@@ -2186,18 +2186,18 @@
       "dangling": {
         "title": "Některé porty nejsou zapojené",
         "ports": "Nespojené s ničím: {ports}",
-        "explain": "ReCodEx to přijme. Jen neudělá to, co by udělaly chybějící dráty."
+        "explain": "UPolníček to přijme. Jen neudělá to, co by udělaly chybějící dráty."
       },
       "save": "Uložit strukturu",
       "saving": "Ukládám…",
       "saved": "Struktura uložena.",
-      "saveNote": "Celá struktura se ukládá najednou — ReCodEx nemá volání, které by změnilo jeden box.",
+      "saveNote": "Celá struktura se ukládá najednou — UPolníček nemá volání, které by změnilo jeden box.",
       "saveFailed": "Strukturu se nepodařilo uložit.",
       "removeVariable": "Odebrat proměnnou {index}",
       "removeBox": "Odebrat box {name}",
       "export": {
         "action": "Exportovat do souboru",
-        "note": "Soubor JSON ve stejném formátu, jaký čte a zapisuje staré rozhraní, takže definice může přejít mezi instancemi nebo se upravovat mimo ReCodEx."
+        "note": "Soubor JSON ve stejném formátu, jaký čte a zapisuje staré rozhraní, takže definice může přejít mezi instancemi nebo se upravovat mimo UPolníček."
       },
       "import": {
         "action": "Importovat soubor",
@@ -2219,7 +2219,7 @@
       }
     },
     "errors": {
-      "invalid": "Tohle ReCodEx uložit neumí.",
+      "invalid": "Tohle UPolníček uložit neumí.",
       "duplicateBox": "Dva boxy nemohou mít stejné jméno.",
       "duplicateVariable": "Dvě proměnné nemohou mít stejné jméno.",
       "settingsFailed": "Nastavení se nepodařilo uložit.",
@@ -2281,11 +2281,11 @@
       "enable": "Odblokovat",
       "disable": "Zablokovat",
       "delete": "Smazat",
-      "confirmEnable": "{name} se bude moci znovu přihlásit a používat ReCodEx. Účet mohl být zablokován z dobrého důvodu.",
+      "confirmEnable": "{name} se bude moci znovu přihlásit a používat UPolníček. Účet mohl být zablokován z dobrého důvodu.",
       "confirmDisable": "{name} nebude moci provést žádnou operaci, dokud účet někdo znovu neodblokuje. Skupiny a řešení zůstávají.",
       "confirmDelete": "Účet uživatele {name} bude anonymizován: jméno, e-mailová adresa i případné externí identity zmizí navždy. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
       "confirmDeleteSelf": "Tohle je váš vlastní účet. Bude anonymizován: vaše jméno, e-mailová adresa i případné externí identity zmizí navždy a budete odhlášeni. Odevzdaná řešení a získané body zůstanou, ale už nikomu nebudou patřit.",
-      "enabled": "{name} může ReCodEx opět používat.",
+      "enabled": "{name} může UPolníček opět používat.",
       "disabled": "{name} má zablokovaný účet.",
       "deleted": "Účet uživatele {name} je pryč.",
       "enableFailed": "Účet se nepodařilo odblokovat.",
@@ -2389,7 +2389,7 @@
     },
     "resolveDialog": {
       "title": "Vyřešit toto selhání?",
-      "explain": "Zmizí z fronty natrvalo — ReCodEx neumí selhání znovu otevřít.",
+      "explain": "Zmizí z fronty natrvalo — UPolníček neumí selhání znovu otevřít.",
       "note": "Co se s tím udělalo",
       "notePlaceholder": "Restartován worker, odevzdáno znovu…",
       "sendEmail": "Dát vědět autorovi, že se to řešilo",
@@ -2563,7 +2563,7 @@
     "posting": "Odesílám…",
     "posted": "Odesláno.",
     "keepPrivate": "Nechat si to pro sebe",
-    "privateMeans": "Nikdo jiný to neuvidí — ReCodEx soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tichá domluva s vyučujícími.",
+    "privateMeans": "Nikdo jiný to neuvidí — UPolníček soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tichá domluva s vyučujícími.",
     "publicMeans": "Uvidí to {audience} a přijde jim o tom e-mail.",
     "makePrivate": "Skrýt ostatním",
     "madePrivate": "Teď to vidíte jen vy.",
@@ -2578,7 +2578,7 @@
     },
     "errors": {
       "empty": "Nejdřív něco napište.",
-      "tooLong": "Tohle je delší, než ReCodEx uloží.",
+      "tooLong": "Tohle je delší, než UPolníček uloží.",
       "postFailed": "Komentář se nepodařilo odeslat.",
       "privacyFailed": "Nepodařilo se to změnit.",
       "deleteFailed": "Komentář se nepodařilo smazat."
@@ -2731,7 +2731,7 @@
       "imageTitle": "QR kód s adresou aktuální stránky"
     },
     "viewAs": {
-      "banner": "Prohlížíte si ReCodEx jako {role}. Některé věci jsou skryté, protože k nim tato role nemá přístup.",
+      "banner": "Prohlížíte si UPolníček jako {role}. Některé věci jsou skryté, protože k nim tato role nemá přístup.",
       "restore": "Vrátit se ke své roli",
       "roles": {
         "student": "Student",
@@ -2957,7 +2957,7 @@
       "text": "Zadání",
       "textHint": "Markdown. Tohle čte student.",
       "link": "Externí zadání",
-      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo ReCodEx.",
+      "linkHint": "Adresa s celým zadáním, pokud je vedeno mimo UPolníček.",
       "save": "Uložit zadání",
       "saving": "Ukládám…",
       "saved": "Zadání bylo uloženo.",
@@ -2989,7 +2989,7 @@
   "AssignExercise": {
     "title": "Zadat úlohu",
     "backToGroup": "Zpět do skupiny",
-    "explain": "Zadáním se úloha rovnou zkopíruje do skupiny, s výchozím termínem a body ReCodExu — ty nastavíte na další obrazovce. Než nové zadání zviditelníte, nikdo ho neuvidí.",
+    "explain": "Zadáním se úloha rovnou zkopíruje do skupiny, s výchozím termínem a body UPolníčku — ty nastavíte na další obrazovce. Než nové zadání zviditelníte, nikdo ho neuvidí.",
     "searchLabel": "Hledat v katalogu úloh",
     "searchPlaceholder": "Hledat podle názvu",
     "search": "Hledat",
@@ -3119,7 +3119,7 @@
     "choose": "Vyberte jazyk",
     "entryPoint": "Spouštěný soubor",
     "chooseEntryPoint": "Vyberte spouštěný soubor",
-    "entryPointHelp": "Vaše řešení má víc souborů, proto ReCodExu určete, který z nich je program.",
+    "entryPointHelp": "Vaše řešení má víc souborů, proto UPolníčku určete, který z nich je program.",
     "note": "Poznámka",
     "notePlaceholder": "Co jste změnili?",
     "noteHelp": "Vidíte ji jen vy a vaši vyučující.",
@@ -3144,7 +3144,7 @@
     "title": "Nalezené podobnosti",
     "attempt": "Pokus {attempt}",
     "backToSolution": "Zpět na řešení",
-    "batch": "Podobnosti nahlásil {tool}. ReCodEx je sám nehledá — externí nástroj nahraje, co našel.",
+    "batch": "Podobnosti nahlásil {tool}. UPolníček je sám nehledá — externí nástroj nahraje, co našel.",
     "unknownTool": "nepojmenovaný nástroj",
     "checkedAt": "Nahrávání dokončeno",
     "matches": "S kým se řešení shoduje",
@@ -3230,7 +3230,7 @@
       "name": "Název",
       "text": "Text",
       "link": "Odkaz",
-      "linkHint": "Kde se práce nachází, pokud není v ReCodExu.",
+      "linkHint": "Kde se práce nachází, pokud není v UPolníčku.",
       "maxPoints": "Počet bodů",
       "deadline": "Termín (informativní)",
       "deadlineHint": "Nic se proti němu neodevzdává a nic se podle něj nevynucuje – zda byl dodržen, rozhodujete vy.",
@@ -3297,7 +3297,7 @@
     "settings": {
       "title": "Oznámení a jazyk",
       "defaultLanguage": "Preferovaný jazyk",
-      "defaultLanguageHint": "Používá se pro e-maily, které vám ReCodEx posílá.",
+      "defaultLanguageHint": "Používá se pro e-maily, které vám UPolníček posílá.",
       "languages": {
         "en": "Angličtina",
         "cs": "Čeština"
@@ -3356,7 +3356,7 @@
     },
     "token": {
       "title": "Aplikační token",
-      "explain": "Token umožňuje skriptu nebo externímu nástroji jednat za vás přes API ReCodExu. Rozsah zužuje, co smí; nikdy nemůže víc než vy sami. Kdo token má, jedná jako vy — zacházejte s ním jako s heslem.",
+      "explain": "Token umožňuje skriptu nebo externímu nástroji jednat za vás přes API UPolníčku. Rozsah zužuje, co smí; nikdy nemůže víc než vy sami. Kdo token má, jedná jako vy — zacházejte s ním jako s heslem.",
       "scope": "Rozsah",
       "scopes": {
         "master": "Vše, co můžete vy",
@@ -3381,7 +3381,7 @@
       "copyFailed": "Prohlížeč stránce nedovolil token zkopírovat. Označte ho a zkopírujte ručně.",
       "issued": {
         "title": "Váš nový token",
-        "onceOnly": "Teď je zobrazen jedinkrát. ReCodEx si žádnou kopii neukládá a znovu vám ho ukázat nemůže — když ho ztratíte, vygenerujte nový.",
+        "onceOnly": "Teď je zobrazen jedinkrát. UPolníček si žádnou kopii neukládá a znovu vám ho ukázat nemůže — když ho ztratíte, vygenerujte nový.",
         "label": "Vygenerovaný token",
         "copy": "Kopírovat",
         "copied": "Zkopírováno"
@@ -3389,7 +3389,7 @@
     },
     "viewAs": {
       "title": "Zobrazit aplikaci jako někdo jiný",
-      "explain": "Podívejte se na ReCodEx očima člověka s menšími právy — hodí se ke kontrole, co doopravdy vidí vaši studenti. Účet se nemění, jinak se chová jen session v tomto prohlížeči.",
+      "explain": "Podívejte se na UPolníček očima člověka s menšími právy — hodí se ke kontrole, co doopravdy vidí vaši studenti. Účet se nemění, jinak se chová jen session v tomto prohlížeči.",
       "notContainment": "Je to náhled, ne bezpečnostní opatření: zúžená session si může kdykoli vrátit plná práva, takže nic nechrání a není to způsob, jak pracovat bezpečněji.",
       "roles": {
         "student": "Student",
@@ -3434,11 +3434,11 @@
     "role": {
       "title": "Role",
       "label": "Role",
-      "explain": "Role rozhoduje o tom, co tento člověk smí v celém ReCodExu, ne jen v jedné skupině.",
+      "explain": "Role rozhoduje o tom, co tento člověk smí v celém UPolníčku, ne jen v jedné skupině.",
       "save": "Změnit roli",
       "changed": "Role je nyní {role}.",
       "failed": "Roli se nepodařilo změnit.",
-      "confirm": "Z role „{from}“ se stane „{to}“, naráz a v celém ReCodExu.",
+      "confirm": "Z role „{from}“ se stane „{to}“, naráz a v celém UPolníčku.",
       "names": {
         "student": "Student",
         "supervisor-student": "Cvičící a student",
@@ -3490,7 +3490,7 @@
   },
   "Instances": {
     "title": "Instance",
-    "subtitle": "Oddělené světy ReCodExu, které tato instalace provozuje.",
+    "subtitle": "Oddělené světy UPolníčku, které tato instalace provozuje.",
     "detailSubtitle": "Co tato instance je, kdo do ní smí a co ji drží v chodu.",
     "unnamed": "Instance bez názvu",
     "columns": {
