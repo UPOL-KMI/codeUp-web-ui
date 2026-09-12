@@ -9,7 +9,7 @@ then `docs/BACKLOG.md` for the top unblocked ticket, then the `docs/INVENTORY.md
 Then work.
 
 **Where this repo is checked out relative to the compose repo (DEC-052, 2026-08-20):** this repo
-still lives in its own separate git repository (`git@github.com:jurja00/codeUp-web-ui.git`), but as
+still lives in its own separate git repository (`git@github.com:UPOL-KMI/upcode-web-ui.git`), but as
 of DEC-052 its _checkout location_ is `<compose repo>/repos/web-next/` -- fetched by the compose
 repo's own `pull-repos.sh`, the same way it fetches the upstream ReCodEx repos, not a sibling
 directory anymore. When any instruction here or in `docs/` says "the compose repo" or "check the
