@@ -16,6 +16,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Who has been awarded what, and the awarding itself (S-020).
@@ -310,7 +311,7 @@ export function ShadowPointsTable({
                   onClick={() =>
                     void run(() => awardShadowPoints(shadowId, awardee, values()), "toast.awarded")
                   }
-                  className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                  className={buttonClasses("outline", "xs")}
                 >
                   {t("award.button")}
                 </button>

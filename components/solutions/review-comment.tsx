@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { FormError } from "@/components/form/form-error";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * One review comment, and the form that writes one (S-018).
@@ -114,18 +115,10 @@ export function ReviewCommentForm({
         </div>
         <FormError />
         <div className="flex flex-wrap gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-          >
+          <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
             {submitLabel}
           </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <button type="button" onClick={onCancel} className={buttonClasses("outline", "sm")}>
             {t("comment.cancel")}
           </button>
         </div>
@@ -208,14 +201,14 @@ export function ReviewCommentItem({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "xs")}
           >
             {t("comment.edit")}
           </button>
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            className="rounded-md border border-input px-2 py-1 text-xs text-destructive hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "xs")}
           >
             {t("comment.delete")}
           </button>

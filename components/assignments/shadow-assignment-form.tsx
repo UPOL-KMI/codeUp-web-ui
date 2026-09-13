@@ -19,6 +19,7 @@ import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { FormError } from "@/components/form/form-error";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Everything about a shadow assignment its author decides (G-009).
@@ -204,7 +205,7 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
             <button
               type="submit"
               aria-disabled={isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+              className={buttonClasses("primary", "sm")}
             >
               {isPending ? t("saving") : t("save")}
             </button>
@@ -220,7 +221,7 @@ export function ShadowAssignmentForm({ assignment }: { assignment: ShadowAssignm
             <button
               type="button"
               aria-disabled={deleting}
-              className="rounded-md border border-destructive px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+              className={buttonClasses("destructive-outline", "sm")}
               onClick={() => setConfirmingDelete(true)}
             >
               {t("delete.button")}

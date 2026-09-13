@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Asking for a password-reset email (A-004).
@@ -70,11 +71,7 @@ export function ForgotPasswordForm() {
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={buttonClasses("primary", "md")}>
         {pending ? t("sending") : t("send")}
       </button>
     </form>

@@ -16,6 +16,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The custom score expression (T-025) -- core-api's `universal` calculator, edited as text.
@@ -154,7 +155,7 @@ export function ScoreExpressionEditor({
             type="button"
             disabled={pending || !usable}
             onClick={() => void run(() => updateScoreExpression(exerciseId, source), "saved")}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("saving") : t("save")}
           </button>

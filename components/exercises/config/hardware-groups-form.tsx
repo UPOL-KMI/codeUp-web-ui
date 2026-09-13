@@ -8,6 +8,7 @@ import type { HardwareGroup } from "@/lib/exercise-config/limits";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Which machines an exercise is meant to run on (T-010).
@@ -97,7 +98,7 @@ export function HardwareGroupsForm({
             type="button"
             disabled={pending}
             onClick={() => void save()}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("saving") : t("save")}
           </button>

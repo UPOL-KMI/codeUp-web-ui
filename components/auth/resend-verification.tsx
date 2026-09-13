@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The nudge a reader with an unconfirmed address sees, and the button that sends the message again
@@ -41,7 +42,7 @@ export function ResendVerification() {
           type="button"
           disabled={pending}
           onClick={() => void resend()}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+          className={buttonClasses("outline", "sm")}
         >
           {pending ? t("sending") : t("resend")}
         </button>

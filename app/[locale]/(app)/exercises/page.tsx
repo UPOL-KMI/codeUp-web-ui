@@ -18,6 +18,7 @@ import { CreateExercise } from "@/components/exercises/create-exercise";
 import { ExerciseTable } from "@/components/exercises/exercise-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -227,10 +228,7 @@ export default async function ExercisesPage({
             </select>
           </label>
 
-          <button
-            type="submit"
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <button type="submit" className={buttonClasses("outline", "sm")}>
             {t("filters.apply")}
           </button>
 
@@ -238,10 +236,7 @@ export default async function ExercisesPage({
               than a third state of the select: it is not a filter to combine but a destination,
               and it clears the page so the reader lands on the first of their own. */}
           {mineHref !== null && (
-            <Link
-              href={mineHref}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <Link href={mineHref} className={buttonClasses("outline", "sm")}>
               {authors[0] === viewer.id ? t("filters.everyone") : t("filters.mine")}
             </Link>
           )}
@@ -267,10 +262,7 @@ export default async function ExercisesPage({
             {lastPage > 0 && (
               <nav aria-label={t("pagination.label")} className="flex items-center gap-3 text-sm">
                 {page > 0 ? (
-                  <Link
-                    href={pageHref(page - 1)}
-                    className="rounded-md border border-input px-2 py-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
+                  <Link href={pageHref(page - 1)} className={buttonClasses("outline", "sm")}>
                     {t("pagination.previous")}
                   </Link>
                 ) : (
@@ -282,10 +274,7 @@ export default async function ExercisesPage({
                   {t("pagination.page", { page: page + 1, total: lastPage + 1 })}
                 </span>
                 {page < lastPage ? (
-                  <Link
-                    href={pageHref(page + 1)}
-                    className="rounded-md border border-input px-2 py-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
+                  <Link href={pageHref(page + 1)} className={buttonClasses("outline", "sm")}>
                     {t("pagination.next")}
                   </Link>
                 ) : (

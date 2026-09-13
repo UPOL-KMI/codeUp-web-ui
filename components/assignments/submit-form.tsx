@@ -20,6 +20,7 @@ import { FormProvider } from "react-hook-form";
 import { useRouter } from "@/i18n/navigation";
 import { FormError } from "@/components/form/form-error";
 import { FileUpload } from "@/components/upload/file-upload";
+import { buttonClasses } from "@/components/button";
 
 /** Sorted, because the default entry point is the first of them and "first" has to mean the same
  *  thing however the browser happened to order the upload. */
@@ -272,7 +273,7 @@ export function SubmitForm({
               !selectedEnvironment ||
               mustChooseEntryPoint
             }
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "md")}
           >
             {isPending ? t("submitting") : t("submit")}
           </button>

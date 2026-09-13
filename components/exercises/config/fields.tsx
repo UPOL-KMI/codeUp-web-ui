@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import type { ConfigValues } from "@/lib/actions/exercise-config.schema";
 import type { FileEntry } from "@/lib/exercise-config/simple-config";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The four repeated shapes of the per-test configuration form (T-009): a list of strings, a list
@@ -143,7 +144,7 @@ export function StringListField({
               type="button"
               aria-label={t("removeItem")}
               onClick={() => setValue(items.filter((_, at) => at !== index))}
-              className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+              className={buttonClasses("outline", "xs")}
             >
               &times;
             </button>
@@ -154,7 +155,7 @@ export function StringListField({
         <button
           type="button"
           onClick={() => setValue([...items, ""])}
-          className="self-start rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+          className={buttonClasses("outline", "xs", "self-start")}
         >
           {t("addItem")}
         </button>
@@ -213,7 +214,7 @@ export function FileListField({
               type="button"
               aria-label={t("removeItem")}
               onClick={() => setValue(items.filter((_, at) => at !== index))}
-              className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+              className={buttonClasses("outline", "xs")}
             >
               &times;
             </button>
@@ -224,7 +225,7 @@ export function FileListField({
         <button
           type="button"
           onClick={() => setValue([...items, ""])}
-          className="self-start rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+          className={buttonClasses("outline", "xs", "self-start")}
         >
           {t("addItem")}
         </button>
@@ -305,7 +306,7 @@ export function FilePairListField({
               type="button"
               aria-label={t("removeItem")}
               onClick={() => setValue(items.filter((_, at) => at !== index))}
-              className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+              className={buttonClasses("outline", "xs")}
             >
               &times;
             </button>
@@ -316,7 +317,7 @@ export function FilePairListField({
         <button
           type="button"
           onClick={() => setValue([...items, { file: "", name: "" }])}
-          className="self-start rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+          className={buttonClasses("outline", "xs", "self-start")}
         >
           {t("addItem")}
         </button>

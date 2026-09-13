@@ -16,6 +16,7 @@ import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
 import { CreateUser } from "@/components/users/create-user";
 import { UserTable } from "@/components/users/user-table";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -128,10 +129,7 @@ export default async function UsersPage({
                 className="min-w-64 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
               />
             </label>
-            <button
-              type="submit"
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <button type="submit" className={buttonClasses("outline", "sm")}>
               {t("filters.apply")}
             </button>
           </div>
@@ -182,7 +180,7 @@ export default async function UsersPage({
                 {page > 0 ? (
                   <Link
                     href={hrefFor({ page: page - 1 })}
-                    className="rounded-md border border-input px-2 py-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className={buttonClasses("outline", "sm")}
                   >
                     {t("pagination.previous")}
                   </Link>
@@ -197,7 +195,7 @@ export default async function UsersPage({
                 {page < lastPage ? (
                   <Link
                     href={hrefFor({ page: page + 1 })}
-                    className="rounded-md border border-input px-2 py-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className={buttonClasses("outline", "sm")}
                   >
                     {t("pagination.next")}
                   </Link>

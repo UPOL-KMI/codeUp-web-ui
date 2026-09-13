@@ -18,6 +18,7 @@ import { DateTime } from "@/components/format/date-time";
 import { fragmentRanges, MarkedSource } from "@/components/solutions/marked-source";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -67,10 +68,7 @@ export default async function SolutionPlagiarismsPage({
       subtitle={`${solution.assignmentName} — ${t("attempt", { attempt: solution.attemptIndex })}`}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/solutions/${solutionId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/solutions/${solutionId}`} className={buttonClasses("outline", "sm")}>
           {t("backToSolution")}
         </Link>
       }
@@ -177,7 +175,7 @@ function SimilarityRow({
       ) : (
         <Link
           href={`/solutions/${solutionId}/plagiarisms?similarity=${record.id}`}
-          className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className={buttonClasses("outline", "xs")}
         >
           {selectLabel}
         </Link>
@@ -241,7 +239,7 @@ async function OtherSide({ file, solutionId }: { file: SimilarFile; solutionId: 
         {file.solutionId && file.canViewSolution && file.solutionId !== solutionId && (
           <Link
             href={`/solutions/${file.solutionId}`}
-            className="rounded-md border border-input px-2 py-0.5 text-xs font-normal hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "xs", "font-normal")}
           >
             {file.attemptIndex !== null
               ? t("openAttempt", { attempt: file.attemptIndex })

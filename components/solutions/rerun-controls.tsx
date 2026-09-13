@@ -8,6 +8,7 @@ import { deleteSolution, resubmitSolution } from "@/lib/actions/solution-rerun";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Running a solution again, and removing it (G-002).
@@ -112,7 +113,7 @@ export function RerunControls({
           <button
             type="button"
             aria-disabled={pending}
-            className="rounded-md border border-destructive px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+            className={buttonClasses("destructive-outline", "sm")}
             onClick={() => setConfirmingDelete(true)}
           >
             {t("delete")}

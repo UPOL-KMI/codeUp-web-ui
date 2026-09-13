@@ -23,6 +23,7 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
+import { Button, buttonClasses } from "@/components/button";
 
 /**
  * The interactive half of `/dev/design-system` (D-013). Split out of the page itself so the page
@@ -114,6 +115,32 @@ export function DesignSystemShowcase({
         </div>
       </Section>
 
+      <Section title={t("buttons")}>
+        <p className="text-sm text-muted-foreground">{t("buttonsNote")}</p>
+        <div className="flex flex-col gap-3">
+          {(["md", "sm", "xs"] as const).map((size) => (
+            <div key={size} className="flex flex-wrap items-center gap-2">
+              {(
+                [
+                  "primary",
+                  "outline",
+                  "ghost",
+                  "destructive",
+                  "destructive-outline",
+                  "warning-outline",
+                ] as const
+              ).map((variant) => (
+                <Button key={variant} variant={variant} size={size}>
+                  {variant}
+                </Button>
+              ))}
+              <Button size={size} disabled>
+                disabled
+              </Button>
+            </div>
+          ))}
+        </div>
+      </Section>
       <Section title={t("dataTable")}>
         <DataTable<DemoRow>
           id="ks"
@@ -156,7 +183,7 @@ export function DesignSystemShowcase({
                 form.setError("email", { message: t("demoFieldError") });
                 form.setError("root", { message: t("demoFormError") });
               }}
-              className="self-start rounded-md border border-input px-3 py-1.5 text-sm"
+              className={buttonClasses("outline", "sm", "self-start")}
             >
               {t("showErrors")}
             </button>
@@ -182,7 +209,7 @@ export function DesignSystemShowcase({
           <button
             type="button"
             onClick={() => setConfirmOpen(true)}
-            className="rounded-md border border-input px-3 py-1.5 text-sm"
+            className={buttonClasses("outline", "sm")}
           >
             {t("openConfirm")}
           </button>
@@ -254,10 +281,7 @@ export function DesignSystemShowcase({
               title={t("stateEmptyTitle")}
               description={t("stateEmptyBody")}
               action={
-                <button
-                  type="button"
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-                >
+                <button type="button" className={buttonClasses("primary", "sm")}>
                   {t("stateEmptyAction")}
                 </button>
               }
@@ -269,7 +293,7 @@ export function DesignSystemShowcase({
             <button
               type="button"
               onClick={() => setPanelBroken(true)}
-              className="self-start rounded-md border border-input px-3 py-1.5 text-sm"
+              className={buttonClasses("outline", "sm", "self-start")}
             >
               {t("stateBreakIt")}
             </button>
@@ -279,7 +303,7 @@ export function DesignSystemShowcase({
             <button
               type="button"
               onClick={() => setPanelBroken(false)}
-              className="self-start rounded-md border border-input px-3 py-1.5 text-sm"
+              className={buttonClasses("outline", "sm", "self-start")}
             >
               {t("stateFixIt")}
             </button>
@@ -295,14 +319,14 @@ export function DesignSystemShowcase({
           <button
             type="button"
             onClick={() => toast.success(t("toastSuccessTitle"), t("toastSuccessBody"))}
-            className="rounded-md border border-input px-3 py-1.5 text-sm"
+            className={buttonClasses("outline", "sm")}
           >
             {t("showSuccessToast")}
           </button>
           <button
             type="button"
             onClick={() => toast.error(t("toastErrorTitle"), t("toastErrorBody"))}
-            className="rounded-md border border-input px-3 py-1.5 text-sm"
+            className={buttonClasses("outline", "sm")}
           >
             {t("showErrorToast")}
           </button>

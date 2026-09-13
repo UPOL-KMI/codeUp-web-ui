@@ -18,6 +18,7 @@ import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
 import { Badge } from "@/components/status/badge";
 import { VisibilityBadge } from "@/components/status/visibility-badge";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -85,7 +86,7 @@ export default async function AssignmentPage({
           {assignment.can.update && (
             <Link
               href={`/assignments/${assignmentId}/edit`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("editAssignment")}
             </Link>
@@ -93,7 +94,7 @@ export default async function AssignmentPage({
           {assignment.can.viewAssignmentSolutions && (
             <Link
               href={`/assignments/${assignmentId}/solutions`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("allSolutions")}
             </Link>
@@ -101,7 +102,7 @@ export default async function AssignmentPage({
           {assignment.groupId && (
             <Link
               href={`/groups/${assignment.groupId}?tab=assignments`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("backToGroup")}
             </Link>

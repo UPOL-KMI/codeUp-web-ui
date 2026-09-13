@@ -2690,7 +2690,9 @@
     "formatters": "Formátování",
     "formattersNote": "Absolutní data se vykreslují na serveru v časové zóně nasazení; relativní časy až v prohlížeči, protože závisejí na aktuálním okamžiku.",
     "evaluationTable": "Výsledky vyhodnocení",
-    "evaluationTableNote": "Tabulka testů na obrazovce řešení. Tohle nasazení ji neumí vyrobit -- jeho sandbox nikdy neběží (DEC-031) -- takže zdejší řádky jsou fixture a jsou to případy návratových kódů, které přidal G-004."
+    "evaluationTableNote": "Tabulka testů na obrazovce řešení. Tohle nasazení ji neumí vyrobit -- jeho sandbox nikdy neběží (DEC-031) -- takže zdejší řádky jsou fixture a jsou to případy návratových kódů, které přidal G-004.",
+    "buttons": "Tlačítka",
+    "buttonsNote": "Jedna sada tříd (D-017): šest druhů ve třech velikostech. Odkaz, který vypadá jako tlačítko, bere `buttonClasses()`; skutečné tlačítko bere `Button`."
   },
   "Code": {
     "lineLabel": "Řádek {line}",

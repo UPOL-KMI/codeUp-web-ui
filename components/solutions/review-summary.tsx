@@ -7,6 +7,7 @@ import { addReviewComment } from "@/lib/actions/solution-review";
 import type { ReviewComment } from "@/lib/api/solution-review";
 
 import { ReviewCommentForm, ReviewCommentItem } from "@/components/solutions/review-comment";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Review comments that are not pinned to a line (S-018): core-api stores them with an empty file
@@ -75,7 +76,7 @@ export function ReviewSummary({
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("summary.add")}
             </button>

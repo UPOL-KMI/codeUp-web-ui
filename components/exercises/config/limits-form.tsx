@@ -16,6 +16,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * One hardware group's limits (T-010): a cell per test and language, holding how much memory and
@@ -321,7 +322,7 @@ export function LimitsForm({
             type="button"
             disabled={pending || problems.length > 0}
             onClick={() => void save()}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("saving") : t("save")}
           </button>

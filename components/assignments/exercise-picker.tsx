@@ -9,6 +9,7 @@ import { isDataOnly } from "@/lib/status/exercise-validation";
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Choosing the exercise to assign (T-001).
@@ -107,7 +108,7 @@ export function ExercisePicker({
                 {exercise.canViewConfig && (
                   <Link
                     href={`/exercises/${exercise.id}/edit-config`}
-                    className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className={buttonClasses("outline", "sm")}
                   >
                     {tExercise("configure")}
                   </Link>
@@ -127,7 +128,7 @@ export function ExercisePicker({
                     type="button"
                     disabled={pending !== null}
                     onClick={() => void assign(exercise.id)}
-                    className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                    className={buttonClasses("primary", "sm")}
                   >
                     {pending === exercise.id ? t("assigning") : t("assign")}
                   </button>

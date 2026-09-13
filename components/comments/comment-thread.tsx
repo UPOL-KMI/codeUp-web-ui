@@ -11,6 +11,7 @@ import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A discussion thread (T-022) -- the legacy `CommentThreadContainer`, on the screens that had one.
@@ -114,7 +115,7 @@ export function CommentThread({
                           comment.isPrivate ? "madePublic" : "madePrivate",
                         )
                       }
-                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted aria-disabled:opacity-60"
+                      className={buttonClasses("outline", "xs")}
                     >
                       {comment.isPrivate ? t("makePublic") : t("makePrivate")}
                     </button>
@@ -125,7 +126,7 @@ export function CommentThread({
                         if (pending) return;
                         setDeleting(comment);
                       }}
-                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted aria-disabled:opacity-60"
+                      className={buttonClasses("outline", "xs")}
                     >
                       {t("delete")}
                     </button>
@@ -173,7 +174,7 @@ export function CommentThread({
                 if (ok) setText("");
               });
             }}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground aria-disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("posting") : t("post")}
           </button>

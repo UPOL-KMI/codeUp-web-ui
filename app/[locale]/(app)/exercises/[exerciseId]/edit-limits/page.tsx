@@ -16,6 +16,7 @@ import { LimitsForm } from "@/components/exercises/config/limits-form";
 import { HelpDialog } from "@/components/help/help-dialog";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -87,22 +88,16 @@ export default async function EditExerciseLimitsPage({
         <div className="flex flex-wrap gap-2">
           {/* The settings screen is where both editors are reached from now, so both of them lead
               back to it. This one had no way there at all. */}
-          <Link
-            href={`/exercises/${exerciseId}/edit`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/exercises/${exerciseId}/edit`} className={buttonClasses("outline", "sm")}>
             {t("settings")}
           </Link>
           <Link
             href={`/exercises/${exerciseId}/edit-config`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("configure")}
           </Link>
-          <Link
-            href={`/exercises/${exerciseId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/exercises/${exerciseId}`} className={buttonClasses("outline", "sm")}>
             {t("backToExercise")}
           </Link>
         </div>

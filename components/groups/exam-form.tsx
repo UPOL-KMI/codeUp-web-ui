@@ -15,6 +15,7 @@ import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import { EXAM_LOCK_TYPES, type ExamLockType } from "@/lib/status/exam";
 
 import { Dialog, DialogContent } from "@/components/dialog/dialog";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Scheduling an exam, and editing one already scheduled (S-008).
@@ -191,14 +192,14 @@ export function ExamFormDialog({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className={buttonClasses("outline", "sm")}
               >
                 {t("cancel")}
               </button>
               <button
                 type="submit"
                 aria-disabled={isPending}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+                className={buttonClasses("primary", "sm")}
               >
                 {isPending ? t("saving") : t("save")}
               </button>

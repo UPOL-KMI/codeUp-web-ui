@@ -19,6 +19,7 @@ import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The parts of an exercise that are not a form field (T-008): its tags, the groups it lives in,
@@ -136,7 +137,7 @@ export function ExerciseControls({
                     if (ok) setTag("");
                   })
                 }
-                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                className={buttonClasses("outline", "sm")}
               >
                 {t("tags.addAction")}
               </button>
@@ -168,7 +169,7 @@ export function ExerciseControls({
                         "groups.detached",
                       )
                     }
-                    className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                    className={buttonClasses("outline", "xs")}
                   >
                     {t("groups.detach")}
                   </button>
@@ -208,7 +209,7 @@ export function ExerciseControls({
                     },
                   )
                 }
-                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                className={buttonClasses("outline", "sm")}
               >
                 {t("groups.attachAction")}
               </button>
@@ -241,7 +242,7 @@ export function ExerciseControls({
               type="button"
               disabled={pending}
               onClick={() => setConfirmingNotice(true)}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+              className={buttonClasses("outline", "sm")}
             >
               {t("notify.action")}
             </button>
@@ -295,7 +296,7 @@ export function ExerciseControls({
                   exercise.archivedAt === null ? "archive.archived" : "archive.restored",
                 )
               }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+              className={buttonClasses("outline", "sm")}
             >
               {exercise.archivedAt === null ? t("archive.action") : t("archive.restore")}
             </button>

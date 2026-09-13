@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
 import { ConsentCheckbox } from "./consent-checkbox";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Creating an account (A-003).
@@ -135,7 +136,7 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
               type="button"
               disabled={pending}
               onClick={(event) => void submit(event, true)}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+              className={buttonClasses("outline", "sm")}
             >
               {t("collision.continue")}
             </button>
@@ -257,7 +258,7 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
       <button
         type="submit"
         disabled={pending || mismatched || emailIsFree === false || score === 0}
-        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+        className={buttonClasses("primary", "md")}
       >
         {pending ? t("creating") : t("create")}
       </button>

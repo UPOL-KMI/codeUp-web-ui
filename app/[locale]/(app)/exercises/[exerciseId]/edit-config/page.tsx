@@ -31,6 +31,7 @@ import { HelpDialog } from "@/components/help/help-dialog";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { PageTabs, type PageTab } from "@/components/page-tabs";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -164,22 +165,16 @@ export default async function EditExerciseConfigPage({
       breadcrumbs={breadcrumbs}
       actions={
         <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/exercises/${exerciseId}/edit`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/exercises/${exerciseId}/edit`} className={buttonClasses("outline", "sm")}>
             {t("settings")}
           </Link>
           <Link
             href={`/exercises/${exerciseId}/edit-limits`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("limits")}
           </Link>
-          <Link
-            href={`/exercises/${exerciseId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/exercises/${exerciseId}`} className={buttonClasses("outline", "sm")}>
             {t("backToExercise")}
           </Link>
         </div>

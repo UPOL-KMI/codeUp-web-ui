@@ -14,6 +14,7 @@ import { uploadFileChunked } from "@/lib/upload/chunked-upload";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Importing a GitHub Classroom assignment (X-001).
@@ -173,11 +174,7 @@ export function ImportClassroom({
       </label>
 
       <div>
-        <button
-          type="button"
-          onClick={read}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <button type="button" onClick={read} className={buttonClasses("outline", "sm")}>
           {t("check")}
         </button>
       </div>
@@ -262,7 +259,7 @@ export function ImportClassroom({
               type="button"
               onClick={create}
               disabled={pending || report.tests.length === 0}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("primary", "sm")}
             >
               {pending ? t("importing") : t("import")}
             </button>

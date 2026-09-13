@@ -12,6 +12,7 @@ import { AssignToGroups } from "@/components/exercises/exercise-assignments";
 import { DateTime } from "@/components/format/date-time";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -83,10 +84,7 @@ export default async function ExerciseAssignmentsPage({
       subtitle={exercise.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/exercises/${exerciseId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/exercises/${exerciseId}`} className={buttonClasses("outline", "sm")}>
           {t("backToExercise")}
         </Link>
       }

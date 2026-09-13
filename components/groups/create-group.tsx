@@ -12,6 +12,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogFooter, DialogTrigger } from "@/components/dialog/dialog";
 import { FormError } from "@/components/form/form-error";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A new group, or a new subgroup of one (G-008). The same dialog either way: `parentGroupId` is the
@@ -118,14 +119,14 @@ export function CreateGroup({
               <button
                 type="button"
                 onClick={() => change(false)}
-                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className={buttonClasses("outline", "sm")}
               >
                 {t("cancel")}
               </button>
               <button
                 type="submit"
                 aria-disabled={isPending}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+                className={buttonClasses("primary", "sm")}
               >
                 {isPending ? t("submitting") : t("submit")}
               </button>

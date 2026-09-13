@@ -11,6 +11,7 @@ import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -59,16 +60,13 @@ export default async function AssignmentSolutionsPage({
       breadcrumbs={breadcrumbs}
       actions={
         <div className="flex items-center gap-2">
-          <Link
-            href={`/assignments/${assignmentId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/assignments/${assignmentId}`} className={buttonClasses("outline", "sm")}>
             {t("backToAssignment")}
           </Link>
           {solutions.length > 0 && (
             <a
               href={`/api/assignments/${assignmentId}/best-solutions`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("downloadBest")}
             </a>

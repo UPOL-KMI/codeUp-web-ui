@@ -12,6 +12,7 @@ import type { UploadedFile } from "@/lib/upload/chunked-upload";
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Submitting a new reference solution (T-011).
@@ -128,7 +129,7 @@ export function SubmitReferenceSolution({
             type="button"
             disabled={pending || uploaded.length === 0}
             onClick={() => void ask()}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {pending ? t("checking") : t("check")}
           </button>
@@ -176,7 +177,7 @@ export function SubmitReferenceSolution({
             type="button"
             disabled={pending || !environment || mustChooseEntryPoint}
             onClick={() => void submit()}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("submitting") : t("submit")}
           </button>

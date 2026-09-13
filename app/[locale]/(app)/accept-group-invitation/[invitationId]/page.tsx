@@ -10,6 +10,7 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { InvitationAccept } from "@/components/groups/invitation-accept";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -132,14 +133,11 @@ export default async function AcceptGroupInvitationPage({
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/groups/${group.id}?tab=assignments`}
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className={buttonClasses("primary", "sm")}
                 >
                   {t("goToAssignments")}
                 </Link>
-                <Link
-                  href={`/groups/${group.id}`}
-                  className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
+                <Link href={`/groups/${group.id}`} className={buttonClasses("outline", "sm")}>
                   {t("goToGroup")}
                 </Link>
               </div>

@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { SubmitForm } from "@/components/assignments/submit-form";
 import { PageShell } from "@/components/page-shell";
 import { StatusState } from "@/components/state/status-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -58,10 +59,7 @@ export default async function SubmitPage({
       subtitle={assignment.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/assignments/${assignmentId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/assignments/${assignmentId}`} className={buttonClasses("outline", "sm")}>
           {t("back")}
         </Link>
       }
@@ -86,10 +84,7 @@ export default async function SubmitPage({
             assignment.submission.lockedReason ? t("closed.locked") : t("closed.description")
           }
           action={
-            <Link
-              href={`/assignments/${assignmentId}`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <Link href={`/assignments/${assignmentId}`} className={buttonClasses("outline", "sm")}>
               {t("back")}
             </Link>
           }

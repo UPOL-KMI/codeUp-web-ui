@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import type { GroupStudent } from "@/lib/api/group-detail";
 import { groupMailto } from "@/lib/format/mailto";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Mailing the whole class (G-011), from the roster it is about.
@@ -45,10 +46,7 @@ export async function MailStudents({ students }: { students: GroupStudent[] }) {
         {t("title")}
       </h2>
       <div className="flex flex-wrap items-center gap-3">
-        <a
-          href={href}
-          className="inline-block rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <a href={href} className={buttonClasses("outline", "sm")}>
           {t("action", { count: addresses.length })}
         </a>
         <span className="text-xs text-muted-foreground">{t("bcc")}</span>

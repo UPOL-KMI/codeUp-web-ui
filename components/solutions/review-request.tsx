@@ -7,6 +7,7 @@ import { setReviewRequested } from "@/lib/actions/solution-review";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Asking a teacher to look at this solution, and taking the question back (G-003).
@@ -59,7 +60,7 @@ export function ReviewRequest({
       <button
         type="button"
         aria-disabled={pending}
-        className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("outline", "sm")}
         onClick={() => void change(!requested)}
       >
         {requested ? t("withdraw") : t("ask")}

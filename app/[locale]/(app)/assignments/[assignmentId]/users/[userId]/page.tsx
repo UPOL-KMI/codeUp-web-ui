@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { SolutionList } from "@/components/assignments/solution-list";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -56,10 +57,7 @@ export default async function AssignmentUserSolutionsPage({
       subtitle={assignment.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/assignments/${assignmentId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/assignments/${assignmentId}`} className={buttonClasses("outline", "sm")}>
           {t("userSolutions.backToAssignment")}
         </Link>
       }

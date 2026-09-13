@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 type SortDirection = "asc" | "desc";
 
@@ -420,7 +421,7 @@ function DataTableInner<T>({
               type="button"
               onClick={() => handlePageChange(clampedPage + 1)}
               disabled={clampedPage >= totalPages}
-              className="rounded-md border border-input px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+              className={buttonClasses("outline", "sm")}
             >
               {t("next")}
             </button>

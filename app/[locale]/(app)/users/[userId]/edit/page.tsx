@@ -10,6 +10,7 @@ import { Link, redirect } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { ProfileForm } from "@/components/users/account-forms";
 import { AccountAccess, AdminPasswordForm, RoleForm } from "@/components/users/user-admin-forms";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -64,10 +65,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ userI
       subtitle={t("subtitle")}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/users/${account.id}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/users/${account.id}`} className={buttonClasses("outline", "sm")}>
           {t("backToProfile")}
         </Link>
       }

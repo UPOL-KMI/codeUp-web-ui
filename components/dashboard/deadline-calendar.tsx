@@ -4,6 +4,7 @@ import type { CalendarDeadline } from "@/lib/api/dashboard";
 import type { CalendarMonth } from "@/lib/format/calendar-month";
 
 import { Link } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The month view of every deadline the reader has, in the groups they study in and the ones they
@@ -96,14 +97,14 @@ export async function DeadlineCalendar({
           <Link
             href={prevHref}
             aria-label={t("previousMonth")}
-            className="rounded-md border border-input px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             ←
           </Link>
           <Link
             href={nextHref}
             aria-label={t("nextMonth")}
-            className="rounded-md border border-input px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             →
           </Link>

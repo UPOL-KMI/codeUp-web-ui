@@ -12,6 +12,7 @@ import { DateTime } from "@/components/format/date-time";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -99,10 +100,7 @@ export default async function PipelinesPage({
               ))}
             </select>
           </label>
-          <button
-            type="submit"
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <button type="submit" className={buttonClasses("outline", "sm")}>
             {t("filters.apply")}
           </button>
           {environment && (
@@ -204,18 +202,12 @@ export default async function PipelinesPage({
             {lastPage > 0 && (
               <nav aria-label={t("pagination")} className="flex gap-2">
                 {page > 0 && (
-                  <Link
-                    href={pageHref(page - 1)}
-                    className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted"
-                  >
+                  <Link href={pageHref(page - 1)} className={buttonClasses("outline", "sm")}>
                     {t("previous")}
                   </Link>
                 )}
                 {page < lastPage && (
-                  <Link
-                    href={pageHref(page + 1)}
-                    className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted"
-                  >
+                  <Link href={pageHref(page + 1)} className={buttonClasses("outline", "sm")}>
                     {t("next")}
                   </Link>
                 )}

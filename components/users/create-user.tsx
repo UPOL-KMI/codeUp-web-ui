@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogTrigger } from "@/components
 import { Field } from "@/components/form/field";
 import { FormError } from "@/components/form/form-error";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Creating an account for somebody else (AD-001) -- the way a person who cannot register gets one
@@ -152,15 +153,11 @@ export function CreateUser() {
               <button
                 type="button"
                 onClick={() => change(false)}
-                className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className={buttonClasses("outline", "sm")}
               >
                 {t("cancel")}
               </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-              >
+              <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
                 {sameName ? t("createAnyway") : t("submit")}
               </button>
             </DialogFooter>

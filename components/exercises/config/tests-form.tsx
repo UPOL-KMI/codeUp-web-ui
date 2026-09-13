@@ -17,6 +17,7 @@ import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The tests an exercise is graded by, and the measure that turns their results into a score
@@ -275,14 +276,14 @@ export function TestsForm({
                               remove(index);
                               setConfirmingRemoval(null);
                             }}
-                            className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10"
+                            className={buttonClasses("destructive-outline", "xs")}
                           >
                             {t("confirmRemove")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmingRemoval(null)}
-                            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+                            className={buttonClasses("outline", "xs")}
                           >
                             {t("cancel")}
                           </button>
@@ -291,7 +292,7 @@ export function TestsForm({
                         <button
                           type="button"
                           onClick={() => setConfirmingRemoval(index)}
-                          className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+                          className={buttonClasses("outline", "xs")}
                         >
                           {t("remove")}
                         </button>
@@ -325,15 +326,11 @@ export function TestsForm({
                   weight: 100,
                 })
               }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("add")}
             </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
               {isPending ? t("saving") : t("save")}
             </button>
             <p className="text-xs text-muted-foreground">{t("renameWarning")}</p>

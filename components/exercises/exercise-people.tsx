@@ -16,6 +16,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Who else may change this exercise, whose it is, and copying it elsewhere (T-023).
@@ -132,7 +133,7 @@ export function ExercisePeople({
                             "adminRemoved",
                           )
                         }
-                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                        className={buttonClasses("outline", "xs")}
                       >
                         {t("removeAdmin")}
                       </button>
@@ -194,7 +195,7 @@ export function ExercisePeople({
                                 "adminAdded",
                               )
                             }
-                            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                            className={buttonClasses("outline", "xs")}
                           >
                             {t("addAdmin")}
                           </button>
@@ -204,7 +205,7 @@ export function ExercisePeople({
                             type="button"
                             disabled={pending}
                             onClick={() => setHandingOver(person)}
-                            className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                            className={buttonClasses("outline", "xs")}
                           >
                             {t("makeAuthor")}
                           </button>
@@ -249,7 +250,7 @@ export function ExercisePeople({
                   if (forked) router.push(`/exercises/${forked.id}/edit`);
                 });
               }}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("forkButton")}
             </button>

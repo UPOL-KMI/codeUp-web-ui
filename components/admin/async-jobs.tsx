@@ -11,6 +11,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * core-api's background job queue (AD-006): what it is chewing on, and what it finished in the
@@ -148,7 +149,7 @@ export function AsyncJobs({ jobs, windowSeconds }: { jobs: AsyncJob[]; windowSec
                     {job.finishedAt === null ? (
                       <button
                         type="button"
-                        className="rounded-md border border-input px-2 py-1 text-xs text-destructive hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        className={buttonClasses("outline", "xs")}
                         onClick={() => setAborting(job)}
                       >
                         {t("abort")}

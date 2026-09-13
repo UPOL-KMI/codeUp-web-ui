@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getAssignmentSolutions } from "@/lib/api/assignment-solutions";
 
 import { Link } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The way into a comparison (G-005): the author's other attempts at this assignment.
@@ -43,7 +44,7 @@ export async function ComparePicker({
           <li key={row.id}>
             <Link
               href={`/solutions/${solutionId}/diff/${row.id}`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("attempt", { attempt: row.attemptIndex })}
             </Link>

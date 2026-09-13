@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Signing in as somebody else (AD-003), on the profile of the person being become.
@@ -57,7 +58,7 @@ export function TakeoverButton({ userId, fullName }: { userId: string; fullName:
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className={buttonClasses("outline", "sm")}
       >
         {t("action")}
       </button>

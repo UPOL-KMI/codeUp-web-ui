@@ -8,6 +8,7 @@ import { resubmitAllSolutions } from "@/lib/actions/solution-rerun";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Re-running every solution of an assignment (G-002) -- what a teacher does after fixing a test,
@@ -44,7 +45,7 @@ export function ResubmitAll({ assignmentId }: { assignmentId: string }) {
       <button
         type="button"
         aria-disabled={pending}
-        className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("outline", "sm")}
         onClick={() => setConfirming(true)}
       >
         {t("action")}

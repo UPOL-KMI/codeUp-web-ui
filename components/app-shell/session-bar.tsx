@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Who is signed in, and the way out (top right of every page in the shell).
@@ -52,13 +53,18 @@ export function SessionBar({
 
   return (
     <div className="flex items-center justify-end gap-3 px-4 pt-4 text-sm sm:px-6 lg:px-8">
-      <span className="truncate text-muted-foreground">{fullName}</span>
+      <Link
+        href="/profile"
+        className="truncate text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {fullName}
+      </Link>
       {takenOver && (
         <button
           type="button"
           onClick={() => void returnToOwnAccount()}
           disabled={pending}
-          className="rounded-md border border-warning px-2.5 py-1 text-sm font-medium text-warning outline-none hover:bg-warning/10 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+          className={buttonClasses("warning-outline", "sm")}
         >
           {t("returnToOwnAccount")}
         </button>
@@ -67,7 +73,7 @@ export function SessionBar({
         type="button"
         onClick={() => void signOut()}
         disabled={pending}
-        className="rounded-md border border-input px-2.5 py-1 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+        className={buttonClasses("outline", "sm")}
       >
         {t("signOut")}
       </button>

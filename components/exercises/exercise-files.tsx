@@ -18,6 +18,7 @@ import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The exercise's own files, and the named links into them (T-023).
@@ -102,7 +103,7 @@ export function ExerciseFiles({
                     type="button"
                     disabled={pending}
                     onClick={() => setDeleting(file)}
-                    className="shrink-0 rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                    className={buttonClasses("outline", "xs", "shrink-0")}
                   >
                     {t("remove")}
                   </button>
@@ -142,7 +143,7 @@ export function ExerciseFiles({
                   if (ok) setUploaded([]);
                 })
               }
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("primary", "sm")}
             >
               {t("attach", { count: uploaded.length })}
             </button>
@@ -180,7 +181,7 @@ export function ExerciseFiles({
                       onClick={() =>
                         void run(() => deleteExerciseFileLink(exerciseId, link.id), "links.deleted")
                       }
-                      className="shrink-0 rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                      className={buttonClasses("outline", "xs", "shrink-0")}
                     >
                       {t("links.delete")}
                     </button>
@@ -265,7 +266,7 @@ export function ExerciseFiles({
                   }
                 })
               }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("links.create")}
             </button>

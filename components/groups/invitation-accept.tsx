@@ -7,6 +7,7 @@ import { acceptGroupInvitation } from "@/lib/actions/group-invitation";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The one action this screen has (S-023). A button, not a form: there is nothing to fill in.
@@ -42,7 +43,7 @@ export function InvitationAccept({ invitationId }: { invitationId: string }) {
           type="button"
           disabled={pending}
           onClick={() => void accept()}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+          className={buttonClasses("primary", "sm")}
         >
           {pending ? t("joining") : t("accept")}
         </button>

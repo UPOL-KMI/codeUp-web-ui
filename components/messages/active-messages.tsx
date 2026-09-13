@@ -7,6 +7,7 @@ import { markSystemMessagesRead } from "@/lib/actions/system-messages";
 import type { MessageType } from "@/lib/api/message-types";
 
 import { useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The broadcasts a reader is actually meant to see (AD-007), across the top of every page.
@@ -79,7 +80,7 @@ export function ActiveMessages({
           type="button"
           disabled={pending}
           onClick={() => void dismiss()}
-          className="rounded-md border border-input px-3 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+          className={buttonClasses("outline", "xs")}
         >
           {t("dismiss", { count: messages.length })}
         </button>

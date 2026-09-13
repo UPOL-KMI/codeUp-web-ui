@@ -7,6 +7,7 @@ import { syncAssignmentWithExercise } from "@/lib/actions/assignment";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The button S-013's stale-exercise notice had been missing (T-002).
@@ -38,7 +39,7 @@ export function SyncWithExercise({ assignmentId }: { assignmentId: string }) {
       type="button"
       disabled={pending}
       onClick={() => void run()}
-      className="mt-3 rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+      className={buttonClasses("outline", "sm", "mt-3")}
     >
       {pending ? t("syncing") : t("sync")}
     </button>

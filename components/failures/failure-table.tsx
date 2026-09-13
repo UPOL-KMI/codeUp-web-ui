@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter } from "@/components/dialog/dialog"
 import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The failures themselves, and the one thing that can be done about them (T-019).
@@ -140,7 +141,7 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
           <button
             type="button"
             onClick={() => setResolving(failure)}
-            className="rounded-md border border-input px-2 py-1 text-xs whitespace-nowrap hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "xs", "whitespace-nowrap")}
           >
             {t("resolve")}
           </button>
@@ -198,7 +199,7 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
             <button
               type="button"
               onClick={() => setResolving(null)}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("resolveDialog.cancel")}
             </button>
@@ -206,7 +207,7 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
               type="button"
               disabled={pending}
               onClick={() => void resolve()}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+              className={buttonClasses("primary", "sm")}
             >
               {t("resolveDialog.confirm")}
             </button>

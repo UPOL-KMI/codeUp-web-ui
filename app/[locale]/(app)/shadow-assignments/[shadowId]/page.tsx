@@ -12,6 +12,7 @@ import { DateTime } from "@/components/format/date-time";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -70,7 +71,7 @@ export default async function ShadowAssignmentPage({
           {assignment.can.update === true && (
             <Link
               href={`/shadow-assignments/${shadowId}/edit`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("editLink")}
             </Link>
@@ -78,7 +79,7 @@ export default async function ShadowAssignmentPage({
           {assignment.groupId && (
             <Link
               href={`/groups/${assignment.groupId}?tab=assignments`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("backToGroup")}
             </Link>

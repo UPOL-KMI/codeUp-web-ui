@@ -12,6 +12,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
 
 import { FileListField, FilePairListField, FileSelect, StringListField } from "./fields";
+import { buttonClasses } from "@/components/button";
 
 /**
  * What each test actually does (T-009) -- the screen the brief calls the hardest in the product,
@@ -100,7 +101,7 @@ export function TestConfigForm({
             <p>{t("noFiles")}</p>
             <Link
               href={`/exercises/${exerciseId}/edit?tab=files`}
-              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("manageFiles")}
             </Link>
@@ -171,11 +172,7 @@ export function TestConfigForm({
 
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
               {isPending ? t("saving") : t("save")}
             </button>
             <p className="text-xs text-muted-foreground">{t("saveNote")}</p>

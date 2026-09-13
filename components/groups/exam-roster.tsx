@@ -9,6 +9,7 @@ import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Who is in the room, while the exam is running (S-008): the students who have locked in, and the
@@ -68,7 +69,7 @@ export function ExamRoster({ groupId, students }: { groupId: string; students: E
                         type="button"
                         disabled={pendingId === student.id}
                         onClick={() => void unlock(student)}
-                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                        className={buttonClasses("outline", "xs")}
                       >
                         {t("locked.unlock")}
                       </button>

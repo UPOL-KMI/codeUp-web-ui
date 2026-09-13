@@ -8,6 +8,7 @@ import { shortSessionSeconds } from "@/lib/auth/short-session";
 import { Link } from "@/i18n/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { RouteMessages } from "@/components/route-messages";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -105,10 +106,7 @@ export default async function LoginPage({
         {external && (
           <div className="flex flex-col gap-2 border-t border-border pt-4">
             <p className="text-sm text-muted-foreground">{t("externalIntro")}</p>
-            <a
-              href={external.url}
-              className="rounded-md border border-input px-3 py-2 text-center text-sm font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <a href={external.url} className={buttonClasses("outline", "md", "text-center")}>
               {t("externalSignIn", { name: external.name })}
             </a>
           </div>

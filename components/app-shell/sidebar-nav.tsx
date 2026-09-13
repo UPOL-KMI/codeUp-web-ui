@@ -9,6 +9,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 
 import { LocaleSwitch } from "./locale-switch";
 import { ThemeToggle } from "./theme-toggle";
+import { buttonClasses } from "@/components/button";
 
 /** cmdk and the Radix dialog it renders through are ~34 KB of JS that most sessions never open, so
  *  they load on the first Ctrl-K or click rather than on every authenticated page. */
@@ -179,7 +180,7 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
             aria-expanded={mobileOpen}
             aria-controls="app-sidebar"
             onClick={() => setMobileOpen((open) => !open)}
-            className="rounded-md border border-input px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={buttonClasses("outline", "sm")}
           >
             {mobileOpen ? t("closeMenu") : t("openMenu")}
           </button>

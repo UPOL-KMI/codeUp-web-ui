@@ -10,6 +10,7 @@ import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Which languages an exercise accepts (T-009).
@@ -110,11 +111,7 @@ export function EnvironmentsForm({
 
         {!readOnly && (
           <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
+            <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
               {isPending ? t("saving") : t("save")}
             </button>
             <p className="text-xs text-muted-foreground">{t("saveWarning")}</p>

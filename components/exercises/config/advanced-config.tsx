@@ -20,6 +20,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The advanced exercise configuration (T-024), and the switch between the two kinds.
@@ -102,7 +103,7 @@ export function AdvancedConfigEditor({
             type="button"
             disabled={pending}
             onClick={() => void run(() => switchToAdvancedConfig(exerciseId), "toAdvanced.done")}
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm", "self-start")}
           >
             {t("toAdvanced.action")}
           </button>
@@ -224,7 +225,7 @@ export function AdvancedConfigEditor({
                 <button
                   type="button"
                   onClick={() => setTable((previous) => previous.filter((_, at) => at !== index))}
-                  className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+                  className={buttonClasses("outline", "xs")}
                 >
                   {t("remove")}
                 </button>
@@ -248,7 +249,7 @@ export function AdvancedConfigEditor({
               onClick={() =>
                 setTable((previous) => [...previous, { name: "", type: "file[]", value: [] }])
               }
-              className="self-start rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+              className={buttonClasses("outline", "xs", "self-start")}
             >
               {t("environment.addVariable")}
             </button>
@@ -265,7 +266,7 @@ export function AdvancedConfigEditor({
                 "environment.saved",
               )
             }
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+            className={buttonClasses("outline", "sm", "self-start")}
           >
             {t("environment.save")}
           </button>
@@ -315,7 +316,7 @@ export function AdvancedConfigEditor({
               onClick={() =>
                 void run(() => setAdvancedPipelines(exerciseId, chosen), "pipelines.saved")
               }
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+              className={buttonClasses("outline", "sm")}
             >
               {t("pipelines.save")}
             </button>
@@ -413,7 +414,7 @@ export function AdvancedConfigEditor({
             type="button"
             disabled={pending}
             onClick={() => void run(() => updateAdvancedConfig(exerciseId, config), "values.saved")}
-            className="self-start rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm", "self-start")}
           >
             {t("values.save")}
           </button>
@@ -440,7 +441,7 @@ export function AdvancedConfigEditor({
                 setPreview(result.data);
               });
             }}
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+            className={buttonClasses("outline", "sm", "self-start")}
           >
             {t("toSimple.action")}
           </button>

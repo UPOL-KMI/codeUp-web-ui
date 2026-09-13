@@ -10,6 +10,7 @@ import { CreateGroup } from "@/components/groups/create-group";
 import { GroupTable } from "@/components/groups/group-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -47,10 +48,7 @@ export default async function GroupsPage() {
       breadcrumbs={breadcrumbs}
       actions={
         <div className="flex items-center gap-2">
-          <Link
-            href="/archive"
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href="/archive" className={buttonClasses("outline", "sm")}>
             {t("archiveLink")}
           </Link>
           {canCreate && <CreateGroup locales={routing.locales} label={t("create.action")} />}

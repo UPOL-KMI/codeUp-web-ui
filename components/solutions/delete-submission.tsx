@@ -8,6 +8,7 @@ import { deleteSolutionSubmission } from "@/lib/actions/solution-rerun";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Removing one run of a solution (G-004), the student-side twin of G-014's control.
@@ -53,7 +54,7 @@ export function DeleteSubmission({
       <button
         type="button"
         aria-disabled={pending}
-        className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("destructive-outline", "xs")}
         onClick={() => setConfirming(true)}
       >
         {t("delete")}

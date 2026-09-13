@@ -5,6 +5,7 @@ import type { ExamTerm } from "@/lib/api/group-detail";
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The exams this group has already held (S-008).
@@ -86,7 +87,7 @@ export async function ExamTable({
                           ? `/groups/${groupId}?tab=exams`
                           : `/groups/${groupId}?tab=exams&exam=${exam.id}`
                       }
-                      className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      className={buttonClasses("outline", "xs")}
                     >
                       {isSelected ? t("unselect") : t("select")}
                     </Link>

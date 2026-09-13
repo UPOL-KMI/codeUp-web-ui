@@ -18,6 +18,7 @@ import { PageShell } from "@/components/page-shell";
 import { DiffView } from "@/components/solutions/diff-view";
 import { PairFilesByHand } from "@/components/solutions/pair-files-by-hand";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -115,13 +116,13 @@ export default async function SolutionDiffPage({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/solutions/${otherId}/diff/${solutionId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("swap")}
           </Link>
           <Link
             href={`/solutions/${solutionId}/sources`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("backToSources")}
           </Link>

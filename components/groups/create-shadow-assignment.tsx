@@ -7,6 +7,7 @@ import { createShadowAssignment } from "@/lib/actions/shadow-assignment";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A new shadow assignment in this group (G-009).
@@ -44,7 +45,7 @@ export function CreateShadowAssignment({ groupId }: { groupId: string }) {
       <button
         type="button"
         aria-disabled={pending}
-        className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("outline", "sm")}
         onClick={() => void create()}
       >
         {t("create")}

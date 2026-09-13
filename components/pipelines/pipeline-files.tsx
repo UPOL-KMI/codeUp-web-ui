@@ -13,6 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 import { FileUpload } from "@/components/upload/file-upload";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A pipeline's supplementary files (G-015) -- the files a box means when it names a remote one.
@@ -94,7 +95,7 @@ export function PipelineFiles({
                   type="button"
                   disabled={pending}
                   onClick={() => setDeleting(file)}
-                  className="shrink-0 rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className={buttonClasses("outline", "xs", "shrink-0")}
                 >
                   {t("remove")}
                 </button>
@@ -125,7 +126,7 @@ export function PipelineFiles({
                   if (ok) setUploaded([]);
                 })
               }
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("primary", "sm")}
             >
               {t("attach", { count: uploaded.length })}
             </button>

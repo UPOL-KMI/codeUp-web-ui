@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Finding a person by name, to add them to something (S-009).
@@ -108,7 +109,7 @@ export function UserPicker({
                 type="button"
                 disabled={pending}
                 onClick={() => onPick(hit.id)}
-                className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                className={buttonClasses("outline", "xs")}
               >
                 {actionLabel}
               </button>

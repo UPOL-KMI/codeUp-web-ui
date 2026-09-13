@@ -8,6 +8,7 @@ import { groupRows } from "@/lib/groups/tree-rows";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Assigning one exercise to several groups in one go (T-012).
@@ -119,7 +120,7 @@ export function AssignToGroups({
           type="button"
           disabled={pending || chosen.length === 0}
           onClick={() => void assign()}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className={buttonClasses("primary", "sm")}
         >
           {pending ? t("assigning") : t("assign", { count: chosen.length })}
         </button>

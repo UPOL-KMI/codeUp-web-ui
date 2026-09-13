@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Confirming an email address from the link that was sent to it (A-006).
@@ -79,7 +80,7 @@ export function VerifyEmail({ token }: { token: string }) {
           type="button"
           disabled={pending}
           onClick={() => void verify()}
-          className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+          className={buttonClasses("primary", "md")}
         >
           {pending ? t("verifying") : t("verify")}
         </button>

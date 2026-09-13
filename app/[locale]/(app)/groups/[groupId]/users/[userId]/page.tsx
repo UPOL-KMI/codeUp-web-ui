@@ -11,6 +11,7 @@ import { SolutionsTable } from "@/components/assignments/solutions-table";
 import { ClosePendingReviews } from "@/components/groups/close-pending-reviews";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -79,16 +80,10 @@ export default async function GroupUserSolutionsPage({
       breadcrumbs={breadcrumbs}
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/users/${userId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/users/${userId}`} className={buttonClasses("outline", "sm")}>
             {t("viewProfile")}
           </Link>
-          <Link
-            href={`/groups/${groupId}?tab=students`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/groups/${groupId}?tab=students`} className={buttonClasses("outline", "sm")}>
             {t("backToGroup")}
           </Link>
         </div>

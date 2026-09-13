@@ -8,6 +8,7 @@ import { closePendingReviews } from "@/lib/actions/solution-review";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Closing every review still open on one student's work (T-005).
@@ -48,7 +49,7 @@ export function ClosePendingReviews({ solutionIds }: { solutionIds: string[] }) 
         type="button"
         disabled={pending}
         onClick={() => setConfirming(true)}
-        className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+        className={buttonClasses("outline", "sm")}
       >
         {t("action")}
       </button>

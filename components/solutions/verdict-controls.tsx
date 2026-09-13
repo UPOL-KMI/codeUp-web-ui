@@ -8,6 +8,7 @@ import { setSolutionAccepted, setSolutionPoints } from "@/lib/actions/solution-v
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * What a teacher decides about a solution that the pipeline did not (G-001): which attempt counts,
@@ -184,7 +185,7 @@ export function VerdictControls({
             <button
               type="submit"
               aria-disabled={pending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+              className={buttonClasses("primary", "sm")}
             >
               {pending ? t("saving") : t("save")}
             </button>

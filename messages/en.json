@@ -2690,7 +2690,9 @@
     "formatters": "Formatters",
     "formattersNote": "Absolute dates render on the server in the deployment's time zone; relative times render in the browser, since they depend on the current moment.",
     "evaluationTable": "Evaluation results",
-    "evaluationTableNote": "The test table on the solution screen. This deployment cannot produce one -- its sandbox never runs (DEC-031) -- so the rows here are a fixture, and they are the exit-code cases G-004 added."
+    "evaluationTableNote": "The test table on the solution screen. This deployment cannot produce one -- its sandbox never runs (DEC-031) -- so the rows here are a fixture, and they are the exit-code cases G-004 added.",
+    "buttons": "Buttons",
+    "buttonsNote": "One set of classes (D-017): six kinds in three sizes. A link that looks like a button takes `buttonClasses()`; a real button takes `Button`."
   },
   "Code": {
     "lineLabel": "Line {line}",

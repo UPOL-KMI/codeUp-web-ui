@@ -15,6 +15,7 @@ import type { ActionResult } from "@/lib/forms/action-result";
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A pipeline's own settings, and the three things that are not settings (T-015).
@@ -143,7 +144,7 @@ export function PipelineSettings({
               onClick={() =>
                 void run(() => updatePipelineSettings(pipelineId, { version, ...values }), "saved")
               }
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("primary", "sm")}
             >
               {pending ? t("saving") : t("save")}
             </button>
@@ -182,7 +183,7 @@ export function PipelineSettings({
             onClick={() =>
               void run(() => updatePipelineEnvironments(pipelineId, chosen), "environmentsSaved")
             }
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+            className={buttonClasses("outline", "sm", "self-start")}
           >
             {t("saveEnvironments")}
           </button>
@@ -200,7 +201,7 @@ export function PipelineSettings({
                 if (forked) router.push(`/pipelines/${forked.id}/edit`);
               });
             }}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+            className={buttonClasses("outline", "sm")}
           >
             {t("fork")}
           </button>
@@ -210,7 +211,7 @@ export function PipelineSettings({
             type="button"
             disabled={pending}
             onClick={() => setConfirmingDelete(true)}
-            className="rounded-md border border-destructive px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 disabled:opacity-60"
+            className={buttonClasses("destructive-outline", "sm")}
           >
             {t("delete")}
           </button>

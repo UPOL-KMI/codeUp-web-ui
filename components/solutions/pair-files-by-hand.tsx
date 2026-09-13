@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { encodeFilePair, type FilePairingOverride } from "@/lib/code/diff";
 
 import { Link } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The files two attempts do not share, and the reader's way of saying which goes with which
@@ -118,10 +119,7 @@ export async function PairFilesByHand({
                     ))}
                   </select>
                 </span>
-                <button
-                  type="submit"
-                  className="rounded-md border border-input px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
+                <button type="submit" className={buttonClasses("outline", "sm")}>
                   {t("pair")}
                 </button>
               </form>

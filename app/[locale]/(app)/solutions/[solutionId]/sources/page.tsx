@@ -33,6 +33,7 @@ import { ComparePicker } from "@/components/solutions/compare-picker";
 import { ReviewControls } from "@/components/solutions/review-controls";
 import { ReviewSummary } from "@/components/solutions/review-summary";
 import { fileAnchorId, SourceFile } from "@/components/solutions/source-file";
+import { buttonClasses } from "@/components/button";
 
 const EMPTY_REVIEW: SolutionReview = { comments: [], startedAt: null, closedAt: null };
 
@@ -119,14 +120,11 @@ export default async function SolutionSourcesPage({
           />
           <a
             href={`/api/solutions/${solutionId}/download`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("download")}
           </a>
-          <Link
-            href={`/solutions/${solutionId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/solutions/${solutionId}`} className={buttonClasses("outline", "sm")}>
             {t("backToSolution")}
           </Link>
         </div>

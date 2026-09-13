@@ -16,6 +16,7 @@ import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import { useRouter } from "@/i18n/navigation";
 import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * A group's own settings (S-009): what it is called in each language, who may see it, and what it
@@ -232,7 +233,7 @@ export function GroupSettingsForm({
           <button
             type="submit"
             aria-disabled={isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+            className={buttonClasses("primary", "sm")}
           >
             {isPending ? t("saving") : t("save")}
           </button>

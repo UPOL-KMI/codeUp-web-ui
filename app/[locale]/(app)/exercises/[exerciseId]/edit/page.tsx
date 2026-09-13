@@ -16,6 +16,7 @@ import { ExercisePeople } from "@/components/exercises/exercise-people";
 import { PageShell } from "@/components/page-shell";
 import { PageTabs, type PageTab } from "@/components/page-tabs";
 import { describeValidationError, validationErrorHref } from "@/lib/status/exercise-validation";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -104,7 +105,7 @@ export default async function EditExercisePage({
           {exercise.can.viewConfig === true && (
             <Link
               href={`/exercises/${exerciseId}/edit-config`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {tExercise("configure")}
             </Link>
@@ -112,15 +113,12 @@ export default async function EditExercisePage({
           {exercise.can.viewLimits === true && (
             <Link
               href={`/exercises/${exerciseId}/edit-limits`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {tExercise("limits")}
             </Link>
           )}
-          <Link
-            href={`/exercises/${exerciseId}`}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/exercises/${exerciseId}`} className={buttonClasses("outline", "sm")}>
             {t("backToExercise")}
           </Link>
         </div>

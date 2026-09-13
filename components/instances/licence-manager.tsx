@@ -20,6 +20,7 @@ import { Field } from "@/components/form/field";
 import { FormError } from "@/components/form/form-error";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The licences an instance runs on (AD-008).
@@ -202,11 +203,7 @@ export function LicenceManager({
                 {...register("validUntil")}
               />
             </Field>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-            >
+            <button type="submit" disabled={isPending} className={buttonClasses("primary", "sm")}>
               {t("add")}
             </button>
           </div>

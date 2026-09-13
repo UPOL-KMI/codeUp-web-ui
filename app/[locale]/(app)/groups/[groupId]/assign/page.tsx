@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { ExercisePicker } from "@/components/assignments/exercise-picker";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -77,7 +78,7 @@ export default async function AssignExercisePage({
       actions={
         <Link
           href={`/groups/${groupId}?tab=assignments`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className={buttonClasses("outline", "sm")}
         >
           {t("backToGroup")}
         </Link>
@@ -116,10 +117,7 @@ export default async function AssignExercisePage({
             placeholder={t("searchPlaceholder")}
             className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
-          <button
-            type="submit"
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <button type="submit" className={buttonClasses("outline", "sm")}>
             {t("search")}
           </button>
         </form>
@@ -136,10 +134,7 @@ export default async function AssignExercisePage({
             }
             action={
               !wholeCatalog ? (
-                <Link
-                  href={scopeHref("all")}
-                  className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
+                <Link href={scopeHref("all")} className={buttonClasses("outline", "sm")}>
                   {t("scope.all")}
                 </Link>
               ) : undefined

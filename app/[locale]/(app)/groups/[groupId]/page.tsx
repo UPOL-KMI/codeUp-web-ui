@@ -44,6 +44,7 @@ import { EmptyState } from "@/components/state/empty-state";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -406,10 +407,7 @@ async function AssignmentsTab({ groupId, filter }: { groupId: string; filter?: s
     <div className="flex flex-col gap-4">
       {group.can.assignExercise === true && !group.archived && (
         <div>
-          <Link
-            href={`/groups/${groupId}/assign`}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
+          <Link href={`/groups/${groupId}/assign`} className={buttonClasses("primary", "sm")}>
             {t("assignExercise")}
           </Link>
         </div>
@@ -533,7 +531,7 @@ async function StudentsTab({ groupId }: { groupId: string }) {
                   assignment names, and `/api/...` has no locale segment to read one from. */}
               <a
                 href={`/api/groups/${groupId}/points?locale=${locale}`}
-                className="inline-block rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className={buttonClasses("outline", "sm")}
               >
                 {tPoints("download")}
               </a>

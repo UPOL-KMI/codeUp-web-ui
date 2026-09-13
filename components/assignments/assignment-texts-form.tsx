@@ -15,6 +15,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { Field } from "@/components/form/field";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * An assignment's own text, in each language (G-007).
@@ -182,7 +183,7 @@ export function AssignmentTextsForm({
           <button
             type="submit"
             aria-disabled={isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+            className={buttonClasses("primary", "sm")}
           >
             {isPending ? t("texts.saving") : t("texts.save")}
           </button>

@@ -10,6 +10,7 @@ import { Markdown } from "@/components/markdown/markdown";
 import { EmptyState } from "@/components/state/empty-state";
 import { VisibilityBadge } from "@/components/status/visibility-badge";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
+import { buttonClasses } from "@/components/button";
 
 /**
  * An assignment as the person solving it sees it (S-012, `docs/IA.md` §4.3): what to do, by when,
@@ -94,7 +95,7 @@ export async function AssignmentDetailView({
               <p className="mt-3">
                 <Link
                   href={`/assignments/${assignment.id}/submit`}
-                  className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className={buttonClasses("primary", "md")}
                 >
                   {t("submitAction")}
                 </Link>

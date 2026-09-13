@@ -14,6 +14,7 @@ import { ReferenceSolutionsTable } from "@/components/exercises/reference-soluti
 import { HelpDialog } from "@/components/help/help-dialog";
 import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -80,10 +81,7 @@ export default async function ReferenceSolutionsPage({
       subtitle={exercise.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/exercises/${exerciseId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/exercises/${exerciseId}`} className={buttonClasses("outline", "sm")}>
           {t("backToExercise")}
         </Link>
       }

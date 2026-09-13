@@ -11,6 +11,7 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 const BUTTON =
   "rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60";
@@ -121,7 +122,7 @@ export function DeleteReferenceSubmission({
       <button
         type="button"
         aria-disabled={pending}
-        className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("destructive-outline", "xs")}
         onClick={() => setConfirming(true)}
       >
         {t("deleteRun")}

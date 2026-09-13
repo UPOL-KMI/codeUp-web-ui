@@ -25,6 +25,7 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Editing a pipeline's boxes and variables (T-016).
@@ -397,7 +398,7 @@ export function StructureEditor({
                         onClick={() =>
                           setVariables((previous) => previous.filter((_, at) => at !== index))
                         }
-                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+                        className={buttonClasses("outline", "xs")}
                       >
                         {t("remove")}
                       </button>
@@ -412,7 +413,7 @@ export function StructureEditor({
           <button
             type="button"
             onClick={addVariable}
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted"
+            className={buttonClasses("outline", "sm", "self-start")}
           >
             {t("addVariable")}
           </button>
@@ -449,7 +450,7 @@ export function StructureEditor({
                     type="button"
                     aria-label={t("removeBox", { name: box.name })}
                     onClick={() => setBoxes((previous) => previous.filter((_, at) => at !== index))}
-                    className="ml-auto rounded-md border border-input px-2 py-1 text-xs hover:bg-muted"
+                    className={buttonClasses("outline", "xs", "ml-auto")}
                   >
                     {t("remove")}
                   </button>
@@ -528,7 +529,7 @@ export function StructureEditor({
               type="button"
               disabled={!newBoxType}
               onClick={addBox}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
+              className={buttonClasses("outline", "sm")}
             >
               {t("addBox")}
             </button>
@@ -574,11 +575,7 @@ export function StructureEditor({
           away is not a change to it, and it is how a pipeline moves to another instance. Import
           is not -- it rewrites the editor, so it needs somewhere to save to. */}
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={exportStructure}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <button type="button" onClick={exportStructure} className={buttonClasses("outline", "sm")}>
           {t("export.action")}
         </button>
         {!readOnly && (
@@ -587,7 +584,7 @@ export function StructureEditor({
               type="button"
               disabled={pending}
               onClick={() => fileInput.current?.click()}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className={buttonClasses("outline", "sm")}
             >
               {t("import.action")}
             </button>
@@ -616,7 +613,7 @@ export function StructureEditor({
             type="button"
             disabled={pending || broken.writtenTwice.length > 0 || broken.unread.length > 0}
             onClick={() => void save()}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("primary", "sm")}
           >
             {pending ? t("saving") : t("save")}
           </button>

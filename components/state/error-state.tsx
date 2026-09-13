@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { StatusState, type StatusStateProps } from "./status-state";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The error state with its retry (D-008). Brief §9: "every error state has a retry" -- and §6.8 is
@@ -37,11 +38,7 @@ export function ErrorState({
       description={description ?? t("description")}
       headingLevel={headingLevel}
       action={
-        <button
-          type="button"
-          onClick={() => retry()}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <button type="button" onClick={() => retry()} className={buttonClasses("primary", "sm")}>
           {t("retry")}
         </button>
       }

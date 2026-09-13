@@ -21,6 +21,7 @@ import { SourceFile } from "@/components/solutions/source-file";
 import { PageShell } from "@/components/page-shell";
 import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -124,7 +125,7 @@ export default async function ReferenceSolutionPage({
       actions={
         <Link
           href={`/exercises/${exerciseId}/reference-solutions`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className={buttonClasses("outline", "sm")}
         >
           {t("backToList")}
         </Link>
@@ -162,7 +163,7 @@ export default async function ReferenceSolutionPage({
               <div>
                 <a
                   href={`/api/reference-solutions/${solutionId}/download`}
-                  className="inline-flex rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className={buttonClasses("outline", "sm")}
                 >
                   {t("downloadArchive")}
                 </a>
@@ -220,7 +221,7 @@ export default async function ReferenceSolutionPage({
               <div>
                 <a
                   href={`/api/reference-solutions/submissions/${selected.id}/result`}
-                  className="inline-flex rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className={buttonClasses("outline", "sm")}
                 >
                   {t("runs.downloadResult")}
                 </a>
@@ -260,7 +261,7 @@ export default async function ReferenceSolutionPage({
                       <Badge tone={EVALUATION_TONE[state]}>{t(`status.${state}`)}</Badge>
                       <a
                         href={`/api/reference-solutions/submissions/${submission.id}/result`}
-                        className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        className={buttonClasses("outline", "xs")}
                       >
                         {t("runs.result")}
                       </a>

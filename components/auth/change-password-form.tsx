@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Setting a new password from the link in the email (A-005).
@@ -152,7 +153,7 @@ export function ChangePasswordForm({ token }: { token: string }) {
         type="submit"
         aria-disabled={blocked}
         aria-describedby={strengthId}
-        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-disabled:opacity-60"
+        className={buttonClasses("primary", "md")}
       >
         {pending ? t("saving") : t("save")}
       </button>

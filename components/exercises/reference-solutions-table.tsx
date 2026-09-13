@@ -22,6 +22,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
+import { buttonClasses } from "@/components/button";
 
 /**
  * The exercise's reference solutions, and what can be done to them (T-011).
@@ -98,7 +99,7 @@ export function ReferenceSolutionsTable({
             type="button"
             disabled={pending}
             onClick={() => void run(() => resubmitAllReferenceSolutions(exerciseId), "resubmitted")}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className={buttonClasses("outline", "sm")}
           >
             {t("resubmitAll")}
           </button>
@@ -202,7 +203,7 @@ export function ReferenceSolutionsTable({
                               "resubmitted",
                             )
                           }
-                          className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                          className={buttonClasses("outline", "xs")}
                         >
                           {t("resubmit")}
                         </button>
@@ -212,7 +213,7 @@ export function ReferenceSolutionsTable({
                           type="button"
                           disabled={pending}
                           onClick={() => setDeleting(solution)}
-                          className="rounded-md border border-input px-2 py-1 text-xs hover:bg-muted disabled:opacity-60"
+                          className={buttonClasses("outline", "xs")}
                         >
                           {t("delete")}
                         </button>

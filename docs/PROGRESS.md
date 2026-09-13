@@ -6388,3 +6388,21 @@ Same copy, same landmarks, same spec.
 
 Verified live on the dev server in both modes -- landing, sign-in, dashboard, a solution screen --
 and the five checks are green, 296 unit tests among them.
+
+### 2026-09-13 — one button
+
+**X-006's brand hover reached one button and missed forty**, which is how this session found what
+D-017 fixes. Counted rather than eyeballed: 281 hand-assembled button recipes in 120 files, 85
+distinct strings, and six different spellings of the primary button alone. Every one of them was a
+place a colour change had to be made by hand, and X-006 made it in one.
+
+`components/button.tsx` is the whole of it: `buttonClasses(variant, size, extra)` for a link that
+looks like a button, `<Button>` for a real one, six kinds, three sizes. The sweep that moved the
+app onto it was a script -- classify each `<button>`/`<Link>`/`<a>` by the tokens that name its
+variant and size, keep the layout tokens that are not part of the recipe as the third argument,
+refuse anything unrecognised -- and it refused exactly one thing, a `font-mono` file switcher, and
+skipped two segmented toggles that are not buttons. 210 conversions, 107 files, the same DOM
+before and after. Two lines rode along because they sat inside the same hunk: the reader's name
+in the session bar is now a link to their profile, and table rows hover in the accent.
+
+The showcase gains a Buttons section, so the next drift is visible on one page.

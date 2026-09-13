@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
 import { ConsentCheckbox } from "@/components/auth/consent-checkbox";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Setting the password that finishes an emailed invitation (S-024).
@@ -118,11 +119,7 @@ export function AcceptInvitationForm({ token }: { token: string }) {
       )}
 
       <div>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-        >
+        <button type="submit" disabled={pending} className={buttonClasses("primary", "sm")}>
           {pending ? t("submitting") : t("submit")}
         </button>
       </div>

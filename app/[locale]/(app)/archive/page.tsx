@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { GroupTable } from "@/components/groups/group-table";
 import { PageShell } from "@/components/page-shell";
 import { EmptyState } from "@/components/state/empty-state";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -44,10 +45,7 @@ export default async function ArchivePage() {
       subtitle={t("subtitle")}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href="/groups"
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href="/groups" className={buttonClasses("outline", "sm")}>
           {t("activeLink")}
         </Link>
       }

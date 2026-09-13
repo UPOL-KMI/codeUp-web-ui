@@ -14,6 +14,7 @@ import { PageShell } from "@/components/page-shell";
 import { PipelineFiles } from "@/components/pipelines/pipeline-files";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
 import { StructureEditor } from "@/components/pipelines/structure-editor";
+import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
   params,
@@ -75,10 +76,7 @@ export default async function EditPipelinePage({
       subtitle={pipeline.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/pipelines/${pipelineId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
+        <Link href={`/pipelines/${pipelineId}`} className={buttonClasses("outline", "sm")}>
           {t("backToPipeline")}
         </Link>
       }

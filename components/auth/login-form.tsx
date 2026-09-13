@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { safeRedirectTarget } from "@/lib/auth/redirect-target";
 
 import { useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/button";
 
 /**
  * Signing in (A-002).
@@ -124,11 +125,7 @@ export function LoginForm({
         </label>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={buttonClasses("primary", "md")}>
         {pending ? t("signingIn") : t("signIn")}
       </button>
     </form>
