@@ -6402,7 +6402,12 @@ app onto it was a script -- classify each `<button>`/`<Link>`/`<a>` by the token
 variant and size, keep the layout tokens that are not part of the recipe as the third argument,
 refuse anything unrecognised -- and it refused exactly one thing, a `font-mono` file switcher, and
 skipped two segmented toggles that are not buttons. 210 conversions, 107 files, the same DOM
-before and after. Two lines rode along because they sat inside the same hunk: the reader's name
+before and after. **The e2e suite is not green, and was not before this:** 276 pass, 38 fail on the
+branch; the same specs run against a clean worktree of `main` at `0cca4a2` fail 37 of them, the
+same 37 -- the copy and the tabs changed under the specs in the last three commits there, after the
+last verified run (X-008). The one failure that was this branch's own was a spec reaching for an
+"Attempt N" link anywhere in the page, which X-007's trail now offers first; it looks inside the
+compare picker now. Two lines rode along because they sat inside the same hunk: the reader's name
 in the session bar is now a link to their profile, and table rows hover in the accent.
 
 The showcase gains a Buttons section, so the next drift is visible on one page.

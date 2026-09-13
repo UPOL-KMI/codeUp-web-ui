@@ -81,8 +81,11 @@ test("is reached from the source viewer, which offers the author's other attempt
   await signIn(page, SUPERADMIN, `/en/solutions/${first!.id}/sources`);
   const main = page.getByRole("main");
 
-  await expect(main.getByRole("heading", { name: "Compare with another attempt" })).toBeVisible();
-  await main
+  // Inside the picker, not anywhere in `main`: the breadcrumb trail offers an "Attempt N" link of
+  // its own since X-007, and that one leads back to the solution rather than to a comparison.
+  const picker = main.getByRole("region", { name: "Compare with another attempt" });
+  await expect(picker).toBeVisible();
+  await picker
     .getByRole("link", { name: /^Attempt \d+$/ })
     .first()
     .click();
