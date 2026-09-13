@@ -6406,3 +6406,21 @@ before and after. Two lines rode along because they sat inside the same hunk: th
 in the session bar is now a link to their profile, and table rows hover in the accent.
 
 The showcase gains a Buttons section, so the next drift is visible on one page.
+
+### 2026-09-13 — the trail leads back to the course
+
+The operator asked how the breadcrumbs were, and whether anything could be made clearer. Three
+things could, and all three were visible on the first screens looked at.
+
+**A solution's trail began with a word that went nowhere.** `/solutions/:id` was the only dynamic
+leaf in the manifest without `ancestors`, so from a review queue a teacher landed on _Solutions /
+Solution #3_ -- the section unlinked, because it has no page, and nothing above it -- while an
+assignment already led from its course. Now the trail is the course, the assignment, the attempt,
+the first two links, and both reads are ones the page makes anyway.
+
+**The last crumb and the title disagreed** -- _Solution #3_ above _Attempt 3_. The crumb says what
+the title says.
+
+**And a trail of one crumb was the title, one line higher.** Every top-level page had it. The trail
+appears once there is somewhere above to go (DEC-144); the two specs that asserted the old
+unlinked words assert the links instead.

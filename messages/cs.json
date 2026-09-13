@@ -809,7 +809,7 @@
   },
   "Solutions": {
     "title": "Řešení",
-    "crumb": "Řešení č. {attempt}"
+    "crumb": "Pokus {attempt}"
   },
   "Solution": {
     "title": "Pokus {attempt}",

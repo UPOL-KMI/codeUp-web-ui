@@ -198,6 +198,25 @@ const MANIFEST: ManifestEntry[] = [
     // A solution has no name of its own. The attempt number is what distinguishes it from the
     // author's other attempts at the same assignment, and is what the legacy UI labels it by.
     pattern: "/solutions/:solutionId",
+    // The course and the assignment, not the "Solutions" section: a solution's address names
+    // neither, and a reader arriving from a review queue had no way up to the assignment it
+    // answers. Both reads are the ones the page itself makes.
+    ancestors: async (params, locale) => {
+      const solution = await apiRead<{ assignmentId: string }>("/v1/assignment-solutions/{id}", {
+        pathParams: { id: params.solutionId! },
+      });
+      const assignment = await apiRead<{ groupId: string; localizedTexts?: LocalizedText[] }>(
+        "/v1/exercise-assignments/{id}",
+        { pathParams: { id: solution.assignmentId } },
+      );
+      return [
+        ...(await groupCrumb(assignment.groupId, locale)),
+        {
+          label: localizedName(assignment.localizedTexts, locale),
+          href: `/assignments/${solution.assignmentId}`,
+        },
+      ];
+    },
     resolve: async (params, locale) => {
       const [solution, t] = await Promise.all([
         apiRead<{ attemptIndex?: number }>("/v1/assignment-solutions/{id}", {

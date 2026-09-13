@@ -46,7 +46,9 @@ export async function PageShell({
   return (
     <RouteMessages>
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        {breadcrumbs.length > 0 && (
+        {/* A trail of one crumb is the title again, one line above it -- so a top-level page
+            shows none, and the trail appears once there is somewhere above to go back to. */}
+        {breadcrumbs.length > 1 && (
           <nav aria-label={t("breadcrumb")} className="mb-4 text-sm text-muted-foreground">
             <ol className="flex flex-wrap items-center gap-1.5">
               {breadcrumbs.map((crumb, index) => (

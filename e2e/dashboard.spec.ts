@@ -109,10 +109,12 @@ test.describe("as a student", () => {
     await upcoming(page).locator("tbody tr").first().getByRole("link").first().click();
 
     await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
-    // The section crumb has no page of its own, so it is text rather than a dead link.
+    // The trail is the course the assignment was set in, then the assignment itself -- never the
+    // "Assignments" section, which has no page of its own.
     const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
-    await expect(breadcrumb.getByText("Assignments")).toBeVisible();
-    await expect(breadcrumb.getByRole("link", { name: "Assignments" })).toHaveCount(0);
+    await expect(breadcrumb.getByText("Assignments")).toHaveCount(0);
+    await expect(breadcrumb.getByRole("link")).toHaveCount(1);
+    await expect(breadcrumb.getByRole("link")).toHaveAttribute("href", /\/en\/groups\/[0-9a-f-]+$/);
   });
 });
 
@@ -167,9 +169,15 @@ test.describe("as a teacher", () => {
       .click();
 
     await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+$/);
+    // Course, assignment, then the attempt -- the same words the page's own title uses.
     const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
-    await expect(breadcrumb.getByText("Solutions")).toBeVisible();
-    await expect(breadcrumb.getByRole("link", { name: "Solutions" })).toHaveCount(0);
+    await expect(breadcrumb.getByText("Solutions")).toHaveCount(0);
+    await expect(breadcrumb.getByRole("link")).toHaveCount(2);
+    await expect(breadcrumb.getByRole("link").nth(1)).toHaveAttribute(
+      "href",
+      /\/en\/assignments\/[0-9a-f-]+$/,
+    );
+    await expect(breadcrumb.getByText(/^Attempt \d+$/)).toBeVisible();
   });
 
   test("lists the deadlines coming up in the groups they teach", async ({ page }) => {
