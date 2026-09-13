@@ -2796,7 +2796,17 @@
     },
     "signOut": "Odhlásit se",
     "allGroups": "Všechny skupiny",
-    "returnToOwnAccount": "Zpět na svůj účet"
+    "returnToOwnAccount": "Zpět na svůj účet",
+    "theme": {
+      "label": "Vzhled",
+      "system": "Podle systému",
+      "light": "Světlý",
+      "dark": "Tmavý"
+    },
+    "brand": {
+      "product": "UPolníček",
+      "department": "Katedra informatiky"
+    }
   },
   "Palette": {
     "label": "Hledání",

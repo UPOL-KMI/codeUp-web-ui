@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Sans } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -11,6 +12,13 @@ import { SHELL_MESSAGE_NAMESPACES } from "@/lib/i18n-text/route-messages.generat
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
+
+const plex = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex",
+  display: "swap",
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -55,7 +63,7 @@ export default async function LocaleLayout({
     // suppressHydrationWarning is next-themes' own documented requirement: it sets the
     // `class`/`style` attribute on <html> before hydration (to avoid a light/dark flash),
     // which would otherwise be flagged as a server/client mismatch.
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={plex.variable} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider

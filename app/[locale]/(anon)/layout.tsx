@@ -1,23 +1,25 @@
+import { BrandMark } from "@/components/brand/brand-mark";
 import { LocaleSwitch } from "@/components/app-shell/locale-switch";
+import { ThemeToggle } from "@/components/app-shell/theme-toggle";
 
 /**
- * Shared shell for pages reachable without a session (login, register, password reset, the guides, ...).
- * Deliberately close to a passthrough -- D-series (Design System) owns the actual centered-card
- * chrome; this file is the place a later ticket edits, not something to pre-build speculatively.
- *
- * The one thing it does carry is the `<main>` landmark. `(app)`'s shell has always had one
- * (`components/app-shell/app-shell.tsx`) and every anonymous page was missing it -- found by
- * S-024's spec reaching for `getByRole("main")` on a page outside that shell.
- *
- * The language switch (A-008) is the second: a visitor has no sidebar to put it in, and the sign-in
- * page is exactly where somebody who reads Czech should be able to say so.
+ * Shared shell for pages reachable without a session (login, register, password reset, the
+ * guides, ...). A visitor has no sidebar, so the mark, the language switch (A-008) and the
+ * appearance switch live in a header instead; the `<main>` landmark is here because every
+ * anonymous page was missing one until S-024's spec reached for it.
  */
 export default function AnonLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <div className="flex justify-end px-4 pt-4">
-        <LocaleSwitch />
-      </div>
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <BrandMark href="/" />
+          <div className="flex items-center gap-3">
+            <LocaleSwitch />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
       <main>{children}</main>
     </>
   );

@@ -6357,3 +6357,34 @@ looks like a wrong answer -- and now say what the solution screen says.
 the settings screen is four; a data-only exercise's configuration is one tab, since the other two
 are about tests it does not have; the language picker is hidden when there is one language to pick
 and names it properly when there are several; and removing somebody from a group asks first.
+
+### 2026-09-13 — the interface wears the department's colours
+
+**The operator's word was impersonal, and it was the right word.** Every screen was shadcn's
+neutral defaults: a near-black `primary`, grey on white, and nothing anywhere that said whose
+deployment this is. He pointed at inf.upol.cz -- "not a bombshell, but the logo and colours are
+there" -- and that is what X-006 took from it, measured rather than eyeballed: the site's computed
+styles say `#016BAB` for links, headings and the navigation bar, `#00598E` on hover, IBM Plex Sans
+in three weights. The blue is now `primary`, and the same hue is `accent`, `ring` and `info`, so
+the pressed state of a control, the focus ring and a tip all read as one family. The neutrals are
+untouched. Everything that already read its colours through tokens -- the tabs' underline, the
+badges, the sidebar's active item -- changed with them and needed no edit.
+
+**The mark is the site's own SVG, traced to four shapes** and kept small: an `i` whose dot is
+blue, a blue diagonal, an `F`. The letters take `currentColor` rather than the site's near-black,
+which is what lets the same component sit on a dark ground. It heads the sidebar, with the
+product's name and the department's under it, and heads every anonymous page too -- a visitor at
+the sign-in form now sees what they are signing in to.
+
+**Dark mode has a switch.** Three states -- system, light, dark -- beside the language switch in
+both places, because `defaultTheme="system"` was the behaviour already and a two-state toggle
+would have quietly taken it away from everybody who never touched it. The pressed state is
+withheld until hydration: `next-themes` only knows the stored choice on the client, and a server
+that guessed would be wrong for every reader who chose (DEC-143).
+
+**The front page got the least and shows the most.** A blue rule beside the tagline, blue section
+headings, and the four explainers as cards in two columns instead of a single column of prose.
+Same copy, same landmarks, same spec.
+
+Verified live on the dev server in both modes -- landing, sign-in, dashboard, a solution screen --
+and the five checks are green, 296 unit tests among them.

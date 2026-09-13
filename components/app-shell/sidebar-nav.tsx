@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Link, usePathname } from "@/i18n/navigation";
 
 import { LocaleSwitch } from "./locale-switch";
+import { ThemeToggle } from "./theme-toggle";
 
 /** cmdk and the Radix dialog it renders through are ~34 KB of JS that most sessions never open, so
  *  they load on the first Ctrl-K or click rather than on every authenticated page. */
@@ -120,10 +122,10 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
                 href={item.href}
                 aria-current={currentPage(item.href)}
                 onClick={() => setMobileOpen(false)}
-                className={`truncate rounded-md px-2 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`truncate rounded-md border-l-2 px-2.5 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
                   isActive(item.href)
-                    ? "bg-accent font-medium text-accent-foreground"
-                    : "text-foreground hover:bg-accent/60"
+                    ? "border-primary bg-accent font-medium text-accent-foreground"
+                    : "border-transparent text-foreground hover:bg-accent/60"
                 }`}
               >
                 {item.label}
@@ -134,8 +136,11 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
       ))}
       {/* A-008. At the foot of the sidebar rather than in the page header: it is a preference,
           not an action on whatever is on screen. */}
-      <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
-        <LocaleSwitch />
+      <div className="mt-2 flex flex-col gap-3 border-t border-border pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <LocaleSwitch />
+          <ThemeToggle />
+        </div>
         {/* G-025. Beside the locale switch because it is chrome about the page you are
             on rather than an action on its contents -- the legacy app kept it in the header, which
             is where this app puts a page's own actions. */}
@@ -166,17 +171,20 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
       {/* Mobile: a disclosure button and a drawer. Brief §9 requires phone width to work --
           "students check deadlines on phones" -- and a permanently-visible sidebar would eat most
           of a phone screen. */}
-      <div className="flex items-center gap-2 border-b border-border p-2 md:hidden">
-        <button
-          type="button"
-          aria-expanded={mobileOpen}
-          aria-controls="app-sidebar"
-          onClick={() => setMobileOpen((open) => !open)}
-          className="rounded-md border border-input px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {mobileOpen ? t("closeMenu") : t("openMenu")}
-        </button>
-        <PaletteTrigger onOpen={openPalette} className="px-3 py-1.5" />
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-card px-3 py-2 md:hidden">
+        <BrandMark href="/dashboard" compact />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-expanded={mobileOpen}
+            aria-controls="app-sidebar"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="rounded-md border border-input px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {mobileOpen ? t("closeMenu") : t("openMenu")}
+          </button>
+          <PaletteTrigger onOpen={openPalette} className="px-3 py-1.5" />
+        </div>
       </div>
 
       <aside
@@ -187,7 +195,8 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
       >
         {/* Hidden below md, where the copy in the bar above is reachable without opening the
             drawer this sits inside. */}
-        <div className="hidden px-4 pt-4 md:block">
+        <div className="hidden flex-col gap-4 px-4 pt-4 md:flex">
+          <BrandMark href="/dashboard" />
           <PaletteTrigger onOpen={openPalette} className="w-full px-2 py-1.5 text-left" />
         </div>
         {nav}

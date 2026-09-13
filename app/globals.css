@@ -5,21 +5,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* The department's own blue (#016BAB on inf.upol.cz), and the darker one its buttons hover to. */
+  --primary: oklch(0.51 0.125 243);
   --primary-foreground: oklch(0.985 0 0);
+  --primary-hover: oklch(0.44 0.115 243);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.955 0.02 243);
+  --accent-foreground: oklch(0.36 0.11 243);
   --destructive: oklch(0.47 0.18 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   /* An **opaque** wash of `destructive`, for surfaces that float over the page (PF-026). A `/10`
@@ -45,12 +47,12 @@
   /* The fourth status tone: neither good nor bad news, just something worth knowing. Its hue is
      the university's own blue (#006FAD, the one the e-mails wear), so a tip on a screen looks like
      it belongs to the same deployment as the message that arrives about it. */
-  --info: oklch(0.53 0.12 245);
+  --info: oklch(0.51 0.125 243);
   --info-foreground: oklch(0.985 0 0);
   --info-surface: oklch(0.961 0.025 240);
   --border: oklch(0.922 0 0);
   --input: oklch(0.63 0 0);
-  --ring: oklch(0.55 0 0);
+  --ring: oklch(0.51 0.125 243);
 }
 
 .dark {
@@ -60,13 +62,14 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.75 0.11 240);
+  --primary-foreground: oklch(0.17 0.03 243);
+  --primary-hover: oklch(0.81 0.1 240);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.29 0.045 243);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.205 0 0);
@@ -82,7 +85,7 @@
   --info-surface: oklch(0.275 0.05 250);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 35%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.75 0.11 240);
 }
 
 /* Maps the tokens above onto Tailwind's own utility namespace, so e.g.
@@ -91,6 +94,8 @@
    hex/oklch value in component code (brief D-012/F-010's "no hardcoded
    colors"). */
 @theme inline {
+  /* IBM Plex Sans, loaded in app/[locale]/layout.tsx; the same face inf.upol.cz sets. */
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -103,6 +108,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -289,15 +295,7 @@
 
 [data-slot="code-block"] .code-line-comments article,
 [data-slot="code-block"] .code-line-comments form {
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* The line and its "add a comment" control sit side by side, the control in the gutter, so a

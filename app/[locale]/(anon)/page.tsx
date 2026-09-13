@@ -44,16 +44,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   return (
     <RouteMessages>
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-12 sm:px-6">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-12 px-4 py-12 sm:px-6">
         <header className="flex flex-col gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-lg text-muted-foreground">{t("tagline")}</p>
+          <h1 className="text-4xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="border-l-4 border-primary pl-4 text-xl">{t("tagline")}</p>
           <p className="text-sm text-muted-foreground">{t("operator")}</p>
           <p className="text-sm">{t("what")}</p>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/login"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               {t("signIn")}
             </Link>
@@ -68,7 +68,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
         {instance && (
           <section aria-labelledby="home-instance" className="flex flex-col gap-2">
-            <h2 id="home-instance" className="text-base font-semibold tracking-tight">
+            <h2 id="home-instance" className="text-lg font-semibold tracking-tight text-primary">
               {t("instance.title")}
             </h2>
             <p className="text-sm font-medium">{instance.name}</p>
@@ -87,15 +87,20 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         )}
 
         <section aria-labelledby="home-quickstart" className="flex flex-col gap-6">
-          <h2 id="home-quickstart" className="text-base font-semibold tracking-tight">
+          <h2 id="home-quickstart" className="text-lg font-semibold tracking-tight text-primary">
             {t("quickStart.title")}
           </h2>
-          {sections.map((section) => (
-            <div key={section} className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold">{t(`quickStart.${section}.title`)}</h3>
-              <p className="text-sm text-muted-foreground">{t(`quickStart.${section}.body`)}</p>
-            </div>
-          ))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {sections.map((section) => (
+              <div
+                key={section}
+                className="flex flex-col gap-2 rounded-lg border border-border bg-card p-5"
+              >
+                <h3 className="text-sm font-semibold">{t(`quickStart.${section}.title`)}</h3>
+                <p className="text-sm text-muted-foreground">{t(`quickStart.${section}.body`)}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <footer className="flex flex-col gap-3 border-t border-border pt-6">

@@ -2796,7 +2796,17 @@
     },
     "signOut": "Sign out",
     "allGroups": "All groups",
-    "returnToOwnAccount": "Back to my account"
+    "returnToOwnAccount": "Back to my account",
+    "theme": {
+      "label": "Appearance",
+      "system": "Match the system",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "brand": {
+      "product": "UPolníček",
+      "department": "Department of Computer Science"
+    }
   },
   "Palette": {
     "label": "Search",
