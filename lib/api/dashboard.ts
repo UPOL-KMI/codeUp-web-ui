@@ -323,7 +323,12 @@ async function fetchReviewQueue(
 }
 
 export async function getTeacherDashboard(locale: string): Promise<TeacherDashboard> {
-  const { member, teaching } = await getMyGroups(locale);
+  const { member, teaching: allTeaching } = await getMyGroups(locale);
+  // **An organizational group provably holds no assignments**: core-api refuses to create one in a
+  // group of that kind, and refuses to turn a group that already has any into one ("The group
+  // already contains assignments"). Asking each of them for its assignment list is a round trip
+  // whose answer is known to be empty, and on a department's tree there are several of them.
+  const teaching = allTeaching.filter((group) => !group.organizational);
   if (teaching.length === 0) return { pendingReviews: [], reviewRequests: [], upcoming: [] };
 
   const session = await requireSession();
@@ -437,7 +442,15 @@ export async function getDeadlineCalendar(
   range: { first: string; last: string },
 ): Promise<Map<string, CalendarDeadline[]>> {
   const { member, teaching } = await getMyGroups(locale);
-  const groups = [...new Map([...member, ...teaching].map((group) => [group.id, group])).values()];
+  // Same as the teacher dashboard above: a container has no deadlines to contribute, by core-api's
+  // own rule, so it is not asked for any.
+  const groups = [
+    ...new Map(
+      [...member, ...teaching]
+        .filter((group) => !group.organizational)
+        .map((group) => [group.id, group]),
+    ).values(),
+  ];
   if (groups.length === 0) return new Map();
 
   const assignmentsPerGroup = await Promise.all(

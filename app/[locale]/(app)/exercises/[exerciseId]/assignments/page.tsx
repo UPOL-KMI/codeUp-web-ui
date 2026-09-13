@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getExerciseAssignments } from "@/lib/api/exercise-assignments";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
-import { getMyGroups } from "@/lib/api/groups";
+import { getGroupList, getMyGroups } from "@/lib/api/groups";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -40,8 +40,8 @@ export async function generateMetadata({
  * may create in four of five groups they picked gets four assignments and one named refusal.
  *
  * `viewAssignments` gates the reading; creating is the destination group's rule, which no hint on
- * the exercise expresses (DEC-090's shape), so the offer is the groups the reader teaches and
- * core-api decides for real.
+ * the exercise expresses (DEC-090's shape), so the offer is the groups the reader teaches -- less
+ * the organizational ones, which core-api refuses outright -- and core-api decides for real.
  */
 export default async function ExerciseAssignmentsPage({
   params,
@@ -56,13 +56,26 @@ export default async function ExerciseAssignmentsPage({
 
   if (exercise.can.viewAssignments !== true) forbidden();
 
-  const [assignments, mine, breadcrumbs] = await Promise.all([
+  const [assignments, mine, allGroups, breadcrumbs] = await Promise.all([
     getExerciseAssignments(exerciseId, locale),
     getMyGroups(locale),
+    // For the ancestry, and for nothing else: the offer is still the reader's own teaching groups.
+    // Both calls read the same memoized response, so this costs no extra round trip.
+    getGroupList(locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/assignments`, locale),
   ]);
 
   const alreadyAssigned = new Set(assignments.map((assignment) => assignment.groupId));
+  // **An organizational group can never take an assignment** -- core-api answers "You cannot assign
+  // exercises in organizational groups" (a 400, measured) -- so offering one is an offer that
+  // cannot succeed, which brief §3.4 rules out. The reader's containers were half the list on the
+  // operator's own instance, where a course is a tree and only its leaves hold students. Taken
+  // from the group list rather than filtered in place, because that list is already in tree order
+  // and carries each group's ancestry, which is what the offer is drawn from.
+  const teaching = new Set(mine.teaching.map((group) => group.id));
+  const assignable = allGroups
+    .filter((group) => teaching.has(group.id) && !group.organizational)
+    .map((group) => ({ id: group.id, name: group.name, path: group.path }));
 
   return (
     <PageShell
@@ -162,7 +175,7 @@ export default async function ExerciseAssignmentsPage({
           ) : (
             <AssignToGroups
               exerciseId={exerciseId}
-              groups={mine.teaching}
+              groups={assignable}
               alreadyAssigned={alreadyAssigned}
             />
           )}

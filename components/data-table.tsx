@@ -6,10 +6,26 @@ import { useSearchParams } from "next/navigation";
 
 import { usePathname, useRouter } from "@/i18n/navigation";
 
+type SortDirection = "asc" | "desc";
+
+/**
+ * What the table is doing to the rows, for the few cells whose rendering depends on it.
+ *
+ * The group list is the case that asked for it: it indents each row by its depth in the group
+ * tree, which is only true while the rows are in the order the server sent them (or sorted by the
+ * very column that carries the hierarchy). Sorted by anything else, an indent would draw a tree
+ * that is not there.
+ */
+export interface DataTableOrder {
+  /** The column the reader sorted by, or null for the order the rows arrived in. */
+  sortColumn: string | null;
+  sortDirection: SortDirection;
+}
+
 export interface DataTableColumn<T> {
   id: string;
   header: React.ReactNode;
-  cell: (row: T) => React.ReactNode;
+  cell: (row: T, order: DataTableOrder) => React.ReactNode;
   /** Enables the sort control on this column's header. */
   sortable?: boolean;
   /** Value to sort by, if different from what `cell` renders (e.g. a raw timestamp vs. a
@@ -48,8 +64,6 @@ export interface DataTableProps<T> {
   getRowLabel?: (row: T) => string;
   onSelectionChange?: (selectedIds: string[]) => void;
 }
-
-type SortDirection = "asc" | "desc";
 
 const DEFAULT_PAGE_SIZE = 20;
 const FILTER_DEBOUNCE_MS = 250;
@@ -128,6 +142,11 @@ function DataTableInner<T>({
   const rawSort = searchParams.get(sortKey);
   const sortColumn = rawSort ? rawSort.replace(/^-/, "") : null;
   const sortDirection: SortDirection = rawSort?.startsWith("-") ? "desc" : "asc";
+  // Memoized so the two memos below can depend on it without re-running on every render.
+  const order = useMemo<DataTableOrder>(
+    () => ({ sortColumn, sortDirection }),
+    [sortColumn, sortDirection],
+  );
   const currentPage = Math.max(1, Number(searchParams.get(pageKey) ?? "1") || 1);
   const urlQuery = searchParams.get(queryKey) ?? "";
 
@@ -175,17 +194,19 @@ function DataTableInner<T>({
     const needle = urlQuery.toLowerCase();
     return data.filter((row) =>
       columns.some((column) => {
-        const value = column.filterValue ? column.filterValue(row) : String(column.cell(row));
+        const value = column.filterValue
+          ? column.filterValue(row)
+          : String(column.cell(row, order));
         return value.toLowerCase().includes(needle);
       }),
     );
-  }, [data, urlQuery, columns]);
+  }, [data, urlQuery, columns, order]);
 
   const sorted = useMemo(() => {
     if (!sortColumn) return filtered;
     const column = columns.find((c) => c.id === sortColumn);
     if (!column) return filtered;
-    const getValue = column.sortValue ?? ((row: T) => String(column.cell(row)));
+    const getValue = column.sortValue ?? ((row: T) => String(column.cell(row, order)));
     const withValues = filtered.map((row) => ({ row, value: getValue(row) }));
     withValues.sort((a, b) => {
       if (a.value < b.value) return sortDirection === "asc" ? -1 : 1;
@@ -193,7 +214,7 @@ function DataTableInner<T>({
       return 0;
     });
     return withValues.map(({ row }) => row);
-  }, [filtered, sortColumn, sortDirection, columns]);
+  }, [filtered, sortColumn, sortDirection, columns, order]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const clampedPage = Math.min(currentPage, totalPages);
@@ -371,7 +392,7 @@ function DataTableInner<T>({
                         key={column.id}
                         className={`px-3 py-2 ${column.align === "right" ? "text-right" : ""} ${column.className ?? ""}`}
                       >
-                        {column.cell(row)}
+                        {column.cell(row, order)}
                       </td>
                     ))}
                   </tr>

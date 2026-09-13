@@ -5,6 +5,7 @@ import { cache } from "react";
 import { requireSession } from "@/lib/auth/require-session";
 
 import { apiRead } from "./read";
+import { USER_ROLES, type UserRole } from "./user-roles";
 
 /**
  * The signed-in user, as the app shell needs them (D-014).
@@ -118,6 +119,37 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
  */
 export function canSeeAdminSection(role: string): boolean {
   return role === "superadmin" || role === "empowered-supervisor";
+}
+
+/**
+ * Whether this role sits at or above `floor` in core-api's own hierarchy, where each role inherits
+ * the one before it (`USER_ROLES`, and `permissions.neon` is written the same way).
+ */
+function atLeast(role: string, floor: UserRole): boolean {
+  const index = USER_ROLES.indexOf(role as UserRole);
+  return index >= 0 && index >= USER_ROLES.indexOf(floor);
+}
+
+/**
+ * Who is offered the user directory, the exercise catalogue and the pipelines.
+ *
+ * Same rule and same caveat as `canSeeAdminSection`: this is not the authorisation boundary --
+ * core-api refuses the pages themselves -- it decides whether to *offer* a reader a link that
+ * every click would refuse. The operator found three such links on a student's sidebar; all three
+ * ended in the refusal page, which reads as a broken product rather than as a permission.
+ *
+ * The floors are read out of `permissions.neon`, not guessed: `user.viewAll` (which the directory
+ * needs, and which is not `user.viewList`, the one a student does have) is granted from
+ * `supervisor` up, while `exercise.viewAll` and `pipeline.viewAll` are granted one rung lower, from
+ * `supervisor-student`. Checked against the reader's **effective** role, so a narrowed session is
+ * offered what that role may reach rather than what the account may.
+ */
+export function canSeeUserDirectory(role: string): boolean {
+  return atLeast(role, "supervisor");
+}
+
+export function canSeeExerciseSection(role: string): boolean {
+  return atLeast(role, "supervisor-student");
 }
 
 /**

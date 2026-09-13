@@ -48,3 +48,29 @@ export async function getGuide(slug: GuideSlug, locale: string): Promise<string 
   }
   return null;
 }
+
+/**
+ * In-app help: a document opened in a dialog next to the screen it explains, rather than a page of
+ * its own somewhere else.
+ *
+ * Same reasoning as the guides above and the same machinery (DEC-139), and the same reason for
+ * being files rather than message keys: the test configuration help is a few screens of prose,
+ * tables and worked examples, which in JSON would be unreadable in a diff and unmaintainable as a
+ * whole. `next.config.ts` traces `content/help` into the standalone output alongside `content/docs`.
+ *
+ * It is deliberately *not* one of the three guides: those are documents a reader goes to and reads
+ * end to end, this is something read while filling a form in, and putting it in the signpost would
+ * make the guides list about the product's screens rather than about its readers.
+ */
+const HELP_ROOT = join(process.cwd(), "content", "help");
+
+export async function getHelp(slug: string, locale: string): Promise<string | null> {
+  for (const candidate of [locale, "en"]) {
+    try {
+      return await readFile(join(HELP_ROOT, `${slug}.${candidate}.md`), "utf8");
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}

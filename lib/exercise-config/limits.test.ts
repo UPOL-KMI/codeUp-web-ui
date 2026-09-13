@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   combinedCeilings,
+  dataOnlyCell,
   limitsConstraints,
   readLimits,
   usesPreciseTime,
@@ -103,6 +104,33 @@ describe("readLimits", () => {
     expect(values.preciseTime).toBe(true);
     expect(values.cells["1"]!.python3!.time).toBe("3");
     expect(values.cells["2"]!.python3!.time).toBe("4");
+  });
+});
+
+describe("the data-only seed", () => {
+  it("seeds only the cells core-api holds nothing for", () => {
+    const seed = { memory: "262144", time: "10" };
+    const values = readLimits(SEEDED, "01-default", ["1", "2"], ["python3"], seed);
+    // The stored limit wins -- seeding must not overwrite a number somebody chose.
+    expect(values.cells["1"]!.python3).toEqual({ memory: "65536", time: "5" });
+    expect(values.cells["2"]!.python3).toEqual(seed);
+  });
+
+  it("never seeds a value the machine would refuse", () => {
+    // core-api's own validator rejects a limit above the hardware group's ceiling, so a seed that
+    // ignored the ceiling would prefill the field and then mark it as out of range -- which is the
+    // defect this exists to fix, reintroduced from the other side.
+    expect(dataOnlyCell(SMALL_GROUP, true)).toEqual({ memory: "65536", time: "10" });
+    expect(dataOnlyCell(DEFAULT_GROUP, true)).toEqual({ memory: "262144", time: "10" });
+  });
+
+  it("measures against the ceiling of the time measure actually in use", () => {
+    const wallOnly: HardwareGroup = {
+      ...SMALL_GROUP,
+      metadata: { memory: 65536, cpuTimePerTest: 60, wallTimePerTest: 4 },
+    };
+    expect(dataOnlyCell(wallOnly, false).time).toBe("4");
+    expect(dataOnlyCell(wallOnly, true).time).toBe("10");
   });
 });
 

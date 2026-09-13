@@ -243,10 +243,18 @@ export function SettingsForm({
   account,
   locales,
   flags,
+  teacherFlags = [],
 }: {
   account: AccountSettings;
   locales: readonly string[];
   flags: readonly NotificationFlag[];
+  /**
+   * The flags whose e-mails only reach somebody who teaches, empty for a reader who does not.
+   * Kept a separate list rather than a `disabled` state: a setting that can never do anything is
+   * not worth explaining to a student, and four of them together read as a screen half of which
+   * does not apply to them (reported from his students' view of this page).
+   */
+  teacherFlags?: readonly NotificationFlag[];
 }) {
   const t = useTranslations("Account.settings");
   const router = useRouter();
@@ -255,7 +263,7 @@ export function SettingsForm({
   const [draft, setDraft] = useState({
     defaultLanguage: account.settings.defaultLanguage,
     flags: Object.fromEntries(
-      flags.map((flag) => [flag, account.settings[flag] === true]),
+      [...flags, ...teacherFlags].map((flag) => [flag, account.settings[flag] === true]),
     ) as Record<string, boolean>,
   });
 
@@ -270,6 +278,23 @@ export function SettingsForm({
       toast.error(t("failed"), result.formError);
     }
   }
+
+  const renderFlag = (flag: NotificationFlag) => (
+    <label key={flag} className="flex items-start gap-2 text-sm">
+      <input
+        type="checkbox"
+        className="mt-1 size-4"
+        checked={draft.flags[flag] === true}
+        onChange={(event) =>
+          setDraft((current) => ({
+            ...current,
+            flags: { ...current.flags, [flag]: event.target.checked },
+          }))
+        }
+      />
+      {t(`flags.${flag}`)}
+    </label>
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -291,23 +316,15 @@ export function SettingsForm({
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">{t("emails")}</legend>
-        {flags.map((flag) => (
-          <label key={flag} className="flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="mt-1 size-4"
-              checked={draft.flags[flag] === true}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...current,
-                  flags: { ...current.flags, [flag]: event.target.checked },
-                }))
-              }
-            />
-            {t(`flags.${flag}`)}
-          </label>
-        ))}
+        {flags.map(renderFlag)}
       </fieldset>
+
+      {teacherFlags.length > 0 && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-medium">{t("emailsTeacher")}</legend>
+          {teacherFlags.map(renderFlag)}
+        </fieldset>
+      )}
 
       <div>
         <button type="button" disabled={pending} className={primary} onClick={() => void save()}>

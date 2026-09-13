@@ -18,7 +18,13 @@ export const SCORE_CALCULATORS = ["uniform", "weighted", "universal"] as const;
 export type ScoreCalculator = (typeof SCORE_CALCULATORS)[number];
 
 export const testsSchema = z.object({
-  calculator: z.enum(["uniform", "weighted"]),
+  /**
+   * Which measure the tests add up by -- or `keep`, meaning the exercise scores by a custom
+   * expression and this save must not touch its score configuration. Without that third value,
+   * adding a test to an exercise with an expression would have silently replaced the expression
+   * with a plain average (the form has to send *something*, and it could only send an average).
+   */
+  calculator: z.enum(["uniform", "weighted", "keep"]),
   tests: z
     .array(
       z.object({
@@ -31,7 +37,10 @@ export const testsSchema = z.object({
       }),
     )
     .check(
-      z.minLength(1),
+      // **No minimum.** Removing every test is something core-api accepts (measured: an empty list
+      // saves and leaves the exercise with none), and it is how a teacher starts a configuration
+      // over. Requiring one here refused that save -- and, because both failures landed on the same
+      // error, told them two tests could not share a name when they had sent none at all.
       z.refine(
         (tests: { name: string }[]) =>
           new Set(tests.map((test) => test.name.trim())).size === tests.length,

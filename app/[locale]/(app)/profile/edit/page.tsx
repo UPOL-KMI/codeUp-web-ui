@@ -5,7 +5,13 @@ import { getCurrentUser } from "@/lib/api/current-user";
 import { SUPERADMIN_TOKEN_SCOPES, TOKEN_SCOPES } from "@/lib/auth/restricted-token";
 import { USER_ROLES } from "@/lib/api/user-roles";
 import { dateFormatValue, defaultPageValue } from "@/lib/api/ui-preferences";
-import { getAccountSettings, getCalendarTokens, NOTIFICATION_FLAGS } from "@/lib/api/user-settings";
+import {
+  getAccountSettings,
+  getCalendarTokens,
+  STUDENT_NOTIFICATION_FLAGS,
+  TEACHER_NOTIFICATION_FLAGS,
+} from "@/lib/api/user-settings";
+import { getMyGroups } from "@/lib/api/groups";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { routing } from "@/i18n/routing";
@@ -49,14 +55,23 @@ export async function generateMetadata({
  */
 export default async function AccountSettingsPage() {
   const [locale, viewer] = await Promise.all([getLocale(), getCurrentUser()]);
-  const [t, account, tokens, breadcrumbs] = await Promise.all([
+  const [t, account, tokens, groups, breadcrumbs] = await Promise.all([
     getTranslations("Account"),
     getAccountSettings(viewer.id),
     getCalendarTokens(viewer.id),
+    getMyGroups(locale),
     resolveBreadcrumbs("/profile/edit", locale),
   ]);
 
   const apiBase = process.env.API_BASE_PUBLIC ?? "";
+
+  // **Four of the notification settings only ever fire for somebody who teaches**, so a student is
+  // not offered them (reported by the operator, reading his own students' screen). Two questions
+  // decide it, because either alone is wrong: a teacher between courses supervises no group today
+  // but is still staff, and a student's role says nothing about the groups they were made an
+  // administrator of. core-api updates only the flags a request carries, so a reader who is offered
+  // fewer of them has the rest left exactly as they are.
+  const teaches = groups.teaching.length > 0 || viewer.accountRole !== "student";
 
   // Every role at or below the account's. `USER_ROLES` is ordered weakest-first, so the account's
   // own index is the ceiling -- and core-api enforces the same rule on the call itself.
@@ -98,7 +113,12 @@ export default async function AccountSettingsPage() {
           <h2 id="account-settings" className="mb-3 text-base font-semibold tracking-tight">
             {t("settings.title")}
           </h2>
-          <SettingsForm account={account} locales={routing.locales} flags={NOTIFICATION_FLAGS} />
+          <SettingsForm
+            account={account}
+            locales={routing.locales}
+            flags={STUDENT_NOTIFICATION_FLAGS}
+            teacherFlags={teaches ? TEACHER_NOTIFICATION_FLAGS : []}
+          />
         </section>
 
         {/* G-022. Two of the legacy panel's nine keys; the other seven are in DROPPED.md by

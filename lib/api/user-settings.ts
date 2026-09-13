@@ -66,6 +66,32 @@ export const NOTIFICATION_FLAGS = [
 
 export type NotificationFlag = (typeof NOTIFICATION_FLAGS)[number];
 
+/**
+ * The flags whose e-mails only ever reach somebody who teaches.
+ *
+ * **Read out of core-api's own senders, not guessed from the wording.** A review request and both
+ * "submitted again after…" notices go to `getGroupSupervisorsRecipients` (`SubmissionEmailsSender`,
+ * `SolutionFlagChangedEmailSender`), and an exercise author's announcement goes to the admins and
+ * supervisors of every group that assigned it (`ExerciseNotificationSender`, whose own comment says
+ * "notify all teachers who used the exercise"). A student who ticks any of these will never receive
+ * anything, which is what the operator reported: four settings on his students' screens that do
+ * nothing and read as though they might.
+ *
+ * The flags are **not** cleared for somebody who stops teaching -- core-api updates only the flags
+ * a request carries, so leaving them out of the form leaves whatever is stored alone.
+ */
+export const TEACHER_NOTIFICATION_FLAGS = [
+  "solutionReviewRequestedEmails",
+  "assignmentSubmitAfterAcceptedEmails",
+  "assignmentSubmitAfterReviewedEmails",
+  "exerciseNotificationEmails",
+] as const satisfies readonly NotificationFlag[];
+
+/** Everything else: what a reader is told about their own work. */
+export const STUDENT_NOTIFICATION_FLAGS = NOTIFICATION_FLAGS.filter(
+  (flag) => !(TEACHER_NOTIFICATION_FLAGS as readonly string[]).includes(flag),
+);
+
 interface UserPayload {
   id: string;
   fullName: string;

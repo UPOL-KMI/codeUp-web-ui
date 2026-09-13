@@ -380,4 +380,32 @@ describe("configCapabilities", () => {
     expect(configCapabilities(["python3"], PIPELINES).canCompareFile).toBe(true);
     expect(configCapabilities(["java"], PIPELINES).canCompareFile).toBe(false);
   });
+
+  it("asks for an expected output only where a pipeline declares one", () => {
+    // The instance's own pipelines, as core-api lists them: the Python ones hand `expected-output`
+    // to their judge, the data-only one does not -- which is why an exercise that collects
+    // documents saves with every file field empty and a Python one does not.
+    const declared = [
+      { id: "python-stdout", pipeline: { variables: [{ name: "expected-output" }] } },
+      { id: "data-only", pipeline: { variables: [{ name: "judge-type" }] } },
+    ];
+    const pipelines = [
+      {
+        id: "python-stdout",
+        name: "Python execution & evaluation [stdout]",
+        runtimeEnvironmentIds: ["python3"],
+        parameters: {},
+      },
+      {
+        id: "data-only",
+        name: "Data-only judging",
+        runtimeEnvironmentIds: ["data-linux"],
+        parameters: {},
+      },
+    ];
+    expect(configCapabilities(["python3"], pipelines, declared).needsExpectedOutput).toBe(true);
+    expect(configCapabilities(["data-linux"], pipelines, declared).needsExpectedOutput).toBe(false);
+    // Nothing declared (the argument is optional) must not invent a requirement.
+    expect(configCapabilities(["python3"], pipelines).needsExpectedOutput).toBe(false);
+  });
 });

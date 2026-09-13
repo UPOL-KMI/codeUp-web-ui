@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import {
-  switchFromScoreExpression,
-  switchToScoreExpression,
-  updateScoreExpression,
-} from "@/lib/actions/exercise-score";
+import { updateScoreExpression } from "@/lib/actions/exercise-score";
 import {
   extractWeights,
   parseScoreExpression,
@@ -19,7 +15,6 @@ import {
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
-import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -44,13 +39,11 @@ import { useToast } from "@/components/toast/toast-provider";
  */
 export function ScoreExpressionEditor({
   exerciseId,
-  isUniversal,
   expression,
   testNames,
   readOnly,
 }: {
   exerciseId: string;
-  isUniversal: boolean;
   /** The stored tree, when the exercise already uses a custom score. */
   expression: ScoreNode | null;
   testNames: string[];
@@ -60,15 +53,13 @@ export function ScoreExpressionEditor({
   const router = useRouter();
   const toast = useToast();
 
-  // Seeded only when this exercise actually uses the expression calculator: every other
-  // calculator's stored config is a different shape entirely, and printing one is not a
-  // no-op -- it is a crash on the render path.
-  const [source, setSource] = useState(() =>
-    isUniversal && expression ? printScoreExpression(expression) : "",
-  );
+  // The caller renders this only for an exercise that actually uses the expression calculator --
+  // every other calculator's stored config is a different shape entirely, and printing one is not
+  // a no-op but a crash on the render path, which is why `expression` is typed as the tree or
+  // nothing rather than as whatever the score happens to hold.
+  const [source, setSource] = useState(() => (expression ? printScoreExpression(expression) : ""));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [leaving, setLeaving] = useState<"uniform" | "weighted" | null>(null);
 
   const parsed = useMemo(() => {
     if (source.trim() === "") return { tree: null as ScoreNode | null, problem: null };
@@ -115,32 +106,6 @@ export function ScoreExpressionEditor({
     }
     toast.success(t(successKey));
     router.refresh();
-  }
-
-  if (!isUniversal) {
-    return (
-      <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">{t("switchIn.explain")}</p>
-        {!readOnly && (
-          <button
-            type="button"
-            disabled={pending || testNames.length === 0}
-            onClick={() => void run(() => switchToScoreExpression(exerciseId), "switchIn.done")}
-            className="self-start rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {t("switchIn.action")}
-          </button>
-        )}
-        {testNames.length === 0 && (
-          <p className="text-xs text-muted-foreground">{t("switchIn.noTests")}</p>
-        )}
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-      </div>
-    );
   }
 
   return (
@@ -193,14 +158,6 @@ export function ScoreExpressionEditor({
           >
             {pending ? t("saving") : t("save")}
           </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => setLeaving(equivalentWeights ? "weighted" : "uniform")}
-            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-60"
-          >
-            {t("switchOut.action")}
-          </button>
         </div>
       )}
 
@@ -209,33 +166,6 @@ export function ScoreExpressionEditor({
           {error}
         </p>
       )}
-
-      <ConfirmDialog
-        open={leaving !== null}
-        onOpenChange={(open) => {
-          if (!open) setLeaving(null);
-        }}
-        title={t("switchOut.confirm.title")}
-        description={
-          equivalentWeights
-            ? t("switchOut.confirm.becomesWeights", {
-                weights: Object.entries(equivalentWeights)
-                  .map(([name, weight]) => `${name} → ${weight}`)
-                  .join(", "),
-              })
-            : t("switchOut.confirm.lost")
-        }
-        confirmLabel={t("switchOut.confirm.action")}
-        pending={pending}
-        onConfirm={() => {
-          const calculator = leaving ?? "uniform";
-          setLeaving(null);
-          void run(
-            () => switchFromScoreExpression(exerciseId, calculator, equivalentWeights ?? {}),
-            "switchOut.done",
-          );
-        }}
-      />
     </div>
   );
 }

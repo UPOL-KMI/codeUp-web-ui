@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
     "/**": [
       "./node_modules/.pnpm/@swc+helpers@*/node_modules/@swc/helpers/**",
       "./content/docs/**",
+      "./content/help/**",
     ],
   },
 

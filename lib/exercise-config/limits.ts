@@ -122,11 +122,41 @@ export function usesPreciseTime(limits: StoredLimits, hardwareGroupId: string): 
   return cpu >= wall;
 }
 
+/**
+ * What an unset cell is seeded with for an exercise that runs no student code (DEC-141).
+ *
+ * core-api demands a memory limit and one of the two time limits on **every** test, the data-only
+ * one included -- an exercise whose single test has 0/0 is refused with "needs to have a memory
+ * limit" (`ExerciseLimitsValidator`). Nothing of the student's runs there, but the judge does, so
+ * the numbers cannot be zero and asking a teacher collecting essays to invent a processor-time
+ * budget is asking the wrong person the wrong question. These are deliberately generous: enough
+ * for any judge that reads a file, far below what the machines here allow, and clamped to the
+ * hardware group's own ceilings by the caller in case a machine is smaller than that.
+ */
+export const DATA_ONLY_LIMITS = { memory: 262144, time: 10 };
+
+/**
+ * Clamps the data-only seed to what this hardware group actually permits, so the prefilled value
+ * can never be the one the form then marks as out of range.
+ */
+export function dataOnlyCell(group: HardwareGroup, preciseTime: boolean): LimitCell {
+  const perTest = preciseTime
+    ? group.metadata.cpuTimePerTest
+    : (group.metadata.wallTimePerTest ?? group.metadata.cpuTimePerTest);
+  return {
+    memory: String(Math.min(DATA_ONLY_LIMITS.memory, group.metadata.memory ?? Infinity)),
+    time: String(Math.min(DATA_ONLY_LIMITS.time, perTest ?? Infinity)),
+  };
+}
+
 export function readLimits(
   limits: StoredLimits,
   hardwareGroupId: string,
   testIds: string[],
   environmentIds: string[],
+  /** Seeds cells core-api holds nothing for. Omitted, an unset cell reads as 0, which is how an
+   *  ordinary exercise says "the teacher has not decided yet". */
+  unset?: LimitCell,
 ): LimitsValues {
   const preciseTime = usesPreciseTime(limits, hardwareGroupId);
   const group = limits[hardwareGroupId] ?? {};
@@ -143,8 +173,8 @@ export function readLimits(
         limit?.[preciseTime ? "cpu-time" : "wall-time"] ??
         limit?.[preciseTime ? "wall-time" : "cpu-time"];
       cells[testId]![environmentId] = {
-        memory: limit?.memory !== undefined ? String(limit.memory) : "0",
-        time: time !== undefined ? String(time) : "0",
+        memory: limit?.memory !== undefined ? String(limit.memory) : (unset?.memory ?? "0"),
+        time: time !== undefined ? String(time) : (unset?.time ?? "0"),
       };
     }
   }

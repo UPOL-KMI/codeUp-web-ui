@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getExerciseConfigData } from "@/lib/api/exercise-config";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { getHelp } from "@/lib/docs/guides";
 import {
   describeValidationError,
   isDataOnly,
@@ -18,7 +19,7 @@ import {
   readAdvancedConfig,
 } from "@/lib/exercise-config/advanced-config";
 import { askPipelineVariables } from "@/lib/actions/exercise-advanced";
-import type { ScoreNode } from "@/lib/exercise-config/score-expression";
+import { extractWeights, type ScoreNode } from "@/lib/exercise-config/score-expression";
 
 import { Link } from "@/i18n/navigation";
 import { AdvancedConfigEditor } from "@/components/exercises/config/advanced-config";
@@ -26,6 +27,8 @@ import { ScoreExpressionEditor } from "@/components/exercises/config/score-expre
 import { EnvironmentsForm } from "@/components/exercises/config/environments-form";
 import { TestConfigForm } from "@/components/exercises/config/test-config-form";
 import { TestsForm } from "@/components/exercises/config/tests-form";
+import { HelpDialog } from "@/components/help/help-dialog";
+import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 import { PageTabs, type PageTab } from "@/components/page-tabs";
 
@@ -92,8 +95,9 @@ export default async function EditExerciseConfigPage({
   // who may not see its configuration -- the trap DEC-092 records and T-008 fell into.
   if (exercise.can.viewConfig !== true) forbidden();
 
-  const [data, breadcrumbs] = await Promise.all([
+  const [data, help, breadcrumbs] = await Promise.all([
     getExerciseConfigData(exerciseId),
+    getHelp("test-config", locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/edit-config`, locale),
   ]);
 
@@ -110,6 +114,14 @@ export default async function EditExerciseConfigPage({
     data.score?.calculator === "weighted"
       ? ((data.score.config as { testWeights?: Record<string, number> } | null)?.testWeights ?? {})
       : {};
+  // The stored expression, as weights -- null when it is not an average and therefore cannot
+  // become one. Computed here rather than in the editor because it is the *choice* of calculator
+  // that needs it now, and the choice is made a section above the expression.
+  const storedExpression =
+    data.score?.calculator === "universal"
+      ? ((data.score.config as ScoreNode | null) ?? null)
+      : null;
+  const equivalentWeights = storedExpression ? extractWeights(storedExpression) : null;
 
   const advancedPipelines = isAdvanced ? configuredPipelines(data.config) : [];
   const advancedEnvironment = isAdvanced ? configuredEnvironment(data.config) : null;
@@ -124,7 +136,7 @@ export default async function EditExerciseConfigPage({
       ? readAdvancedConfig(data.config, data.tests, advancedEnvironment, declared.data)
       : null;
 
-  const capabilities = configCapabilities(environmentIds, data.pipelines);
+  const capabilities = configCapabilities(environmentIds, data.pipelines, data.pipelineVariables);
   const values = readSimpleConfig(data.config, data.tests, environmentIds);
   const testNames = Object.fromEntries(data.tests.map((test) => [String(test.id), test.name]));
   const environmentNames = Object.fromEntries(
@@ -230,6 +242,15 @@ export default async function EditExerciseConfigPage({
               </h2>
               <p className="text-sm text-muted-foreground">{t("environments.explain")}</p>
             </div>
+            {/* The one thing a teacher who is not teaching programming needs to know on this
+                screen, and the screen is otherwise a list of compilers. Not a warning and not an
+                error -- the fourth tone exists for exactly this. */}
+            {!isAdvanced && (
+              <p className="rounded-lg border border-info bg-info-surface p-4 text-sm">
+                <strong className="font-semibold">{t("environments.tipTitle")}</strong>{" "}
+                {t("environments.tip")}
+              </p>
+            )}
             {isAdvanced ? (
               <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
                 {t("advanced.environments")}
@@ -263,19 +284,20 @@ export default async function EditExerciseConfigPage({
               tests={data.tests}
               calculator={data.score?.calculator ?? "uniform"}
               weights={weights}
+              equivalentWeights={equivalentWeights}
               readOnly={readOnly}
             />
           </section>
         )}
 
-        {current === "tests" && !dataOnly && (
-          <section aria-labelledby="config-score" className="flex flex-col gap-3">
-            <div>
-              <h2 id="config-score" className="text-base font-semibold tracking-tight">
-                {tScore("title")}
-              </h2>
-              <p className="text-sm text-muted-foreground">{tScore("explain")}</p>
-            </div>
+        {/* **The expression editor is not a section of its own any more.** It is what the third
+            way of scoring an exercise *is*, so it appears under the choice that selects it and
+            nowhere else -- and without a heading, because a heading here would announce a setting
+            the reader has already chosen two paragraphs above. The tests keep the section; this is
+            the rest of the same answer. */}
+        {current === "tests" && !dataOnly && data.score?.calculator === "universal" && (
+          <section aria-label={tScore("title")} className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">{tScore("explain")}</p>
             {/* Keyed by what core-api holds, so switching onto the expression -- or saving one --
               re-seeds the field from the tree that was actually stored, rather than leaving the
               editor showing the state it mounted with. Same reason T-016's and T-024's editors are
@@ -283,14 +305,9 @@ export default async function EditExerciseConfigPage({
             <ScoreExpressionEditor
               key={`${data.score?.calculator ?? "uniform"}:${JSON.stringify(data.score?.config ?? null)}`}
               exerciseId={exerciseId}
-              isUniversal={data.score?.calculator === "universal"}
               /* Only the universal calculator's `config` is an expression tree; the weighted one's
                is `{testWeights}`, and handing that to the printer is how this page crashed once. */
-              expression={
-                data.score?.calculator === "universal"
-                  ? ((data.score.config as ScoreNode | null) ?? null)
-                  : null
-              }
+              expression={storedExpression}
               testNames={data.tests.map((test) => test.name)}
               readOnly={readOnly}
             />
@@ -303,11 +320,21 @@ export default async function EditExerciseConfigPage({
             longer had anything of theirs on it. */}
         {(isAdvanced ? current === "advanced" : current === "tests") && (
           <section aria-labelledby="config-tests-config" className="flex flex-col gap-3">
-            <div>
-              <h2 id="config-tests-config" className="text-base font-semibold tracking-tight">
-                {t("config.title")}
-              </h2>
-              <p className="text-sm text-muted-foreground">{t("config.explain")}</p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 id="config-tests-config" className="text-base font-semibold tracking-tight">
+                  {t("config.title")}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t("config.explain")}</p>
+              </div>
+              {/* The help sits on the section it explains rather than in a menu somewhere: this is
+                  the screen a teacher meets first and understands last, and the document is what
+                  the operator asked for after watching one be filled in. */}
+              {help !== null && (
+                <HelpDialog title={t("config.title")}>
+                  <Markdown source={help} />
+                </HelpDialog>
+              )}
             </div>
             {isAdvanced ? (
               /* Keyed by the two structural choices. Saving either the language or the pipeline

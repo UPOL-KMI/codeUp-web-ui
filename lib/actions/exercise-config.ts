@@ -87,14 +87,18 @@ export async function updateExerciseTests(
       if (savedNames.has(name)) testWeights[name] = test.weight;
     }
 
-    await apiPost(
-      "/v1/exercises/{id}/score-config",
-      {
-        scoreCalculator: parsed.data.calculator,
-        scoreConfig: parsed.data.calculator === "weighted" ? { testWeights } : null,
-      },
-      { pathParams: { id: exerciseId } },
-    );
+    // `keep` is an exercise scored by a custom expression: its tests are editable like any
+    // other's, but its score configuration is the expression and is not this form's to rewrite.
+    if (parsed.data.calculator !== "keep") {
+      await apiPost(
+        "/v1/exercises/{id}/score-config",
+        {
+          scoreCalculator: parsed.data.calculator,
+          scoreConfig: parsed.data.calculator === "weighted" ? { testWeights } : null,
+        },
+        { pathParams: { id: exerciseId } },
+      );
+    }
 
     return { success: true, data: { count: saved.length } };
   } catch (error) {

@@ -82,13 +82,17 @@ test("attaches a file, links it into the text, and makes it configurable", async
   await expect(sample).toHaveAttribute("href", /\/uploaded-files\/link\/[0-9a-f-]+$/);
 
   // The whole reason this ticket was load-bearing: the configuration screen can now point at it.
-  await main.getByRole("link", { name: "Tests and evaluation" }).click();
+  // Reached through the settings screen, and one tab per section (T-033).
+  const configUrl = editUrl.replace(/\/edit$/, "/edit-config");
+  await page.goto(`${configUrl}?tab=tests`);
   await main.getByRole("button", { name: "Add a test" }).click();
   await main.getByRole("textbox", { name: "Name" }).fill("Test 1");
   await main.getByRole("button", { name: "Save tests" }).click();
+  await page.goto(`${configUrl}?tab=languages`);
   await main.getByRole("checkbox", { name: /Python 3/ }).check();
   await main.getByRole("button", { name: "Save languages" }).click();
   await expect(page.getByText("Languages saved.", { exact: true })).toBeVisible();
+  await page.goto(`${configUrl}?tab=tests`);
   await main
     .getByRole("combobox", { name: "Expected output" })
     .selectOption({ label: "expected.txt" });

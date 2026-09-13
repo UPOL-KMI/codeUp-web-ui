@@ -6,10 +6,13 @@ import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getReferenceSolutions } from "@/lib/api/reference-solutions";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { getHelp } from "@/lib/docs/guides";
 
 import { Link } from "@/i18n/navigation";
 import { SubmitReferenceSolution } from "@/components/exercises/reference-solution-submit";
 import { ReferenceSolutionsTable } from "@/components/exercises/reference-solutions-table";
+import { HelpDialog } from "@/components/help/help-dialog";
+import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 
 export async function generateMetadata({
@@ -59,9 +62,10 @@ export default async function ReferenceSolutionsPage({
   // Reading an exercise does not entitle anybody to its answers.
   if (exercise.can.viewDetail !== true) forbidden();
 
-  const [solutions, environments, breadcrumbs] = await Promise.all([
+  const [solutions, environments, help, breadcrumbs] = await Promise.all([
     getReferenceSolutions(exerciseId),
     getRuntimeEnvironments(),
+    getHelp("reference-solutions", locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/reference-solutions`, locale),
   ]);
 
@@ -86,11 +90,18 @@ export default async function ReferenceSolutionsPage({
     >
       <div className="flex flex-col gap-10">
         <section aria-labelledby="reference-solution-list" className="flex flex-col gap-3">
-          <div>
-            <h2 id="reference-solution-list" className="text-base font-semibold tracking-tight">
-              {t("list.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground">{t("list.explain")}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="reference-solution-list" className="text-base font-semibold tracking-tight">
+                {t("list.title")}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t("list.explain")}</p>
+            </div>
+            {help !== null && (
+              <HelpDialog title={t("title")}>
+                <Markdown source={help} />
+              </HelpDialog>
+            )}
           </div>
           <ReferenceSolutionsTable
             exerciseId={exerciseId}

@@ -32,19 +32,44 @@ export function GroupTable({ groups, tableId }: { groups: GroupListEntry[]; tabl
       sortable: true,
       sortValue: (group) => [...group.path, group.name].join("/"),
       filterValue: (group) => [...group.path, group.name].join(" "),
-      cell: (group) => (
-        <div className="flex flex-col">
-          {group.path.length > 0 && (
-            <span className="text-xs text-muted-foreground">{group.path.join(" / ")}</span>
-          )}
-          <Link
-            href={`/groups/${group.id}`}
-            className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      // **Indented by depth, but only while the rows are actually in tree order** -- which is how
+      // they arrive (the page sorts by the full path) and what sorting by this column ascending
+      // reproduces. Under any other sort the indent would draw a tree that is not there, so it
+      // collapses and the ancestry line carries the context alone. Asked for by the operator, whose
+      // instance is a flat wall of names he could not see the shape of.
+      //
+      // **The depth is what the reader can see, not what exists.** `path` holds the ancestors
+      // core-api disclosed to them, so a student who may not see the faculty above their course
+      // gets a tree rooted at what they may see, indented consistently with it, rather than an
+      // indent measured against groups that are not on their screen.
+      cell: (group, order) => {
+        const inTreeOrder =
+          order.sortColumn === null ||
+          (order.sortColumn === "name" && order.sortDirection === "asc");
+        return (
+          <div
+            className="flex flex-col"
+            style={
+              inTreeOrder ? { paddingInlineStart: `${group.path.length * 1.25}rem` } : undefined
+            }
           >
-            {group.name}
-          </Link>
-        </div>
-      ),
+            {/* In tree order the indent already says where the row sits, so the line above it
+                names only the parent; under any other sort it is the only context there is, and
+                carries the whole chain. */}
+            {group.path.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {inTreeOrder ? group.path[group.path.length - 1] : group.path.join(" / ")}
+              </span>
+            )}
+            <Link
+              href={`/groups/${group.id}`}
+              className="font-medium hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {group.name}
+            </Link>
+          </div>
+        );
+      },
     },
     {
       id: "membership",

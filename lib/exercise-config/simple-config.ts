@@ -451,6 +451,17 @@ export interface ConfigCapabilities {
   environments: Record<string, EnvironmentFields>;
   /** Whether any environment offers a pipeline that compares a produced file instead of stdout. */
   canCompareFile: boolean;
+  /**
+   * Whether a test must name the file its output is compared against.
+   *
+   * **Read off the instance's own pipelines, not assumed from the language.** A pipeline that
+   * declares `expected-output` is one whose judge is handed that file, and core-api refuses to
+   * compile a configuration that leaves it empty -- "Different count of remote variables and local
+   * variables in box 'expected'", which reaches a teacher as "the chosen languages have no
+   * configuration" and explains nothing. The data-only pipeline declares no such variable, which is
+   * exactly why a data-only exercise saves happily with every file field empty.
+   */
+  needsExpectedOutput: boolean;
   /** Environments with no pipeline at all -- nothing can be configured for them. */
   withoutPipelines: string[];
 }
@@ -464,6 +475,8 @@ export interface ConfigCapabilities {
 export function configCapabilities(
   environmentIds: string[],
   pipelines: ConfigPipelineDefinition[],
+  /** What each pipeline declares, by pipeline id -- see `needsExpectedOutput`. */
+  pipelineVariables: { id: string; pipeline?: { variables?: { name: string }[] } }[] = [],
 ): ConfigCapabilities {
   const descriptors = descriptorsFor(environmentIds);
   const perEnvironment = descriptors.filter((descriptor) => descriptor.perEnvironment);
@@ -471,6 +484,13 @@ export function configCapabilities(
   const environments: Record<string, EnvironmentFields> = {};
   const withoutPipelines: string[] = [];
   let canCompareFile = false;
+  let needsExpectedOutput = false;
+  const declared = new Map(
+    pipelineVariables.map((entry) => [
+      entry.id,
+      (entry.pipeline?.variables ?? []).map((variable) => variable.name),
+    ]),
+  );
 
   for (const environmentId of environmentIds) {
     const forEnvironment = pipelines.filter((pipeline) =>
@@ -478,6 +498,9 @@ export function configCapabilities(
     );
     if (forEnvironment.length === 0) withoutPipelines.push(environmentId);
     if (forEnvironment.some((pipeline) => pipeline.parameters.producesFiles)) canCompareFile = true;
+    if (forEnvironment.some((pipeline) => declared.get(pipeline.id)?.includes("expected-output"))) {
+      needsExpectedOutput = true;
+    }
 
     const fields: EnvironmentFields = {
       entryPoint: false,
@@ -495,5 +518,5 @@ export function configCapabilities(
     environments[environmentId] = fields;
   }
 
-  return { environments, canCompareFile, withoutPipelines };
+  return { environments, canCompareFile, needsExpectedOutput, withoutPipelines };
 }

@@ -95,12 +95,35 @@ export default async function EditExercisePage({
       subtitle={exercise.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/exercises/${exerciseId}`}
-          className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {t("backToExercise")}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {/* **The two editors that are not tabs.** Everything else about an exercise is a tab on
+              this screen; the tests and the limits are screens of their own (their own routes,
+              their own saves) and are reached from here rather than from the exercise itself,
+              where they crowded out the exercise. Each is offered only where core-api's own hint
+              says it would open. */}
+          {exercise.can.viewConfig === true && (
+            <Link
+              href={`/exercises/${exerciseId}/edit-config`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {tExercise("configure")}
+            </Link>
+          )}
+          {exercise.can.viewLimits === true && (
+            <Link
+              href={`/exercises/${exerciseId}/edit-limits`}
+              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {tExercise("limits")}
+            </Link>
+          )}
+          <Link
+            href={`/exercises/${exerciseId}`}
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("backToExercise")}
+          </Link>
+        </div>
       }
       tabs={
         <PageTabs

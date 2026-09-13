@@ -5,6 +5,7 @@ import { useFieldArray, FormProvider } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
 import { updateExerciseTests } from "@/lib/actions/exercise-config";
+import { switchFromScoreExpression, switchToScoreExpression } from "@/lib/actions/exercise-score";
 import {
   testsSchema,
   TEST_NAME_PATTERN,
@@ -14,6 +15,7 @@ import type { ExerciseTest } from "@/lib/exercise-config/types";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
 import { useRouter } from "@/i18n/navigation";
+import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
@@ -25,34 +27,67 @@ import { useToast } from "@/components/toast/toast-provider";
  * rewrites the configuration and the limits to point at the copy, so this form's save is followed
  * by a router refresh: the per-test configuration below is bound to ids that no longer exist.
  *
- * **The custom-expression calculator is not one of the choices here.** An exercise whose score is
- * a custom expression is edited by T-025's own section below -- including the way back to an
- * average, which that section can offer because it knows what the expression would become. This
- * form stays about the two averages, and an exercise using an expression sees its tests listed and
- * is pointed at the section that owns them.
+ * **All three ways of scoring an exercise are one choice here**, including the custom expression.
+ * They used to be two controls on two sections -- a radio for the two averages, and a button
+ * further down that switched the whole exercise onto an expression -- which read as two unrelated
+ * settings and left a teacher to discover the third possibility by scrolling. The operator asked
+ * for one list of three.
+ *
+ * The two averages are saved with the tests, because a weight belongs to a test by name. The third
+ * is not a value this form can save at all: it is a different calculator on core-api's side, so
+ * picking it switches the exercise there and then, and picking an average back off it confirms
+ * first -- an expression that is not an average cannot be turned into weights, and the equivalent
+ * weights of one that is are computed from what is *stored* and carried across so nothing is lost.
  */
 export function TestsForm({
   exerciseId,
   tests,
   calculator,
   weights,
+  equivalentWeights,
   readOnly,
 }: {
   exerciseId: string;
   tests: ExerciseTest[];
   calculator: string;
   weights: Record<string, number>;
+  /**
+   * What the stored expression would become as weights, or null when it is not an average. Worked
+   * out on the server from the configuration core-api holds, not from whatever is currently typed
+   * in the editor below -- the text that was never saved is not what leaving would convert.
+   */
+  equivalentWeights: Record<string, number> | null;
   readOnly: boolean;
 }) {
   const t = useTranslations("ExerciseConfig.tests");
+  const tScore = useTranslations("ExerciseScore");
   const router = useRouter();
   const toast = useToast();
   const [confirmingRemoval, setConfirmingRemoval] = useState<number | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const [leavingTo, setLeavingTo] = useState<"uniform" | "weighted" | null>(null);
+  const isUniversal = calculator === "universal";
+
+  async function switchTo(option: "uniform" | "weighted" | "universal") {
+    setSwitching(true);
+    const result =
+      option === "universal"
+        ? await switchToScoreExpression(exerciseId)
+        : await switchFromScoreExpression(exerciseId, option, equivalentWeights ?? {});
+    setSwitching(false);
+    if (!result.success) {
+      toast.error(result.formError ?? tScore("errors.saveFailed"));
+      return;
+    }
+    toast.success(option === "universal" ? tScore("switchIn.done") : tScore("switchOut.done"));
+    router.refresh();
+  }
 
   const { form, onSubmit, isPending } = useServerActionForm<TestsValues, { count: number }>({
     schema: testsSchema,
     defaultValues: {
-      calculator: calculator === "weighted" ? "weighted" : "uniform",
+      calculator:
+        calculator === "universal" ? "keep" : calculator === "weighted" ? "weighted" : "uniform",
       tests: tests.map((test) => ({
         id: test.id,
         name: test.name,
@@ -69,6 +104,7 @@ export function TestsForm({
   const {
     control,
     register,
+    setValue,
     watch,
     formState: { errors },
   } = form;
@@ -89,44 +125,88 @@ export function TestsForm({
   const input =
     "rounded-md border border-input bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-ring aria-invalid:border-destructive";
 
-  if (calculator === "universal") {
-    return (
-      <div className="flex flex-col gap-3">
-        <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
-          {t("universalNotice")}
-        </p>
-        <ul className="list-disc pl-5 text-sm">
-          {tests.map((test) => (
-            <li key={test.id}>{test.name}</li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
+  /** The three-way choice, rendered the same whichever of them is in force. */
+  const calculatorChoice = (chosenOption: string) => (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-sm font-medium">{t("calculator")}</legend>
+      {(["uniform", "weighted", "universal"] as const).map((option) => (
+        <label key={option} className="flex items-start gap-2 text-sm">
+          <input
+            type="radio"
+            name="calculator-choice"
+            value={option}
+            checked={chosenOption === option}
+            // An expression with no test to refer to is one core-api will not store, so the third
+            // option is not offered until there is one -- the rule the switch-in button used to
+            // carry, kept where the choice now lives.
+            disabled={readOnly || switching || (option === "universal" && tests.length === 0)}
+            className="mt-1"
+            onChange={() => {
+              if (option === chosenOption) return;
+              // Only the two averages are this form's to save; the third is a different calculator
+              // on core-api's side, and so is leaving it.
+              if (option === "universal") {
+                void switchTo(option);
+              } else if (isUniversal) {
+                setLeavingTo(option);
+              } else {
+                setValue("calculator", option, { shouldDirty: true });
+              }
+            }}
+          />
+          <span>
+            <span className="font-medium">{t(`calculators.${option}`)}</span>
+            <span className="block text-muted-foreground">{t(`calculatorsExplain.${option}`)}</span>
+          </span>
+        </label>
+      ))}
+      {tests.length === 0 && (
+        <p className="text-xs text-muted-foreground">{tScore("switchIn.noTests")}</p>
+      )}
+    </fieldset>
+  );
+
+  const leavingDialog = (
+    <ConfirmDialog
+      open={leavingTo !== null}
+      onOpenChange={(open) => {
+        if (!open) setLeavingTo(null);
+      }}
+      title={tScore("switchOut.confirm.title")}
+      description={
+        equivalentWeights
+          ? tScore("switchOut.confirm.becomesWeights", {
+              weights: Object.entries(equivalentWeights)
+                .map(([name, weight]) => `${name} → ${weight}`)
+                .join(", "),
+            })
+          : tScore("switchOut.confirm.lost")
+      }
+      confirmLabel={tScore("switchOut.confirm.action")}
+      pending={switching}
+      onConfirm={() => {
+        const option = leavingTo ?? "uniform";
+        setLeavingTo(null);
+        void switchTo(option);
+      }}
+    />
+  );
 
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium">{t("calculator")}</legend>
-          {(["uniform", "weighted"] as const).map((option) => (
-            <label key={option} className="flex items-start gap-2 text-sm">
-              <input
-                type="radio"
-                value={option}
-                disabled={readOnly}
-                className="mt-1"
-                {...register("calculator")}
-              />
-              <span>
-                <span className="font-medium">{t(`calculators.${option}`)}</span>
-                <span className="block text-muted-foreground">
-                  {t(`calculatorsExplain.${option}`)}
-                </span>
-              </span>
-            </label>
-          ))}
-        </fieldset>
+        {calculatorChoice(isUniversal ? "universal" : chosen)}
+
+        {/* **The tests stay editable whichever way the exercise is scored.** They used to become a
+            bullet list the moment an expression was in force, so an exercise could not be given
+            another test without first going back to an average -- reported by the operator, who
+            hit exactly that. What the expression does *not* tolerate is this form rewriting the
+            score configuration underneath it, which is what `keep` prevents. */}
+        {isUniversal && (
+          <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+            {t("universalNotice")}
+          </p>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-md text-sm">
@@ -135,14 +215,16 @@ export function TestsForm({
                 <th scope="col" className="py-1 font-medium">
                   {t("name")}
                 </th>
-                {chosen === "weighted" && (
+                {!isUniversal && chosen === "weighted" && (
                   <th scope="col" className="w-28 py-1 font-medium">
                     {t("weight")}
                   </th>
                 )}
-                <th scope="col" className="w-24 py-1 text-center font-medium">
-                  {t("share")}
-                </th>
+                {!isUniversal && (
+                  <th scope="col" className="w-24 py-1 text-center font-medium">
+                    {t("share")}
+                  </th>
+                )}
                 {!readOnly && <th scope="col" className="w-24 py-1" />}
               </tr>
             </thead>
@@ -165,7 +247,7 @@ export function TestsForm({
                       </p>
                     )}
                   </td>
-                  {chosen === "weighted" && (
+                  {!isUniversal && chosen === "weighted" && (
                     <td className="py-1 pr-2">
                       <input
                         type="number"
@@ -178,9 +260,11 @@ export function TestsForm({
                       />
                     </td>
                   )}
-                  <td className="py-1 text-center text-muted-foreground">
-                    {share(Number(rows[index]?.weight) || 0)}
-                  </td>
+                  {!isUniversal && (
+                    <td className="py-1 text-center text-muted-foreground">
+                      {share(Number(rows[index]?.weight) || 0)}
+                    </td>
+                  )}
                   {!readOnly && (
                     <td className="py-1 text-right">
                       {confirmingRemoval === index ? (
@@ -229,7 +313,15 @@ export function TestsForm({
               onClick={() =>
                 append({
                   id: null,
-                  name: nextTestName(rows.map((row) => row.name)),
+                  // **The names core-api still holds count as taken too**, not just the ones on
+                  // screen. A test removed here is gone only once the form is saved, so offering
+                  // its name to the next test produced "given test name 'Test 1' is already taken"
+                  // from core-api -- which is how the operator found it, after a save that had
+                  // failed for an unrelated reason left the two out of step.
+                  name: nextTestName([
+                    ...rows.map((row) => row.name),
+                    ...tests.map((test) => test.name),
+                  ]),
                   weight: 100,
                 })
               }
@@ -253,6 +345,8 @@ export function TestsForm({
             {errors.root.message}
           </p>
         )}
+
+        {leavingDialog}
         {errors.tests?.root && (
           <p role="alert" className="text-sm text-destructive">
             {t("duplicateNames")}
@@ -266,7 +360,7 @@ export function TestsForm({
 /** `Test 1`, `Test 2`, ... skipping whatever is taken -- core-api refuses two tests of one name. */
 function nextTestName(taken: string[]): string {
   const used = new Set(taken.map((name) => name.trim()));
-  for (let index = taken.length + 1; ; index++) {
+  for (let index = 1; ; index++) {
     const name = `Test ${index}`;
     if (!used.has(name) && TEST_NAME_PATTERN.test(name)) return name;
   }

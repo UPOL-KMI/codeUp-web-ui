@@ -386,7 +386,7 @@
         "key": "Klíč",
         "value": "Hodnota"
       },
-      "thresholdExplain": "Průběžný stav: počítá se z bodů získaných zatím, ne z konečného výsledku předmětu.",
+      "thresholdExplain": "Průběžné hodnocení bodování. Nemusí nutně znamenat splnění předmětu, ale pouze udává dosavadní zaznamenanou úspěšnost.",
       "shadowCount": "{count, plural, one {# stínové zadání} few {# stínová zadání} other {# stínových zadání}}"
     },
     "membership": {
@@ -471,7 +471,7 @@
           "label": "Všechny zpřístupněné adresy v této skupině, oddělené čárkami"
         }
       },
-      "thresholdExplain": "Průběžný stav: počítá se z bodů, které student získal zatím, ne z konečného výsledku předmětu.",
+      "thresholdExplain": "Průběžné hodnocení bodování. Nemusí nutně znamenat splnění předmětu, ale pouze udává dosavadní zaznamenanou úspěšnost.",
       "partialList": "Kvůli nastavení práv mohou být některé záznamy skryté."
     },
     "points": {
@@ -1287,7 +1287,7 @@
       "no-tests": "Úloha nemá vytvořené žádné testy.",
       "score": "Není nastaven způsob výpočtu úspěšnosti řešení.",
       "no-runtimes": "Nebyl vybrán žádný jazyk.",
-      "runtimes": "Vybrané jazyky nemají konfiguraci.",
+      "runtimes": "Konfigurace testů není úplná pro některý ze zvolených jazyků — nejčastěji testu chybí očekávaný výstup nebo vstupní soubor.",
       "no-configs": "Některé testy jsou nastaveny špatně, nebo vůbec.",
       "no-hwgroups": "Nebyla vybrána žádná HW skupina.",
       "config": "Některé testy mají neúplnou konfiguraci — typicky poté, co byl odebrán test nebo soubor.",
@@ -1561,7 +1561,7 @@
   },
   "ExerciseConfig": {
     "title": "Testy a vyhodnocení",
-    "settings": "Základní nastavení",
+    "settings": "Nastavení úlohy",
     "limits": "Omezení zdrojů",
     "backToExercise": "Zpět na úlohu",
     "archivedNotice": "Tato úloha je archivovaná, takže její konfigurace je jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
@@ -1576,17 +1576,19 @@
     },
     "tests": {
       "title": "Testy",
-      "explain": "Každý test se spustí na odevzdaném řešení a výsledná úspěšnost je jejich souhrn. Aby šlo test níže nastavit, musí tu nejdřív dostat jméno.",
-      "calculator": "Jak se počítá úspěšnost",
+      "explain": "Každý test bude spuštěn na odevzdaném řešení a výsledné hodnocení studenta je spočítáno podle pravidel níže.",
+      "calculator": "Hodnocení úspěšnosti úlohy",
       "calculators": {
         "uniform": "Každý test váží stejně",
-        "weighted": "Testy mají různou váhu"
+        "weighted": "Testy mají různou váhu",
+        "universal": "Vlastní hodnocení"
       },
       "calculatorsExplain": {
         "uniform": "Úspěšnost je prostý průměr výsledků jednotlivých testů.",
-        "weighted": "Úspěšnost je vážený průměr výsledků jednotlivých testů. Nulová váha znamená, že se test spustí, ale nezapočítá."
+        "weighted": "Úspěšnost je vážený průměr výsledků jednotlivých testů. Nulová váha znamená, že se test spustí, ale nepromítne se do celkového hodnocení úlohy.",
+        "universal": "Úspěšnost počítá vlastní výraz nad výsledky testů — třeba test, který musí projít, než se ostatní počítají."
       },
-      "universalNotice": "Úspěšnost této úlohy počítá vlastní výraz, který se upravuje níže. Testy jde přejmenovat i tam — tenhle seznam je to, na co se výraz odkazuje.",
+      "universalNotice": "Úspěšnost této úlohy počítá vlastní výraz, který se upravuje níže.",
       "name": "Jméno",
       "weight": "Váha",
       "share": "Podíl na úspěšnosti",
@@ -1605,6 +1607,8 @@
     "environments": {
       "title": "Jazyky",
       "explain": "V čem smí být řešení napsané. V každém jazyce se řešení staví a spouští jinak, a právě proto se část nastavení testu níže zadává zvlášť pro každý z nich.",
+      "tipTitle": "Tip!",
+      "tip": "Pokud si nepřejete spouštět automatické vyhodnocování úloh, vyberte možnost „Data-Only“.",
       "exclusive": "(nelze kombinovat)",
       "exclusiveConflict": "{environments} nemůže být v úloze spolu s jiným jazykem. Zvolte jej samostatně, nebo jej odeberte.",
       "noneSelected": "Není zvolen žádný jazyk – do této úlohy nejde nic odevzdat.",
@@ -1614,14 +1618,14 @@
       "saveWarning": "Přidání nebo odebrání jazyka přepíše konfiguraci níže."
     },
     "config": {
-      "title": "Co dělá který test",
-      "explain": "Pro každý test: co řešení dostane na vstupu, jak se spustí, s čím se porovná jeho výstup a čím.",
+      "title": "Konfigurace testů",
+      "explain": "Pro každý test je nutné nastavit jeho vstupy, spuštění a očekávané výstupy.",
       "refused": "Konfiguraci této úlohy nemáte dovoleno vidět.",
       "unavailable": "Zatím není co nastavovat:",
       "noTests": "úloha nemá žádné testy",
       "noEnvironments": "není zvolen žádný jazyk",
       "noPipelines": "Tato instalace nemá pro {environments} žádnou pipelinu, takže pro něj nelze nic nastavit. Je zvolený jako jazyk, ale řešení v něm by nešlo vyhodnotit.",
-      "noFiles": "K této úloze nejsou připojené žádné soubory, takže není na co ukázat u vstupů, očekávaných výstupů ani vlastního soudce. Soubory se připojují u samotné úlohy.",
+      "noFiles": "K této úloze nejsou připojené žádné soubory, takže není z čeho vybírat u vstupů, očekávaných výstupů ani vlastního soudce. Soubory připojíte v Nastavení úlohy na záložce Soubory.",
       "save": "Uložit konfiguraci",
       "saving": "Ukládám…",
       "saved": "Konfigurace uložena.",
@@ -1629,24 +1633,24 @@
       "noFile": "— žádný —",
       "addItem": "Přidat",
       "removeItem": "Odebrat",
-      "sameName": "stejné jméno",
+      "sameName": "(volitelné) nový název souboru",
       "renamedTo": "{label} {index}, jméno uvnitř sandboxu",
       "perEnvironmentOnly": "Sestavení a spuštění ({environment})",
       "input": "Vstup",
       "inputFiles": "Vstupní soubory",
-      "inputFilesExplain": "Položí se k řešení, než se spustí. Druhé jméno určí, pod jakým se soubor objeví.",
+      "inputFilesExplain": "Přidané soubory se připojí k souborům odevzdaným studentem. Vhodné, pokud má řešení se soubory nějak pracovat.",
       "stdinFile": "Standardní vstup",
-      "stdinFileExplain": "Přivede se řešení na standardní vstup.",
+      "stdinFileExplain": "Vybraný soubor se předá programu na standardní vstup.",
       "execution": "Spuštění",
       "runArgs": "Argumenty",
       "runArgsExplain": "Předají se řešení na příkazové řádce.",
       "output": "Výstup",
-      "useOutFile": "Porovnávat soubor, který zapíše",
+      "useOutFile": "Zapsat řešení do souboru",
       "useOutFileExplain": "Pokud je vypnuto, porovnává se standardní výstup řešení.",
-      "actualOutput": "Soubor, který zapíše",
-      "actualOutputExplain": "Jméno, pod kterým má řešení výstup zapsat.",
+      "actualOutput": "Název souboru pro výstup",
+      "actualOutputExplain": "Jméno, pod kterým má program výstup zapsat.",
       "expectedOutput": "Očekávaný výstup",
-      "expectedOutputExplain": "S čím se výstup porovná.",
+      "expectedOutputExplain": "Vyberte soubor, který obsahuje očekávaný výstup programu.",
       "judge": "Posouzení",
       "useCustomJudge": "Použít vlastního soudce",
       "useCustomJudgeExplain": "Pokud je vypnuto, použije se jedno z vestavěných porovnání.",
@@ -1670,13 +1674,27 @@
       "successExitCodes": "Návratové kódy znamenající úspěch",
       "successExitCodesExplain": "Jednotlivé hodnoty nebo rozsahy oddělené čárkami — třeba 0, 2-4.",
       "extraFiles": "Doplňkové soubory",
-      "extraFilesExplain": "Přidají se k řešení, než se sestaví.",
+      "extraFilesExplain": "Připojí se k odevzdaným souborům ještě před překladem — hlavičky, moduly nebo knihovny, bez kterých by se řešení nepřeložilo. Na rozdíl od vstupních souborů výše to nejsou data testu, ale součást toho, co se překládá, a nastavují se zvlášť pro každý jazyk.",
       "jarFiles": "Knihovny",
       "jarFilesExplain": "Jary přidané na class path.",
       "compileArgs": "Argumenty překladače",
       "compileArgsExplain": "Předají se překladači.",
       "execTargets": "Cíle sestavení",
-      "execTargetsExplain": "Které cíle sestavovací nástroj spustí."
+      "execTargetsExplain": "Které cíle sestavovací nástroj spustí.",
+      "missingExpectedOutput": "chybí očekávaný výstup",
+      "expectedOutputRequired": "Bez očekávaného výstupu nelze test vyhodnotit a úlohu nepůjde zadat.",
+      "manageFiles": "Spravovat soubory",
+      "judgeExplain": {
+        "recodex-judge-normal": "Porovnává token po tokenu. Na počtu mezer nezáleží, na pořadí tokenů i na rozdělení do řádků ano.",
+        "recodex-judge-float": "Jako token po tokenu, ale čísla se porovnávají jako čísla — drobný rozdíl v zaokrouhlení projde.",
+        "recodex-judge-normal-newline": "Jako token po tokenu, navíc nezáleží na tom, kde končí řádky — konec řádku je jen další mezera.",
+        "recodex-judge-float-newline": "Čísla se porovnávají jako čísla a na koncích řádků nezáleží.",
+        "recodex-judge-shuffle": "Tokeny na jednom řádku mohou přijít v libovolném pořadí; pořadí řádků musí sedět.",
+        "recodex-judge-shuffle-rows": "Řádky mohou přijít v libovolném pořadí; uvnitř řádku musí pořadí sedět.",
+        "recodex-judge-shuffle-all": "Nezáleží ani na pořadí řádků, ani na pořadí tokenů v nich.",
+        "recodex-judge-shuffle-newline": "Tokeny v libovolném pořadí a na koncích řádků nezáleží.",
+        "diff": "Soubory se musí shodovat úplně přesně, znak po znaku včetně mezer a konců řádků."
+      }
     },
     "errors": {
       "invalid": "Některé z těchto hodnot UPolníček uložit neumí. Zkontrolujte pole označená níže.",
@@ -1765,13 +1783,10 @@
     "saving": "Ukládám…",
     "saved": "Výraz uložen.",
     "switchIn": {
-      "explain": "Přepnutí vyjde z toho, co úloha dělá teď — stejné váhy se stanou průměrem, různé součtem přes celek — takže hodnotí přesně jako předtím, jen ve tvaru, který jde měnit.",
-      "action": "Napsat si vlastní hodnocení úspěšnosti",
       "done": "Úloha má teď vlastní hodnocení úspěšnosti.",
       "noTests": "Nejdřív přidejte test: výraz, který nemá na co odkazovat, UPolníček neuloží."
     },
     "switchOut": {
-      "action": "Zpět na průměr",
       "done": "Úspěšnost je zase průměr.",
       "confirm": {
         "title": "Vrátit se k průměru?",
@@ -1801,6 +1816,7 @@
   "ExerciseLimits": {
     "title": "Omezení zdrojů",
     "configure": "Testy a vyhodnocení",
+    "settings": "Nastavení úlohy",
     "backToExercise": "Zpět na úlohu",
     "archivedNotice": "Tato úloha je archivovaná, takže její limity jsou jen ke čtení. Vrátit ji z archivu jde na obrazovce s nastavením.",
     "readOnlyNotice": "Tyto limity si můžete přečíst, ale nemůžete je měnit.",
@@ -1872,8 +1888,8 @@
       "stale": "{count, plural, one {# část pozadu} few {# části pozadu} other {# částí pozadu}}"
     },
     "assign": {
-      "title": "Zadat ji někam",
-      "explain": "Vyberte skupiny. Každá se zadává zvlášť, takže skupina, kam zadávat nesmíte, nezastaví ostatní.",
+      "title": "Hromadné zadání úlohy",
+      "explain": "Vyberte skupiny, do kterých se má úloha zadat. V každé vznikne samostatné zadání.",
       "broken": "Tuto úlohu nelze zadat — co jí chybí, je vidět na obrazovce úlohy.",
       "noGroups": "Neučíte žádnou skupinu, kam by šlo zadat.",
       "already": "tady už zadaná je",
@@ -1881,7 +1897,7 @@
       "assigning": "Zadávám…",
       "assigned": "{count, plural, one {Vzniklo # zadání} few {Vznikla # zadání} other {Vzniklo # zadání}}.",
       "noneAssigned": "Nezadalo se nic.",
-      "invisible": "Nová zadání jsou pro studenty neviditelná, takže nenastavené nikomu neublíží. Termíny a body se doplní v každém zvlášť.",
+      "invisible": "Zadání vzniká skryté — student ho uvidí, až ho zveřejníte. Termín i body se nastavují u každého zadání zvlášť.",
       "failed": "Nepovedlo se.",
       "refused": "{group}: {reason}"
     },
@@ -1895,7 +1911,7 @@
     "backToExercise": "Zpět na úlohu",
     "list": {
       "title": "Odpovědi",
-      "explain": "Vzorové řešení je vaše vlastní odpověď, prohnaná přesně toutéž pipelinou jako řešení studenta. Právě ono dokazuje, že úloha je řešitelná — úlohu bez jediného nelze zadat.",
+      "explain": "Vzorové řešení je vaše vlastní řešení, které je před zadáním otestováno stejnou pipelinou jako budoucí řešení studentů. Pokud jsou nastaveny automatické testy, je vzorové řešení povinné, jelikož ověřuje spolehlivost těchto testů.",
       "none": "Tato úloha nemá žádné vzorové řešení – nelze ji zadat. Odevzdejte jedno níže.",
       "allHidden": "Tato úloha vzorová řešení má, ale žádné z nich není vaše — soukromé odpovědi patří jen svému autorovi. Odevzdejte níže vlastní.",
       "untitled": "Řešení bez popisu",
@@ -3206,7 +3222,7 @@
         "student": "Student",
         "points": "Body",
         "note": "Poznámka",
-        "awardedAt": "Uděleno za",
+        "awardedAt": "Uděleno dne",
         "awardedBy": "Zapsal"
       },
       "edit": "Upravit",
@@ -3220,7 +3236,8 @@
         "button": "Udělit",
         "choose": "Vyberte studenta…",
         "noCandidates": "Ve skupině není nikdo, komu by šlo body udělit.",
-        "overMax": "Zadáváte víc bodů, než kolik zadání nabízí ({max}). Uloží se to tak, jak jste zadali."
+        "overMax": "Pozor! Zadáváte více bodů, než je nastavený horní limit.",
+        "awardedAtHint": "Nepovinné. Datum a čas, kdy byly body uděleny."
       },
       "toast": {
         "awarded": "Body byly uděleny.",
@@ -3317,6 +3334,7 @@
         "cs": "Čeština"
       },
       "emails": "Poslat e-mail, když…",
+      "emailsTeacher": "Jako vyučující, poslat e-mail, když…",
       "flags": {
         "newAssignmentEmails": "se objeví nové zadání",
         "assignmentDeadlineEmails": "se blíží termín některého zadání",
@@ -3739,5 +3757,8 @@
         "summary": "Jak aplikaci nainstalovat, provozovat, aktualizovat a zálohovat."
       }
     }
+  },
+  "Help": {
+    "open": "Nápověda"
   }
 }

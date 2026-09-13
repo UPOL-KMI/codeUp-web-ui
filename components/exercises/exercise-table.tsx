@@ -4,6 +4,8 @@ import type { ExerciseCatalogPage } from "@/lib/api/exercises";
 
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
+import { isDataOnly } from "@/lib/status/exercise-validation";
+
 import { Badge } from "@/components/status/badge";
 
 /**
@@ -74,7 +76,8 @@ export async function ExerciseTable({ page }: { page: ExerciseCatalogPage }) {
                     {!exercise.isPublic && <Badge tone="neutral">{t("flags.private")}</Badge>}
                     {exercise.isLocked && <Badge tone="warning">{t("flags.locked")}</Badge>}
                     {exercise.isBroken && <Badge tone="danger">{t("flags.broken")}</Badge>}
-                    {!exercise.hasReferenceSolutions && (
+                    {/* Not asked of a data-only exercise, and so not reported missing on one. */}
+                    {!isDataOnly(exercise.environments) && !exercise.hasReferenceSolutions && (
                       <Badge tone="warning">{t("flags.noReferenceSolution")}</Badge>
                     )}
                   </span>

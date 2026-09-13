@@ -6,11 +6,15 @@ import { getExerciseLimitsData } from "@/lib/api/exercise-limits";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
-import { readLimits } from "@/lib/exercise-config/limits";
+import { getHelp } from "@/lib/docs/guides";
+import { dataOnlyCell, readLimits, usesPreciseTime } from "@/lib/exercise-config/limits";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
 import { HardwareGroupsForm } from "@/components/exercises/config/hardware-groups-form";
 import { LimitsForm } from "@/components/exercises/config/limits-form";
+import { HelpDialog } from "@/components/help/help-dialog";
+import { Markdown } from "@/components/markdown/markdown";
 import { PageShell } from "@/components/page-shell";
 
 export async function generateMetadata({
@@ -53,9 +57,10 @@ export default async function EditExerciseLimitsPage({
 
   if (exercise.can.viewLimits !== true) forbidden();
 
-  const [data, environments, breadcrumbs] = await Promise.all([
+  const [data, environments, help, breadcrumbs] = await Promise.all([
     getExerciseLimitsData(exerciseId),
     getRuntimeEnvironments(),
+    getHelp("limits", locale),
     resolveBreadcrumbs(`/exercises/${exerciseId}/edit-limits`, locale),
   ]);
 
@@ -64,6 +69,13 @@ export default async function EditExerciseLimitsPage({
 
   const tests = data.tests.map((test) => ({ id: String(test.id), name: test.name }));
   const columns = data.environmentIds.map((id) => ({ id, name: environmentNames.get(id) ?? id }));
+  // **A data-only exercise arrives here with nothing to decide and a form that refuses to save.**
+  // core-api demands a memory limit and a time limit on every test, its auto-created one included,
+  // so the grid opened at 0/0 with both fields marked as out of range -- a teacher collecting
+  // documents being asked for a processor-time budget for a file nobody executes. The cells it has
+  // no stored value for are seeded with limits that suit the judge and fit the machine instead
+  // (DEC-141); they are ordinary fields and can still be changed.
+  const dataOnly = isDataOnly(data.environmentIds);
   const ready = tests.length > 0 && columns.length > 0 && data.selected.length > 0;
 
   return (
@@ -73,6 +85,14 @@ export default async function EditExerciseLimitsPage({
       breadcrumbs={breadcrumbs}
       actions={
         <div className="flex flex-wrap gap-2">
+          {/* The settings screen is where both editors are reached from now, so both of them lead
+              back to it. This one had no way there at all. */}
+          <Link
+            href={`/exercises/${exerciseId}/edit`}
+            className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            {t("settings")}
+          </Link>
           <Link
             href={`/exercises/${exerciseId}/edit-config`}
             className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -116,11 +136,18 @@ export default async function EditExerciseLimitsPage({
         </section>
 
         <section aria-labelledby="limits-grid" className="flex flex-col gap-6">
-          <div>
-            <h2 id="limits-grid" className="text-base font-semibold tracking-tight">
-              {t("form.title")}
-            </h2>
-            <p className="text-sm text-muted-foreground">{t("form.explain")}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="limits-grid" className="text-base font-semibold tracking-tight">
+                {t("form.title")}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t("form.explain")}</p>
+            </div>
+            {help !== null && (
+              <HelpDialog title={t("title")}>
+                <Markdown source={help} />
+              </HelpDialog>
+            )}
           </div>
 
           {ready ? (
@@ -142,6 +169,9 @@ export default async function EditExerciseLimitsPage({
                     group.id,
                     tests.map((test) => test.id),
                     columns.map((column) => column.id),
+                    dataOnly
+                      ? dataOnlyCell(group, usesPreciseTime(data.limits, group.id))
+                      : undefined,
                   )}
                   readOnly={readOnly}
                 />

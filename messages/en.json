@@ -386,7 +386,7 @@
         "key": "Key",
         "value": "Value"
       },
-      "thresholdExplain": "Interim state: computed from the points earned so far, not from a final result for the course.",
+      "thresholdExplain": "An interim tally. It does not necessarily mean the course has been passed — it only states the success recorded so far.",
       "shadowCount": "{count, plural, one {# shadow assignment} other {# shadow assignments}}"
     },
     "membership": {
@@ -471,7 +471,7 @@
           "label": "Every disclosed address in this group, separated by commas"
         }
       },
-      "thresholdExplain": "Interim state: computed from the points earned so far, not from a final result for the course.",
+      "thresholdExplain": "An interim tally. It does not necessarily mean the course has been passed — it only states the success recorded so far.",
       "partialList": "Some records may be hidden by the group's permissions."
     },
     "points": {
@@ -1287,7 +1287,7 @@
       "no-tests": "The exercise has no tests.",
       "score": "The way a solution's correctness is calculated is not set up.",
       "no-runtimes": "No language has been selected.",
-      "runtimes": "The selected languages have no configuration.",
+      "runtimes": "The test configuration is incomplete for one of the chosen languages — most often a test is missing its expected output or an input file.",
       "no-configs": "Some tests are configured incorrectly, or not at all.",
       "no-hwgroups": "No hardware group has been selected.",
       "config": "Some tests are incompletely configured — this usually happens after a test or a file is removed.",
@@ -1561,7 +1561,7 @@
   },
   "ExerciseConfig": {
     "title": "Tests and evaluation",
-    "settings": "Basic settings",
+    "settings": "Exercise settings",
     "limits": "Resource limits",
     "backToExercise": "Back to the exercise",
     "archivedNotice": "This exercise is archived, so its configuration is read-only. Unarchive it on the settings screen to change anything.",
@@ -1576,17 +1576,19 @@
     },
     "tests": {
       "title": "Tests",
-      "explain": "Every test is run against the submitted solution, and the score is what they add up to. A test needs a name here before anything can be configured for it below.",
-      "calculator": "How the score is worked out",
+      "explain": "Every test is run against the submitted solution, and the student's score is worked out from the rules below.",
+      "calculator": "How the exercise is scored",
       "calculators": {
         "uniform": "Every test counts the same",
-        "weighted": "Tests carry different weights"
+        "weighted": "Tests carry different weights",
+        "universal": "Custom scoring"
       },
       "calculatorsExplain": {
         "uniform": "The correctness is the plain average of the test results.",
-        "weighted": "The correctness is the weighted average of the test results. A weight of zero means the test is run but does not count."
+        "weighted": "The score is a weighted average of the test results. A weight of zero means the test still runs but does not count towards the exercise's score.",
+        "universal": "The score is a custom expression over the test results — a test that has to pass before the others count, say."
       },
-      "universalNotice": "The score of this exercise is worked out by a custom expression, which is edited below. Tests can still be renamed there — this list is what the expression refers to.",
+      "universalNotice": "This exercise's score is worked out by the custom expression below.",
       "name": "Name",
       "weight": "Weight",
       "share": "Share of the score",
@@ -1605,6 +1607,8 @@
     "environments": {
       "title": "Languages",
       "explain": "Which languages a solution may be written in. Each one brings its own way of building and running a solution, which is what the per-test settings below are asked separately for.",
+      "tipTitle": "Tip",
+      "tip": "If you do not want solutions evaluated automatically, choose the Data-Only option.",
       "exclusive": "(cannot be combined)",
       "exclusiveConflict": "{environments} cannot share an exercise with another language. Select it on its own, or deselect it.",
       "noneSelected": "No language is selected – nothing can be submitted to this exercise.",
@@ -1614,14 +1618,14 @@
       "saveWarning": "Adding or removing a language rewrites the configuration below."
     },
     "config": {
-      "title": "What each test does",
-      "explain": "For every test: what the solution is fed, how it is run, what its output is compared against, and by what.",
+      "title": "Test configuration",
+      "explain": "Every test needs its inputs, how it is run, and the output it is expected to produce.",
       "refused": "You may not see this exercise's configuration.",
       "unavailable": "There is nothing to configure yet:",
       "noTests": "the exercise has no tests",
       "noEnvironments": "no language is selected",
       "noPipelines": "This deployment has no pipeline for {environments}, so nothing can be configured for it. It is chosen as a language but no solution written in it could be evaluated.",
-      "noFiles": "This exercise has no attached files, so there is nothing to point the inputs, the expected outputs or a custom judge at. Files are attached on the exercise itself.",
+      "noFiles": "This exercise has no files attached, so there is nothing to choose for inputs, expected outputs or a custom judge. Files are attached under Exercise settings, on the Files tab.",
       "save": "Save configuration",
       "saving": "Saving…",
       "saved": "Configuration saved.",
@@ -1629,24 +1633,24 @@
       "noFile": "— none —",
       "addItem": "Add",
       "removeItem": "Remove",
-      "sameName": "same name",
+      "sameName": "(optional) new file name",
       "renamedTo": "{label} {index}, name inside the sandbox",
       "perEnvironmentOnly": "Building and running ({environment})",
       "input": "Input",
       "inputFiles": "Input files",
-      "inputFilesExplain": "Files placed beside the solution before it runs. Give a second name to have the file appear under it.",
+      "inputFilesExplain": "These files join the ones the student submitted. Useful when the solution is meant to work with files.",
       "stdinFile": "Standard input",
-      "stdinFileExplain": "Fed to the solution on its standard input.",
+      "stdinFileExplain": "The chosen file is fed to the program on standard input.",
       "execution": "Running it",
       "runArgs": "Arguments",
       "runArgsExplain": "Passed to the solution on its command line.",
       "output": "Output",
-      "useOutFile": "Compare a file it writes",
+      "useOutFile": "Have the solution write to a file",
       "useOutFileExplain": "Off, the solution's standard output is compared instead.",
-      "actualOutput": "File it writes",
-      "actualOutputExplain": "The name the solution is expected to write.",
+      "actualOutput": "Name of the output file",
+      "actualOutputExplain": "The name the program is expected to write its output under.",
       "expectedOutput": "Expected output",
-      "expectedOutputExplain": "What the output is compared against.",
+      "expectedOutputExplain": "Choose the file holding the output the program is expected to produce.",
       "judge": "Judging",
       "useCustomJudge": "Use a judge of my own",
       "useCustomJudgeExplain": "Off, one of the built-in comparisons is used.",
@@ -1670,13 +1674,27 @@
       "successExitCodes": "Exit codes that count as success",
       "successExitCodesExplain": "Single values or ranges, separated by commas — for example 0, 2-4.",
       "extraFiles": "Extra files",
-      "extraFilesExplain": "Added to the solution before it is built.",
+      "extraFilesExplain": "These join the submitted files before compilation — headers, modules or libraries the solution would not build without. Unlike the input files above they are not the test's data but part of what is compiled, and they are set per language.",
       "jarFiles": "Libraries",
       "jarFilesExplain": "Jars put on the class path.",
       "compileArgs": "Compiler arguments",
       "compileArgsExplain": "Passed to the compiler.",
       "execTargets": "Build targets",
-      "execTargetsExplain": "Which targets the build tool runs."
+      "execTargetsExplain": "Which targets the build tool runs.",
+      "missingExpectedOutput": "expected output missing",
+      "expectedOutputRequired": "Without an expected output the test cannot be judged and the exercise cannot be assigned.",
+      "manageFiles": "Manage files",
+      "judgeExplain": {
+        "recodex-judge-normal": "Compares token by token. Whitespace does not matter; the order of the tokens and the split into lines does.",
+        "recodex-judge-float": "Like token by token, but numbers are compared as numbers — a small rounding difference passes.",
+        "recodex-judge-normal-newline": "Like token by token, and where the lines end does not matter — a newline is just more whitespace.",
+        "recodex-judge-float-newline": "Numbers are compared as numbers and the line ends do not matter.",
+        "recodex-judge-shuffle": "Tokens on one line may come in any order; the order of the lines has to match.",
+        "recodex-judge-shuffle-rows": "Lines may come in any order; within a line the order has to match.",
+        "recodex-judge-shuffle-all": "Neither the order of the lines nor the order of the tokens in them matters.",
+        "recodex-judge-shuffle-newline": "Tokens in any order, and the line ends do not matter.",
+        "diff": "The files have to match exactly, byte for byte, whitespace and line ends included."
+      }
     },
     "errors": {
       "invalid": "Some of these values are not something UPolníček can store. Check the fields marked below.",
@@ -1765,13 +1783,10 @@
     "saving": "Saving…",
     "saved": "The expression was saved.",
     "switchIn": {
-      "explain": "Switching starts from what this exercise already does — equal weights become an average, unequal ones the sum over the total — so it grades exactly as before, in a form you can then change.",
-      "action": "Write a custom scoring expression",
       "done": "The exercise now has custom scoring.",
       "noTests": "Add a test first: an expression with nothing to refer to is not one UPolníček will store."
     },
     "switchOut": {
-      "action": "Go back to an average",
       "done": "The score is an average again.",
       "confirm": {
         "title": "Go back to an average?",
@@ -1801,6 +1816,7 @@
   "ExerciseLimits": {
     "title": "Resource limits",
     "configure": "Tests and evaluation",
+    "settings": "Exercise settings",
     "backToExercise": "Back to the exercise",
     "archivedNotice": "This exercise is archived, so its limits are read-only. Unarchive it on the settings screen to change them.",
     "readOnlyNotice": "You may read these limits but not change them.",
@@ -1872,8 +1888,8 @@
       "stale": "{count, plural, one {# part behind} other {# parts behind}}"
     },
     "assign": {
-      "title": "Assign it somewhere",
-      "explain": "Pick the groups. Each one is assigned on its own, so a group you may not assign in does not stop the others.",
+      "title": "Assign in bulk",
+      "explain": "Choose the groups to assign this exercise to. Each one gets an assignment of its own.",
       "broken": "This exercise cannot be assigned — see what it is missing on the exercise screen.",
       "noGroups": "You do not teach any group to assign this in.",
       "already": "already assigned here",
@@ -1881,7 +1897,7 @@
       "assigning": "Assigning…",
       "assigned": "{count, plural, one {# assignment was created} other {# assignments were created}}.",
       "noneAssigned": "Nothing was assigned.",
-      "invisible": "New assignments start invisible to students, so an unconfigured one harms nobody. Open each to set its deadlines and points.",
+      "invisible": "An assignment starts hidden — students see it once you publish it. Its deadline and points are set on each assignment separately.",
       "failed": "That did not work.",
       "refused": "{group}: {reason}"
     },
@@ -1895,7 +1911,7 @@
     "backToExercise": "Back to the exercise",
     "list": {
       "title": "The answers",
-      "explain": "A reference solution is your own answer, run through the very pipeline a student's would be. It is what proves the exercise is possible — an exercise with none of them cannot be assigned.",
+      "explain": "A reference solution is your own answer, run through the very pipeline a student's will be before the exercise is assigned. Where an exercise has automatic tests it is required, because it is what proves those tests are trustworthy.",
       "none": "This exercise has no reference solution – it cannot be assigned. Submit one below.",
       "allHidden": "This exercise does have reference solutions, but none of them is yours to read — an author's private answers are theirs alone. Submit your own below.",
       "untitled": "Untitled solution",
@@ -3206,7 +3222,7 @@
         "student": "Student",
         "points": "Points",
         "note": "Note",
-        "awardedAt": "Awarded for",
+        "awardedAt": "Awarded on",
         "awardedBy": "Recorded by"
       },
       "edit": "Edit",
@@ -3220,7 +3236,8 @@
         "button": "Award",
         "choose": "Choose a student…",
         "noCandidates": "There is nobody in the group left to award.",
-        "overMax": "That is more than the assignment is worth ({max}). It will be saved as entered."
+        "overMax": "Careful — that is more points than the upper limit set for this.",
+        "awardedAtHint": "Optional. The date and time the points were awarded."
       },
       "toast": {
         "awarded": "The points were awarded.",
@@ -3317,6 +3334,7 @@
         "cs": "Czech"
       },
       "emails": "Email me when…",
+      "emailsTeacher": "As a teacher, email me when…",
       "flags": {
         "newAssignmentEmails": "a new assignment appears",
         "assignmentDeadlineEmails": "an assignment's deadline is near",
@@ -3739,5 +3757,8 @@
         "summary": "How to install the application, run it, update it and back it up."
       }
     }
+  },
+  "Help": {
+    "open": "Help"
   }
 }

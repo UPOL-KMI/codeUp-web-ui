@@ -37,6 +37,9 @@ test("reads a configured exercise without changing it", async ({ page }) => {
 
   await main.getByRole("link", { name: SEEDED_EXERCISE }).click();
   await expect(main.getByRole("heading", { name: SEEDED_EXERCISE, level: 1 })).toBeVisible();
+  // Reached through the settings screen: the exercise's own page stopped carrying the two editors
+  // when the operator asked for that row to be about the exercise rather than about editing it.
+  await main.getByRole("link", { name: "Edit", exact: true }).click();
   await main.getByRole("link", { name: "Tests and evaluation" }).click();
 
   await expect(main.getByRole("heading", { name: "Tests and evaluation", level: 1 })).toBeVisible();

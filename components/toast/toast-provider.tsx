@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
  * tabs, and not restored on navigation. A message that matters after a reload is not a toast.
  */
 
-export type ToastVariant = "success" | "error";
+export type ToastVariant = "success" | "warning" | "error";
 
 interface ToastItem {
   id: number;
@@ -31,6 +31,7 @@ interface ToastItem {
 
 interface ToastApi {
   success: (title: string, description?: string) => void;
+  warning: (title: string, description?: string) => void;
   error: (title: string, description?: string) => void;
 }
 
@@ -38,10 +39,24 @@ const ToastContext = createContext<ToastApi | null>(null);
 
 /**
  * Errors stay up for twice as long as successes and are announced assertively: a success is a
- * confirmation the user already expects, an error is news they have to act on. `duration` is
- * per-toast in Radix, so this needs no separate provider.
+ * confirmation the user already expects, an error is news they have to act on. A warning is news
+ * too -- something was saved, but not the way the reader probably meant -- so it is announced the
+ * same way and sits between the two. `duration` is per-toast in Radix, so this needs no separate
+ * provider.
  */
-const DURATION_MS: Record<ToastVariant, number> = { success: 4000, error: 8000 };
+const DURATION_MS: Record<ToastVariant, number> = { success: 4000, warning: 6000, error: 8000 };
+
+/**
+ * **Each tone is its own colour, because "it worked" and "it did not" must not look alike.** Both
+ * used to arrive as the same white card with only the wording to tell them apart, which asks a
+ * reader to read a message they have already half-dismissed. The surfaces are opaque tokens
+ * (PF-026): a toast floats over the page, so a `/10` tint would have the page reading through it.
+ */
+const TONE: Record<ToastVariant, string> = {
+  success: "border-success bg-success-surface",
+  warning: "border-warning bg-warning-surface",
+  error: "border-destructive bg-destructive-surface",
+};
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations("Toast");
@@ -59,6 +74,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const api = useMemo<ToastApi>(
     () => ({
       success: (title, description) => push("success", title, description),
+      warning: (title, description) => push("warning", title, description),
       error: (title, description) => push("error", title, description),
     }),
     [push],
@@ -72,17 +88,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((item) => (
           <Toast.Root
             key={item.id}
-            type={item.variant === "error" ? "foreground" : "background"}
+            type={item.variant === "success" ? "background" : "foreground"}
             duration={DURATION_MS[item.variant]}
             onOpenChange={(open) => {
               if (!open) setToasts((current) => current.filter((t) => t.id !== item.id));
             }}
             data-slot="toast"
-            className={`flex items-start gap-3 rounded-md border p-4 shadow-lg data-[state=closed]:animate-toast-out data-[state=open]:animate-toast-in ${
-              item.variant === "error"
-                ? "border-destructive bg-destructive-surface text-foreground"
-                : "border-border bg-card text-card-foreground"
-            }`}
+            className={`flex items-start gap-3 rounded-md border p-4 text-foreground shadow-lg data-[state=closed]:animate-toast-out data-[state=open]:animate-toast-in ${TONE[item.variant]}`}
           >
             <div className="flex min-w-0 flex-col gap-1">
               <Toast.Title className="text-sm font-medium">{item.title}</Toast.Title>

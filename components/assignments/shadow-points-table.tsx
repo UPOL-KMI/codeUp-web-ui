@@ -238,7 +238,10 @@ export function ShadowPointsTable({
       {canAward && (
         <section className="flex flex-col gap-2 rounded-lg border border-border p-3">
           <h3 className="text-sm font-medium">{t("award.title")}</h3>
-          <div className="flex flex-wrap items-end gap-2">
+          {/* Aligned at the top, not the bottom: one field carries a hint under it, and with
+              `items-end` its height pushed that column up so the three labels no longer lined up
+              with each other. */}
+          <div className="flex flex-wrap items-start gap-2">
             <label className="flex flex-col gap-1 text-sm">
               {t("columns.points")}
               <input
@@ -261,6 +264,9 @@ export function ShadowPointsTable({
                 className={input}
               />
             </label>
+            {/* Left blank, core-api stores no date at all -- it defaults to nothing, and its own
+                parameter is documented as "whatever that means". So the field says what it is for
+                rather than leaving a teacher to guess from a label. */}
             <label className="flex flex-col gap-1 text-sm">
               {t("columns.awardedAt")}
               <input
@@ -271,11 +277,12 @@ export function ShadowPointsTable({
                 }
                 className={input}
               />
+              <span className="text-xs text-muted-foreground">{t("award.awardedAtHint")}</span>
             </label>
           </div>
           {overMax && (
             <p role="status" className="text-sm text-warning">
-              {t("award.overMax", { max: maxPoints })}
+              {t("award.overMax")}
             </p>
           )}
           <div className="flex flex-col gap-1 text-sm">

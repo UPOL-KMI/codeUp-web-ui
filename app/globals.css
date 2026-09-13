@@ -36,6 +36,18 @@
   --success-foreground: oklch(0.985 0 0);
   --warning: oklch(0.5 0.105 70);
   --warning-foreground: oklch(0.985 0 0);
+  /* The same opaque wash as `destructive-surface`, for the other two tones -- a toast has to say
+     which of the three it is at a glance, and it floats over the page, so it cannot be a tint.
+     Yellow carries a little more chroma than the other two because at this lightness it reads as
+     grey otherwise. */
+  --success-surface: oklch(0.961 0.021 150);
+  --warning-surface: oklch(0.963 0.035 90);
+  /* The fourth status tone: neither good nor bad news, just something worth knowing. Its hue is
+     the university's own blue (#006FAD, the one the e-mails wear), so a tip on a screen looks like
+     it belongs to the same deployment as the message that arrives about it. */
+  --info: oklch(0.53 0.12 245);
+  --info-foreground: oklch(0.985 0 0);
+  --info-surface: oklch(0.961 0.025 240);
   --border: oklch(0.922 0 0);
   --input: oklch(0.63 0 0);
   --ring: oklch(0.55 0 0);
@@ -63,6 +75,11 @@
   --success-foreground: oklch(0.205 0 0);
   --warning: oklch(0.79 0.15 75);
   --warning-foreground: oklch(0.205 0 0);
+  --success-surface: oklch(0.271 0.05 150);
+  --warning-surface: oklch(0.275 0.05 85);
+  --info: oklch(0.72 0.12 245);
+  --info-foreground: oklch(0.205 0 0);
+  --info-surface: oklch(0.275 0.05 250);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 35%);
   --ring: oklch(0.556 0 0);
@@ -97,8 +114,13 @@
   --color-destructive-surface: var(--destructive-surface);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-surface: var(--success-surface);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-surface: var(--warning-surface);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-surface: var(--info-surface);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

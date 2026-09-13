@@ -6278,3 +6278,48 @@ configuration screen section by section, and each section is now behind a `?tab=
 cannot run against this deployment — it reads the `[seed]` fixtures, which the clean install
 removed. The tabs themselves were verified by hand against the running stack: each `?tab=` renders
 its own sections and nothing else.
+
+**A long afternoon of the operator building his first real exercise**, and the product failing him
+in a dozen small ways. Most of what follows was found by him doing it, not by anyone reading code.
+
+**Two refusals that came from core-api and had to be fixed there.** A data-only exercise could not
+be assigned, because assigning demands a reference solution -- a demand that makes no sense for one
+that runs none of the student's code, and which nothing on the screen warns about, since it is not
+part of what makes an exercise "broken". The fork now exempts it (`Exercise::isDataOnly`), measured
+both ways: data-only assigns, an ordinary exercise without a reference solution is still refused
+with core-api's own words. And notification e-mails are deferred by a minute and coalesced, so a
+teacher who mistypes a number and fixes it writes to the student once -- `AsyncJob` already had
+scheduling, upstream already defers one notification this way, and the new handler follows it.
+Measured: the worker stamps `startedAt` when it _allocates_ a job, seconds before it runs one,
+which is why the coalescing rule is "do not schedule a second", not "cancel the first".
+
+**Whose screen is it.** The exercise's own page stopped carrying the two editors -- tests and limits
+are what "settings" _is_, and the row above the exercise was five buttons deep. Both editors now
+hang off the settings screen and lead back to it.
+
+**The configuration screen, which he met first and understood last.** Its four-column grid
+overlapped itself (a `<fieldset>` will not shrink below its content, so the columns spilled onto
+each other rather than wrapping); it is two columns of bordered panels now. The expected output is
+marked as an error at the field, in the test's own summary, and in the "no files attached" panel --
+which is red rather than grey when it blocks, and carries a button to the files screen. **Whether
+an expected output is required at all is read off the instance's pipelines**, not assumed: the
+Python ones declare `expected-output`, the data-only one does not, which is exactly why a data-only
+exercise saved happily with every field empty and a Python one did not.
+
+**Three ways of scoring an exercise are one choice now**, custom expression included, and the
+expression editor appears under the option that selects it. That turned up two more: the tests
+became a read-only list the moment an expression was in force (so no test could be added without
+first abandoning the expression), and saving tests always rewrote the score configuration, which
+would have silently replaced the expression with an average. Saving tests can now say "leave the
+scoring alone". Removing every test was refused with "two tests cannot share a name" -- our own
+minimum, and the wrong message for it; core-api accepts an empty list, measured.
+
+**Help, where the screen is hardest.** A `Nápověda` button on the test configuration, the limits and
+the reference solutions opens a document written for a teacher who has never set one up: what each
+field is for, worked examples, and what each built-in judge actually compares -- read out of the
+worker's own judges (`--shuffled-tokens` is tokens on a line, `--shuffled-lines` is the lines), not
+guessed from their names. Markdown in the repository, rendered on the server, same as the guides.
+
+**And a fourth status tone.** The app had green, amber and red but nothing for "worth knowing", so
+the tip that points a non-programming teacher at Data-Only had no colour to be. `info` is the
+university's own blue, the one the e-mails wear.

@@ -188,6 +188,8 @@ export interface AssignableExercise {
   isBroken: boolean;
   hasReferenceSolutions: boolean;
   canAssign: boolean;
+  /** core-api's own hint, so the link to the configuration is offered only where it would open. */
+  canViewConfig: boolean;
 }
 
 export interface AssignableExercises {
@@ -236,6 +238,7 @@ export async function getAssignableExercises(
         isBroken: row.isBroken,
         hasReferenceSolutions: row.hasReferenceSolutions,
         canAssign: row.can.assign === true,
+        canViewConfig: row.can.viewConfig === true,
       };
     }),
   };

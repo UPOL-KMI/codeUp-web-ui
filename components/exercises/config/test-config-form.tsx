@@ -8,7 +8,7 @@ import { configSchema, type ConfigValues } from "@/lib/actions/exercise-config.s
 import type { ConfigCapabilities, SimpleConfigValues } from "@/lib/exercise-config/simple-config";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
 
 import { FileListField, FilePairListField, FileSelect, StringListField } from "./fields";
@@ -86,41 +86,88 @@ export function TestConfigForm({
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        {/* **Not grey when it blocks.** With no files attached there is nothing to choose for the
+            expected output, so on an exercise whose pipelines demand one this is the reason it
+            cannot be assigned -- and it read as a footnote. The way out is one click, here. */}
         {files.length === 0 && (
-          <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">{t("noFiles")}</p>
+          <div
+            className={
+              capabilities.needsExpectedOutput
+                ? "flex flex-col items-start gap-2 rounded-lg border border-destructive bg-destructive-surface p-3 text-sm"
+                : "flex flex-col items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-sm"
+            }
+          >
+            <p>{t("noFiles")}</p>
+            <Link
+              href={`/exercises/${exerciseId}/edit?tab=files`}
+              className="rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("manageFiles")}
+            </Link>
+          </div>
         )}
 
-        {values.tests.map((test, index) => (
-          <details
-            key={test.id}
-            open={values.tests.length === 1}
-            className="rounded-lg border border-border"
-          >
-            <summary className="cursor-pointer px-4 py-2 text-sm font-medium">
-              {testNames[test.id] ?? test.id}
-            </summary>
-            <div className="flex flex-col gap-6 border-t border-border p-4">
-              <SharedFields
-                index={index}
-                files={files}
-                readOnly={readOnly}
-                canCompareFile={capabilities.canCompareFile}
-              />
-              {environments.map((environmentId) => (
-                <EnvironmentFields
-                  key={environmentId}
+        {/* And when there are files, the same door, quietly. */}
+        {files.length > 0 && (
+          <div>
+            <Link
+              href={`/exercises/${exerciseId}/edit?tab=files`}
+              className="text-sm underline underline-offset-4 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("manageFiles")}
+            </Link>
+          </div>
+        )}
+
+        {values.tests.map((test, index) => {
+          // **The one value core-api will not compile without**, checked here so the teacher reads
+          // it at the field rather than as "the chosen languages have no configuration" on the next
+          // screen. Whether it is required at all is the instance's own pipelines' answer, not a
+          // guess: a data-only exercise's pipeline declares no expected output and needs none.
+          const missingExpectedOutput =
+            capabilities.needsExpectedOutput && !values.tests[index]?.expectedOutput;
+          return (
+            <details
+              key={test.id}
+              open={values.tests.length === 1 || missingExpectedOutput}
+              className={
+                missingExpectedOutput
+                  ? "rounded-lg border border-destructive"
+                  : "rounded-lg border border-border"
+              }
+            >
+              <summary className="cursor-pointer px-4 py-2 text-sm font-medium">
+                {testNames[test.id] ?? test.id}
+                {missingExpectedOutput && (
+                  <span className="ml-2 text-xs font-normal text-destructive">
+                    {t("missingExpectedOutput")}
+                  </span>
+                )}
+              </summary>
+              <div className="flex flex-col gap-6 border-t border-border p-4">
+                <SharedFields
                   index={index}
-                  environmentId={environmentId}
-                  environmentName={environmentNames[environmentId] ?? environmentId}
-                  fields={capabilities.environments[environmentId]}
                   files={files}
                   readOnly={readOnly}
-                  onlyOne={environments.length === 1}
+                  canCompareFile={capabilities.canCompareFile}
+                  missingExpectedOutput={missingExpectedOutput}
                 />
-              ))}
-            </div>
-          </details>
-        ))}
+                {environments.map((environmentId) => (
+                  <EnvironmentFields
+                    key={environmentId}
+                    index={index}
+                    environmentId={environmentId}
+                    environmentName={environmentNames[environmentId] ?? environmentId}
+                    fields={capabilities.environments[environmentId]}
+                    files={files}
+                    readOnly={readOnly}
+                    onlyOne={environments.length === 1}
+                  />
+                ))}
+              </div>
+            </details>
+          );
+        })}
 
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-2">
@@ -150,21 +197,29 @@ function SharedFields({
   files,
   readOnly,
   canCompareFile,
+  missingExpectedOutput,
 }: {
   index: number;
   files: string[];
   readOnly: boolean;
   canCompareFile: boolean;
+  missingExpectedOutput: boolean;
 }) {
   const t = useTranslations("ExerciseConfig.config");
   const { register, watch } = useFormContext<ConfigValues>();
   const useOutFile = watch(`tests.${index}.useOutFile`);
   const useCustomJudge = watch(`tests.${index}.useCustomJudge`);
+  const judgeType = watch(`tests.${index}.judgeType`);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold">{t("input")}</legend>
+    // **Two columns, never four, and every panel drawn.** Four tracks of form fields on one line
+    // left each one too narrow for a file name, and a `<fieldset>` will not shrink below its
+    // content (the browser's own `min-inline-size: min-content`) -- so the columns overlapped
+    // instead of wrapping, which is what the operator was looking at. `min-w-0` lifts that floor;
+    // the border turns four floating headings into four visibly separate groups.
+    <div className="grid gap-4 md:grid-cols-2">
+      <fieldset className="flex min-w-0 flex-col gap-3 rounded-md border border-border/60 p-3">
+        <legend className="px-1 text-sm font-semibold">{t("input")}</legend>
         <FilePairListField
           name={`tests.${index}.inputFiles`}
           label={t("inputFiles")}
@@ -181,8 +236,8 @@ function SharedFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold">{t("execution")}</legend>
+      <fieldset className="flex min-w-0 flex-col gap-3 rounded-md border border-border/60 p-3">
+        <legend className="px-1 text-sm font-semibold">{t("execution")}</legend>
         <StringListField
           name={`tests.${index}.runArgs`}
           label={t("runArgs")}
@@ -191,8 +246,8 @@ function SharedFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold">{t("output")}</legend>
+      <fieldset className="flex min-w-0 flex-col gap-3 rounded-md border border-border/60 p-3">
+        <legend className="px-1 text-sm font-semibold">{t("output")}</legend>
         {canCompareFile && (
           <label className="flex items-start gap-2 text-sm">
             <input
@@ -227,11 +282,12 @@ function SharedFields({
           files={files}
           readOnly={readOnly}
           description={t("expectedOutputExplain")}
+          error={missingExpectedOutput ? t("expectedOutputRequired") : undefined}
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold">{t("judge")}</legend>
+      <fieldset className="flex min-w-0 flex-col gap-3 rounded-md border border-border/60 p-3">
+        <legend className="px-1 text-sm font-semibold">{t("judge")}</legend>
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"
@@ -277,6 +333,11 @@ function SharedFields({
                 </option>
               ))}
             </select>
+            {/* What the chosen comparison actually does, under the control that chose it. The
+                names alone ("Tokeny v libovolném pořadí") do not say whether that means within a
+                line or across lines -- the distinction the judges themselves draw
+                (`--shuffled-tokens` vs `--shuffled-lines`, read out of the worker's own judge). */}
+            <span className="text-xs text-muted-foreground">{t(`judgeExplain.${judgeType}`)}</span>
           </label>
         )}
       </fieldset>
@@ -321,7 +382,7 @@ function EnvironmentFields({
       <legend className="px-1 text-xs font-semibold tracking-wide uppercase">
         {onlyOne ? t("perEnvironmentOnly", { environment: environmentName }) : environmentName}
       </legend>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {fields.entryPoint && (
           <FileSelect
             name={`${path}.entryPoint`}

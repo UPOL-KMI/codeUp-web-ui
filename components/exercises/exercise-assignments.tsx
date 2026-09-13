@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { assignExerciseToGroups } from "@/lib/actions/exercise-assign";
+import { groupRows } from "@/lib/groups/tree-rows";
 
 import { useRouter } from "@/i18n/navigation";
 import { useToast } from "@/components/toast/toast-provider";
@@ -21,6 +22,12 @@ import { useToast } from "@/components/toast/toast-provider";
  * already have an assignment from this exercise are still offered, deliberately: assigning the
  * same exercise twice in one group is legitimate (a practice round and a graded one) and core-api
  * allows it, so the list marks them rather than removing them.
+ *
+ * **The offer is a tree, not a bag of names.** Only groups that can hold an assignment are
+ * selectable -- an organizational one cannot, and core-api refuses it outright -- but on a real
+ * department those leaves sit four levels down and their names alone ("2025/26 ZS") say nothing
+ * about which course they belong to. So the containers above them are drawn as headings, which is
+ * the same shape the group list took when the operator asked the same question of it.
  */
 export function AssignToGroups({
   exerciseId,
@@ -28,7 +35,8 @@ export function AssignToGroups({
   alreadyAssigned,
 }: {
   exerciseId: string;
-  groups: { id: string; name: string }[];
+  /** In tree order, each with the ancestors the reader may see -- see `groupRows`. */
+  groups: { id: string; name: string; path: string[] }[];
   alreadyAssigned: Set<string>;
 }) {
   const t = useTranslations("ExerciseAssignments.assign");
@@ -69,31 +77,41 @@ export function AssignToGroups({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">{t("explain")}</p>
-      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {groups.map((group) => (
-          <li key={group.id}>
-            <label className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={chosen.includes(group.id)}
-                onChange={(event) =>
-                  setChosen((previous) =>
-                    event.target.checked
-                      ? [...previous, group.id]
-                      : previous.filter((id) => id !== group.id),
-                  )
-                }
-              />
-              <span>
-                {group.name}
-                {alreadyAssigned.has(group.id) && (
-                  <span className="block text-xs text-muted-foreground">{t("already")}</span>
-                )}
-              </span>
-            </label>
-          </li>
-        ))}
+      <ul className="flex flex-col gap-1">
+        {groupRows(groups).map((row) =>
+          row.kind === "heading" ? (
+            <li
+              key={row.key}
+              style={{ paddingInlineStart: `${row.depth * 1.25}rem` }}
+              className="pt-1 text-xs text-muted-foreground"
+            >
+              {row.name}
+            </li>
+          ) : (
+            <li key={row.key} style={{ paddingInlineStart: `${row.depth * 1.25}rem` }}>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={chosen.includes(row.id)}
+                  onChange={(event) =>
+                    setChosen((previous) =>
+                      event.target.checked
+                        ? [...previous, row.id]
+                        : previous.filter((id) => id !== row.id),
+                    )
+                  }
+                />
+                <span>
+                  {row.name}
+                  {alreadyAssigned.has(row.id) && (
+                    <span className="block text-xs text-muted-foreground">{t("already")}</span>
+                  )}
+                </span>
+              </label>
+            </li>
+          ),
+        )}
       </ul>
 
       <div>

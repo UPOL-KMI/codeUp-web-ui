@@ -116,9 +116,9 @@ The sidebar is collapsible and shows _context-aware_ navigation:
 | --------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
 | **Dashboard**   | Home, Calendar                                                    | Always                                         |
 | **My Groups**   | All groups (the list), then groups where I am a member (any role) | Always                                         |
-| **My Teaching** | Groups where I am supervisor/admin                                | Only if any exist                              |
-| **Exercises**   | Exercise catalog, Pipelines                                       | Always                                         |
-| **People**      | Users (my profile, search)                                        | Always                                         |
+| **My Teaching** | Groups where I am supervisor/admin, organizational ones excluded  | Only if any exist                              |
+| **Exercises**   | Exercise catalog, Pipelines                                       | `supervisor-student` and above                 |
+| **People**      | My profile (always), Users (`supervisor` and above)               | Always                                         |
 | **Admin**       | Server, Instances, System Messages, Archive                       | Only if `superadmin` or `empowered-supervisor` |
 
 **Note:** "My Groups" and "My Teaching" are not mutually exclusive. A user in both sees both sections. The API returns per-group membership arrays (`admins`, `supervisors`, `observers`, `students`), and the sidebar derives visibility from those arrays, not from the global role.

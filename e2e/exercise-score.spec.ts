@@ -50,8 +50,10 @@ test("writes a score of its own, and comes back from it", async ({ page }) => {
   const main = page.getByRole("main");
   const editUrl = await exerciseWithTests(page);
 
+  // The three ways of scoring an exercise are one radio group now (the operator's request), so
+  // switching in and out is choosing an option rather than pressing a button in another section.
   // Switching in is seeded from what the exercise already does, so it grades the same.
-  await main.getByRole("button", { name: "Write the score myself" }).click();
+  await main.getByRole("radio", { name: /Custom scoring/ }).click();
   await expect(
     page.getByText("This exercise now has a score of its own.", { exact: true }),
   ).toBeVisible();
@@ -83,7 +85,7 @@ test("writes a score of its own, and comes back from it", async ({ page }) => {
   await expect(main.getByText("This expression is an average")).toHaveCount(0);
 
   // Going back is not lossless here, and the dialog says so rather than warning in the abstract.
-  await main.getByRole("button", { name: "Go back to an average" }).click();
+  await main.getByRole("radio", { name: /Every test counts the same/ }).click();
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toContainText("cannot be turned into weights");
   await dialog.getByRole("button", { name: "Use an average" }).click();
@@ -117,7 +119,7 @@ test("an expression that is an average converts back to the weights it means", a
   await page.reload();
   await expect(main.getByRole("spinbutton", { name: "Weight" }).first()).toHaveValue("50");
 
-  await main.getByRole("button", { name: "Write the score myself" }).click();
+  await main.getByRole("radio", { name: /Custom scoring/ }).click();
   await expect(
     page.getByText("This exercise now has a score of its own.", { exact: true }),
   ).toBeVisible();
@@ -126,7 +128,7 @@ test("an expression that is an average converts back to the weights it means", a
   );
 
   // And back again: the weights it means are named, and nothing is lost.
-  await main.getByRole("button", { name: "Go back to an average" }).click();
+  await main.getByRole("radio", { name: /Every test counts the same/ }).click();
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toContainText("Large input → 50");
   await expect(dialog).toContainText("Small input → 100");

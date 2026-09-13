@@ -4,7 +4,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
-import { describeValidationError, validationErrorHref } from "@/lib/status/exercise-validation";
+import {
+  describeValidationError,
+  isDataOnly,
+  validationErrorHref,
+} from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
 import { Discussion } from "@/components/comments/discussion";
@@ -74,22 +78,11 @@ export default async function ExercisePage({
               {t("edit")}
             </Link>
           )}
-          {exercise.can.viewConfig === true && (
-            <Link
-              href={`/exercises/${exerciseId}/edit-config`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("configure")}
-            </Link>
-          )}
-          {exercise.can.viewLimits === true && (
-            <Link
-              href={`/exercises/${exerciseId}/edit-limits`}
-              className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("limits")}
-            </Link>
-          )}
+          {/* The tests and the limits are not offered here any more: they are two of the things
+              "Nastavení úlohy" is, and this row was five buttons deep before anybody read the
+              exercise itself. They live on the settings screen, one click further in, and the
+              reasons an exercise is broken still link straight to whichever of them answers each.
+              The operator's call. */}
           {exercise.can.viewAssignments === true && (
             <Link
               href={`/exercises/${exerciseId}/assignments`}
@@ -142,11 +135,13 @@ export default async function ExercisePage({
           </section>
         )}
 
-        {!exercise.isBroken && !exercise.hasReferenceSolutions && (
-          <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
-            {t("noReferenceSolution")}
-          </p>
-        )}
+        {!exercise.isBroken &&
+          !exercise.hasReferenceSolutions &&
+          !isDataOnly(exercise.environments.map((environment) => environment.id)) && (
+            <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
+              {t("noReferenceSolution")}
+            </p>
+          )}
 
         {exercise.archivedAt !== null && (
           <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">

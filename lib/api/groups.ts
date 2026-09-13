@@ -19,6 +19,8 @@ import { apiRead } from "./read";
 export interface SidebarGroup {
   id: string;
   name: string;
+  /** A container in the tree rather than a course: no students, no assignments (DEC-140). */
+  organizational: boolean;
 }
 
 /**
@@ -159,6 +161,7 @@ export async function getMyGroups(
   const toSidebarGroup = (group: GroupPayload): SidebarGroup => ({
     id: group.id,
     name: localizedName(group.localizedTexts, locale),
+    organizational: group.organizational ?? false,
   });
 
   const teaching = new Map<string, SidebarGroup>();

@@ -15,6 +15,12 @@ import type { FileEntry } from "@/lib/exercise-config/simple-config";
  * list of bare strings -- and mixing the two styles across one form is worse than picking the one
  * that covers every case here.
  *
+ * **Every one of these has to survive a narrow column.** They are laid out in a grid, and a grid
+ * track will not shrink below its content unless it is told to -- so each root carries `min-w-0`
+ * and each row wraps rather than compressing its controls. Without that, a row of select + name +
+ * remove spilled out of its column and landed on top of the neighbouring one, which is how the
+ * operator found this.
+ *
  * **A file is chosen, never typed.** Every one of these values is a `remote-file`, which core-api
  * resolves against the exercise's own attached files; a typo becomes an evaluation that fails at
  * run time with nothing to point at. Uploading those files is T-023's, so an exercise with none
@@ -41,27 +47,35 @@ export function FileSelect({
   files,
   readOnly,
   description,
+  error,
 }: {
   name: Path;
   label: string;
   files: string[];
   readOnly: boolean;
   description?: string;
+  /** Shown under the control and marked on it, for a value core-api will refuse to compile. */
+  error?: string;
 }) {
   const t = useTranslations("ExerciseConfig.config");
   const [value, setValue] = useValue<string>(name);
   const descriptionId = `${name}-description`;
+  const errorId = `${name}-error`;
 
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex min-w-0 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       <select
-        className={INPUT}
+        aria-invalid={error ? true : undefined}
+        className={error ? `${INPUT} border-destructive` : INPUT}
         // The visible label wraps this control, and a wrapped `<select>` takes its whole label --
         // including every option's text -- as its accessible name. Naming it explicitly is what
         // makes a screen reader (and a test) hear "Expected output" rather than the option list.
         aria-label={label}
-        aria-describedby={description ? descriptionId : undefined}
+        aria-describedby={
+          [description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(" ") ||
+          undefined
+        }
         disabled={readOnly}
         value={value ?? ""}
         onChange={(event) => setValue(event.target.value)}
@@ -75,6 +89,11 @@ export function FileSelect({
           </option>
         ))}
       </select>
+      {error && (
+        <span id={errorId} className="text-xs font-medium text-destructive">
+          {error}
+        </span>
+      )}
       {description && (
         <span id={descriptionId} className="text-xs text-muted-foreground">
           {description}
@@ -103,13 +122,13 @@ export function StringListField({
   const descriptionId = `${name}-description`;
 
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex min-w-0 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       {items.map((item, index) => (
-        <span key={index} className="flex items-center gap-1">
+        <span key={index} className="flex flex-wrap items-center gap-1">
           <input
             type="text"
-            className={`${INPUT} w-full font-mono`}
+            className={`${INPUT} min-w-0 flex-1 font-mono`}
             aria-label={`${label} ${index + 1}`}
             aria-describedby={description ? descriptionId : undefined}
             placeholder={placeholder}
@@ -168,12 +187,12 @@ export function FileListField({
   const descriptionId = `${name}-description`;
 
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex min-w-0 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       {items.map((item, index) => (
-        <span key={index} className="flex items-center gap-1">
+        <span key={index} className="flex flex-wrap items-center gap-1">
           <select
-            className={`${INPUT} w-full`}
+            className={`${INPUT} min-w-0 flex-1`}
             aria-label={`${label} ${index + 1}`}
             aria-describedby={description ? descriptionId : undefined}
             disabled={readOnly}
@@ -238,12 +257,12 @@ export function FilePairListField({
   const descriptionId = `${name}-description`;
 
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex min-w-0 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       {items.map((item, index) => (
-        <span key={index} className="flex items-center gap-1">
+        <span key={index} className="flex flex-wrap items-center gap-1">
           <select
-            className={`${INPUT} min-w-0 flex-1`}
+            className={`${INPUT} min-w-0 flex-1 basis-40`}
             aria-label={`${label} ${index + 1}`}
             aria-describedby={description ? descriptionId : undefined}
             disabled={readOnly}
@@ -267,7 +286,7 @@ export function FilePairListField({
           </select>
           <input
             type="text"
-            className={`${INPUT} min-w-0 flex-1 font-mono`}
+            className={`${INPUT} min-w-0 flex-1 basis-32 font-mono`}
             aria-label={t("renamedTo", { label, index: index + 1 })}
             aria-describedby={description ? descriptionId : undefined}
             placeholder={t("sameName")}

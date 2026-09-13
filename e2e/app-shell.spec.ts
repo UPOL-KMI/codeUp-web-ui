@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { SUPERADMIN } from "./helpers/accounts";
+import { STUDENT, SUPERADMIN } from "./helpers/accounts";
 import { loginAndGetCookie } from "./helpers/auth";
 import { baseURL } from "./helpers/base-url";
 
@@ -29,6 +29,28 @@ test("shows the admin section to a superadmin", async ({ page }) => {
   await expect(
     page.getByRole("navigation").getByRole("heading", { name: "Administration" }),
   ).toBeVisible();
+});
+
+test("offers a student only what a student may open", async ({ context, page }) => {
+  // core-api grants `user.viewAll` from `supervisor` up and `exercise.viewAll` / `pipeline.viewAll`
+  // from `supervisor-student` up, so all three of these links ended in the refusal page for a
+  // student. Signed in over the top of the shared superadmin session this file's `beforeEach`
+  // establishes -- the cookie is replaced, not added to.
+  await context.clearCookies();
+  const cookie = await loginAndGetCookie(STUDENT);
+  await context.addCookies([{ ...cookie, url: baseURL }]);
+  await page.goto("/en/dashboard");
+
+  const nav = page.getByRole("navigation", { name: "Primary navigation" });
+  await expect(nav.getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "All groups" })).toBeVisible();
+
+  await expect(nav.getByRole("heading", { name: "Exercises" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Exercise catalog" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Pipelines" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Users" })).toHaveCount(0);
+  // The section itself stays -- one's own profile is in it.
+  await expect(nav.getByRole("heading", { name: "People" })).toBeVisible();
 });
 
 test("marks the current page as active for assistive technology, not just visually", async ({

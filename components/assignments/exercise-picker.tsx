@@ -5,8 +5,9 @@ import { useTranslations } from "next-intl";
 
 import { createAssignmentFromExercise } from "@/lib/actions/assignment";
 import type { AssignableExercise } from "@/lib/api/exercises";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Badge } from "@/components/status/badge";
 
 /**
@@ -30,6 +31,9 @@ export function ExercisePicker({
   groupId: string;
 }) {
   const t = useTranslations("AssignExercise");
+  // The configuration screen is named once, in `Exercise`, and read from there rather than copied
+  // into this namespace -- a second copy of a screen name is how two of them drifted apart before.
+  const tExercise = useTranslations("Exercise");
   // core-api serves an empty difficulty for an exercise nobody set one on, and next-intl answers a
   // missing key with the key path -- so the catalog used to show readers `difficulty.` and log a
   // `MISSING_MESSAGE` per row (G-031b).
@@ -64,10 +68,15 @@ export function ExercisePicker({
 
       <ul className="flex flex-col gap-2">
         {exercises.map((exercise) => {
+          // **A data-only exercise needs no reference solution** and core-api no longer asks for
+          // one (DEC-141): there are no automatic tests whose trustworthiness it could prove, and
+          // the teacher's "own answer" to "hand in your essay" is an essay. Everything else still
+          // applies to it.
+          const needsReference = !isDataOnly(exercise.environments);
           const blocked =
             exercise.isLocked ||
             exercise.isBroken ||
-            !exercise.hasReferenceSolutions ||
+            (needsReference && !exercise.hasReferenceSolutions) ||
             !exercise.canAssign;
           return (
             <li
@@ -83,31 +92,47 @@ export function ExercisePicker({
                   )}
                   {exercise.isLocked && <Badge tone="warning">{t("locked")}</Badge>}
                   {exercise.isBroken && <Badge tone="danger">{t("broken")}</Badge>}
-                  {!exercise.hasReferenceSolutions && (
+                  {needsReference && !exercise.hasReferenceSolutions && (
                     <Badge tone="warning">{t("noReferenceSolution")}</Badge>
                   )}
                 </span>
               </span>
-              {blocked ? (
-                <span className="text-xs text-muted-foreground">
-                  {exercise.isBroken
-                    ? t("cannot.broken")
-                    : exercise.isLocked
-                      ? t("cannot.locked")
-                      : !exercise.hasReferenceSolutions
-                        ? t("cannot.noReferenceSolution")
-                        : t("cannot.notYours")}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  disabled={pending !== null}
-                  onClick={() => void assign(exercise.id)}
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
-                >
-                  {pending === exercise.id ? t("assigning") : t("assign")}
-                </button>
-              )}
+              <span className="flex flex-wrap items-center gap-2">
+                {/* **The way out of a row that cannot be assigned.** An exercise whose
+                    configuration is unfinished is the commonest reason this list refuses one, and
+                    until now the reader was told so and left to find the screen that fixes it
+                    themselves. Offered on every row rather than only the refused ones -- a
+                    finished exercise is also one somebody may want to look at before assigning --
+                    and only where core-api's own hint says it would open. */}
+                {exercise.canViewConfig && (
+                  <Link
+                    href={`/exercises/${exercise.id}/edit-config`}
+                    className="rounded-md border border-input px-3 py-1.5 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  >
+                    {tExercise("configure")}
+                  </Link>
+                )}
+                {blocked ? (
+                  <span className="text-xs text-muted-foreground">
+                    {exercise.isBroken
+                      ? t("cannot.broken")
+                      : exercise.isLocked
+                        ? t("cannot.locked")
+                        : needsReference && !exercise.hasReferenceSolutions
+                          ? t("cannot.noReferenceSolution")
+                          : t("cannot.notYours")}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={pending !== null}
+                    onClick={() => void assign(exercise.id)}
+                    className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60"
+                  >
+                    {pending === exercise.id ? t("assigning") : t("assign")}
+                  </button>
+                )}
+              </span>
             </li>
           );
         })}

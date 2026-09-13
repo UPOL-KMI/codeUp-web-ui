@@ -28,6 +28,8 @@ test("reads a configured exercise's limits without changing them", async ({ page
   const main = page.getByRole("main");
 
   await main.getByRole("link", { name: "[seed] Echo Greeting" }).click();
+  // Through the settings screen, which is where both editors are reached from now.
+  await main.getByRole("link", { name: "Edit", exact: true }).click();
   await main.getByRole("link", { name: "Resource limits" }).click();
   await expect(main.getByRole("heading", { name: "Resource limits", level: 1 })).toBeVisible();
 

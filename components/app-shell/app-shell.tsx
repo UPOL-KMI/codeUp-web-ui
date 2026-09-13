@@ -2,7 +2,12 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { canSeeAdminSection, getCurrentUser } from "@/lib/api/current-user";
+import {
+  canSeeAdminSection,
+  canSeeExerciseSection,
+  canSeeUserDirectory,
+  getCurrentUser,
+} from "@/lib/api/current-user";
 import { ORIGIN_COOKIE_NAME } from "@/lib/auth/session-cookie";
 import { getMyGroups } from "@/lib/api/groups";
 import { getActiveSystemMessages } from "@/lib/api/system-messages";
@@ -105,6 +110,14 @@ async function Sidebar() {
     getMyGroups(locale),
   ]);
 
+  // **An organizational group is not something anybody teaches** (DEC-140): it has no students and
+  // no assignments, and listing it here put a container under the heading "My teaching". Admin
+  // rights are inherited down the tree in core-api, so an administrator of a department sees every
+  // level of it -- the operator's own sidebar named two containers and one actual course. They stay
+  // reachable through the group list, the parent link and the breadcrumbs, which is how a container
+  // is reached anyway.
+  const teaching = groups.teaching.filter((group) => !group.organizational);
+
   const sections: NavSection[] = [
     {
       id: "dashboard",
@@ -127,32 +140,43 @@ async function Sidebar() {
     // IA §3.1: shown "only if any exist" -- an empty teaching section on a student's sidebar is
     // noise, whereas an empty "My Groups" still tells a new student where their courses will
     // appear once they enrol.
-    ...(groups.teaching.length > 0
+    ...(teaching.length > 0
       ? [
           {
             id: "teaching",
             title: t("myTeaching"),
-            items: groups.teaching.map((group) => ({
+            items: teaching.map((group) => ({
               href: `/groups/${group.id}`,
               label: group.name,
             })),
           },
         ]
       : []),
-    {
-      id: "exercises",
-      title: t("exercises"),
-      items: [
-        { href: "/exercises", label: t("exerciseCatalog") },
-        { href: "/pipelines", label: t("pipelines") },
-      ],
-    },
+    // **Both of these are refused to a plain student**, so the section is not offered to one at
+    // all: core-api grants `exercise.viewAll` and `pipeline.viewAll` from `supervisor-student` up,
+    // and a student who followed either link landed on the refusal page. Reported by the operator,
+    // reading his own students' sidebar.
+    ...(canSeeExerciseSection(user.role)
+      ? [
+          {
+            id: "exercises",
+            title: t("exercises"),
+            items: [
+              { href: "/exercises", label: t("exerciseCatalog") },
+              { href: "/pipelines", label: t("pipelines") },
+            ],
+          },
+        ]
+      : []),
     {
       id: "people",
       title: t("people"),
+      // One's own profile is everybody's; the directory needs `user.viewAll`, which a student does
+      // not have. (They do have `user.viewList` -- a different action, and not the one this page
+      // asks for, which is why the link looked plausible.)
       items: [
         { href: "/profile", label: t("profile") },
-        { href: "/users", label: t("users") },
+        ...(canSeeUserDirectory(user.role) ? [{ href: "/users", label: t("users") }] : []),
       ],
     },
     ...(canSeeAdminSection(user.role)
