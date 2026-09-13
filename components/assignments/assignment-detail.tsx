@@ -8,7 +8,7 @@ import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { Markdown } from "@/components/markdown/markdown";
 import { EmptyState } from "@/components/state/empty-state";
-import { Badge } from "@/components/status/badge";
+import { VisibilityBadge } from "@/components/status/visibility-badge";
 import { DeadlineBadge } from "@/components/status/deadline-badge";
 
 /**
@@ -41,7 +41,18 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-export async function AssignmentDetailView({ assignment }: { assignment: AssignmentDetail }) {
+export async function AssignmentDetailView({
+  assignment,
+  tab,
+}: {
+  assignment: AssignmentDetail;
+  /**
+   * Which half of the screen to render. Unlike the settings form's tabs these *are* conditional
+   * rather than hidden: there is no unsaved state to protect here, and the solutions half builds a
+   * list that costs something.
+   */
+  tab: "text" | "solutions";
+}) {
   const [t, format] = await Promise.all([getTranslations("Assignment"), getFormatter()]);
 
   const attemptsLeft = Math.max(
@@ -49,16 +60,16 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
     assignment.submissionsCountLimit - assignment.submission.evaluated,
   );
 
-  // `isPublic` alone, with the release date stated beside it rather than folded into it: whether
-  // `visibleFrom` has passed depends on the current time, which a Server Component has no business
-  // deciding (the same rule `DeadlineBadge` exists for).
+  // Whether a release time has passed depends on the clock, so the badge that says so is a Client
+  // Component (`VisibilityBadge`) -- this page used to print `isPublic` alone, which read as
+  // "Viditelné" beside a release time three minutes in the future.
 
   // A former student of the group still has their attempts; they just no longer have a deadline.
   const showMySolutions = assignment.viewerIsStudent || assignment.mySolutions.length > 0;
 
   return (
     <div className="flex flex-col gap-8">
-      {assignment.viewerIsStudent && (
+      {tab === "solutions" && assignment.viewerIsStudent && (
         <section aria-labelledby="assignment-submitting">
           <h2 id="assignment-submitting" className="mb-3 text-base font-semibold tracking-tight">
             {t("submitting.heading")}
@@ -93,126 +104,132 @@ export async function AssignmentDetailView({ assignment }: { assignment: Assignm
         </section>
       )}
 
-      <section aria-labelledby="assignment-text">
-        <h2 id="assignment-text" className="mb-3 text-base font-semibold tracking-tight">
-          {t("text")}
-        </h2>
-        {assignment.text ? (
-          <Markdown source={assignment.text} />
-        ) : (
-          <p className="text-sm text-muted-foreground">{t("noText")}</p>
-        )}
-        {assignment.externalLink && (
-          <p className="mt-3 text-sm">
-            <a
-              href={assignment.externalLink}
-              rel="noreferrer noopener"
-              target="_blank"
-              className="underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              {t("externalLink")}
-            </a>
-          </p>
-        )}
-        {assignment.studentHint && (
-          <div className="mt-4 rounded-md border border-border bg-muted/40 p-3">
-            <h3 className="text-sm font-medium">{t("hint")}</h3>
-            {/* Markdown, not plain text: legacy renders the hint through its own renderer
+      {tab === "text" && (
+        <section aria-labelledby="assignment-text">
+          <h2 id="assignment-text" className="mb-3 text-base font-semibold tracking-tight">
+            {t("text")}
+          </h2>
+          {assignment.text ? (
+            <Markdown source={assignment.text} />
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("noText")}</p>
+          )}
+          {assignment.externalLink && (
+            <p className="mt-3 text-sm">
+              <a
+                href={assignment.externalLink}
+                rel="noreferrer noopener"
+                target="_blank"
+                className="underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {t("externalLink")}
+              </a>
+            </p>
+          )}
+          {assignment.studentHint && (
+            <div className="mt-4 rounded-md border border-border bg-muted/40 p-3">
+              <h3 className="text-sm font-medium">{t("hint")}</h3>
+              {/* Markdown, not plain text: legacy renders the hint through its own renderer
                 (`LocalizedTexts.js`), so a hint authored with a list or emphasis rendered here as
                 literal asterisks. Found while building G-028 -- offering a markdown preview of a
                 field displayed as plain text would have been the more visible half of the bug. */}
-            <div className="mt-1">
-              <Markdown source={assignment.studentHint} />
+              <div className="mt-1">
+                <Markdown source={assignment.studentHint} />
+              </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      )}
 
-      <section aria-labelledby="assignment-terms">
-        <h2 id="assignment-terms" className="mb-3 text-base font-semibold tracking-tight">
-          {t("terms")}
-        </h2>
-        <dl>
-          <DetailRow label={t("firstDeadline")}>
-            <span className="flex flex-wrap items-center gap-2">
-              <DateTime unixSeconds={assignment.firstDeadline} />
-              <span className="text-muted-foreground">
-                <RelativeTime unixSeconds={assignment.firstDeadline} />
-              </span>
-              <DeadlineBadge
-                firstDeadline={assignment.firstDeadline}
-                secondDeadline={assignment.secondDeadline}
-                allowSecondDeadline={assignment.allowSecondDeadline}
-              />
-              <span className="text-muted-foreground">
-                {t("upToPoints", { points: assignment.maxPointsFirst })}
-              </span>
-            </span>
-          </DetailRow>
-          {assignment.secondDeadline !== null && (
-            <DetailRow label={t("secondDeadline")}>
+      {tab === "text" && (
+        <section aria-labelledby="assignment-terms">
+          <h2 id="assignment-terms" className="mb-3 text-base font-semibold tracking-tight">
+            {t("terms")}
+          </h2>
+          <dl>
+            <DetailRow label={t("firstDeadline")}>
               <span className="flex flex-wrap items-center gap-2">
-                <DateTime unixSeconds={assignment.secondDeadline} />
+                <DateTime unixSeconds={assignment.firstDeadline} />
                 <span className="text-muted-foreground">
-                  {t("upToPoints", { points: assignment.maxPointsSecond })}
+                  <RelativeTime unixSeconds={assignment.firstDeadline} />
+                </span>
+                <DeadlineBadge
+                  firstDeadline={assignment.firstDeadline}
+                  secondDeadline={assignment.secondDeadline}
+                  allowSecondDeadline={assignment.allowSecondDeadline}
+                />
+                <span className="text-muted-foreground">
+                  {t("upToPoints", { points: assignment.maxPointsFirst })}
                 </span>
               </span>
             </DetailRow>
-          )}
-          {assignment.pointsThreshold > 0 && (
-            <DetailRow label={t("threshold")}>
-              {t("thresholdNote", {
-                percent: format.number(assignment.pointsThreshold / 100, {
-                  style: "percent",
-                  maximumFractionDigits: 1,
-                }),
-              })}
-            </DetailRow>
-          )}
-          <DetailRow label={t("attempts")}>
-            {t("attemptsValue", { limit: assignment.submissionsCountLimit })}
-          </DetailRow>
-          {assignment.can.update && (
-            <DetailRow label={t("visibility")}>
-              <span className="flex flex-wrap items-center gap-2">
-                <Badge tone={assignment.isPublic ? "success" : "warning"}>
-                  {assignment.isPublic ? t("visible") : t("notVisible")}
-                </Badge>
-                {assignment.visibleFrom !== null && (
+            {assignment.secondDeadline !== null && (
+              <DetailRow label={t("secondDeadline")}>
+                <span className="flex flex-wrap items-center gap-2">
+                  <DateTime unixSeconds={assignment.secondDeadline} />
                   <span className="text-muted-foreground">
-                    {t("visibleFrom")} <DateTime unixSeconds={assignment.visibleFrom} />
+                    {t("upToPoints", { points: assignment.maxPointsSecond })}
                   </span>
-                )}
-              </span>
-            </DetailRow>
-          )}
-          {assignment.can.update && (
-            <DetailRow label={t("assignedAt")}>
-              <span className="flex flex-wrap items-center gap-2">
-                <DateTime unixSeconds={assignment.createdAt} />
-                <span className="text-muted-foreground">
-                  <RelativeTime unixSeconds={assignment.createdAt} />
                 </span>
-              </span>
+              </DetailRow>
+            )}
+            {assignment.pointsThreshold > 0 && (
+              <DetailRow label={t("threshold")}>
+                {t("thresholdNote", {
+                  percent: format.number(assignment.pointsThreshold / 100, {
+                    style: "percent",
+                    maximumFractionDigits: 1,
+                  }),
+                })}
+              </DetailRow>
+            )}
+            <DetailRow label={t("attempts")}>
+              {t("attemptsValue", { limit: assignment.submissionsCountLimit })}
             </DetailRow>
-          )}
-          {assignment.environments.length > 0 && (
-            <DetailRow label={t("environments")}>{assignment.environments.join(", ")}</DetailRow>
-          )}
-          {assignment.solutionFilesLimit !== null && (
-            <DetailRow label={t("filesLimit")}>{assignment.solutionFilesLimit}</DetailRow>
-          )}
-          {assignment.solutionSizeLimit !== null && (
-            <DetailRow label={t("sizeLimit")}>
-              {/* Kibibytes, as core-api stores them -- a "64 kB" that is really 65536 bytes is the
+            {assignment.can.update && (
+              <DetailRow label={t("visibility")}>
+                <span className="flex flex-wrap items-center gap-2">
+                  <VisibilityBadge
+                    isPublic={assignment.isPublic}
+                    visibleFrom={assignment.visibleFrom}
+                  />
+                  {assignment.visibleFrom !== null && (
+                    <span className="text-muted-foreground">
+                      {t("visibleFrom")} <DateTime unixSeconds={assignment.visibleFrom} />
+                    </span>
+                  )}
+                </span>
+              </DetailRow>
+            )}
+            {assignment.can.update && (
+              <DetailRow label={t("assignedAt")}>
+                <span className="flex flex-wrap items-center gap-2">
+                  <DateTime unixSeconds={assignment.createdAt} />
+                  <span className="text-muted-foreground">
+                    <RelativeTime unixSeconds={assignment.createdAt} />
+                  </span>
+                </span>
+              </DetailRow>
+            )}
+            {assignment.environments.length > 0 && (
+              <DetailRow label={t("environments")}>{assignment.environments.join(", ")}</DetailRow>
+            )}
+            {assignment.solutionFilesLimit !== null && (
+              <DetailRow label={t("filesLimit")}>{assignment.solutionFilesLimit}</DetailRow>
+            )}
+            {assignment.solutionSizeLimit !== null && (
+              <DetailRow label={t("sizeLimit")}>
+                {/* Kibibytes, as core-api stores them -- a "64 kB" that is really 65536 bytes is the
                   kind of rounding a student notices only when an upload is refused. */}
-              {format.number(assignment.solutionSizeLimit / 1024, { maximumFractionDigits: 0 })} KiB
-            </DetailRow>
-          )}
-        </dl>
-      </section>
+                {format.number(assignment.solutionSizeLimit / 1024, { maximumFractionDigits: 0 })}{" "}
+                KiB
+              </DetailRow>
+            )}
+          </dl>
+        </section>
+      )}
 
-      {showMySolutions && (
+      {tab === "solutions" && showMySolutions && (
         <section aria-labelledby="assignment-solutions">
           <h2 id="assignment-solutions" className="mb-3 text-base font-semibold tracking-tight">
             {t("mySolutions")}

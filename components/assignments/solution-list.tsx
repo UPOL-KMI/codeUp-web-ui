@@ -1,12 +1,14 @@
 import { getTranslations } from "next-intl/server";
 
 import type { AssignmentSolutionRow } from "@/lib/api/assignment";
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
 
 import { Link } from "@/i18n/navigation";
 import { DateTime } from "@/components/format/date-time";
 import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
+import { evaluationStatus } from "@/lib/status/evaluation";
+
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
 
 /**
@@ -58,7 +60,15 @@ export async function SolutionList({ solutions }: { solutions: AssignmentSolutio
                 </div>
               </td>
               <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
-                {formatPoints(solution.gained ?? 0, solution.maxPoints)}
+                {/* Same rule as everywhere else: until somebody has marked it, the points are a
+                    question rather than a number. */}
+                {evaluationStatus(solution.evaluation) === "awaiting-review" ? (
+                  <span className="text-muted-foreground">
+                    {formatPointsUnknown(solution.maxPoints)}
+                  </span>
+                ) : (
+                  formatPoints(solution.gained ?? 0, solution.maxPoints)
+                )}
                 {solution.bonus !== 0 && (
                   <span className={solution.bonus > 0 ? "text-success" : "text-destructive"}>
                     {solution.bonus > 0 ? ` +${solution.bonus}` : ` ${solution.bonus}`}

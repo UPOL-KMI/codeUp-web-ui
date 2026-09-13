@@ -80,3 +80,55 @@ export function isDataOnly(environmentIds: readonly string[]): boolean {
  * Czech diacritics is refused outright. The teacher can rename it; what matters is that it exists.
  */
 export const DATA_ONLY_TEST_NAME = "Data";
+
+/**
+ * The judge a data-only exercise is given so that it works at all (DEC-141).
+ *
+ * **`data-linux` does not mean "do not evaluate".** Its pipeline runs no student code, but it does
+ * run a judge -- the teacher's own, through `recodex-data-only-wrapper.sh` -- and with none chosen
+ * the wrapper tries to execute the sandbox directory and every submission fails
+ * (`/box/: Is a directory`, measured on this deployment). There is no built-in judge to fall back
+ * on: the pipeline declares no expected output, only a custom judge.
+ *
+ * So an exercise that collects documents is given this one: it accepts whatever arrived and scores
+ * it **zero**, which is what "nothing has been judged yet" means to the machine.
+ *
+ * **Zero rather than one, and that is the whole point.** core-api turns a score into points --
+ * `floor(score * maxPoints)` -- so a judge that returned 1.0 handed every student full marks the
+ * moment they uploaded a file, before any teacher looked at it. Reported by the operator, who
+ * called it what it is. With zero, the submission is collected, the run succeeds, and the points
+ * stay at nought until a teacher awards them by hand; the screens then say "waiting to be marked"
+ * rather than showing a score nobody stands behind.
+ *
+ * It is an ordinary attached file and can be replaced by a judge that actually checks something.
+ */
+export const DATA_ONLY_JUDGE_NAME = "hodnoceni-rucne.sh";
+
+export const DATA_ONLY_JUDGE_SOURCE = `#!/bin/sh
+# Prijme cokoliv, co student odevzdal, a necha hodnoceni na vyucujicim.
+# Prvni radek vystupu je uspesnost (0.0 az 1.0), navratovy kod 0 znamena "beh probehl v poradku".
+# Nula je zamerne: body udeluje vyucujici rucne, stroj zadne pridelit nesmi.
+echo 0.0
+exit 0
+`;
+
+/**
+ * Whether a file is this app's own data-only judge, in any version it has shipped.
+ *
+ * The first one scored 1.0 -- which core-api turned into full marks the moment a student uploaded
+ * anything, before a teacher had seen it. Exercises created while that shipped still carry it, so
+ * saving their languages replaces it. Recognised by what it is rather than by an exact match, so
+ * that trailing whitespace or a changed comment does not make it unrecognisable, and **never** a
+ * file a teacher wrote: it has to be our name, our shape and our own comment.
+ */
+export function isGeneratedDataOnlyJudge(source: string): boolean {
+  return (
+    source.includes("necha hodnoceni na vyucujicim") &&
+    (source.includes("echo 1.0") || source.includes("echo 0.0"))
+  );
+}
+
+/** True for the version that awarded full marks by itself, which must be replaced. */
+export function isOutdatedDataOnlyJudge(source: string): boolean {
+  return isGeneratedDataOnlyJudge(source) && source.includes("echo 1.0");
+}

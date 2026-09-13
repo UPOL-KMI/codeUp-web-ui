@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 
 import { requireSession } from "@/lib/auth/require-session";
 
@@ -36,6 +37,10 @@ export interface UpcomingAssignment {
   /** The viewer's own standing on this assignment. Absent when they are not a student in the
    *  group -- a teacher planning around the same deadline has no solution of their own. */
   stats?: Pick<GroupAssignmentStats, "status" | "accepted"> & {
+    /** The assignment collects files rather than running code (DEC-141). */
+    dataOnly?: boolean;
+    /** Somebody awarded points -- approximated, see `AssignmentProgressInput`. */
+    graded?: boolean;
     gained: number | null;
     bonus: number | null;
     total: number;
@@ -96,6 +101,7 @@ export interface StudentDashboard {
 interface AssignmentPayload {
   id: string;
   groupId: string;
+  runtimeEnvironmentIds?: string[];
   localizedTexts?: LocalizedText[];
   firstDeadline: number;
   secondDeadline: number;
@@ -191,6 +197,12 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
     const maxPointsById = new Map(
       assignments.map((assignment) => [assignment.id, assignment.maxPointsBeforeFirstDeadline]),
     );
+    const dataOnlyById = new Map(
+      assignments.map((assignment) => [
+        assignment.id,
+        isDataOnly(assignment.runtimeEnvironmentIds ?? []),
+      ]),
+    );
 
     for (const open of openAssignmentsOf(assignments, group, locale, now)) {
       const stats = statsByAssignment.get(open.id);
@@ -205,6 +217,8 @@ export async function getStudentDashboard(locale: string): Promise<StudentDashbo
           // student can see an assignment that no stats row covers (a group joined moments ago),
           // and a missing maximum would render every such row as "0 points available".
           total: stats?.points.total ?? maxPointsById.get(open.id) ?? 0,
+          dataOnly: dataOnlyById.get(open.id) ?? false,
+          graded: (stats?.points.gained ?? 0) > 0 || (stats?.points.bonus ?? 0) !== 0,
         },
       });
     }

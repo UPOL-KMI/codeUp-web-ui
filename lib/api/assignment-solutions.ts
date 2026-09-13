@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
+import { isDataOnly } from "@/lib/status/exercise-validation";
 import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiPost } from "./client";
@@ -103,6 +104,12 @@ export function solutionRow(
       lastSubmission: evaluationInputOf(solution.lastSubmission),
       maxPoints: solution.maxPoints,
       accepted: solution.accepted,
+      // A data-only submission was collected, not marked: see `EvaluationStatus.submitted`.
+      dataOnly: isDataOnly([solution.runtimeEnvironmentId ?? ""]),
+      // A person decided about it: overrode the points, gave bonus points, or accepted it.
+      graded:
+        (solution.overriddenPoints !== null && solution.overriddenPoints !== undefined) ||
+        solution.bonusPoints !== 0,
     },
   };
 }

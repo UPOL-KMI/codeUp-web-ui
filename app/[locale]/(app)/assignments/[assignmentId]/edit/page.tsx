@@ -11,6 +11,7 @@ import { AssignmentForm } from "@/components/assignments/assignment-form";
 import { AssignmentTextsForm } from "@/components/assignments/assignment-texts-form";
 import { DeleteAssignment } from "@/components/assignments/delete-assignment";
 import { PageShell } from "@/components/page-shell";
+import { PageTabs, type PageTab } from "@/components/page-tabs";
 
 export async function generateMetadata({
   params,
@@ -40,10 +41,12 @@ export async function generateMetadata({
  */
 export default async function EditAssignmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ assignmentId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
+  const [{ assignmentId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
   const [t, assignment] = await Promise.all([
     getTranslations("AssignmentEdit"),
     getAssignmentSettings(assignmentId, locale, routing.locales),
@@ -51,6 +54,20 @@ export default async function EditAssignmentPage({
   if (assignment.can.update !== true) forbidden();
 
   const breadcrumbs = await resolveBreadcrumbs(`/assignments/${assignmentId}/edit`, locale);
+
+  // **Four tabs over two forms**, which is why the panels are hidden rather than unrendered: the
+  // text has its own save, everything else shares one, and a teacher who fills in a deadline and
+  // then looks at the visibility must not come back to an empty field. Sections the operator did
+  // not name are folded into the tab they belong with -- what a student may submit sits with the
+  // deadlines and points that govern it, and what a student may see of the evaluation with the
+  // rest of the visibility.
+  const tabs: PageTab[] = [
+    { id: "texts", label: t("tabs.texts") },
+    { id: "visibility", label: t("tabs.visibility") },
+    { id: "deadlines", label: t("tabs.deadlines") },
+    { id: "hints", label: t("tabs.hints") },
+  ];
+  const current = tabs.some((tab) => tab.id === query.tab) ? query.tab! : "texts";
 
   return (
     <PageShell
@@ -65,10 +82,20 @@ export default async function EditAssignmentPage({
           {t("backToAssignment")}
         </Link>
       }
+      tabs={
+        <PageTabs
+          basePath={`/assignments/${assignmentId}/edit`}
+          tabs={tabs}
+          current={current}
+          label={t("tabs.label")}
+        />
+      }
     >
       <div className="flex max-w-3xl flex-col gap-10">
-        <AssignmentForm assignment={assignment} />
-        <AssignmentTextsForm assignment={assignment} />
+        <AssignmentTextsForm assignment={assignment} hidden={current !== "texts"} />
+        <AssignmentForm assignment={assignment} activeTab={current} />
+        {/* Deleting is not one of the four subjects; it is what to do with the whole assignment,
+            so it stays below them rather than hiding on one. */}
         {assignment.can.remove === true && (
           <DeleteAssignment assignmentId={assignment.id} groupId={assignment.groupId} />
         )}

@@ -49,4 +49,16 @@ describe("assignmentProgress", () => {
   it("treats a done status with unknown points as partial rather than correct", () => {
     expect(assignmentProgress({ status: "done", gained: null, total: 10 })).toBe("partial");
   });
+
+  it("waits for a person on a data-only assignment, and reports their verdict once it exists", () => {
+    // The pipeline's nought is not a wrong answer here: nothing was judged (DEC-141).
+    expect(assignmentProgress({ status: "failed", gained: 0, total: 10, dataOnly: true })).toBe(
+      "awaiting-review",
+    );
+    expect(
+      assignmentProgress({ status: "done", gained: 7, total: 10, dataOnly: true, graded: true }),
+    ).toBe("reviewed");
+    // And an ordinary assignment is untouched by any of it.
+    expect(assignmentProgress({ status: "failed", gained: 0, total: 10 })).toBe("incorrect");
+  });
 });

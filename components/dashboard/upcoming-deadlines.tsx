@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
+import { assignmentProgress } from "@/lib/status/assignment-progress";
 import type { UpcomingAssignment } from "@/lib/api/dashboard";
 
 import { Link } from "@/i18n/navigation";
@@ -109,7 +110,9 @@ export async function UpcomingDeadlines({
               {showProgress && assignment.stats && (
                 <>
                   <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
-                    {formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
+                    {assignmentProgress(assignment.stats) === "awaiting-review"
+                      ? formatPointsUnknown(assignment.stats.total)
+                      : formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
                   </td>
                   <td className="px-3 py-2">
                     <AssignmentProgressBadge

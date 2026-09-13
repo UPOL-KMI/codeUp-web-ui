@@ -16,6 +16,18 @@ export function formatPoints(actual: number, max?: number | null): string {
 }
 
 /**
+ * `?/10` -- the points of a solution nobody has marked yet.
+ *
+ * **A number would be a claim.** A data-only submission carries whatever the pipeline worked out,
+ * which for an exercise nobody grades automatically is not an answer to "how many points is this
+ * worth" -- and the operator watched a row say "10/10" next to "waiting to be marked". The
+ * question mark is the honest value for a number that does not exist yet.
+ */
+export function formatPointsUnknown(max?: number | null): string {
+  return max === null || max === undefined ? "?" : `?/${max}`;
+}
+
+/**
  * A ratio in [0, 1] as a whole-number percentage.
  *
  * Rounds **down**, deliberately. Rounding to nearest would let a solution that passed 99.6% of a

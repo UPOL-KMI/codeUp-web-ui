@@ -19,6 +19,16 @@ export interface AssignmentProgressInput {
   /** Assignment maximum before the first deadline; zero means it carries no points at all. */
   total: number;
   accepted?: boolean | null;
+  /** The assignment collects files rather than running code -- see `EvaluationStatus`. */
+  dataOnly?: boolean;
+  /**
+   * Somebody awarded points for it. **An approximation, like the two below**, and for the same
+   * reason: a stats row carries no overridden-points field, so "a person decided" is inferred from
+   * there being points at all (the default data-only judge scores nought, so the pipeline awards
+   * none) or a bonus. A teacher who deliberately awards zero therefore still reads as "waiting" on
+   * these summary screens; the solution's own screen, which has the real fields, gets it right.
+   */
+  graded?: boolean;
 }
 
 /**
@@ -40,10 +50,16 @@ export function assignmentProgress({
   gained,
   total,
   accepted = false,
+  dataOnly = false,
+  graded = false,
 }: AssignmentProgressInput): AssignmentProgress {
   if (!status) return "not-submitted";
   if (status === "work-in-progress") return "pending";
   if (status === "evaluation-failed") return "failed";
+
+  // Nothing about a data-only submission is a verdict until a person passes one, so these rows say
+  // so rather than reporting the pipeline's nought as a wrong answer.
+  if (dataOnly) return graded ? "reviewed" : "awaiting-review";
 
   // Same rule as `evaluationStatus()`: a zero-point assignment is not a failed one.
   if (total === 0 && !accepted) return "not-scored";

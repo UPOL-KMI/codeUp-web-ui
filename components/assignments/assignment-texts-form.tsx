@@ -11,7 +11,7 @@ import {
 import type { AssignmentSettings } from "@/lib/api/assignment-edit";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { MarkdownPreviewTabs } from "@/components/markdown/markdown-preview-tabs";
 import { Field } from "@/components/form/field";
 import { useToast } from "@/components/toast/toast-provider";
@@ -45,7 +45,14 @@ import { useToast } from "@/components/toast/toast-provider";
  * copy -- `%%key%%` file placeholders are resolved for display, and a form bound to the resolved
  * text would save the substituted URLs back over the author's own placeholders.
  */
-export function AssignmentTextsForm({ assignment }: { assignment: AssignmentSettings }) {
+export function AssignmentTextsForm({
+  assignment,
+  hidden,
+}: {
+  assignment: AssignmentSettings;
+  /** Hidden rather than unrendered on the other tabs, so an unsaved text survives a look around. */
+  hidden?: boolean;
+}) {
   const t = useTranslations("AssignmentEdit");
   const router = useRouter();
   const toast = useToast();
@@ -88,13 +95,25 @@ export function AssignmentTextsForm({ assignment }: { assignment: AssignmentSett
           void onSubmit(event);
         }}
         aria-labelledby="assignment-texts"
+        hidden={hidden}
         className="flex flex-col gap-4"
       >
         <h2 id="assignment-texts" className="text-base font-semibold tracking-tight">
           {t("texts.title")}
         </h2>
+        {/* Where the original lives, as a link rather than as an instruction to go and find it.
+            An assignment without an exercise behind it (core-api allows the exercise to be
+            deleted) simply gets the sentence without the link. */}
         <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
-          {t("texts.override")}
+          {t("texts.override")}{" "}
+          {assignment.exerciseId !== null && (
+            <Link
+              href={`/exercises/${assignment.exerciseId}`}
+              className="underline underline-offset-4 hover:no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              {t("texts.openExercise")}
+            </Link>
+          )}
         </p>
 
         {assignment.texts.map((text, index) => (

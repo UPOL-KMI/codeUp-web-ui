@@ -33,6 +33,8 @@ async function openGroupAssignment(page: Page): Promise<string> {
   await page.goto(`${page.url().split("?")[0]}?tab=assignments`);
   await page.getByRole("main").locator("tbody tr").first().getByRole("link").first().click();
   await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
+  // The discussion is a tab of its own now (T-033's shape), and the screen opens on the text.
+  await page.goto(`${page.url().split("?")[0]}?tab=discussion`);
   return page.url();
 }
 

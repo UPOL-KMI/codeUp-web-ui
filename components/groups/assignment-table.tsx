@@ -4,13 +4,14 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import type { GroupAssignment } from "@/lib/api/group-detail";
 import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
 import { assignmentProgress, ASSIGNMENT_PROGRESS_TONE } from "@/lib/status/assignment-progress";
 
 import { Link } from "@/i18n/navigation";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
+import { VisibilityBadge } from "@/components/status/visibility-badge";
 
 /**
  * The group's assignment list (S-006). A `"use client"` wrapper, as `DataTable` requires -- its
@@ -55,9 +56,14 @@ export function AssignmentTable({
             {assignment.name}
           </Link>
           {assignment.isBonus && <Badge tone="info">{t("bonus")}</Badge>}
-          {/* Only a teacher ever sees a hidden assignment at all -- core-api filters them out of a
-              student's response -- so the badge needs no permission check of its own. */}
-          {!assignment.isPublic && <Badge>{t("hidden")}</Badge>}
+          {/* Only a teacher ever sees an assignment that is not visible yet at all -- core-api
+              filters them out of a student's response -- so the badge needs no permission check of
+              its own. Published-but-not-yet-released says so rather than saying nothing. */}
+          <VisibilityBadge
+            isPublic={assignment.isPublic}
+            visibleFrom={assignment.visibleFrom}
+            hideWhenVisible
+          />
         </div>
       ),
     },
@@ -115,7 +121,9 @@ export function AssignmentTable({
             sortValue: (assignment: GroupAssignment) => assignment.stats?.gained ?? -1,
             cell: (assignment: GroupAssignment) =>
               assignment.stats
-                ? formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)
+                ? assignmentProgress(assignment.stats) === "awaiting-review"
+                  ? formatPointsUnknown(assignment.stats.total)
+                  : formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)
                 : "—",
           },
           {

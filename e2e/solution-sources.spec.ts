@@ -47,7 +47,7 @@ async function openSourcesContaining(page: Page, marker: string): Promise<void> 
     ]);
 
   for (const assignment of assignments) {
-    await page.goto(assignment);
+    await page.goto(`${assignment}?tab=solutions`);
     // `evaluateAll` does not auto-wait, and `goto` resolves while the route's `loading.tsx`
     // skeleton is still what is on screen -- so the list has to be waited for explicitly or this
     // reads zero attempts from a page that has plenty. (Found live: it passed against `next dev`

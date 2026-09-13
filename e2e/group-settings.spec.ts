@@ -51,6 +51,7 @@ test("adds a person to the group and removes them again", async ({ page }) => {
   const alreadyThere = main.getByRole("listitem").filter({ hasText: "Nora Newcomer" });
   if ((await alreadyThere.count()) > 0) {
     await alreadyThere.first().getByRole("button", { name: "Remove" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove" }).click();
     await expect(page.getByText("The student was removed.", { exact: true })).toBeVisible();
   }
 
@@ -60,8 +61,13 @@ test("adds a person to the group and removes them again", async ({ page }) => {
   await hit.first().getByRole("button", { name: "Add as student" }).click();
   await expect(page.getByText("The student was added.", { exact: true })).toBeVisible();
 
+  // Removing somebody confirms first -- a one-click removal in a list is a mis-click waiting to
+  // land on the wrong row.
   const added = main.getByRole("listitem").filter({ hasText: "Nora Newcomer" });
   await added.first().getByRole("button", { name: "Remove" }).click();
+  const dialog = page.getByRole("alertdialog");
+  await expect(dialog).toContainText("Nora Newcomer");
+  await dialog.getByRole("button", { name: "Remove" }).click();
   await expect(page.getByText("The student was removed.", { exact: true })).toBeVisible();
 });
 

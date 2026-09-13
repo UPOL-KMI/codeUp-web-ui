@@ -143,13 +143,16 @@ export default async function EditExerciseConfigPage({
     data.availableEnvironments.map((environment) => [environment.id, environment.longName]),
   );
 
-  // The advanced tab holds a configuration of this exercise's own: the editor for one, or the
-  // switch into one. A reader who may not change this exercise is offered neither, and an empty tab
-  // is worse than no tab, so it is not offered then either.
-  const advancedTab = isAdvanced || !readOnly;
+  // **A data-only exercise is one tab.** Everything the other two hold is about tests it does not
+  // have: the tests themselves, the scoring that weighs them, what each one feeds the solution,
+  // and the escape to a configuration built from hand-picked pipelines -- which for this exercise
+  // would mean rebuilding by hand the very pipeline that makes it work. Its one test and its judge
+  // are written for it when the language is chosen (DEC-141), so there is nothing left to ask.
+  // The operator's call, and he asked the right question about the advanced tab too.
+  const advancedTab = !dataOnly && (isAdvanced || !readOnly);
   const tabs: PageTab[] = [
     { id: "languages", label: t("environments.title") },
-    { id: "tests", label: t("tests.title") },
+    ...(dataOnly ? [] : [{ id: "tests", label: t("tests.title") }]),
     ...(advancedTab ? [{ id: "advanced", label: t("tabs.advanced") }] : []),
   ];
   const current = tabs.some((tab) => tab.id === query.tab) ? query.tab! : "languages";
@@ -318,7 +321,7 @@ export default async function EditExerciseConfigPage({
             what the tests tab is for; the advanced editor *is* the advanced tab, and leaving it
             under Tests would have meant a teacher who switched to it landing on a tab that no
             longer had anything of theirs on it. */}
-        {(isAdvanced ? current === "advanced" : current === "tests") && (
+        {!dataOnly && (isAdvanced ? current === "advanced" : current === "tests") && (
           <section aria-labelledby="config-tests-config" className="flex flex-col gap-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>

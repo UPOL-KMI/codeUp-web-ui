@@ -50,9 +50,12 @@ function sortedNames(names: string[]): string[] {
 export function SubmitForm({
   assignmentId,
   maxBytes,
+  environmentNames,
 }: {
   assignmentId: string;
   maxBytes?: number;
+  /** id → the name a person recognises. An id core-api did not name falls back to itself. */
+  environmentNames?: Record<string, string>;
 }) {
   const t = useTranslations("Submit");
   const router = useRouter();
@@ -184,7 +187,12 @@ export function SubmitForm({
           {!limits.sizeOk && <FormError message={t("errors.tooLarge")} />}
         </div>
 
-        <div className="flex flex-col gap-1">
+        {/* **Hidden when there is nothing to choose.** An assignment in one language -- which every
+            data-only one is, since that environment cannot share an exercise with another -- left
+            the student staring at a select with a single option they had to understand before
+            they could submit. The field stays registered and submits the value the effect above
+            preselected; it simply is not on screen. */}
+        <div className="flex flex-col gap-1" hidden={environments.length === 1}>
           <label htmlFor={selectId} className="text-sm font-medium">
             {t("environment")}
           </label>
@@ -204,7 +212,7 @@ export function SubmitForm({
             </option>
             {environments.map((environment) => (
               <option key={environment} value={environment}>
-                {environment}
+                {environmentNames?.[environment] ?? environment}
               </option>
             ))}
           </select>

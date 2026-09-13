@@ -48,7 +48,8 @@ test("changes a setting and puts it back", async ({ page }) => {
   await openSeededAssignment(page);
 
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
 
   const main = page.getByRole("main");
   const attempts = main.getByLabel("Attempts allowed", { exact: true });
@@ -64,7 +65,8 @@ test("changes a setting and puts it back", async ({ page }) => {
     ).toBeVisible();
 
     await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
-    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+    await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
     await expect(main.getByLabel("Attempts allowed", { exact: true })).toHaveValue(value);
   }
 });
@@ -86,6 +88,7 @@ test("stores the deadline the picker shows, not the one the server's clock reads
   await openSeededAssignment(page);
 
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
   const main = page.getByRole("main");
   const deadline = main.getByLabel("First deadline", { exact: true });
   const original = await deadline.inputValue();
@@ -100,6 +103,7 @@ test("stores the deadline the picker shows, not the one the server's clock reads
     await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
 
     await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+    await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
     await expect(main.getByLabel("First deadline", { exact: true })).toHaveValue(value);
   }
 });
@@ -120,7 +124,8 @@ test("ships no time in its own HTML, because the server is in the wrong zone to 
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await openSeededAssignment(page);
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
 
   const html = await (await page.request.get(page.url())).text();
   const seeded = [...html.matchAll(/type="datetime-local"[^>]*value="([^"]+)"/g)].map(
@@ -142,7 +147,8 @@ test("asks for a second deadline only when there is one, and refuses one before 
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await openSeededAssignment(page);
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
 
   const main = page.getByRole("main");
   const allowSecond = main.getByLabel("Allow a second deadline", { exact: true });
@@ -162,7 +168,7 @@ test("asks for a second deadline only when there is one, and refuses one before 
   await main.getByLabel("Second deadline", { exact: true }).fill("2020-01-01T09:00");
   await main.getByRole("button", { name: "Save the settings" }).click();
   await expect(main.getByRole("alert")).toBeVisible();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
   expect(await main.getByLabel("First deadline", { exact: true }).inputValue()).toBe(first);
 });
 
@@ -191,7 +197,8 @@ test("overrides the assignment's own text, and puts it back", async ({ page }) =
   const assignmentUrl = page.url();
 
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
 
   const main = page.getByRole("main");
   // A fieldset per language, which is what tells the two "Name" fields apart.
@@ -205,11 +212,12 @@ test("overrides the assignment's own text, and puts it back", async ({ page }) =
     await expect(page.getByText("The text was saved.", { exact: true }).first()).toBeVisible();
     // It stays on the form rather than navigating: the settings form above it is holding the
     // version this save has just incremented, and the refresh is what hands it the new one.
-    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+    await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
 
     await page.goto(assignmentUrl);
     await expect(page.getByRole("main").getByText(value, { exact: false }).first()).toBeVisible();
     await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+    await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
     await expect(english.getByLabel("Text", { exact: true })).toHaveValue(value);
   }
 });
@@ -219,6 +227,7 @@ test("saving the text does not make the settings form's version stale", async ({
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await openSeededAssignment(page);
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
 
   const main = page.getByRole("main");
   const english = main.getByRole("group", { name: "English", exact: true });
@@ -235,7 +244,7 @@ test("saving the text does not make the settings form's version stale", async ({
   const refreshed = page.waitForResponse((response) => response.request().headers().rsc === "1");
   await main.getByRole("button", { name: "Save the text" }).click();
   await expect(page.getByText("The text was saved.", { exact: true }).first()).toBeVisible();
-  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit$/);
+  await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+\/edit\?tab=deadlines$/);
   await refreshed;
 
   // So what is asserted is the **state**, not the instant: a settings save that is not refused.
@@ -260,6 +269,7 @@ test("saving the text does not make the settings form's version stale", async ({
 
   // Put the text back, and check the settings survived untouched.
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
   await expect(main.getByLabel("Attempts allowed", { exact: true })).toHaveValue(attemptsBefore);
   await english.getByLabel("Text", { exact: true }).fill(original);
   await main.getByRole("button", { name: "Save the text" }).click();
@@ -273,6 +283,7 @@ test("refuses a language that is named but says nothing, and one with no name at
   await page.context().addCookies([{ ...cookie, url: baseURL }]);
   await openSeededAssignment(page);
   await page.getByRole("main").getByRole("link", { name: "Edit assignment" }).click();
+  await page.goto(`${page.url().split("?")[0]}?tab=deadlines`);
 
   const main = page.getByRole("main");
   const english = main.getByRole("group", { name: "English", exact: true });

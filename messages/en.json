@@ -406,7 +406,6 @@
     "assignments": {
       "filterPlaceholder": "Filter assignments",
       "bonus": "Bonus",
-      "hidden": "Hidden",
       "filters": {
         "all": "All",
         "open": "Open",
@@ -747,7 +746,18 @@
           "removed": "The student was removed.",
           "removeStudent": "Remove {name}"
         },
-        "resultCount": "{count, plural, one {# user found} other {# users found}}"
+        "resultCount": "{count, plural, one {# user found} other {# users found}}",
+        "confirmRemove": {
+          "student": {
+            "title": "Remove this student from the group?",
+            "description": "{name} loses access to the group and disappears from its results. Their submissions are kept — adding them back brings everything with it."
+          },
+          "member": {
+            "title": "Remove them from the group?",
+            "description": "{name} loses access to this group and the rights that came with it."
+          },
+          "confirm": "Remove"
+        }
       },
       "errors": {
         "invalid": "Some of the settings are not valid.",
@@ -808,6 +818,7 @@
     "summary": "Summary",
     "points": "Points",
     "result": "Result",
+    "state": "State",
     "submitted": "Submitted",
     "environment": "Language",
     "group": "Group",
@@ -867,7 +878,9 @@
         "pending": "The evaluation has not finished yet.",
         "failed": "The evaluation could not be completed.",
         "initFailed": "Compilation failed, so no test was run.",
-        "done": "The result is in: {passed, plural, one {# test} other {# tests}} out of {total} passed."
+        "done": "The result is in: {passed, plural, one {# test} other {# tests}} out of {total} passed.",
+        "awaitingReview": "Submitted, waiting to be marked by a teacher.",
+        "reviewed": "A teacher has marked this solution."
       },
       "exit": {
         "unknown": "Unknown",
@@ -982,6 +995,14 @@
             "202": "More main methods"
           }
         }
+      },
+      "awaitingReview": {
+        "title": "Waiting to be marked by a teacher",
+        "explain": "This exercise is not graded automatically — nothing is run and nothing is compared. A teacher awards the points by hand; anything they have to say about the solution is in the discussion below."
+      },
+      "reviewed": {
+        "title": "Marked by a teacher: {points}",
+        "explain": "The points were awarded by a teacher. Anything they had to say may be in the discussion below."
       }
     },
     "plagiarisms": "Similarities",
@@ -2705,6 +2726,14 @@
         "label": "Evaluated",
         "description": "This assignment awards no points."
       },
+      "awaiting-review": {
+        "label": "Awaiting marking",
+        "description": "Submitted. This exercise is not graded automatically — a teacher awards the points."
+      },
+      "reviewed": {
+        "label": "Marked",
+        "description": "A teacher has marked this solution."
+      },
       "not-submitted": {
         "label": "Not submitted",
         "description": "You have no evaluated solution for this assignment yet."
@@ -2800,8 +2829,7 @@
     "editAssignment": "Edit assignment",
     "badges": {
       "bonus": "Bonus",
-      "exam": "Exam",
-      "hidden": "Hidden"
+      "exam": "Exam"
     },
     "submitting": {
       "heading": "Submitting",
@@ -2848,8 +2876,11 @@
     },
     "submitAction": "Submit a solution",
     "visibility": "Visible to students",
-    "visible": "Visible",
-    "notVisible": "Hidden",
+    "visibilityState": {
+      "hidden": "Hidden",
+      "scheduled": "Scheduled",
+      "visible": "Visible"
+    },
     "visibleFrom": "visible from",
     "assignedAt": "Assigned at",
     "sync": {
@@ -2916,6 +2947,12 @@
         "title": "Nothing submitted yet",
         "description": "{name} has not submitted a solution to this assignment."
       }
+    },
+    "tabs": {
+      "label": "Assignment sections",
+      "text": "Assignment",
+      "solutions": "Submissions",
+      "discussion": "Discussion"
     }
   },
   "AssignmentEdit": {
@@ -2938,17 +2975,19 @@
       "isBonusHint": "Points from a bonus assignment are not counted towards the group's maximum.",
       "isExam": "For an exam",
       "isExamHint": "Meant to be solved in exam mode, in a group locked for the exam.",
-      "sendNotification": "Email the group that it is available",
-      "sendNotificationHint": "Offered only because this save is what makes the assignment public."
+      "sendNotification": "E-mail the group that the assignment is available",
+      "sendNotificationHint": "The e-mail goes out on save, because the assignment is visible to students straight away. An exam assignment is never announced.",
+      "sendNotificationLaterHint": "The e-mail goes out when the assignment becomes visible to students — at the moment set above, not now. An exam assignment is never announced."
     },
     "deadlines": {
       "title": "Deadlines and points",
       "first": "First deadline",
-      "maxPointsFirst": "Points available before it",
+      "maxPointsFirst": "Maximum points for submitting by the first deadline",
+      "maxPointsFirstHint": "A student is awarded the share of this that their solution scored — 80 % of 10 points is 8. After the last deadline the maximum is zero.",
       "allowSecond": "Allow a second deadline",
       "allowSecondHint": "Submissions after the first deadline are still accepted, usually for fewer points.",
       "second": "Second deadline",
-      "maxPointsSecond": "Points available before the second one",
+      "maxPointsSecond": "Maximum points for submitting by the second deadline",
       "interpolate": "Slide the maximum between the two deadlines",
       "interpolateHint": "Instead of dropping at the first deadline, the maximum falls gradually until the second."
     },
@@ -2978,7 +3017,8 @@
     },
     "texts": {
       "title": "Text of the assignment",
-      "override": "This text is the assignment's own copy of the exercise's. Changing it here changes what this group reads and nothing else — but it is an override: whenever the assignment is re-synchronised with the exercise, the exercise's text silently replaces it, and nothing on the assignment warns you first. To change the text everywhere it is assigned, edit the exercise instead.",
+      "override": "This assignment carries its own copy of the exercise's text. A change here applies to this assignment alone. To change the text everywhere the exercise is assigned, edit the exercise in the catalogue instead.",
+      "openExercise": "Open the exercise in the catalogue",
       "name": "Name",
       "nameHint": "Leave empty to drop this language from the assignment.",
       "text": "Text",
@@ -3011,6 +3051,13 @@
       "syncFailed": "The assignment could not be re-synchronised.",
       "deleteFailed": "The assignment could not be deleted.",
       "textsFailed": "The text could not be saved."
+    },
+    "tabs": {
+      "label": "Settings sections",
+      "texts": "Assignment text",
+      "visibility": "Visibility",
+      "deadlines": "Deadlines and points",
+      "hints": "Hints for students"
     }
   },
   "AssignExercise": {

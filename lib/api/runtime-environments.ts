@@ -14,6 +14,11 @@ import { apiRead } from "./read";
 export interface RuntimeEnvironment {
   id: string;
   name: string;
+  /**
+   * The longer name core-api also carries ("Data-Only" where `name` is "Data"). Optional because
+   * nothing guarantees it is set; callers fall back to `name`, and both beat showing the id.
+   */
+  longName?: string;
 }
 
 export const getRuntimeEnvironments = cache(async function getRuntimeEnvironments(): Promise<

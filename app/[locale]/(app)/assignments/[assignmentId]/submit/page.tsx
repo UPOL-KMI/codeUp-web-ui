@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail } from "@/lib/api/assignment";
+import { getRuntimeEnvironments } from "@/lib/api/runtime-environments";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
 import { Link } from "@/i18n/navigation";
@@ -37,9 +38,12 @@ export default async function SubmitPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, assignment] = await Promise.all([
+  const [t, assignment, runtimes] = await Promise.all([
     getTranslations("Submit"),
     getAssignmentDetail(assignmentId, locale),
+    // So the picker can say "Python 3" rather than `python3` -- core-api's own names, and the same
+    // ones the teacher chose from on the exercise.
+    getRuntimeEnvironments(),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/assignments/${assignmentId}/submit`, locale);
 
@@ -70,6 +74,9 @@ export default async function SubmitPage({
           <SubmitForm
             assignmentId={assignmentId}
             maxBytes={assignment.solutionSizeLimit ?? undefined}
+            environmentNames={Object.fromEntries(
+              runtimes.map((runtime) => [runtime.id, runtime.longName || runtime.name]),
+            )}
           />
         </div>
       ) : (

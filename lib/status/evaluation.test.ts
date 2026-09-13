@@ -46,3 +46,53 @@ describe("evaluationStatus", () => {
     );
   });
 });
+
+describe("a data-only submission", () => {
+  const collected = {
+    // The judge such an exercise gets by default scores nought on purpose, so that the machine
+    // awards no points for work it never read (DEC-141).
+    lastSubmission: { evaluation: { initFailed: false, score: 0 } },
+    maxPoints: 10,
+    dataOnly: true,
+  };
+
+  it("waits for a person rather than reporting a verdict", () => {
+    expect(evaluationStatus(collected)).toBe("awaiting-review");
+    // And the score is not what decides it: a judge a teacher wrote may return anything.
+    expect(evaluationStatus({ ...collected, lastSubmission: { evaluation: { score: 1 } } })).toBe(
+      "awaiting-review",
+    );
+  });
+
+  it("becomes a result once somebody has marked it", () => {
+    expect(evaluationStatus({ ...collected, graded: true })).toBe("reviewed");
+  });
+
+  it("says nothing about points, even on an assignment worth none", () => {
+    expect(evaluationStatus({ ...collected, maxPoints: 0 })).toBe("awaiting-review");
+  });
+
+  it("leaves every failure alone", () => {
+    expect(evaluationStatus({ ...collected, lastSubmission: { failure: true } })).toBe("failed");
+    expect(
+      evaluationStatus({
+        ...collected,
+        lastSubmission: { evaluation: { initFailed: true, score: 0 } },
+      }),
+    ).toBe("compilation-failed");
+    expect(evaluationStatus({ ...collected, lastSubmission: { evaluation: null } })).toBe(
+      "pending",
+    );
+  });
+
+  it("does not touch an ordinary solution", () => {
+    expect(
+      evaluationStatus({
+        ...collected,
+        dataOnly: false,
+        lastSubmission: { evaluation: { score: 1 } },
+      }),
+    ).toBe("correct");
+    expect(evaluationStatus({ ...collected, dataOnly: false })).toBe("incorrect");
+  });
+});

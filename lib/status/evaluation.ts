@@ -26,7 +26,19 @@ export type EvaluationStatus =
   /** No test passed. */
   | "incorrect"
   /** Evaluated, but the assignment awards no points and the solution was not accepted. */
-  | "not-scored";
+  | "not-scored"
+  /**
+   * A data-only submission that ran cleanly and that nobody has marked yet.
+   *
+   * **Not a grade, which is the point.** A data-only exercise runs no student code: the pipeline
+   * hands the file to a judge, and the judge such an exercise gets by default scores it zero --
+   * deliberately, so that the machine awards no points for work it never read (DEC-141). Until a
+   * teacher says otherwise there is no result to show, and "0 %" or "Špatně" would be a verdict
+   * nobody has passed.
+   */
+  | "awaiting-review"
+  /** A data-only submission a teacher has marked: the points are theirs, and worth showing. */
+  | "reviewed";
 
 export interface EvaluationInput {
   lastSubmission: {
@@ -36,6 +48,19 @@ export interface EvaluationInput {
   /** Assignment maximum; zero means the assignment carries no points at all. */
   maxPoints: number;
   accepted?: boolean;
+  /** The solution was submitted to a data-only exercise -- see `awaiting-review`. */
+  dataOnly?: boolean;
+  /**
+   * A person has decided what this solution is worth: they set its points in place of the
+   * evaluation's, or gave it bonus points. On a data-only exercise that is the only thing that
+   * turns "collected" into a result, because nothing else about such a submission is a judgement.
+   *
+   * **Accepting a solution is deliberately not one of those things.** "Uznat tento pokus" says
+   * *which* attempt counts, not what it is worth, and a teacher who cancels the points they gave
+   * must land back on "waiting to be marked" rather than on a verdict they just withdrew --
+   * reported by the operator, who cancelled an award and watched the screen keep the old answer.
+   */
+  graded?: boolean;
 }
 
 /**
@@ -68,10 +93,18 @@ export function evaluationStatus({
   lastSubmission,
   maxPoints,
   accepted = false,
+  dataOnly = false,
+  graded = false,
 }: EvaluationInput): EvaluationStatus {
   if (!lastSubmission || lastSubmission.failure) return "failed";
   if (!lastSubmission.evaluation) return "pending";
   if (lastSubmission.evaluation.initFailed) return "compilation-failed";
+
+  // Before the point-counting below, because it is not about points: a collected file waits for a
+  // teacher whatever the assignment is worth, and once one has marked it their verdict is the
+  // result. The score is not consulted -- on a data-only exercise it is the default judge's nought,
+  // and a judge a teacher wrote themselves is theirs to interpret.
+  if (dataOnly) return graded ? "reviewed" : "awaiting-review";
 
   // Legacy greys out a scored solution when the assignment is worth nothing and the solution
   // wasn't explicitly accepted -- otherwise a zero-point assignment reads as a failure.
@@ -86,7 +119,7 @@ export function evaluationStatus({
 /** Which badge tone each state maps to. Single source, so no surface invents its own colouring. */
 export const EVALUATION_TONE: Record<
   EvaluationStatus,
-  "success" | "warning" | "danger" | "neutral"
+  "success" | "warning" | "danger" | "neutral" | "info"
 > = {
   failed: "danger",
   pending: "neutral",
@@ -95,4 +128,6 @@ export const EVALUATION_TONE: Record<
   partial: "warning",
   incorrect: "danger",
   "not-scored": "neutral",
+  "awaiting-review": "warning",
+  reviewed: "success",
 };

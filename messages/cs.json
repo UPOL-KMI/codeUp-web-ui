@@ -406,7 +406,6 @@
     "assignments": {
       "filterPlaceholder": "Filtrovat zadání",
       "bonus": "Bonus",
-      "hidden": "Skryté",
       "filters": {
         "all": "Vše",
         "open": "Otevřená",
@@ -747,7 +746,18 @@
           "removed": "Student byl odebrán.",
           "removeStudent": "Odebrat studenta {name}"
         },
-        "resultCount": "{count, plural, one {Nalezen # uživatel} few {Nalezeni # uživatelé} other {Nalezeno # uživatelů}}"
+        "resultCount": "{count, plural, one {Nalezen # uživatel} few {Nalezeni # uživatelé} other {Nalezeno # uživatelů}}",
+        "confirmRemove": {
+          "student": {
+            "title": "Odebrat studenta ze skupiny?",
+            "description": "{name} ztratí přístup ke skupině a zmizí z jejích výsledků. Odevzdaná řešení zůstanou uložená — přidáním zpět se vše vrátí."
+          },
+          "member": {
+            "title": "Odebrat ze skupiny?",
+            "description": "{name} přijde o přístup k této skupině i o práva, která z něj plynou."
+          },
+          "confirm": "Odebrat"
+        }
       },
       "errors": {
         "invalid": "Některá nastavení nejsou platná.",
@@ -808,6 +818,7 @@
     "summary": "Přehled",
     "points": "Body",
     "result": "Výsledek",
+    "state": "Stav",
     "submitted": "Odevzdáno",
     "environment": "Jazyk",
     "group": "Skupina",
@@ -867,7 +878,9 @@
         "pending": "Vyhodnocení zatím neskončilo.",
         "failed": "Vyhodnocení se nepodařilo dokončit.",
         "initFailed": "Překlad selhal, takže neproběhl žádný test.",
-        "done": "Výsledek je tu: {passed, plural, one {prošel # test} few {prošly # testy} other {prošlo # testů}} z {total}."
+        "done": "Výsledek je tu: {passed, plural, one {prošel # test} few {prošly # testy} other {prošlo # testů}} z {total}.",
+        "awaitingReview": "Odevzdáno, čeká na hodnocení vyučujícím.",
+        "reviewed": "Vyučující řešení ohodnotil."
       },
       "exit": {
         "unknown": "Neznámý",
@@ -982,6 +995,14 @@
             "202": "More main methods"
           }
         }
+      },
+      "awaitingReview": {
+        "title": "Čeká na hodnocení vyučujícím",
+        "explain": "Tato úloha se nevyhodnocuje automaticky — nic se nespouští ani neporovnává. Body udělí vyučující ručně; jeho poznámky k řešení najdete v diskuzi níže."
+      },
+      "reviewed": {
+        "title": "Vyhodnoceno vyučujícím: {points}",
+        "explain": "Body udělil vyučující. Jeho poznámky k řešení mohou být v diskuzi níže."
       }
     },
     "plagiarisms": "Podobnosti",
@@ -2705,6 +2726,14 @@
         "label": "Vyhodnoceno",
         "description": "Za toto zadání se neudělují body."
       },
+      "awaiting-review": {
+        "label": "Čeká na hodnocení",
+        "description": "Odevzdáno. Tato úloha se nevyhodnocuje automaticky — body udělí vyučující."
+      },
+      "reviewed": {
+        "label": "Vyhodnoceno",
+        "description": "Vyučující řešení ohodnotil."
+      },
       "not-submitted": {
         "label": "Neodevzdáno",
         "description": "K tomuto zadání zatím nemáte žádné vyhodnocené řešení."
@@ -2800,8 +2829,7 @@
     "editAssignment": "Upravit zadání",
     "badges": {
       "bonus": "Bonus",
-      "exam": "Zkouška",
-      "hidden": "Skryté"
+      "exam": "Zkouška"
     },
     "submitting": {
       "heading": "Odevzdávání",
@@ -2848,8 +2876,11 @@
     },
     "submitAction": "Odevzdat řešení",
     "visibility": "Viditelné studentům",
-    "visible": "Viditelné",
-    "notVisible": "Skryté",
+    "visibilityState": {
+      "hidden": "Skryté",
+      "scheduled": "Plánováno",
+      "visible": "Viditelné"
+    },
     "visibleFrom": "viditelné od",
     "assignedAt": "Zadáno",
     "sync": {
@@ -2916,6 +2947,12 @@
         "title": "Zatím nic neodevzdáno",
         "description": "{name} zatím k tomuto zadání neodevzdal(a) žádné řešení."
       }
+    },
+    "tabs": {
+      "label": "Části zadání",
+      "text": "Zadání",
+      "solutions": "Odevzdávání řešení",
+      "discussion": "Diskuze"
     }
   },
   "AssignmentEdit": {
@@ -2939,16 +2976,18 @@
       "isExam": "Ke zkoušce",
       "isExamHint": "Určeno k řešení ve zkouškovém režimu, ve skupině uzamčené pro zkoušku.",
       "sendNotification": "Poslat skupině e-mail, že je zadání k dispozici",
-      "sendNotificationHint": "Nabízí se jen proto, že tímto uložením se zadání zveřejňuje."
+      "sendNotificationHint": "E-mail odejde hned při uložení, protože zadání je pro studenty viditelné okamžitě. Zadání ke zkoušce se neohlašuje nikdy.",
+      "sendNotificationLaterHint": "E-mail odejde až v čase, kdy se zadání stane pro studenty viditelným — tedy v okamžiku nastaveném výše, ne teď. Zadání ke zkoušce se neohlašuje nikdy."
     },
     "deadlines": {
       "title": "Termíny a body",
       "first": "První termín",
-      "maxPointsFirst": "Body k dispozici před ním",
+      "maxPointsFirst": "Maximum bodů za odevzdání do prvního termínu",
+      "maxPointsFirstHint": "Student dostane z tohoto maxima tolik, kolik odpovídá úspěšnosti jeho řešení — 80 % z 10 bodů je 8. Po posledním termínu je maximum nula.",
       "allowSecond": "Povolit druhý termín",
       "allowSecondHint": "Odevzdání po prvním termínu se dál přijímají, obvykle za méně bodů.",
       "second": "Druhý termín",
-      "maxPointsSecond": "Body k dispozici před druhým termínem",
+      "maxPointsSecond": "Maximum bodů za odevzdání do druhého termínu",
       "interpolate": "Snižovat maximum plynule mezi termíny",
       "interpolateHint": "Místo skoku na prvním termínu klesá maximum postupně až k druhému."
     },
@@ -2978,7 +3017,8 @@
     },
     "texts": {
       "title": "Zadání úlohy",
-      "override": "Tohle zadání je vlastní kopie zadání z úlohy. Změna se projeví jen v této skupině — je to ale výjimka: při každé synchronizaci s úlohou zadání z úlohy tuhle změnu tiše přepíše a nic vás předem neupozorní. Chcete-li změnit zadání všude, kde je úloha zadaná, upravte místo toho úlohu.",
+      "override": "Tohle zadání je vlastní kopie zadání z katalogu úloh. Změna se projeví jen v tomto zadání. Pokud si přejete upravit zadání ve všech použitých úlohách, upravte původní úlohu v katalogu úloh.",
+      "openExercise": "Otevřít úlohu v katalogu",
       "name": "Název",
       "nameHint": "Prázdné pole tenhle jazyk ze zadání odstraní.",
       "text": "Zadání",
@@ -3011,6 +3051,13 @@
       "syncFailed": "Zadání se nepodařilo sesynchronizovat.",
       "deleteFailed": "Zadání se nepodařilo smazat.",
       "textsFailed": "Zadání se nepodařilo uložit."
+    },
+    "tabs": {
+      "label": "Části nastavení",
+      "texts": "Zadání úlohy",
+      "visibility": "Viditelnost",
+      "deadlines": "Termíny a body",
+      "hints": "Nápověda pro studenty"
     }
   },
   "AssignExercise": {

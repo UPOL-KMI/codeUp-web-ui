@@ -5,6 +5,7 @@ import { cache } from "react";
 import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { replaceLinkKeys } from "@/lib/i18n-text/file-links";
 import { requireSession } from "@/lib/auth/require-session";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
@@ -130,6 +131,10 @@ interface SolutionPayload {
   reviewRequest: boolean;
   review: { startedAt: number; closedAt: number | null } | null;
   plagiarism?: string | null;
+  /** Which language it was submitted in -- the data-only one is not a language but a mode. */
+  runtimeEnvironmentId?: string;
+  /** Set by a teacher in place of what the pipeline worked out; null when nobody has. */
+  overriddenPoints?: number | null;
   lastSubmission: EvaluationInput["lastSubmission"];
 }
 
@@ -183,6 +188,12 @@ function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
       lastSubmission: evaluationInputOf(solution.lastSubmission),
       maxPoints: solution.maxPoints,
       accepted: solution.accepted,
+      // A data-only submission was collected, not marked: see `EvaluationStatus.submitted`.
+      dataOnly: isDataOnly([solution.runtimeEnvironmentId ?? ""]),
+      // A person decided about it: overrode the points, gave bonus points, or accepted it.
+      graded:
+        (solution.overriddenPoints !== null && solution.overriddenPoints !== undefined) ||
+        solution.bonusPoints !== 0,
     },
   };
 }

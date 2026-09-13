@@ -4,6 +4,7 @@ import { cache } from "react";
 
 import { localizedDescription, localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { parseExamLockType, type ExamLockType } from "@/lib/status/exam";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 
 import { ApiError, apiGet, apiPost } from "./client";
 import { apiRead, pageRead } from "./read";
@@ -274,6 +275,8 @@ export interface GroupAssignment {
   maxPointsSecond: number;
   isBonus: boolean;
   isPublic: boolean;
+  /** Unix seconds, or null for "as soon as it is published" -- the other half of visibility. */
+  visibleFrom: number | null;
   /** The reader's own result, when they study in this group. */
   stats: {
     status: string | null;
@@ -282,11 +285,16 @@ export interface GroupAssignment {
     total: number;
     accepted: boolean | null;
     bestSolutionId: string | null;
+    /** The assignment collects files rather than running code (DEC-141). */
+    dataOnly: boolean;
+    /** Somebody awarded points -- approximated from the row, see `AssignmentProgressInput`. */
+    graded: boolean;
   } | null;
 }
 
 interface AssignmentPayload {
   id: string;
+  runtimeEnvironmentIds?: string[];
   localizedTexts?: LocalizedText[];
   firstDeadline: number;
   secondDeadline: number;
@@ -295,6 +303,7 @@ interface AssignmentPayload {
   maxPointsBeforeSecondDeadline: number;
   isBonus: boolean;
   isPublic: boolean;
+  visibleFrom?: number | null;
 }
 
 export async function getGroupAssignments(
@@ -325,6 +334,7 @@ export async function getGroupAssignments(
         maxPointsSecond: assignment.maxPointsBeforeSecondDeadline,
         isBonus: assignment.isBonus,
         isPublic: assignment.isPublic,
+        visibleFrom: assignment.visibleFrom ?? null,
         stats: myStats
           ? {
               status: stats?.status ?? null,
@@ -333,6 +343,8 @@ export async function getGroupAssignments(
               total: stats?.points.total ?? assignment.maxPointsBeforeFirstDeadline,
               accepted: stats?.accepted ?? null,
               bestSolutionId: stats?.bestSolutionId ?? null,
+              dataOnly: isDataOnly(assignment.runtimeEnvironmentIds ?? []),
+              graded: (stats?.points.gained ?? 0) > 0 || (stats?.points.bonus ?? 0) !== 0,
             }
           : null,
       };

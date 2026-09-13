@@ -37,7 +37,14 @@ export const assignmentSettingsSchema = z
     canViewJudgeStderr: z.boolean(),
     hints: z.array(z.object({ locale: z.string().check(z.minLength(2)), hint: z.string() })),
     /** Only meaningful while the assignment is becoming public for the first time. */
-    sendNotification: z.boolean(),
+    /**
+     * Whether this save may notify the group -- or null for "do not decide", which omits the field
+     * so core-api keeps its own default. **That distinction is load-bearing**: core-api unschedules
+     * any pending notification on every update and reschedules it only when this is true, so
+     * sending `false` from a save that has nothing to do with visibility would quietly cancel a
+     * notification a teacher had already scheduled.
+     */
+    sendNotification: z.nullable(z.boolean()),
   })
   .check(
     z.superRefine((values, ctx) => {

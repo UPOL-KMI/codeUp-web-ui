@@ -2,8 +2,16 @@
 
 import { getTranslations } from "next-intl/server";
 
-import { ApiError, apiGet, apiPost } from "@/lib/api/client";
-import { DATA_ONLY_TEST_NAME, isDataOnly } from "@/lib/status/exercise-validation";
+import { ApiError, apiDelete, apiGet, apiPost } from "@/lib/api/client";
+import {
+  DATA_ONLY_ENVIRONMENT,
+  DATA_ONLY_JUDGE_NAME,
+  DATA_ONLY_JUDGE_SOURCE,
+  DATA_ONLY_TEST_NAME,
+  isDataOnly,
+  isOutdatedDataOnlyJudge,
+} from "@/lib/status/exercise-validation";
+import { readTextFile, uploadTextFile } from "@/lib/api/upload-file";
 import type { ActionResult } from "@/lib/forms/action-result";
 import {
   relevantPipelines,
@@ -147,21 +155,7 @@ export async function updateExerciseEnvironments(
     // and making a teacher discover it through a validation error is the screen failing them. The
     // guard is `length === 0`: an exercise that already has tests is somebody's own arrangement.
     if (isDataOnly(parsed.data.environments)) {
-      const tests = await apiGet<ExerciseTest[]>("/v1/exercises/{id}/tests", {
-        pathParams: { id: exerciseId },
-      });
-      if (tests.length === 0) {
-        // **Not translated, and it cannot be.** core-api's test names are
-        // `[-a-zA-Z0-9_()[].! ]` (`ExercisesConfigPresenter`), so the Czech "Odevzdání" was
-        // refused with `test name contains illicit characters` -- found by the operator one
-        // message after it shipped. A name they can change afterwards beats one that fails to be
-        // created.
-        await apiPost(
-          "/v1/exercises/{id}/tests",
-          { tests: [{ name: DATA_ONLY_TEST_NAME }] },
-          { pathParams: { id: exerciseId } },
-        );
-      }
+      await setUpDataOnlyExercise(exerciseId, parsed.data.environments);
     }
 
     return { success: true, data: { count: environmentConfigs.length } };
@@ -265,5 +259,121 @@ export async function updateExerciseConfig(
     return { success: true, data: { tests: parsed.data.tests.length } };
   } catch (error) {
     return failure(error, "configFailed");
+  }
+}
+
+/**
+ * Makes a data-only exercise ready to be assigned: one test, a judge, and a configuration that
+ * names it (DEC-141).
+ *
+ * **`data-linux` does not mean "do not evaluate".** The pipeline runs no student code but it does
+ * run a judge, and with none chosen every submission dies in the wrapper (`/box/: Is a directory`,
+ * measured). core-api also demands at least one test of every exercise. Neither is a decision a
+ * teacher collecting essays should have to discover through a validation error, so both are made
+ * for them.
+ *
+ * **Run on every save of the languages, not only the first**, because this is the only button such
+ * an exercise has: its tests tab is not offered (there are no tests to speak of), so saving the
+ * languages is also how a configuration that ended up empty gets rebuilt. Nothing is overwritten
+ * that somebody chose -- a test that exists is left alone, a judge that is already selected is
+ * left alone, and only a configuration with no pipelines or no judge at all is written.
+ *
+ * Best-effort throughout: the environments *are* saved by the time this runs, and a failure here
+ * must not report that as a failure and leave the teacher with neither.
+ */
+async function setUpDataOnlyExercise(exerciseId: string, environments: string[]): Promise<void> {
+  try {
+    const tests = await apiGet<ExerciseTest[]>("/v1/exercises/{id}/tests", {
+      pathParams: { id: exerciseId },
+    });
+    const test =
+      tests[0] ??
+      (
+        await apiPost<ExerciseTest[]>(
+          "/v1/exercises/{id}/tests",
+          // **Not translated, and it cannot be.** core-api's test names are
+          // `[-a-zA-Z0-9_()[].! ]` (`ExercisesConfigPresenter`), so the Czech "Odevzdání" was
+          // refused with `test name contains illicit characters`. A name the teacher can change
+          // beats one that fails to be created.
+          { tests: [{ name: DATA_ONLY_TEST_NAME }] },
+          { pathParams: { id: exerciseId } },
+        )
+      )[0];
+    if (!test) return;
+
+    const files = await apiGet<{ id: string; name: string }[]>("/v1/exercises/{id}/files", {
+      pathParams: { id: exerciseId },
+    });
+    const existing = files.find((file) => file.name === DATA_ONLY_JUDGE_NAME);
+    // **An exercise set up before this judge scored zero still has the one that scored one**, and
+    // that one handed out full marks by itself. Replaced here rather than left for somebody to
+    // notice -- but only when the file is recognisably still ours; a teacher who has written their
+    // own judge under that name keeps it.
+    const outdated =
+      existing !== undefined &&
+      isOutdatedDataOnlyJudge((await readTextFile(existing.id).catch(() => null)) ?? "");
+    if (existing === undefined || outdated) {
+      if (outdated && existing) {
+        await apiDelete("/v1/exercises/{id}/files/{fileId}", {
+          pathParams: { id: exerciseId, fileId: existing.id },
+        });
+      }
+      const uploaded = await uploadTextFile(DATA_ONLY_JUDGE_NAME, DATA_ONLY_JUDGE_SOURCE);
+      await apiPost(
+        "/v1/exercises/{id}/files",
+        { files: [uploaded.id] },
+        { pathParams: { id: exerciseId } },
+      );
+    }
+
+    // What core-api holds now, and whether it is usable: a test with no pipelines is the shape an
+    // exercise ends up in after its test is renamed or its languages change, and it is exactly
+    // what makes it unassignable ("configuration does not specify any pipelines").
+    const stored = await apiGet<ExerciseConfig>("/v1/exercises/{id}/config", {
+      pathParams: { id: exerciseId },
+    });
+    const entry = stored
+      .find((environment) => environment.name === DATA_ONLY_ENVIRONMENT)
+      ?.tests.find((one) => String(one.name) === String(test.id));
+    const pipelines = entry?.pipelines ?? [];
+    const hasJudge = pipelines.some((pipeline) =>
+      pipeline.variables.some((variable) => variable.name === "custom-judge" && variable.value),
+    );
+    if (pipelines.length > 0 && hasJudge) return;
+
+    await updateExerciseConfig(exerciseId, {
+      tests: [
+        {
+          id: String(test.id),
+          expectedOutput: "",
+          stdinFile: "",
+          inputFiles: [],
+          judgeType: "",
+          useCustomJudge: true,
+          customJudge: DATA_ONLY_JUDGE_NAME,
+          judgeArgs: [],
+          runArgs: [],
+          useOutFile: false,
+          actualOutput: "",
+          entryPointString: "",
+          environments: Object.fromEntries(
+            environments.map((id) => [
+              id,
+              {
+                entryPoint: "",
+                successExitCodes: "0",
+                extraFiles: [],
+                jarFiles: [],
+                compileArgs: [],
+                execTargets: [],
+              },
+            ]),
+          ),
+        },
+      ],
+    });
+  } catch {
+    // Nothing to say to the reader: the languages saved, and the configuration screen reports what
+    // is still missing in its own words.
   }
 }

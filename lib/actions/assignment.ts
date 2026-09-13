@@ -75,7 +75,7 @@ export async function updateAssignment(
         localizedStudentHints: Object.fromEntries(
           data.hints.map((hint) => [hint.locale, hint.hint]),
         ),
-        sendNotification: data.sendNotification,
+        ...(data.sendNotification !== null && { sendNotification: data.sendNotification }),
       },
       { pathParams: { id: assignmentId } },
     );

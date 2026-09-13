@@ -13,6 +13,12 @@ import { Link } from "@/i18n/navigation";
 export interface PageTab {
   id: string;
   label: string;
+  /**
+   * How many things are behind the tab, when that is worth knowing before opening it -- comments,
+   * submitted solutions. Omitted where the number would be noise, and **not rendered when it is
+   * zero**: "Diskuze 0" is a worse way of saying "Diskuze".
+   */
+  count?: number;
 }
 
 export function PageTabs({
@@ -43,6 +49,11 @@ export function PageTabs({
             }`}
           >
             {tab.label}
+            {tab.count !== undefined && tab.count > 0 && (
+              <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">
+                {tab.count}
+              </span>
+            )}
           </Link>
         );
       })}

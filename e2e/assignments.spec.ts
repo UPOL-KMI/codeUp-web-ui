@@ -21,6 +21,11 @@ async function openFirstAssignment(page: Page, account: SeedAccount): Promise<vo
   await expect(page).toHaveURL(/\/en\/assignments\/[0-9a-f-]+$/);
 }
 
+/** The assignment screen is three tabs (T-033); this opens the one a test is about. */
+async function openTab(page: Page, tab: "text" | "solutions" | "discussion"): Promise<void> {
+  await page.goto(`${page.url().split("?")[0]}?tab=${tab}`);
+}
+
 test("shows the assignment text, its terms and the reader's own solutions", async ({ page }) => {
   await openFirstAssignment(page, STUDENT);
   const main = page.getByRole("main");
@@ -28,6 +33,9 @@ test("shows the assignment text, its terms and the reader's own solutions", asyn
   await expect(main.getByRole("heading", { name: "Assignment", level: 2 })).toBeVisible();
   await expect(main.getByText("Hello, ReCodEx!")).toBeVisible();
   await expect(main.getByRole("heading", { name: "Terms" })).toBeVisible();
+
+  // The reader's own attempts are the submissions tab's business, not the text's.
+  await openTab(page, "solutions");
   await expect(main.getByRole("heading", { name: "My solutions" })).toBeVisible();
 });
 
@@ -35,6 +43,7 @@ test("states whether submitting is possible, in words, without a button to nowhe
   page,
 }) => {
   await openFirstAssignment(page, STUDENT);
+  await openTab(page, "solutions");
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "Submitting" })).toBeVisible();
@@ -80,12 +89,15 @@ test("makes no personal claims to a teacher who does not study in the group", as
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "Terms" })).toBeVisible();
+  await openTab(page, "solutions");
   await expect(main.getByRole("heading", { name: "Submitting" })).toHaveCount(0);
   await expect(main.getByRole("heading", { name: "My solutions" })).toHaveCount(0);
 });
 
 test("shows a teacher how the group is doing, and every student's standing", async ({ page }) => {
   await openFirstAssignmentAsTeacher(page, SUPERVISOR);
+  // The class progress is about submissions, so it sits with them.
+  await openTab(page, "solutions");
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "The group's progress" })).toBeVisible();

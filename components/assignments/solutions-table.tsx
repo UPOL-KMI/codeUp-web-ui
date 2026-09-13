@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import type { AssignmentSolutionRow } from "@/lib/api/assignment-solutions";
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
 import { EVALUATION_TONE, evaluationStatus } from "@/lib/status/evaluation";
 
 import { Link } from "@/i18n/navigation";
@@ -142,7 +142,11 @@ export function SolutionsTable({
       sortable: true,
       sortValue: (solution) => solution.overridden ?? solution.gained ?? -1,
       cell: (solution) =>
-        solution.gained === null && solution.overridden === null ? (
+        // **A question mark, not a number, while nobody has marked it.** The row's own state says
+        // "waiting to be marked"; printing the pipeline's figure beside that reads as a grade.
+        evaluationStatus(solution.status) === "awaiting-review" ? (
+          <span className="text-muted-foreground">{formatPointsUnknown(solution.maxPoints)}</span>
+        ) : solution.gained === null && solution.overridden === null ? (
           <span className="text-muted-foreground">—</span>
         ) : (
           formatPoints(

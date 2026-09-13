@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { ApiError, apiGet } from "./client";
 
 /**
@@ -45,7 +47,9 @@ interface CommentPayload {
  * discussion is one part of a screen, and taking the whole page down because core-api would not
  * show it is the trap `pageRead` exists to avoid on the *other* side.
  */
-export async function getCommentThread(threadId: string): Promise<CommentThread | null> {
+export const getCommentThread = cache(async function getCommentThread(
+  threadId: string,
+): Promise<CommentThread | null> {
   try {
     const thread = await apiGet<{ id: string; comments?: CommentPayload[] }>("/v1/comments/{id}", {
       pathParams: { id: threadId },
@@ -68,4 +72,4 @@ export async function getCommentThread(threadId: string): Promise<CommentThread 
     if (error instanceof ApiError && error.httpStatus === 403) return null;
     throw error;
   }
-}
+});

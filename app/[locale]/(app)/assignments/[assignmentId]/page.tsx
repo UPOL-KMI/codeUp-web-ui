@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getAssignmentDetail } from "@/lib/api/assignment";
+import { getCommentThread } from "@/lib/api/comments";
 import { getAssignmentSolverSummary } from "@/lib/api/assignment-solvers";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
@@ -11,10 +12,12 @@ import { AssignmentDetailView } from "@/components/assignments/assignment-detail
 import { ClassProgress } from "@/components/assignments/class-progress";
 import { ExerciseSyncNotice } from "@/components/assignments/exercise-sync-notice";
 import { PageShell } from "@/components/page-shell";
+import { PageTabs, type PageTab } from "@/components/page-tabs";
 import { Discussion } from "@/components/comments/discussion";
 import { ErrorBoundary } from "@/components/state/error-boundary";
 import { TableSkeleton } from "@/components/state/skeleton";
 import { Badge } from "@/components/status/badge";
+import { VisibilityBadge } from "@/components/status/visibility-badge";
 
 export async function generateMetadata({
   params,
@@ -38,17 +41,31 @@ export async function generateMetadata({
  */
 export default async function AssignmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ assignmentId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, status, assignment] = await Promise.all([
+  const [{ assignmentId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
+  const [t, tComments, status, assignment, thread] = await Promise.all([
     getTranslations("Assignment"),
     getTranslations("Comments"),
     getTranslations("Status"),
     getAssignmentDetail(assignmentId, locale),
+    // **Only for the number on the tab.** The discussion itself still streams behind its own
+    // boundary; this call is memoized per request, so the two are one fetch and the shell waits
+    // for it in parallel with the assignment rather than after it. A tab that says how much is
+    // behind it has to know before it is drawn.
+    getCommentThread(assignmentId),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/assignments/${assignmentId}`, locale);
+
+  const tabs: PageTab[] = [
+    { id: "text", label: t("tabs.text") },
+    { id: "solutions", label: t("tabs.solutions"), count: assignment.mySolutions.length },
+    { id: "discussion", label: t("tabs.discussion"), count: thread?.comments.length },
+  ];
+  const current = tabs.some((tab) => tab.id === query.tab) ? query.tab! : "text";
 
   return (
     <PageShell
@@ -58,7 +75,13 @@ export default async function AssignmentPage({
         <div className="flex flex-wrap items-center gap-2">
           {assignment.isBonus && <Badge tone="info">{t("badges.bonus")}</Badge>}
           {assignment.isExam && <Badge tone="warning">{t("badges.exam")}</Badge>}
-          {!assignment.isPublic && <Badge>{t("badges.hidden")}</Badge>}
+          {/* Hidden, or published for a moment that has not come yet -- the header said nothing
+              about the second, so a scheduled assignment looked like an ordinary live one. */}
+          <VisibilityBadge
+            isPublic={assignment.isPublic}
+            visibleFrom={assignment.visibleFrom}
+            hideWhenVisible
+          />
           {assignment.can.update && (
             <Link
               href={`/assignments/${assignmentId}/edit`}
@@ -86,34 +109,52 @@ export default async function AssignmentPage({
         </div>
       }
       subtitle={assignment.groupName || undefined}
+      tabs={
+        <PageTabs
+          basePath={`/assignments/${assignmentId}`}
+          tabs={tabs}
+          current={current}
+          label={t("tabs.label")}
+        />
+      }
     >
       <div className="flex flex-col gap-8">
-        <ExerciseSyncNotice assignment={assignment} />
-        <AssignmentDetailView assignment={assignment} />
+        {/* The notice is about the text, so it lives with it. */}
+        {current === "text" && <ExerciseSyncNotice assignment={assignment} />}
+        {current !== "discussion" && (
+          <AssignmentDetailView
+            assignment={assignment}
+            tab={current === "solutions" ? "solutions" : "text"}
+          />
+        )}
         {/* The hint decides *whether* this section exists, above the boundary; only its fetch
             streams. Moving the gate below it would mean claiming the reader may see this before
             knowing that they may. */}
-        {assignment.can.viewAssignmentSolutions && assignment.groupId && (
+        {current === "solutions" &&
+          assignment.can.viewAssignmentSolutions &&
+          assignment.groupId && (
+            <ErrorBoundary>
+              <Suspense fallback={<TableSkeleton label={status("loading")} />}>
+                <ClassProgressSection
+                  assignmentId={assignmentId}
+                  groupId={assignment.groupId}
+                  maxPoints={assignment.maxPointsFirst}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+
+        {current === "discussion" && (
           <ErrorBoundary>
             <Suspense fallback={<TableSkeleton label={status("loading")} />}>
-              <ClassProgressSection
-                assignmentId={assignmentId}
-                groupId={assignment.groupId}
-                maxPoints={assignment.maxPointsFirst}
+              <Discussion
+                threadId={assignmentId}
+                publicMeans={tComments("audience.assignment")}
+                canModerate={assignment.can.update === true}
               />
             </Suspense>
           </ErrorBoundary>
         )}
-
-        <ErrorBoundary>
-          <Suspense fallback={<TableSkeleton label={status("loading")} />}>
-            <Discussion
-              threadId={assignmentId}
-              publicMeans={tComments("audience.assignment")}
-              canModerate={assignment.can.update === true}
-            />
-          </Suspense>
-        </ErrorBoundary>
       </div>
     </PageShell>
   );

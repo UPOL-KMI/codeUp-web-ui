@@ -8,7 +8,7 @@ import {
   getSubmissionScoreConfig,
 } from "@/lib/api/solution";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
 import { evaluationStatus } from "@/lib/status/evaluation";
 
 import { Link } from "@/i18n/navigation";
@@ -90,7 +90,13 @@ export default async function SolutionPage({
       ? await getSubmissionScoreConfig((selected ?? runs[0]!).id)
       : null;
 
-  const pending = evaluationStatus(solution.status) === "pending";
+  const state = evaluationStatus(solution.status);
+  const pending = state === "pending";
+  // **A data-only solution has nothing to report and must not pretend otherwise.** No student code
+  // ran, the judge's score is the default nought, and the points belong to whoever marks it. So the
+  // percentage, the test table and the language are all absent, and what stands in their place is
+  // either "waiting to be marked" or the points a teacher gave (DEC-141).
+  const dataOnly = state === "awaiting-review" || state === "reviewed";
   const expectedTasks = Number.parseInt(query.tasks ?? "", 10);
   const announcement = solution.failure
     ? t("evaluation.announce.failed")
@@ -98,10 +104,14 @@ export default async function SolutionPage({
       ? t("evaluation.announce.pending")
       : solution.evaluation.initFailed
         ? t("evaluation.announce.initFailed")
-        : t("evaluation.announce.done", {
-            passed: solution.evaluation.testResults.filter((result) => result.score >= 1).length,
-            total: solution.evaluation.testResults.length,
-          });
+        : // A count of tests is not what happened to a data-only submission, and a screen reader
+          // must not be told something the screen deliberately does not say.
+          dataOnly
+          ? t(`evaluation.announce.${state === "reviewed" ? "reviewed" : "awaitingReview"}`)
+          : t("evaluation.announce.done", {
+              passed: solution.evaluation.testResults.filter((result) => result.score >= 1).length,
+              total: solution.evaluation.testResults.length,
+            });
 
   return (
     <PageShell
@@ -151,7 +161,15 @@ export default async function SolutionPage({
             <div className="flex justify-between gap-4 border-b border-border py-2">
               <dt className="text-sm text-muted-foreground">{t("points")}</dt>
               <dd className="text-sm font-medium tabular-nums">
-                {formatPoints(solution.gained ?? 0, solution.maxPoints)}
+                {state === "awaiting-review" ? (
+                  // `?/10` rather than words, so the number reads like the same number everywhere
+                  // else -- and like a question rather than a grade.
+                  <span className="text-muted-foreground">
+                    {formatPointsUnknown(solution.maxPoints)}
+                  </span>
+                ) : (
+                  formatPoints(solution.gained ?? 0, solution.maxPoints)
+                )}
                 {solution.bonus !== 0 && (
                   <span className={solution.bonus > 0 ? "text-success" : "text-destructive"}>
                     {solution.bonus > 0 ? ` +${solution.bonus}` : ` ${solution.bonus}`}
@@ -160,7 +178,11 @@ export default async function SolutionPage({
               </dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-border py-2">
-              <dt className="text-sm text-muted-foreground">{t("result")}</dt>
+              {/* "Výsledek" is the wrong word for a submission nobody has judged; what the badge
+                  carries there is a state. The operator's observation. */}
+              <dt className="text-sm text-muted-foreground">
+                {dataOnly ? t("state") : t("result")}
+              </dt>
               <dd>
                 <EvaluationBadge solution={solution.status} />
               </dd>
@@ -174,10 +196,13 @@ export default async function SolutionPage({
                 </span>
               </dd>
             </div>
-            <div className="flex justify-between gap-4 border-b border-border py-2">
-              <dt className="text-sm text-muted-foreground">{t("environment")}</dt>
-              <dd className="text-sm">{solution.environment}</dd>
-            </div>
+            {/* The language of a submission nobody wrote code in is a fact about the machinery. */}
+            {!dataOnly && (
+              <div className="flex justify-between gap-4 border-b border-border py-2">
+                <dt className="text-sm text-muted-foreground">{t("environment")}</dt>
+                <dd className="text-sm">{solution.environment}</dd>
+              </div>
+            )}
             {solution.groupId && (
               <div className="flex justify-between gap-4 border-b border-border py-2">
                 <dt className="text-sm text-muted-foreground">{t("group")}</dt>
@@ -250,14 +275,37 @@ export default async function SolutionPage({
               />
             </div>
           )}
-          {selected !== null && (
+          {selected !== null && !dataOnly && (
             <p className="mb-3 rounded-lg border border-warning bg-warning/10 p-3 text-sm">
               {t("runs.notScored")}
             </p>
           )}
-          <EvaluationResults solution={shown} environment={solution.environment} />
+          {dataOnly ? (
+            <div
+              className={
+                state === "awaiting-review"
+                  ? "rounded-lg border border-warning bg-warning-surface p-4 text-sm"
+                  : "rounded-lg border border-success bg-success-surface p-4 text-sm"
+              }
+            >
+              <p className="font-medium">
+                {state === "awaiting-review"
+                  ? t("evaluation.awaitingReview.title")
+                  : t("evaluation.reviewed.title", {
+                      points: formatPoints(solution.gained ?? 0, solution.maxPoints),
+                    })}
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                {state === "awaiting-review"
+                  ? t("evaluation.awaitingReview.explain")
+                  : t("evaluation.reviewed.explain")}
+              </p>
+            </div>
+          ) : (
+            <EvaluationResults solution={shown} environment={solution.environment} />
+          )}
           <div className="mt-3 flex flex-col gap-3">
-            <ScoreConfigExplanation scoreConfig={scoreConfig} />
+            {!dataOnly && <ScoreConfigExplanation scoreConfig={scoreConfig} />}
             {solution.can.downloadResultArchive === true && (
               <div>
                 <a

@@ -6323,3 +6323,37 @@ guessed from their names. Markdown in the repository, rendered on the server, sa
 **And a fourth status tone.** The app had green, amber and red but nothing for "worth knowing", so
 the tip that points a non-programming teacher at Data-Only had no colour to be. `info` is the
 university's own blue, the one the e-mails wear.
+
+**The afternoon the operator submitted something.** Three rounds of him testing a non-programming
+exercise end to end, and each round found something the round before had hidden.
+
+**No submission could be evaluated at all.** The worker fetches a solution from the address core-api
+puts in the job, and that address was the public one -- `http://localhost/api/...` on this
+deployment. In a container `localhost` is that container, so the download failed and every job died
+after two reassignments. The stack had always relied on `proxy` answering to `APP_DOMAIN` over the
+internal network, which works for `recodex.local` and cannot work for `localhost`. There is now a
+separate internal address (`api.workerAddress` in the fork, `API_INTERNAL_ADDRESS` in the
+deployment); it defaults to the public one, so a real domain is unaffected. Measured both sides:
+before, "Couldn't connect to server"; after, the archive downloads and the job completes.
+
+**Then data-only worked, and that was worse.** The judge such an exercise is given scored 1.0, and
+core-api turns a score into points -- so a student who uploaded any file was handed full marks
+before a teacher had seen it. The judge scores nought now, deliberately, and the screens say
+"waiting to be marked" until somebody awards points. Exercises created while the old one shipped
+have it replaced when their languages are saved, recognised by content so a judge a teacher wrote
+themselves is never touched.
+
+**What "marked" means took two goes.** Accepting a solution counted as marking it, so cancelling an
+award left the screen showing a verdict the teacher had just withdrawn. Only points a person set --
+an override or a bonus -- count now.
+
+**And the points said what the state denied.** A row reading "10/10" beside "waiting to be marked"
+is the same lie the label was fixed to stop telling, so an unmarked solution's points are `?/10`
+everywhere they appear: both solution lists, the solution screen, the group's assignment list and
+the dashboard. The summary rows had it worse -- they showed "Špatně", because the pipeline's nought
+looks like a wrong answer -- and now say what the solution screen says.
+
+**Also his, in the same rounds:** the assignment screen is three tabs with counts on two of them;
+the settings screen is four; a data-only exercise's configuration is one tab, since the other two
+are about tests it does not have; the language picker is hidden when there is one language to pick
+and names it properly when there are several; and removing somebody from a group asks first.

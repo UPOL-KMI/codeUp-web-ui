@@ -170,7 +170,19 @@ type DraftValues = Omit<
   "visibleFrom" | "firstDeadline" | "secondDeadline"
 >;
 
-export function AssignmentForm({ assignment }: { assignment: AssignmentSettings }) {
+export function AssignmentForm({
+  assignment,
+  activeTab,
+}: {
+  assignment: AssignmentSettings;
+  /**
+   * Which tab the reader is on. **Every section is rendered whichever tab that is**, and the ones
+   * that are not it are hidden rather than dropped: this is one form with one save, so unmounting
+   * a section would throw away whatever had been typed into it the moment somebody looked at
+   * another tab.
+   */
+  activeTab: string;
+}) {
   const t = useTranslations("AssignmentEdit");
   const router = useRouter();
   const toast = useToast();
@@ -194,9 +206,12 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     canViewJudgeStdout: assignment.canViewJudgeStdout,
     canViewJudgeStderr: assignment.canViewJudgeStderr,
     hints: assignment.hints,
-    // Only ever true for the save that first makes an assignment public -- core-api ignores it
-    // otherwise, and defaulting it on would mail a class every time a typo is corrected.
-    sendNotification: false,
+    // **null means "not decided"**: the toggle is only on screen when this save could actually
+    // send or schedule a notification, and until somebody touches it the answer is the sensible
+    // default for the case in hand (see `notify` below). Sending `false` from every other save is
+    // what used to cancel a notification a teacher had already scheduled -- core-api unschedules
+    // the pending one on every update and puts it back only when this is true.
+    sendNotification: null as boolean | null,
   });
 
   const [visibleFrom, setVisibleFrom] = useDateTimeLocalField(assignment.visibleFrom);
@@ -207,6 +222,22 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
     setDraft((current) => ({ ...current, [key]: value }));
 
   const becomingPublic = draft.isPublic && !assignment.isPublic;
+  // **Read in the browser, never on the server** (PF-020): a wall-clock string means nothing
+  // without a zone, and the server is in the wrong one. Before hydration `visibleFrom` is still
+  // empty, so this is false and the toggle simply appears a moment later.
+  const visibleFromAt = fromDateTimeLocal(visibleFrom);
+  // The clock is read once, when the form mounts, rather than on every render -- reading it during
+  // a render is impure and the compiler says so. The cost is that a form left open across the
+  // moment of visibility keeps the default it opened with, which is the right trade for a default.
+  const [openedAt] = useState(() => Date.now());
+  const visibleLater = visibleFromAt !== null && visibleFromAt * 1000 > openedAt;
+  // The toggle is shown whenever this save could send or schedule a notification: the assignment
+  // will be visible to students and either it was not before, or the moment it becomes visible is
+  // still ahead. It starts ticked when that moment is in the future -- scheduling the announcement
+  // for the moment you just announced is what a teacher means by setting it -- and unticked when
+  // the mail would go out this second, which is a decision worth making deliberately.
+  const canNotify = draft.isPublic && (becomingPublic || visibleLater);
+  const notify = draft.sendNotification ?? visibleLater;
 
   async function save() {
     setPending(true);
@@ -216,6 +247,8 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
       visibleFrom: fromDateTimeLocal(visibleFrom),
       firstDeadline: fromDateTimeLocal(firstDeadline),
       secondDeadline: fromDateTimeLocal(secondDeadline),
+      // Not offered, not decided: the field is omitted rather than sent as false.
+      sendNotification: canNotify ? notify : null,
     };
     const result: ActionResult<unknown> = await updateAssignment(
       assignment.id,
@@ -237,9 +270,16 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
         event.preventDefault();
         void save();
       }}
+      // The whole form goes away on the tab that belongs to the other form on this screen -- the
+      // texts. Hidden rather than unrendered, for the reason `activeTab` gives.
+      hidden={activeTab === "texts"}
       className="flex flex-col gap-10"
     >
-      <section aria-labelledby="assignment-visibility" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="assignment-visibility"
+        hidden={activeTab !== "visibility"}
+        className="flex flex-col gap-3"
+      >
         <h2 id="assignment-visibility" className="text-base font-semibold tracking-tight">
           {t("visibility.title")}
         </h2>
@@ -250,13 +290,18 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
           checked={draft.isPublic}
           onChange={(value) => set("isPublic", value)}
         />
-        <DateTimeField
-          id="assignment-visible-from"
-          label={t("visibility.visibleFrom")}
-          hint={t("visibility.visibleFromHint")}
-          value={visibleFrom}
-          onChange={setVisibleFrom}
-        />
+        {/* core-api reads visibility as `isPublic && (visibleFrom === null || visibleFrom <= now)`,
+            so with the switch above off this field decides nothing at all. Its value is kept --
+            turning the switch back on brings it back as it was. */}
+        {draft.isPublic && (
+          <DateTimeField
+            id="assignment-visible-from"
+            label={t("visibility.visibleFrom")}
+            hint={t("visibility.visibleFromHint")}
+            value={visibleFrom}
+            onChange={setVisibleFrom}
+          />
+        )}
         <Toggle
           id="assignment-is-bonus"
           label={t("visibility.isBonus")}
@@ -271,18 +316,26 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
           checked={draft.isExam}
           onChange={(value) => set("isExam", value)}
         />
-        {becomingPublic && (
+        {canNotify && (
           <Toggle
             id="assignment-send-notification"
             label={t("visibility.sendNotification")}
-            hint={t("visibility.sendNotificationHint")}
-            checked={draft.sendNotification}
+            hint={
+              visibleLater
+                ? t("visibility.sendNotificationLaterHint")
+                : t("visibility.sendNotificationHint")
+            }
+            checked={notify}
             onChange={(value) => set("sendNotification", value)}
           />
         )}
       </section>
 
-      <section aria-labelledby="assignment-deadlines" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="assignment-deadlines"
+        hidden={activeTab !== "deadlines"}
+        className="flex flex-col gap-3"
+      >
         <h2 id="assignment-deadlines" className="text-base font-semibold tracking-tight">
           {t("deadlines.title")}
         </h2>
@@ -297,6 +350,10 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
           <NumberField
             id="assignment-max-points-first"
             label={t("deadlines.maxPointsFirst")}
+            // What the number actually does was nowhere on the screen: it is a ceiling scaled by
+            // how well the solution scored, not a figure anybody is handed. The operator read
+            // "Body k dispozici před ním" and could not tell what it meant.
+            hint={t("deadlines.maxPointsFirstHint")}
             min={0}
             value={draft.maxPointsFirst}
             onChange={(value) => set("maxPointsFirst", Number(value))}
@@ -338,7 +395,11 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
         )}
       </section>
 
-      <section aria-labelledby="assignment-limits" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="assignment-limits"
+        hidden={activeTab !== "deadlines"}
+        className="flex flex-col gap-3"
+      >
         <h2 id="assignment-limits" className="text-base font-semibold tracking-tight">
           {t("limits.title")}
         </h2>
@@ -404,7 +465,11 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
         )}
       </section>
 
-      <section aria-labelledby="assignment-disclosure" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="assignment-disclosure"
+        hidden={activeTab !== "visibility"}
+        className="flex flex-col gap-3"
+      >
         <h2 id="assignment-disclosure" className="text-base font-semibold tracking-tight">
           {t("disclosure.title")}
         </h2>
@@ -435,7 +500,11 @@ export function AssignmentForm({ assignment }: { assignment: AssignmentSettings 
         />
       </section>
 
-      <section aria-labelledby="assignment-hints" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="assignment-hints"
+        hidden={activeTab !== "hints"}
+        className="flex flex-col gap-3"
+      >
         <h2 id="assignment-hints" className="text-base font-semibold tracking-tight">
           {t("hints.title")}
         </h2>

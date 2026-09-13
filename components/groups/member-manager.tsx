@@ -13,6 +13,7 @@ import type { GroupMember } from "@/lib/api/group-detail";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
+import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { UserPicker } from "@/components/groups/user-picker";
 import { useToast } from "@/components/toast/toast-provider";
 
@@ -48,6 +49,14 @@ export function MemberManager({
   const router = useRouter();
   const toast = useToast();
   const [pending, setPending] = useState(false);
+  // **Removing somebody is a click that cannot be taken back from this screen**, and it used to be
+  // one click next to their name. Reported by the operator, who is right about the shape of the
+  // mistake: the button sits in a list, and a list is where a mis-click lands on the wrong row.
+  const [removing, setRemoving] = useState<{
+    kind: "student" | "member";
+    id: string;
+    name: string;
+  } | null>(null);
 
   async function run(call: () => Promise<ActionResult<unknown>>, successKey: string) {
     setPending(true);
@@ -106,7 +115,11 @@ export function MemberManager({
                       disabled={pending}
                       className={rowButton}
                       onClick={() =>
-                        void run(() => removeGroupMember(groupId, member.id), "staff.removed")
+                        setRemoving({
+                          kind: "member",
+                          id: member.id,
+                          name: member.fullName || member.id,
+                        })
                       }
                     >
                       {t("remove")}
@@ -151,7 +164,11 @@ export function MemberManager({
                     disabled={pending}
                     className={rowButton}
                     onClick={() =>
-                      void run(() => removeGroupStudent(groupId, student.id), "students.removed")
+                      setRemoving({
+                        kind: "student",
+                        id: student.id,
+                        name: student.fullName || student.id,
+                      })
                     }
                   >
                     {t("remove")}
@@ -171,6 +188,31 @@ export function MemberManager({
           />
         )}
       </section>
+
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoving(null);
+        }}
+        title={t(`confirmRemove.${removing?.kind ?? "student"}.title`)}
+        description={t(`confirmRemove.${removing?.kind ?? "student"}.description`, {
+          name: removing?.name ?? "",
+        })}
+        confirmLabel={t("confirmRemove.confirm")}
+        pending={pending}
+        onConfirm={() => {
+          const target = removing;
+          setRemoving(null);
+          if (!target) return;
+          void run(
+            () =>
+              target.kind === "student"
+                ? removeGroupStudent(groupId, target.id)
+                : removeGroupMember(groupId, target.id),
+            target.kind === "student" ? "students.removed" : "staff.removed",
+          );
+        }}
+      />
     </div>
   );
 }
