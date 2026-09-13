@@ -372,7 +372,7 @@ function DataTableInner<T>({
                 return (
                   <tr
                     key={rowId}
-                    className="border-b border-border last:border-0 hover:bg-muted/30"
+                    className="border-b border-border last:border-0 hover:bg-accent/40"
                   >
                     {selectable && (
                       <td className="px-3 py-2">

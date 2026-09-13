@@ -111,7 +111,9 @@ export async function AssignmentDetailView({
             {t("text")}
           </h2>
           {assignment.text ? (
-            <Markdown source={assignment.text} />
+            <div className="text-base leading-relaxed">
+              <Markdown source={assignment.text} />
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t("noText")}</p>
           )}

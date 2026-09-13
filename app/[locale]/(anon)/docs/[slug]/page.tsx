@@ -50,7 +50,9 @@ export default async function GuidePage({
           {t("loadError")}
         </div>
       ) : (
-        <Markdown source={source} />
+        <div className="max-w-3xl text-base leading-relaxed">
+          <Markdown source={source} />
+        </div>
       )}
     </PageShell>
   );

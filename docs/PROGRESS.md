@@ -6424,3 +6424,14 @@ the title says.
 **And a trail of one crumb was the title, one line higher.** Every top-level page had it. The trail
 appears once there is somewhere above to go (DEC-144); the two specs that asserted the old
 unlinked words assert the links instead.
+
+### 2026-09-13 — the tab has an icon, and the small things
+
+What X-006 left for a second pass, done. **The tab wore the default icon**: `public/` was empty and
+nothing under `app/` was named `icon`. Now `icon.svg` is the mark on a brand-blue tile, an
+`apple-icon.tsx` renders the same to the PNG iOS insists on, and a `viewport` gives a phone's chrome
+the page's own background. **On a phone the department's name wrapped under the product's**, fighting
+the two switches for the header's one row; it hides under `sm`, where the mark alone says enough.
+**Reading surfaces read at 16px** -- an assignment's text, an exercise's text, a guide -- as the
+department's own pages do; tables stay at 14. The dashboard's section chips wear the outline style
+the buttons wear, and table rows hover in the accent rather than in grey.

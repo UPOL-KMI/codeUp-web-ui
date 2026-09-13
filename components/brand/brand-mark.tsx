@@ -22,7 +22,7 @@ export function BrandMark({ href, compact = false }: { href: string; compact?: b
           {t("product")}
         </span>
         {!compact && (
-          <span className="text-[0.6875rem] font-medium tracking-wide text-primary uppercase">
+          <span className="hidden text-[0.6875rem] font-medium tracking-wide text-primary uppercase sm:inline">
             {t("department")}
           </span>
         )}

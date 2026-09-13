@@ -31,7 +31,7 @@ export function SectionNav({ items, label }: { items: SectionNavItem[]; label: s
         <a
           key={item.anchor}
           href={`#${item.anchor}`}
-          className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           {item.label}
         </a>

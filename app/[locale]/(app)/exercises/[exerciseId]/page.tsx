@@ -149,7 +149,7 @@ export default async function ExercisePage({
             {t("text")}
           </h2>
           {exercise.text && exercise.text.text.trim() !== "" ? (
-            <div className="rounded-lg border border-border p-4">
+            <div className="rounded-lg border border-border p-4 text-base leading-relaxed">
               <Markdown source={exercise.text.text} />
             </div>
           ) : (
