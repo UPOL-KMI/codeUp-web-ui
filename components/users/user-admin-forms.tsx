@@ -12,6 +12,7 @@ import {
   setUserAllowed,
   setUserRole,
 } from "@/lib/actions/users";
+import { removeUserExternalId, setUserExternalId } from "@/lib/actions/user-external-ids";
 import type { UserRoleValues } from "@/lib/actions/users.schema";
 import { USER_ROLES } from "@/lib/api/user-roles";
 import type { AccountSettings } from "@/lib/api/user-settings";
@@ -295,6 +296,136 @@ export function AccountAccess({ account }: { account: AccountSettings }) {
         onConfirm={() =>
           void run(() => invalidateUserTokens(account.id), "signedOut", "tokensFailed")
         }
+      />
+    </div>
+  );
+}
+
+/**
+ * The identities this person holds in other systems (AD-002): `stag` for UPOL's study information
+ * system, and whatever else a deployment records.
+ *
+ * **The service is a free string, because core-api treats it as one** -- there is no list of known
+ * services to offer, and inventing one here would mean an identifier this app refuses to store
+ * while the API would have taken it. The one shipped suggestion is the datalist below, which
+ * suggests without restricting.
+ *
+ * Written one at a time rather than as a form over the whole set, because that is the shape of
+ * the endpoints: one `POST` per service, one `DELETE` per service, no way to replace the list.
+ */
+export function ExternalIds({ account }: { account: AccountSettings }) {
+  const t = useTranslations("UserEdit.externalIds");
+  const router = useRouter();
+  const toast = useToast();
+  const [service, setService] = useState("");
+  const [externalId, setExternalId] = useState("");
+  const [pending, setPending] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  const entries = Object.entries(account.externalIds);
+
+  async function add() {
+    setPending(true);
+    const result = await setUserExternalId(account.id, service, externalId);
+    setPending(false);
+    if (!result.success) {
+      toast.error(t("errors.setFailed"), result.formError);
+      return;
+    }
+    setService("");
+    setExternalId("");
+    toast.success(t("saved"));
+    router.refresh();
+  }
+
+  async function remove(removedService: string) {
+    setPending(true);
+    const result = await removeUserExternalId(account.id, removedService);
+    setPending(false);
+    setRemoving(null);
+    if (!result.success) {
+      toast.error(t("errors.removeFailed"), result.formError);
+      return;
+    }
+    toast.success(t("removed"));
+    router.refresh();
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">{t("explain")}</p>
+
+      {entries.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {entries.map(([entryService, identifier]) => (
+            <li
+              key={entryService}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm"
+            >
+              <span className="flex flex-wrap items-baseline gap-2">
+                <span className="font-medium">{entryService}</span>
+                <code className="text-xs">{identifier}</code>
+              </span>
+              <button
+                type="button"
+                disabled={pending}
+                className={secondary}
+                aria-label={t("removeNamed", { service: entryService })}
+                onClick={() => setRemoving(entryService)}
+              >
+                {t("remove")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1 text-sm">
+          {t("service")}
+          <input
+            type="text"
+            list="external-id-services"
+            className={input}
+            value={service}
+            onChange={(event) => setService(event.target.value)}
+          />
+        </label>
+        <datalist id="external-id-services">
+          <option value="stag" />
+        </datalist>
+        <label className="flex flex-col gap-1 text-sm">
+          {t("identifier")}
+          <input
+            type="text"
+            maxLength={128}
+            className={input}
+            value={externalId}
+            onChange={(event) => setExternalId(event.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          disabled={pending || service.trim() === "" || externalId.trim() === ""}
+          className={primary}
+          onClick={() => void add()}
+        >
+          {t("add")}
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground">{t("hint")}</p>
+
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title={t("confirmRemove.title")}
+        description={t("confirmRemove.description", { service: removing ?? "" })}
+        confirmLabel={t("remove")}
+        destructive
+        pending={pending}
+        onConfirm={() => void remove(removing ?? "")}
       />
     </div>
   );

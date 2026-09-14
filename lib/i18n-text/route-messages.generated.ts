@@ -40,7 +40,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   ],
   "/accept-invitation": [
     "AcceptInvitation",
-    "Consent",
+    "ApiErrors",
     "Error",
     "Nav.locale",
     "Nav.theme",
@@ -198,6 +198,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Toast",
   ],
   "/dashboard": [
+    "ApiErrors",
     "Dialog",
     "EmailVerification.callout",
     "Error",
@@ -216,6 +217,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   "/docs": ["Error", "Nav.locale", "Nav.theme", "Status", "Toast"],
   "/docs/[slug]": ["Error", "Nav.locale", "Nav.theme", "Status", "Toast"],
   "/email-verification": [
+    "ApiErrors",
     "EmailVerification",
     "Error",
     "Nav.locale",
@@ -378,6 +380,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   ],
   "/forgot-password": ["Error", "ForgotPassword", "Nav.locale", "Nav.theme", "Status", "Toast"],
   "/forgot-password/change": [
+    "ApiErrors",
     "Error",
     "ForgotPasswordChange",
     "Nav.locale",
@@ -404,6 +407,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
   ],
   "/groups/[groupId]": [
     "Assignment.visibilityState",
+    "Copy",
     "Dialog",
     "Error",
     "Group.assignments",
@@ -465,7 +469,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Table",
     "Toast",
   ],
-  "/login": ["Error", "Login", "Nav.locale", "Nav.theme", "Status", "Toast"],
+  "/login": ["ApiErrors", "Error", "Login", "Nav.locale", "Nav.theme", "Status", "Toast"],
   "/pipelines": [
     "Dialog",
     "Error",
@@ -515,6 +519,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Upload",
   ],
   "/profile": [
+    "ApiErrors",
     "Dialog",
     "Error",
     "Nav",
@@ -538,6 +543,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Account.settings",
     "Account.token",
     "Account.viewAs",
+    "ApiErrors",
     "Dialog",
     "Error",
     "Nav",
@@ -551,7 +557,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages.types",
     "Toast",
   ],
-  "/register": ["Consent", "Error", "Nav.locale", "Nav.theme", "Register", "Status", "Toast"],
+  "/register": ["ApiErrors", "Error", "Nav.locale", "Nav.theme", "Register", "Status", "Toast"],
   "/shadow-assignments/[shadowId]": [
     "Dialog",
     "Error",
@@ -643,6 +649,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Nav.theme",
     "Palette",
     "Review",
+    "Sources",
     "Status",
     "SystemMessages.active",
     "SystemMessages.types",
@@ -699,6 +706,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Users.create.errors",
   ],
   "/users/[userId]": [
+    "ApiErrors",
     "Dialog",
     "Error",
     "Nav",
@@ -722,6 +730,7 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "Account.settings",
     "Account.token",
     "Account.viewAs",
+    "ApiErrors",
     "Dialog",
     "Error",
     "Nav",
@@ -735,7 +744,23 @@ export const ROUTE_MESSAGE_NAMESPACES: Record<string, readonly string[]> = {
     "SystemMessages.types",
     "Toast",
     "UserEdit.access",
+    "UserEdit.externalIds",
     "UserEdit.password",
     "UserEdit.role",
+  ],
+  "/users/import": [
+    "Dialog",
+    "Error",
+    "Nav",
+    "Nav.brand",
+    "Nav.locale",
+    "Nav.qr",
+    "Nav.theme",
+    "Palette",
+    "Status",
+    "SystemMessages.active",
+    "SystemMessages.types",
+    "Toast",
+    "UserImport",
   ],
 };

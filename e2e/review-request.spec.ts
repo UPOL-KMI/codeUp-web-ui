@@ -97,10 +97,12 @@ test("is not offered once a review exists", async ({ page }) => {
   const main = page.getByRole("main");
 
   await expect(main.getByRole("heading", { name: "Summary" })).toBeVisible();
-  await expect(main.getByRole("button", { name: "Ask for a review" })).toHaveCount(0);
+  // The teacher's wording, not the student's: this reader holds `setFlag`, and the control marks
+  // rather than asks for them.
+  await expect(main.getByRole("button", { name: "Flag for review" })).toHaveCount(0);
 
   // ...while a solution without one still offers it, to the same reader on the same screen.
   const clean = await seededSolutionWithoutReview(CLASSMATE);
   await page.goto(`/en/solutions/${clean.id}`);
-  await expect(main.getByRole("button", { name: "Ask for a review" })).toBeVisible();
+  await expect(main.getByRole("button", { name: "Flag for review" })).toBeVisible();
 });

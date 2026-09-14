@@ -60,6 +60,25 @@
     "retry": "Try again",
     "description": "This content could not be loaded. The problem may be temporary."
   },
+  "ApiErrors": {
+    "400-100": "Those sign-in details are not right.",
+    "400-101": "That email address and password do not go together.",
+    "400-102": "The two passwords are not the same.",
+    "400-103": "Your current password is not right.",
+    "400-104": "Your institution signed you in, but there is no account here for you yet.",
+    "400-105": "Your institution signed you in, but did not say what role you hold here.",
+    "400-110": "An account already exists for this address.",
+    "401-001": "This link carries nothing that says who you are. It may have been shortened or copied incompletely.",
+    "401-002": "This link is no longer valid. It has expired, or it has already been used.",
+    "403-001": "There is no account for this address.",
+    "403-002": "This account has been disabled. Ask your teacher or an administrator.",
+    "403-003": "This account may only be used from a different network."
+  },
+  "Copy": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "failed": "Copying did not work. Select the text and copy it yourself."
+  },
   "Placeholder": {
     "comingSoon": "This page hasn't been built yet."
   },
@@ -114,10 +133,6 @@
       "emailTaken": "That address already has an account here.",
       "mismatch": "The two passwords differ."
     }
-  },
-  "Consent": {
-    "agree": "I agree that my personal data will be processed by UPolníček in accordance with its GDPR policy.",
-    "required": "Your agreement is needed before an account can be created."
   },
   "ForgotPassword": {
     "title": "Reset password",
@@ -177,12 +192,12 @@
     "welcome": "You have been invited to UPolníček. Your details are already filled in from the invitation and cannot be changed here — all that is left is to choose a password for your new account.",
     "details": "The invitation",
     "invitedPerson": "Invited person",
-    "email": "Email, which is also your login name",
+    "email": "Email — this is what you sign in with",
     "issuedAt": "Sent",
     "expiresAt": "Valid until",
     "groupCount": "Accepting also enrols you in {count, plural, one {# group} other {# groups}}.",
     "choosePassword": "Choose a password",
-    "passwordHint": "You will be signed in as soon as the account is created.",
+    "passwordHint": "Choose a password for getting into the system.",
     "password": "Password",
     "passwordConfirm": "Password again",
     "submit": "Create the account and sign in",
@@ -192,7 +207,9 @@
     "errors": {
       "mismatch": "The two passwords do not match.",
       "failed": "The account could not be created. The invitation may have expired or already been used."
-    }
+    },
+    "externalId": "{service} identifier",
+    "externalIdsHint": "These identifiers link you to the university's other systems and are recorded on the account when it is created. If one is wrong, tell whoever invited you — they cannot be changed here."
   },
   "GroupInvitation": {
     "title": "Group invitation",
@@ -471,7 +488,8 @@
         }
       },
       "thresholdExplain": "An interim tally. It does not necessarily mean the course has been passed — it only states the success recorded so far.",
-      "partialList": "Some records may be hidden by the group's permissions."
+      "partialList": "Some records may be hidden by the group's permissions.",
+      "import": "Import people into this group"
     },
     "points": {
       "title": "Points, assignment by assignment",
@@ -803,7 +821,8 @@
         "pastDate": "That moment has already passed."
       },
       "editNamed": "Edit the link “{note}”",
-      "deleteNamed": "Delete the link “{note}”"
+      "deleteNamed": "Delete the link “{note}”",
+      "copyNamed": "Copy the invitation link for {note}"
     },
     "pageTitle": "Group"
   },
@@ -814,7 +833,7 @@
   "Solution": {
     "title": "Attempt {attempt}",
     "backToAssignment": "Back to the assignment",
-    "sourceCode": "Source code",
+    "solutionFiles": "Solution files",
     "summary": "Summary",
     "points": "Points",
     "result": "Result",
@@ -1012,7 +1031,7 @@
       "explain": "What this attempt is worth, whatever the tests said. Points set here replace the ones the evaluation computed.",
       "accept": "Accept this attempt",
       "unaccept": "Stop accepting this attempt",
-      "acceptNote": "It will count instead of the best-scoring one.",
+      "acceptNote": "The best-scoring attempt counts by default. Use the button to force this one into the overall result instead.",
       "acceptedNote": "This attempt counts instead of the best-scoring one.",
       "zero": "Award nothing",
       "full": "Award full marks ({points})",
@@ -1023,10 +1042,31 @@
       "save": "Save the points",
       "saving": "Saving…",
       "overrideNote": "Leave the first field empty to let the evaluation decide. A bonus may be negative.",
+      "overMax": "You are awarding more points ({points}) than the maximum ({max}). <action>Click here</action> to move the excess into the bonus.",
+      "confirmSave": {
+        "title": "Save these points?",
+        "description": "The student is recorded as having {summary} for this attempt. What you set here replaces what the evaluation worked out, and a notification is sent to the student.",
+        "confirm": "Save the points"
+      },
+      "summary": {
+        "evaluated": "whatever the evaluation worked out",
+        "points": "{points} of {max} points",
+        "withBonus": "{points} of {max} points plus a bonus of {bonus}"
+      },
       "confirmAccept": {
         "title": "Accept this attempt?",
         "description": "Whichever attempt this student had accepted before stops being accepted -- only one attempt at an assignment can be.",
         "confirm": "Accept it"
+      },
+      "confirmZero": {
+        "title": "Award no points for this attempt?",
+        "description": "The student is recorded as having 0 points, whatever the evaluation worked out. A notification is sent to the student.",
+        "confirm": "Award no points"
+      },
+      "confirmFull": {
+        "title": "Award full marks for this attempt?",
+        "description": "The student is recorded as having {points} points, whatever the evaluation worked out. A notification is sent to the student.",
+        "confirm": "Award full marks"
       },
       "toast": {
         "accepted": "The attempt was accepted.",
@@ -1051,6 +1091,16 @@
         "title": "Delete this solution?",
         "description": "The submitted source, every evaluation of it and the whole review with its comments go with it. This cannot be undone.",
         "confirm": "Delete it"
+      },
+      "confirmResubmit": {
+        "title": "Run this solution again?",
+        "description": "It goes through the whole pipeline once more and the new result replaces the current one. An evaluation costs machine time, so do not start one you do not need.",
+        "confirm": "Run it again"
+      },
+      "confirmResubmitDebug": {
+        "title": "Run this solution again in debug mode?",
+        "description": "It goes through the whole pipeline once more, keeping the output of each step. The new result replaces the current one, and an evaluation costs machine time.",
+        "confirm": "Run it in debug mode"
       },
       "toast": {
         "resubmitted": "It is running again.",
@@ -1097,23 +1147,28 @@
     }
   },
   "Sources": {
-    "title": "Source code",
+    "title": "Solution files",
     "attempt": "Attempt {attempt}",
     "download": "Download archive",
     "backToSolution": "Back to the solution",
     "entryPoint": "Entry point",
     "bytes": "{size} B",
     "fileListLabel": "Files in this solution",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
     "contentUnavailable": "This file's content could not be loaded.",
-    "malformed": "This file is not valid UTF-8. Some characters may not be shown as they were written.",
     "truncated": "This file is too large to show in full — only its beginning is displayed. The whole file is in the downloadable archive.",
+    "notShown": "This kind of file is not shown here.",
+    "downloadFile": "Download the file",
+    "inArchive": "This file sits inside the submitted archive -- download the whole archive above.",
     "empty": {
       "title": "No files",
       "description": "This solution has no submitted files."
     },
     "tooMany": {
-      "title": "Too many files to show",
-      "description": "This solution has {count} files, and at most {max} are shown here. Download the archive to read them all."
+      "title": "Too many files",
+      "byCount": "This solution has {count, plural, one {# file} other {# files}}, and at most {max} are shown here. Download the archive to read them all.",
+      "bySize": "The text files of this solution are together too large to show here. Download the archive to read them."
     },
     "reviewOpenNote": "The review is open. Your comments stay hidden from the author until you close it, and closing it sends them an email.",
     "reviewClosedNote": "The review is closed and the author can read it. Every further change emails them again — to make larger changes, reopen the review first.",
@@ -1138,6 +1193,11 @@
     "erase": {
       "title": "Erase this review?",
       "description": "Every comment in it is erased as well. This cannot be undone."
+    },
+    "confirmClose": {
+      "title": "Close this review?",
+      "description": "The author sees every comment in the review and is e-mailed about it. It can be reopened later, but each further change after closing sends them another e-mail.",
+      "confirm": "Close the review"
     },
     "comment": {
       "text": "Comment",
@@ -1173,11 +1233,21 @@
     "request": {
       "ask": "Ask for a review",
       "withdraw": "Withdraw the request",
-      "askNote": "Your teacher will see it in their list of solutions to look at.",
-      "askedNote": "Your teacher has it in their list of solutions to look at.",
+      "askNote": "Your teacher will see this solution on their dashboard, among the ones waiting for a review.",
+      "askedNote": "Your teacher sees this solution on their dashboard, among the ones waiting for a review.",
       "toast": {
         "asked": "Your teacher has been asked to look at this.",
         "withdrawn": "The request was withdrawn."
+      },
+      "teacher": {
+        "ask": "Flag for review",
+        "withdraw": "Remove the flag",
+        "askNote": "The solution joins the ones waiting for a review on your dashboard. Use it for a solution a student asked you about elsewhere, too.",
+        "askedNote": "The solution is on your dashboard, among the ones waiting for a review.",
+        "toast": {
+          "asked": "Flagged for review.",
+          "withdrawn": "The flag was removed."
+        }
       },
       "errors": {
         "failed": "The request could not be changed."
@@ -2369,7 +2439,8 @@
       "roleFailed": "The role could not be changed.",
       "invalidateFailed": "The sessions could not be ended.",
       "localFailed": "The password login could not be added."
-    }
+    },
+    "import": "Import users"
   },
   "SubmissionFailures": {
     "title": "Submission failures",
@@ -2600,18 +2671,28 @@
   },
   "Comments": {
     "title": "Discussion",
-    "explain": "Notes and questions about this, kept with it.",
-    "empty": "Nothing has been said here yet.",
+    "explain": {
+      "exercise": "A discussion shared by everyone who can see this exercise.",
+      "assignment": "A discussion shared by everyone who can see this assignment.",
+      "solution": "A discussion shared by everyone who can see this solution.",
+      "referenceSolution": "A discussion shared by everyone who can see this reference solution."
+    },
+    "empty": {
+      "exercise": "Have a question about this exercise? Leave a message using the form below.",
+      "assignment": "Have a question about this assignment? Leave a message using the form below.",
+      "solution": "Have a question about this solution? Leave a message using the form below.",
+      "referenceSolution": "Have a question about this reference solution? Leave a message using the form below."
+    },
     "unknownAuthor": "Somebody you cannot see",
-    "you": "(you)",
+    "me": "Me",
+    "teacherBadge": "Teacher",
     "privateBadge": "Only you",
     "write": "Say something",
     "post": "Post it",
     "posting": "Posting…",
     "posted": "Posted.",
-    "keepPrivate": "Keep this to myself",
-    "privateMeans": "Nobody else will see it — UPolníček leaves a private comment out of everyone else's copy of the discussion, so it is a note in the margin rather than a quiet word with the staff.",
-    "publicMeans": "It will be visible to {audience}, and they will be told about it by email.",
+    "keepPrivate": "Internal note",
+    "privateMeans": "When ticked, UPolníček will not show the comment in the public discussion. Only you will be able to see it.",
     "makePrivate": "Hide from others",
     "madePrivate": "Only you can see it now.",
     "makePublic": "Show to others",
@@ -2629,12 +2710,6 @@
       "postFailed": "The comment could not be posted.",
       "privacyFailed": "That could not be changed.",
       "deleteFailed": "The comment could not be deleted."
-    },
-    "audience": {
-      "exercise": "everyone who may see this exercise",
-      "assignment": "the students this is assigned to and the group's teachers",
-      "solution": "the solution's author and the group's teachers",
-      "referenceSolution": "the teachers who may see this reference solution"
     }
   },
   "Toast": {
@@ -3077,6 +3152,7 @@
   "AssignExercise": {
     "title": "Assign an exercise",
     "backToGroup": "Back to the group",
+    "manageCatalog": "Manage the exercise catalog",
     "explain": "Assigning creates the assignment straight away, with UPolníček's default deadline and points — you set those on the next screen. Nobody sees it until you make it visible.",
     "searchLabel": "Search the exercise catalog",
     "searchPlaceholder": "Search by name",
@@ -3579,6 +3655,77 @@
       "createLocalHint": "This account signs in only through an external service. Adding a local login leaves the password empty — set one above afterwards.",
       "localCreated": "The account now has a password login.",
       "localFailed": "The password login could not be added."
+    },
+    "externalIds": {
+      "title": "Identities in other systems",
+      "explain": "An identifier this person holds in another system — a study number from STAG, for instance. It is what a future single sign-on would recognise them by, and what an import matches a row against.",
+      "empty": "No identifier is recorded for this person.",
+      "service": "System",
+      "identifier": "Identifier",
+      "add": "Record",
+      "remove": "Remove",
+      "removeNamed": "Remove the {service} identifier",
+      "saved": "The identifier was recorded.",
+      "removed": "The identifier was removed.",
+      "hint": "One identifier per system. Recording a second one for the same system replaces the first. “stag” is UPOL's study information system.",
+      "confirmRemove": {
+        "title": "Remove the identifier?",
+        "description": "This person will no longer be recognised by their {service} identifier. Nothing else about the account changes."
+      },
+      "errors": {
+        "taken": "Another account already holds this identifier.",
+        "incomplete": "Fill in both the system and the identifier.",
+        "setFailed": "The identifier was not recorded.",
+        "removeFailed": "The identifier was not removed."
+      }
+    }
+  },
+  "UserImport": {
+    "title": "Import users",
+    "subtitle": "Import users from a CSV file.",
+    "backToUsers": "All users",
+    "explain": "Paste the contents of your table into the field below, in the format described here. Nobody is added twice — the email address is what makes a person unique. Where an account already exists, it is checked and anything missing is filled in. Check the table generated below before you send anything.",
+    "explainGroup": "Paste the contents of your table into the field below, in the format described here. Everyone invited joins {group} when they accept. Nobody is added twice — the email address is what makes a person unique. Where an account already exists, it is checked and anything missing is filled in. Check the table generated below before you send anything.",
+    "format": {
+      "title": "What the table has to look like",
+      "columns": "The first line names the columns. Three are required — email, first name, last name — and two more are understood: titles before and titles after the name. Czech names work too (e-mail, jméno, příjmení, titul před, titul za).",
+      "identifiers": "Every other column becomes an identifier in another system, named after the column. A column headed “stag” records each person's STAG number.",
+      "example": "email;jméno;příjmení;titul před;stag\nnovak@upol.cz;Jan;Novák;Bc.;F230123\nsvoboda@upol.cz;Petr;Svoboda;;F230124"
+    },
+    "paste": "The table",
+    "preview": "{count, plural, one {# person read} few {# people read} many {# people read} other {# people read}}",
+    "previewIdentifiers": "identifiers: {keys}",
+    "previewTruncated": "…and {count} more, not shown here.",
+    "columns": {
+      "email": "Email",
+      "name": "Name",
+      "outcome": "What happened"
+    },
+    "problems": {
+      "columns": "The first line has to name the columns, and has to include an email, a first name and a last name.",
+      "email": "Line {line}: that is not an email address. A shifted column is the usual cause.",
+      "name": "Line {line}: the first name or the last name is missing.",
+      "duplicate": "Line {line}: this address appears earlier in the table. The later line is ignored."
+    },
+    "invite": "Send an invitation to everyone without an account",
+    "inviteHint": "An invitation does not create the account — a link for choosing a password arrives at the address given. The account comes into being with that step, and the identifiers are written with it. Untick this and nothing is sent: it only reports who already has an account and whether the identifiers are free.",
+    "mailLanguage": "Language of the invitation email",
+    "locales": {
+      "cs": "Czech",
+      "en": "English"
+    },
+    "run": "Import {count, plural, one {# person} few {# people} many {# people} other {# people}}",
+    "running": "Importing…",
+    "tooMany": "That is more than {max} rows, which is more than one run can carry. Split the table and import it in parts.",
+    "result": "{invited} invited · {matched} already had an account · {skipped} not sent · {failed} refused",
+    "outcomes": {
+      "invited": "Invitation sent",
+      "matched": "Already had an account",
+      "failed": "Refused",
+      "identifiersSet": "identifiers: {services}",
+      "identifierFailed": "the {service} identifier was refused",
+      "skipped": "No account — no invitation sent",
+      "identifierTaken": "the {service} identifier already belongs to another user ({owner})"
     }
   },
   "Instances": {

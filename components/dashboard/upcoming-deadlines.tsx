@@ -115,14 +115,10 @@ export async function UpcomingDeadlines({
                       : formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
                   </td>
                   <td className="px-3 py-2">
-                    <AssignmentProgressBadge
-                      stats={{
-                        status: assignment.stats.status,
-                        gained: assignment.stats.gained,
-                        total: assignment.stats.total,
-                        accepted: assignment.stats.accepted,
-                      }}
-                    />
+                    {/* The whole row, not four of its fields: rebuilding it by hand dropped
+                        `dataOnly` and `graded`, so this badge said "incorrect" beside the "?/20"
+                        two cells to its left, which is the same row disagreeing with itself. */}
+                    <AssignmentProgressBadge stats={assignment.stats} />
                   </td>
                 </>
               )}

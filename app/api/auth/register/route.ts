@@ -16,7 +16,7 @@ const registerSchema = z.object({
 });
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 interface RegistrationPayload {
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   if (!apiResponse.ok) {
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
     return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "The account was not created." },
+      { success: false, code: errorBody.error?.code },
       { status: apiResponse.status === 500 ? 502 : apiResponse.status },
     );
   }

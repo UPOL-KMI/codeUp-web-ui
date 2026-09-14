@@ -16,17 +16,19 @@ import { DATE_TIME_FORMAT } from "@/lib/format/date-time";
 import type { ActionResult } from "@/lib/forms/action-result";
 
 import { useRouter } from "@/i18n/navigation";
+import { CopyButton } from "@/components/copy-button";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 
 /**
  * The links that let people join this group (T-018), for whoever may mint them.
  *
- * A link is the whole product here, so the list shows the **address itself** rather than a
- * "copy" affordance over an invisible value: a teacher pastes it into a course page or an email,
- * and needs to see what they are pasting. `origin` is resolved on the server from the request's
- * own `Host` -- this component cannot read `window.location` without a hydration mismatch, and
- * guessing from `API_BASE_PUBLIC` would be right in the container and wrong in dev.
+ * A link is the whole product here, so the list shows the **address itself**, with a copy button
+ * beside it rather than in place of it: a teacher pastes it into a course page or an email, and
+ * needs to see what they are pasting as well as not have to select it by hand. `origin` is
+ * resolved on the server from the request's own `Host` -- this component cannot read
+ * `window.location` without a hydration mismatch, and guessing from `API_BASE_PUBLIC` would be
+ * right in the container and wrong in dev.
  *
  * Expired links stay listed, marked. core-api keeps the record until someone deletes it, and the
  * two are genuinely different: an expired link can be given a new date, a deleted one 404s
@@ -62,6 +64,9 @@ export function InvitationManager({
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<InvitationDraft>({ note: "", expiresAt: "" });
+
+  const invitationLink = (invitationId: string) =>
+    `${origin}/accept-group-invitation/${invitationId}`;
 
   const input =
     "rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring";
@@ -106,9 +111,15 @@ export function InvitationManager({
               key={invitation.id}
               className="flex flex-col gap-2 rounded-lg border border-border p-3 text-sm"
             >
-              <code className="break-all text-xs">
-                {origin}/accept-group-invitation/{invitation.id}
-              </code>
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="min-w-0 flex-1 break-all text-xs">
+                  {invitationLink(invitation.id)}
+                </code>
+                <CopyButton
+                  value={invitationLink(invitation.id)}
+                  label={t("copyNamed", { note: invitation.note || invitation.id })}
+                />
+              </div>
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span>
                   {invitation.hasExpired

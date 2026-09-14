@@ -10,7 +10,7 @@ const bodySchema = z.object({
 });
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 /**
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
   if (!apiResponse.ok) {
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
     return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "Unable to change role." },
+      { success: false, code: errorBody.error?.code },
       { status: apiResponse.status },
     );
   }

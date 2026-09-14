@@ -35,6 +35,16 @@ export interface AccountSettings {
   isAllowed: boolean;
   role: string;
   /**
+   * The account's identities in other systems, keyed by the service that issued them (`stag` for
+   * UPOL's study information system). core-api keeps one identifier per service and refuses one
+   * that already belongs to somebody else.
+   *
+   * **Whether they are disclosed at all depends on the reader**: `UserViewFactory::getExternalIds`
+   * filters the list down to the services the reader themselves signs in through, unless they may
+   * set external ids -- so an ordinary reader sees an empty object here, not a permission error.
+   */
+  externalIds: Record<string, string>;
+  /**
    * Empty for anybody but the account's owner: core-api attaches `settings` to `privateData` only
    * for the user themselves, so an administrator editing somebody else (AD-002) cannot read -- let
    * alone offer -- their notification preferences. Verified live, and the same rule the legacy
@@ -111,7 +121,22 @@ interface UserPayload {
     role?: string;
     emptyLocalPassword?: boolean;
     settings?: Record<string, string | boolean>;
+    /** An array when core-api has nothing to report, an object otherwise (its `[]`-for-empty PHP
+     *  idiom); several ids for one service arrive as an array under that key. */
+    externalIds?: Record<string, string | string[]> | unknown[];
   } | null;
+}
+
+/** A service with several identifiers is joined for display; the form edits one per service,
+ *  which is all `POST /v1/users/{id}/external-login/{service}` can store. */
+function readExternalIds(raw: Record<string, string | string[]> | unknown[] | undefined) {
+  if (raw === undefined || Array.isArray(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw).map(([service, value]) => [
+      service,
+      Array.isArray(value) ? value.join(", ") : value,
+    ]),
+  );
 }
 
 export const getAccountSettings = cache(async function getAccountSettings(
@@ -133,6 +158,7 @@ export const getAccountSettings = cache(async function getAccountSettings(
     isAllowed: user.privateData?.isAllowed !== false,
     role: user.privateData?.role ?? "student",
     emptyLocalPassword: user.privateData?.emptyLocalPassword === true,
+    externalIds: readExternalIds(user.privateData?.externalIds),
     // core-api has no `gravatarUrlEnabled` in the response; the avatar URL being set is what says
     // it is on, which is how the legacy form derives its own initial value.
     gravatarUrlEnabled: (user.avatarUrl ?? null) !== null,

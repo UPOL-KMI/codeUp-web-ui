@@ -14,6 +14,14 @@ import { useToast } from "@/components/toast/toast-provider";
 import { buttonClasses } from "@/components/button";
 
 /**
+ * What the discussion is attached to. Two of its sentences name it -- "everyone who can see this
+ * *assignment*" -- and a screen saying "assignment" over a solution's thread would be wrong, so the
+ * screen declares which it is and the component looks the wording up. Replaces a `publicMeans`
+ * phrase each screen used to build itself.
+ */
+export type DiscussionSubject = "exercise" | "assignment" | "solution" | "referenceSolution";
+
+/**
  * A discussion thread (T-022) -- the legacy `CommentThreadContainer`, on the screens that had one.
  *
  * **"Private" here means a note to oneself, not a note to the staff.** core-api filters a private
@@ -33,14 +41,16 @@ export function CommentThread({
   comments,
   currentUserId,
   canModerate = false,
-  publicMeans,
+  subject,
+  teacherIds = [],
 }: {
   threadId: string;
   comments: Comment[];
   currentUserId: string;
   canModerate?: boolean;
-  /** Who a public comment reaches here, in this screen's own words. */
-  publicMeans: string;
+  subject: DiscussionSubject;
+  /** Group staff, so a teacher's voice is marked. Empty where the thread has no group. */
+  teacherIds?: string[];
 }) {
   const t = useTranslations("Comments");
   const format = useFormatter();
@@ -52,6 +62,7 @@ export function CommentThread({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Comment | null>(null);
+  const teachers = new Set(teacherIds);
 
   async function run(call: () => Promise<ActionResult<unknown>>, successKey?: string) {
     // The buttons are `aria-disabled` rather than `disabled` -- disabling the element under the
@@ -73,7 +84,7 @@ export function CommentThread({
   return (
     <div className="flex flex-col gap-4">
       {comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-sm text-muted-foreground">{t(`empty.${subject}`)}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {comments.map((comment) => {
@@ -86,9 +97,14 @@ export function CommentThread({
                 }`}
               >
                 <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="font-medium">
-                    {comment.authorName || t("unknownAuthor")}
-                    {mine && <span className="ml-1 text-xs text-muted-foreground">{t("you")}</span>}
+                  {/* Own comments are named "Me" and coloured, teachers carry a mortarboard: a
+                      thread of six names in one weight told the reader nothing about who was
+                      answering and who was asking. Reported by the operator, reading a thread of
+                      his own. The mark is on the name, not the whole card -- a comment's own
+                      background already means "private". */}
+                  <span className={`font-medium ${mine ? "text-warning" : ""}`}>
+                    {teachers.has(comment.authorId) && <TeacherMark label={t("teacherBadge")} />}
+                    {mine ? t("me") : comment.authorName || t("unknownAuthor")}
                   </span>
                   <time
                     dateTime={new Date(comment.postedAt * 1000).toISOString()}
@@ -158,9 +174,10 @@ export function CommentThread({
           />
           <span>
             {t("keepPrivate")}
-            <span className="block text-xs text-muted-foreground">
-              {isPrivate ? t("privateMeans") : t("publicMeans", { audience: publicMeans })}
-            </span>
+            {/* The same sentence whether the box is ticked or not: it says what ticking *does*,
+                and a hint that rewrites itself on the tick is read after the decision rather than
+                before it. Asked for by the operator, who found the swapping pair confusing. */}
+            <span className="block text-xs text-muted-foreground">{t("privateMeans")}</span>
           </span>
         </label>
 
@@ -203,5 +220,33 @@ export function CommentThread({
         }}
       />
     </div>
+  );
+}
+
+/**
+ * A mortarboard before a teacher's name. Blue, which is this app's `info` -- the one accent that
+ * is neither a warning nor a success and reads as "who this is" rather than "what happened".
+ *
+ * The name is carried by a `title`, not by `sr-only` text: the two sit inside one `<span>` that a
+ * screen reader announces as a single name, and "Teacher Jane Doe" read out in one breath is what
+ * the icon means to a sighted reader anyway.
+ */
+function TeacherMark({ label }: { label: string }) {
+  return (
+    <svg
+      className="mr-1 inline-block size-4 shrink-0 align-[-0.15em] text-info"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      role="img"
+      aria-label={label}
+    >
+      <path d="M12 4 2 9l10 5 10-5-10-5Z" />
+      <path d="M6 11.5V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4.5" />
+      <path d="M21 9.5V15" />
+    </svg>
   );
 }

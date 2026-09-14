@@ -42,10 +42,14 @@ export function RerunControls({
   const toast = useToast();
   const [pending, setPending] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // Which re-run is waiting to be confirmed, or null. One piece of state rather than two booleans:
+  // the two dialogs are the same dialog with different words, and two flags could both be true.
+  const [confirmingRerun, setConfirmingRerun] = useState<"plain" | "debug" | null>(null);
 
   if (!canResubmit && !canDelete) return null;
 
   async function rerun(debug: boolean) {
+    setConfirmingRerun(null);
     setPending(true);
     const result = await resubmitSolution(solutionId, debug);
     setPending(false);
@@ -95,7 +99,7 @@ export function RerunControls({
               type="button"
               aria-disabled={pending}
               className={button}
-              onClick={() => void rerun(false)}
+              onClick={() => setConfirmingRerun("plain")}
             >
               {t("resubmit")}
             </button>
@@ -103,7 +107,7 @@ export function RerunControls({
               type="button"
               aria-disabled={pending}
               className={button}
-              onClick={() => void rerun(true)}
+              onClick={() => setConfirmingRerun("debug")}
             >
               {t("resubmitDebug")}
             </button>
@@ -120,6 +124,29 @@ export function RerunControls({
           </button>
         )}
       </div>
+
+      {/* Confirmed although nothing is destroyed: a re-run occupies a worker for as long as the
+          solution takes, and a mis-click on a row of three buttons costs the machine time of a
+          whole evaluation. Asked for by the operator. `destructive={false}` -- the confirm button
+          is not painted red, because this takes nothing away. */}
+      <ConfirmDialog
+        open={confirmingRerun !== null}
+        onOpenChange={(open) => !open && setConfirmingRerun(null)}
+        title={t(
+          confirmingRerun === "debug" ? "confirmResubmitDebug.title" : "confirmResubmit.title",
+        )}
+        description={t(
+          confirmingRerun === "debug"
+            ? "confirmResubmitDebug.description"
+            : "confirmResubmit.description",
+        )}
+        confirmLabel={t(
+          confirmingRerun === "debug" ? "confirmResubmitDebug.confirm" : "confirmResubmit.confirm",
+        )}
+        destructive={false}
+        pending={pending}
+        onConfirm={() => void rerun(confirmingRerun === "debug")}
+      />
 
       <ConfirmDialog
         open={confirmingDelete}

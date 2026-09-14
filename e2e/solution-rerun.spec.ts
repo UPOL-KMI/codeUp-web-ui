@@ -71,6 +71,8 @@ test("runs a solution again, and carries the monitor channel of the new job", as
     await expect(main.getByRole("heading", { name: "Running it again" })).toBeVisible();
 
     await main.getByRole("button", { name: "Run it again", exact: true }).click();
+    // Confirmed since the operator's round: a re-run costs a worker an evaluation's worth of time.
+    await page.getByRole("alertdialog").getByRole("button", { name: "Run it again" }).click();
 
     // core-api hands the monitor channel out once, in the response to the resubmit that created the
     // job. If it is not in this URL it is gone, and the progress display has nothing to listen to.
@@ -108,6 +110,10 @@ test("lists the runs behind a solution, and reads or removes one", async ({ page
     await expect(main.getByRole("heading", { name: "Runs of this solution" })).toBeHidden();
 
     await main.getByRole("button", { name: "Run it again in debug mode" }).click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Run it in debug mode" })
+      .click();
     await expect(main.getByRole("heading", { name: "Runs of this solution" })).toBeVisible({
       timeout: 30_000,
     });

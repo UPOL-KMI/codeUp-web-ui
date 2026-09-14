@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
 import { useToast } from "@/components/toast/toast-provider";
 import { buttonClasses } from "@/components/button";
@@ -28,6 +29,7 @@ import { buttonClasses } from "@/components/button";
  */
 export function TakeoverButton({ userId, fullName }: { userId: string; fullName: string }) {
   const t = useTranslations("Profile.takeover");
+  const apiError = useApiErrorMessage();
   const locale = useLocale();
   const toast = useToast();
   const [confirming, setConfirming] = useState(false);
@@ -38,11 +40,11 @@ export function TakeoverButton({ userId, fullName }: { userId: string; fullName:
     const response = await fetch(`/api/auth/takeover/${userId}`, { method: "POST" }).catch(
       () => null,
     );
-    const body = (await response?.json().catch(() => null)) as { message?: string } | null;
+    const body = (await response?.json().catch(() => null)) as ApiErrorBody | null;
 
     if (!response?.ok) {
       setPending(false);
-      toast.error(t("failed"), body?.message);
+      toast.error(t("failed"), apiError(body?.code, undefined));
       return;
     }
 

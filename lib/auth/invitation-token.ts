@@ -6,7 +6,9 @@ import "server-only";
  * A different JWT from the session token `jwt.ts` decodes, with its own claims -- core-api builds
  * it in `App\Security\InvitationToken::create`: `iid` the instance, `eml` the email that becomes
  * the login name, `usr` the person's name as exactly four strings (titles before, first, last,
- * titles after), `grp` the groups they join on registration, plus `iat`/`exp`.
+ * titles after), `grp` the groups they join on registration, `xid` the identifiers other systems
+ * know them by, plus `iat`/`exp`. `xid` is this deployment's own addition to the fork, so a token
+ * issued before it simply has none.
  *
  * **Not verified here, and it does not need to be.** core-api signed it and re-checks the
  * signature on `POST /v1/users/accept-invitation`, which is the call that actually creates the
@@ -30,6 +32,23 @@ export interface InvitationClaims {
   /** How many groups accepting will enrol the person in. core-api silently skips any that have
    *  been deleted, archived or made organizational since, so this is an upper bound. */
   groupCount: number;
+  /**
+   * Identifiers other systems know this person by (`stag` and the like), recorded on the account
+   * when the invitation is accepted. **Shown to them**, because it is personal data about them
+   * that somebody else typed and this is the one moment they can see it before it becomes part of
+   * their account -- and a mistyped study number is far cheaper to catch here than later.
+   */
+  externalIds: Record<string, string>;
+}
+
+/** `xid` is a JSON object of strings, or absent. Anything else is ignored rather than trusted. */
+function readExternalIds(raw: unknown): Record<string, string> {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== "",
+    ),
+  );
 }
 
 export function decodeInvitationToken(token: string): InvitationClaims | null {
@@ -73,5 +92,6 @@ export function decodeInvitationToken(token: string): InvitationClaims | null {
     expiresAt: claims.exp,
     hasExpired: claims.exp * 1000 <= Date.now(),
     groupCount: Array.isArray(claims.grp) ? claims.grp.length : 0,
+    externalIds: readExternalIds(claims.xid),
   };
 }

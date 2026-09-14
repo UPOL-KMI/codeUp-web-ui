@@ -43,9 +43,8 @@ export default async function AssignmentSolutionsPage({
   params: Promise<{ assignmentId: string }>;
 }) {
   const [{ assignmentId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, assignment, solutions] = await Promise.all([
+  const [t, assignment, solutions] = await Promise.all([
     getTranslations("AssignmentSolutions"),
-    getTranslations("Comments"),
     getAssignmentDetail(assignmentId, locale),
     getAssignmentSolutions(assignmentId),
   ]);
@@ -94,8 +93,9 @@ export default async function AssignmentSolutionsPage({
       <div className="mt-8">
         <Discussion
           threadId={assignmentId}
-          publicMeans={tComments("audience.assignment")}
+          subject="assignment"
           canModerate
+          teacherIds={assignment.groupTeacherIds}
         />
       </div>
     </PageShell>

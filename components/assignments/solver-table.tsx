@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import type { AssignmentSolver } from "@/lib/api/assignment-solvers";
-import { formatPoints } from "@/lib/format/points";
+import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
 import { ASSIGNMENT_PROGRESS_TONE } from "@/lib/status/assignment-progress";
 
 import { Link } from "@/i18n/navigation";
@@ -68,6 +68,11 @@ export function SolverTable({
       cell: (solver) =>
         solver.gained === null ? (
           <span className="text-muted-foreground">—</span>
+        ) : solver.progress === "awaiting-review" ? (
+          // Nobody has marked it, so there is no number to show. The pipeline's nought is not the
+          // student's score, and printing it here read as "0/20, wrong" beside a badge that says
+          // the teacher has not looked yet.
+          <span className="text-muted-foreground">{formatPointsUnknown(solver.maxPoints)}</span>
         ) : (
           <>
             {formatPoints(solver.gained, solver.maxPoints)}

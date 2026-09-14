@@ -63,9 +63,8 @@ export default async function SolutionPage({
   searchParams: Promise<{ monitor?: string; tasks?: string; submission?: string }>;
 }) {
   const [{ solutionId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, tComments, solution] = await Promise.all([
+  const [t, solution] = await Promise.all([
     getTranslations("Solution"),
-    getTranslations("Comments"),
     getSolutionDetail(solutionId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
@@ -142,7 +141,7 @@ export default async function SolutionPage({
             href={`/solutions/${solutionId}/sources`}
             className={buttonClasses("outline", "sm")}
           >
-            {t("sourceCode")}
+            {t("solutionFiles")}
           </Link>
           <Link
             href={`/assignments/${solution.assignmentId}`}
@@ -239,6 +238,7 @@ export default async function SolutionPage({
           requested={solution.reviewRequested}
           canRequest={solution.can.setFlagAsStudent === true || solution.can.setFlag === true}
           reviewStarted={solution.reviewStartedAt !== null}
+          asTeacher={solution.can.setFlag === true}
         />
 
         <VerdictControls
@@ -307,16 +307,18 @@ export default async function SolutionPage({
           )}
           <div className="mt-3 flex flex-col gap-3">
             {!dataOnly && <ScoreConfigExplanation scoreConfig={scoreConfig} />}
-            {solution.can.downloadResultArchive === true && (
-              <div>
-                <a
-                  href={`/api/solutions/submissions/${(selected ?? runs[0])?.id ?? ""}/result`}
-                  className={buttonClasses("outline", "sm")}
-                >
-                  {t("runs.downloadResult")}
-                </a>
-              </div>
-            )}
+            {/* The files, not the result archive. What a reader of this section wants next is what
+                the student handed in -- especially where nothing was marked by machine -- and the
+                archive of the *evaluation* is a debugging artefact that still has its own button in
+                the runs table below. Asked for by the operator. */}
+            <div>
+              <Link
+                href={`/solutions/${solutionId}/sources`}
+                className={buttonClasses("outline", "sm")}
+              >
+                {t("solutionFiles")}
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -371,8 +373,9 @@ export default async function SolutionPage({
 
         <Discussion
           threadId={solutionId}
-          publicMeans={tComments("audience.solution")}
+          subject="solution"
           canModerate={solution.can.review === true}
+          teacherIds={solution.groupTeacherIds}
         />
       </div>
     </PageShell>

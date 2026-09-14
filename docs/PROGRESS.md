@@ -6464,3 +6464,52 @@ grey reading at 3.3:1 on its own block -- every `#` comment in the install guide
 mode -- and a calendar chip whose `opacity-70` had only ever passed because the text beneath it
 was near-black. The palette pushes a token towards the opposite pole until it reads, and leaves
 one that already does exactly as the theme wrote it; the opacity is gone. Ten audits, no finding.
+
+### 2026-09-14 — the operator's testing round, and a log that was eating the disk
+
+**A 35.7 GB `error.log`, found while sizing the production VM.** 120 million lines, every one a
+Nette deprecation notice about this application's own router construction: about 87 KB written per
+HTTP request, measured, over six weeks of light development. Setting `error_reporting` in `php.ini`
+changes nothing — Tracy's `Debugger::enable()` calls `error_reporting(E_ALL)` itself
+(`Debugger.php:211`) before a request is served. The fix is one line in core-api's `Bootstrap`,
+*after* `enableTracy()`; verified from a clean image at **0 bytes over five requests**, with
+`E_WARNING`, `E_NOTICE`, `E_USER_ERROR` and exceptions all still logged.
+
+**Comment notifications are queued.** Ten people asking something in the same minute sent ten
+e-mails to everybody else. `CommentNotificationJobHandler` defers five minutes and coalesces per
+discussion, the same shape as the points job. What it sends is the newest comment **and a line
+saying how many others came with it** — a comment is not a state that can be re-read the way a
+points total is, and nine texts silently missing would be worse than the flood. Measured live
+against the running stack: coalescing returns null for the second comment, the delay is 300 s, a
+private comment never enters the batch. The probe also found a real defect — `postedAt` is stored
+to the second, so a burst ties and "the last one" was arbitrary; the query now breaks ties on id.
+
+**Two summary screens called an unmarked submission wrong.** The class-progress table read the
+group stats row, which carries no runtime environment, so a data-only solution nobody had graded
+read as *Špatně, 0/20* on the teacher's screen while the student's own screen said *waiting*.
+The dashboard had the same fault in a subtler form: the points cell already printed `?/20` while
+the badge beside it was built from four hand-picked fields with `dataOnly` dropped — one row
+disagreeing with itself. Unmarked solutions are also out of the "average points" tile now; their
+zero was never a score.
+
+**The rest of the round, from the operator reading his own screens.** Only the most specific
+sidebar link lights (DEC-147). The assign screen offers the catalog it picks from. Discussion:
+own comments are named *Já* and coloured, teachers carry a blue mortarboard, the private-comment
+hint no longer rewrites itself on the tick, and the two sentences that name what is being
+discussed vary by subject rather than saying "assignment" over a solution. The review-request
+control speaks to a teacher as a teacher. Verdict buttons are coloured by direction and refuse a
+no-op; awarding, saving, re-running, closing a review — everything that overwrites an evaluation
+or writes to a student — confirms first, reading the numbers back rather than asking "are you
+sure". Points above the maximum offer a one-click split into bonus, preserving the total typed
+(`lib/status/points-overflow.ts`).
+
+**Submitted files.** A PDF is offered, not rendered (DEC-146), and the "too many files" notice that
+blamed the *count* of two files was really the byte budget — which no longer counts files that are
+never fetched. Each file folds (DEC-148), with expand/collapse over all of them.
+
+**Not verified by eye.** Nothing in this round was seen rendered: the seeded accounts are gone from
+this deployment, so there is no session to drive a browser with and no valid API token. What is
+verified is the five checks, the unit tests written alongside (three new pure modules), the strings
+present in the deployed image, and the core-api behaviour measured in the running container. The
+e2e suite still cannot run — it reads `[seed]` fixtures a clean install removed — and **nineteen
+specs have now been edited without being executed**.

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { canSeeExerciseSection, getCurrentUser } from "@/lib/api/current-user";
 import { getAssignableExercises } from "@/lib/api/exercises";
 import { getGroupDetail } from "@/lib/api/group-detail";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
@@ -44,9 +45,10 @@ export default async function AssignExercisePage({
   searchParams: Promise<{ q?: string; scope?: string }>;
 }) {
   const [{ groupId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, group] = await Promise.all([
+  const [t, group, user] = await Promise.all([
     getTranslations("AssignExercise"),
     getGroupDetail(groupId, locale),
+    getCurrentUser(),
   ]);
 
   if (group.can.assignExercise !== true || group.organizational) forbidden();
@@ -76,12 +78,24 @@ export default async function AssignExercisePage({
       subtitle={group.name}
       breadcrumbs={breadcrumbs}
       actions={
-        <Link
-          href={`/groups/${groupId}?tab=assignments`}
-          className={buttonClasses("outline", "sm")}
-        >
-          {t("backToGroup")}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/groups/${groupId}?tab=assignments`}
+            className={buttonClasses("outline", "sm")}
+          >
+            {t("backToGroup")}
+          </Link>
+          {/* The way out of "nothing here to assign": this page only picks from what the catalog
+              already holds, and a teacher who needs a new exercise has to leave it. Gated on the
+              same predicate as the sidebar section (G-010) rather than shown to everyone who got
+              here -- `exercise.viewAll` starts at `supervisor-student`, and offering a link that
+              answers 403 is the fault the sidebar was fixed for. */}
+          {canSeeExerciseSection(user.role) && (
+            <Link href="/exercises" className={buttonClasses("primary", "sm")}>
+              {t("manageCatalog")}
+            </Link>
+          )}
+        </div>
       }
     >
       <div className="flex max-w-3xl flex-col gap-4">

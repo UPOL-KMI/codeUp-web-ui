@@ -106,45 +106,6 @@ export async function AssignmentDetailView({
       )}
 
       {tab === "text" && (
-        <section aria-labelledby="assignment-text">
-          <h2 id="assignment-text" className="mb-3 text-base font-semibold tracking-tight">
-            {t("text")}
-          </h2>
-          {assignment.text ? (
-            <div className="text-base leading-relaxed">
-              <Markdown source={assignment.text} />
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t("noText")}</p>
-          )}
-          {assignment.externalLink && (
-            <p className="mt-3 text-sm">
-              <a
-                href={assignment.externalLink}
-                rel="noreferrer noopener"
-                target="_blank"
-                className="underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              >
-                {t("externalLink")}
-              </a>
-            </p>
-          )}
-          {assignment.studentHint && (
-            <div className="mt-4 rounded-md border border-border bg-muted/40 p-3">
-              <h3 className="text-sm font-medium">{t("hint")}</h3>
-              {/* Markdown, not plain text: legacy renders the hint through its own renderer
-                (`LocalizedTexts.js`), so a hint authored with a list or emphasis rendered here as
-                literal asterisks. Found while building G-028 -- offering a markdown preview of a
-                field displayed as plain text would have been the more visible half of the bug. */}
-              <div className="mt-1">
-                <Markdown source={assignment.studentHint} />
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
-      {tab === "text" && (
         <section aria-labelledby="assignment-terms">
           <h2 id="assignment-terms" className="mb-3 text-base font-semibold tracking-tight">
             {t("terms")}
@@ -229,6 +190,45 @@ export async function AssignmentDetailView({
               </DetailRow>
             )}
           </dl>
+        </section>
+      )}
+
+      {tab === "text" && (
+        <section aria-labelledby="assignment-text">
+          <h2 id="assignment-text" className="mb-3 text-base font-semibold tracking-tight">
+            {t("text")}
+          </h2>
+          {assignment.text ? (
+            <div className="text-base leading-relaxed">
+              <Markdown source={assignment.text} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("noText")}</p>
+          )}
+          {assignment.externalLink && (
+            <p className="mt-3 text-sm">
+              <a
+                href={assignment.externalLink}
+                rel="noreferrer noopener"
+                target="_blank"
+                className="underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {t("externalLink")}
+              </a>
+            </p>
+          )}
+          {assignment.studentHint && (
+            <div className="mt-4 rounded-md border border-border bg-muted/40 p-3">
+              <h3 className="text-sm font-medium">{t("hint")}</h3>
+              {/* Markdown, not plain text: legacy renders the hint through its own renderer
+                (`LocalizedTexts.js`), so a hint authored with a list or emphasis rendered here as
+                literal asterisks. Found while building G-028 -- offering a markdown preview of a
+                field displayed as plain text would have been the more visible half of the bug. */}
+              <div className="mt-1">
+                <Markdown source={assignment.studentHint} />
+              </div>
+            </div>
+          )}
         </section>
       )}
 

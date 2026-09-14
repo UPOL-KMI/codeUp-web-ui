@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { readSessionToken } from "@/lib/auth/session-cookie";
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 /**
@@ -36,7 +36,7 @@ export async function POST() {
   if (!apiResponse.ok) {
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
     return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "The message could not be sent." },
+      { success: false, code: errorBody.error?.code },
       { status: apiResponse.status === 500 ? 502 : apiResponse.status },
     );
   }

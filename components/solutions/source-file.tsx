@@ -3,11 +3,13 @@ import { getTranslations } from "next-intl/server";
 import type { FileContent, SolutionFileEntry } from "@/lib/api/solution-files";
 import type { ReviewComment } from "@/lib/api/solution-review";
 import { highlightToLines } from "@/lib/code/highlight";
+import { isBinaryFilename } from "@/lib/code/binary-files";
 import { languageForFilename } from "@/lib/code/languages";
 
 import { CodeBlock, CodeLine } from "@/components/code/code-block";
 import { ReviewableCode } from "@/components/solutions/reviewable-code";
 import { Badge } from "@/components/status/badge";
+import { buttonClasses } from "@/components/button";
 
 /**
  * One submitted file, rendered (S-017), with its review comments where there are any (S-018).
@@ -43,6 +45,12 @@ export interface SourceFileProps {
   file: SolutionFileEntry;
   /** Null when core-api could not produce the content -- the file is still listed, with the reason. */
   content: FileContent | null;
+  /**
+   * Where this file can be downloaded on its own, for one this app will not render. Absent for an
+   * entry inside a submitted archive, whose bytes exist only inside it, and for a reference
+   * solution, which has no such route.
+   */
+  downloadHref?: string | null;
   contentError?: string;
   /**
    * Omitted where the file has no review and never will: a **reference** solution's (G-013), which
@@ -56,21 +64,52 @@ export async function SourceFile({
   file,
   content,
   contentError,
+  downloadHref,
   review,
 }: SourceFileProps) {
   const [t, code] = await Promise.all([getTranslations("Sources"), getTranslations("Code")]);
   const anchor = fileAnchorId(file.name);
   const language = languageForFilename(file.entry ?? file.name);
 
-  const caption = (
-    <figcaption className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-muted px-4 py-2">
+  const captionInner = (
+    <>
       <span className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-sm text-foreground">{file.name}</span>
         {file.isEntryPoint && <Badge tone="info">{t("entryPoint")}</Badge>}
       </span>
       <span className="text-sm text-muted-foreground">{t("bytes", { size: file.size })}</span>
-    </figcaption>
+    </>
   );
+
+  const captionClass =
+    "flex flex-wrap items-baseline justify-between gap-2 border-b border-border bg-muted px-4 py-2";
+
+  const caption = <figcaption className={captionClass}>{captionInner}</figcaption>;
+
+  // A file this app will not read as text: offered, not rendered. Two ways to land here -- the
+  // name said so before anything was fetched (`isBinaryFilename`, the cheap case), or the bytes
+  // came back and were not UTF-8, which is the backstop for a type nobody listed. Either way
+  // showing the characters would be mojibake, and the reader wants the file itself.
+  const unreadable =
+    isBinaryFilename(file.entry ?? file.name) || content?.malformedCharacters === true;
+
+  if (unreadable) {
+    return (
+      <figure id={anchor} className="flex flex-col overflow-hidden rounded-lg border border-border">
+        {caption}
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+          <span className="text-sm text-muted-foreground">
+            {downloadHref === null ? t("inArchive") : t("notShown")}
+          </span>
+          {downloadHref && (
+            <a href={downloadHref} className={buttonClasses("outline", "sm")}>
+              {t("downloadFile")}
+            </a>
+          )}
+        </div>
+      </figure>
+    );
+  }
 
   if (content === null) {
     return (
@@ -89,12 +128,42 @@ export async function SourceFile({
   );
   const interactive = review !== undefined && (review.canComment || review.comments.length > 0);
 
+  // **A `<details>`, not a React accordion.** A submitted file can be thousands of lines, and the
+  // operator asked to be able to fold them away; the browser already owns exactly that state, for
+  // free, with keyboard support and with find-in-page able to reach inside. Making it React state
+  // would mean a client component wrapped around every file -- and around the highlighted tokens,
+  // which is the one thing on this page worth keeping off the client. Open by default: a reader
+  // arriving here came to read the code. `ToggleAllFiles` above drives these by setting `open`,
+  // which is why the element carries `data-source-file`.
   return (
-    <figure id={anchor} className="flex flex-col overflow-hidden rounded-lg border border-border">
-      {caption}
-      {content.malformedCharacters && (
-        <p className="border-b border-border bg-warning/10 px-4 py-2 text-sm">{t("malformed")}</p>
-      )}
+    <details
+      id={anchor}
+      data-source-file
+      open
+      className="group overflow-hidden rounded-lg border border-border"
+    >
+      <summary
+        className={`${captionClass} cursor-pointer list-none marker:content-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
+      >
+        <span className="flex flex-wrap items-center gap-2">
+          {/* The default disclosure triangle is hidden above -- it renders differently in every
+              browser and sits outside the padded row. This one is in the flow and turns with the
+              element's own `open`, so nothing has to track it. */}
+          <svg
+            className="size-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-90"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+          {captionInner}
+        </span>
+      </summary>
       {content.tooLarge && (
         <p className="border-b border-border bg-warning/10 px-4 py-2 text-sm">{t("truncated")}</p>
       )}
@@ -132,6 +201,6 @@ export async function SourceFile({
           ))}
         </CodeBlock>
       )}
-    </figure>
+    </details>
   );
 }

@@ -49,9 +49,8 @@ export default async function ExercisePage({
   params: Promise<{ exerciseId: string }>;
 }) {
   const [{ exerciseId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, exercise] = await Promise.all([
+  const [t, exercise] = await Promise.all([
     getTranslations("Exercise"),
-    getTranslations("Comments"),
     getExerciseDetail(exerciseId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/exercises/${exerciseId}`, locale);
@@ -204,7 +203,7 @@ export default async function ExercisePage({
 
         <Discussion
           threadId={exerciseId}
-          publicMeans={tComments("audience.exercise")}
+          subject="exercise"
           canModerate={exercise.can.update === true}
         />
       </div>

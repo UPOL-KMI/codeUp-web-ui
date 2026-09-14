@@ -112,7 +112,17 @@ export default async function UsersPage({
   return (
     <PageShell title={t("title")} subtitle={t("subtitle")} breadcrumbs={breadcrumbs}>
       <div className="flex flex-col gap-4">
-        {manageable && <CreateUser />}
+        {manageable && (
+          <div className="flex flex-wrap items-center gap-2">
+            <CreateUser />
+            {/* Warning-coloured, and next to the dialog rather than in the header, because the two
+                are the same decision at two scales -- and this is the one that sends mail to a
+                list of people the moment it is confirmed. */}
+            <Link href="/users/import" className={buttonClasses("warning-outline", "sm")}>
+              {t("import")}
+            </Link>
+          </div>
+        )}
 
         {/* A plain GET form: the filters are the server's business, and the URL they produce is
             the shareable view (brief §9). Sort and page are deliberately not carried in hidden

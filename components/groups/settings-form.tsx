@@ -171,51 +171,55 @@ export function GroupSettingsForm({
           )}
         </div>
 
-        <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="text-sm font-medium">{t("passing")}</legend>
-          {PASS_MODES.map((mode) => (
-            <label key={mode} className="flex items-center gap-2">
-              <input type="radio" value={mode} className="size-4" {...register("passMode")} />
-              {t(`passModes.${mode}`)}
-            </label>
-          ))}
-          {passMode === "threshold" && (
-            <label className="flex items-center gap-2">
-              {t("threshold")}
-              <input
-                type="number"
-                min={1}
-                max={100}
-                aria-invalid={errors.threshold ? true : undefined}
-                aria-describedby={errors.threshold ? passingErrorId : undefined}
-                className={`${input} w-24`}
-                {...register("threshold", {
-                  setValueAs: (value) => (value === "" ? null : Number(value)),
-                })}
-              />
-            </label>
-          )}
-          {passMode === "pointsLimit" && (
-            <label className="flex items-center gap-2">
-              {t("pointsLimit")}
-              <input
-                type="number"
-                min={1}
-                aria-invalid={errors.pointsLimit ? true : undefined}
-                aria-describedby={errors.pointsLimit ? passingErrorId : undefined}
-                className={`${input} w-24`}
-                {...register("pointsLimit", {
-                  setValueAs: (value) => (value === "" ? null : Number(value)),
-                })}
-              />
-            </label>
-          )}
-          {(errors.threshold || errors.pointsLimit) && (
-            <p id={passingErrorId} role="alert" className="text-sm text-destructive">
-              {t("errors.limitRequired")}
-            </p>
-          )}
-        </fieldset>
+        {/* Same reason as the two checkboxes above: a group with no assignments awards no points,
+            so there is nothing for a threshold to be a threshold of. */}
+        {!group.organizational && (
+          <fieldset className="flex flex-col gap-2 text-sm">
+            <legend className="text-sm font-medium">{t("passing")}</legend>
+            {PASS_MODES.map((mode) => (
+              <label key={mode} className="flex items-center gap-2">
+                <input type="radio" value={mode} className="size-4" {...register("passMode")} />
+                {t(`passModes.${mode}`)}
+              </label>
+            ))}
+            {passMode === "threshold" && (
+              <label className="flex items-center gap-2">
+                {t("threshold")}
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  aria-invalid={errors.threshold ? true : undefined}
+                  aria-describedby={errors.threshold ? passingErrorId : undefined}
+                  className={`${input} w-24`}
+                  {...register("threshold", {
+                    setValueAs: (value) => (value === "" ? null : Number(value)),
+                  })}
+                />
+              </label>
+            )}
+            {passMode === "pointsLimit" && (
+              <label className="flex items-center gap-2">
+                {t("pointsLimit")}
+                <input
+                  type="number"
+                  min={1}
+                  aria-invalid={errors.pointsLimit ? true : undefined}
+                  aria-describedby={errors.pointsLimit ? passingErrorId : undefined}
+                  className={`${input} w-24`}
+                  {...register("pointsLimit", {
+                    setValueAs: (value) => (value === "" ? null : Number(value)),
+                  })}
+                />
+              </label>
+            )}
+            {(errors.threshold || errors.pointsLimit) && (
+              <p id={passingErrorId} role="alert" className="text-sm text-destructive">
+                {t("errors.limitRequired")}
+              </p>
+            )}
+          </fieldset>
+        )}
 
         {errors.texts && (
           <p role="alert" className="text-sm text-destructive">

@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { useRouter } from "@/i18n/navigation";
 import { buttonClasses } from "@/components/button";
 
@@ -30,6 +31,7 @@ const STRENGTH_TONES = [
 
 export function ChangePasswordForm({ token }: { token: string }) {
   const t = useTranslations("ForgotPasswordChange");
+  const apiError = useApiErrorMessage();
   const router = useRouter();
   const strengthId = useId();
   const [password, setPassword] = useState("");
@@ -74,8 +76,8 @@ export function ChangePasswordForm({ token }: { token: string }) {
 
     if (!response || !response.ok) {
       setPending(false);
-      const body = (await response?.json().catch(() => null)) as { message?: string } | null;
-      setError(body?.message ?? t("errors.failed"));
+      const body = (await response?.json().catch(() => null)) as ApiErrorBody | null;
+      setError(apiError(body?.code, t("errors.failed")));
       return;
     }
 

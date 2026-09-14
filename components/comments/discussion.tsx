@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getCommentThread } from "@/lib/api/comments";
 import { getCurrentUser } from "@/lib/api/current-user";
 
-import { CommentThread } from "./comment-thread";
+import { CommentThread, type DiscussionSubject } from "./comment-thread";
 
 /**
  * The discussion section as a screen mounts it (T-022): a Server Component that reads the thread
@@ -15,15 +15,17 @@ import { CommentThread } from "./comment-thread";
  */
 export async function Discussion({
   threadId,
-  publicMeans,
+  subject,
   canModerate = false,
   title,
+  teacherIds,
 }: {
   threadId: string;
-  /** Who a public comment reaches on this screen, in its own words. */
-  publicMeans: string;
+  subject: DiscussionSubject;
   canModerate?: boolean;
   title?: string;
+  /** Group staff, so a teacher's voice is marked. Omit where the thread has no group. */
+  teacherIds?: string[];
 }) {
   const [t, thread, user] = await Promise.all([
     getTranslations("Comments"),
@@ -40,14 +42,15 @@ export async function Discussion({
         <h2 id={`discussion-${threadId}`} className="text-base font-semibold tracking-tight">
           {title ?? t("title")}
         </h2>
-        <p className="text-sm text-muted-foreground">{t("explain")}</p>
+        <p className="text-sm text-muted-foreground">{t(`explain.${subject}`)}</p>
       </div>
       <CommentThread
         threadId={thread.id}
         comments={thread.comments}
         currentUserId={user.id}
         canModerate={canModerate}
-        publicMeans={publicMeans}
+        subject={subject}
+        teacherIds={teacherIds}
       />
     </section>
   );

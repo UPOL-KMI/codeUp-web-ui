@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { setSolutionAccepted, setSolutionPoints } from "@/lib/actions/solution-verdict";
+import { isOverMax, moveExcessToBonus as splitOverflow } from "@/lib/status/points-overflow";
 
 import { useRouter } from "@/i18n/navigation";
 import { ConfirmDialog } from "@/components/dialog/confirm-dialog";
@@ -52,12 +53,49 @@ export function VerdictControls({
 
   const [pending, setPending] = useState(false);
   const [confirmingAccept, setConfirmingAccept] = useState(false);
+  // Which one-click award is waiting to be confirmed, or null. The two buttons overwrite whatever
+  // the evaluation worked out and write to the student, so neither is a mis-click worth having.
+  const [confirmingQuick, setConfirmingQuick] = useState<"zero" | "full" | null>(null);
+  const [confirmingSave, setConfirmingSave] = useState(false);
+
   const [overrideInput, setOverrideInput] = useState(overridden === null ? "" : String(overridden));
   const [bonusInput, setBonusInput] = useState(String(bonus));
+
+  // Each quick award is refused when the solution already carries exactly what it would write --
+  // the same no-op test the "clear" button beside them has always used. Not "the student has zero
+  // points": an evaluation that scored nought with no override is a different state, and pinning
+  // the override there is a real change (a re-run would no longer move it). Asked for by the
+  // operator, who found both buttons live on a solution they could not alter.
+  const isZeroed = overridden === 0 && bonus === 0;
+  const isFull = overridden === maxPoints && bonus === 0;
+
+  // What the manual form would send, read straight off the two fields. Empty override means "let
+  // the evaluation decide", which is not the same as zero and is why this is `null` rather than 0.
+  const typedOverride = overrideInput.trim() === "" ? null : Number(overrideInput);
+  const typedBonus = bonusInput.trim() === "" ? 0 : Number(bonusInput);
+  const manualValid = Number.isInteger(typedOverride ?? 0) && Number.isInteger(typedBonus);
+  // Above the assignment's maximum -- rule and arithmetic both in `points-overflow`, where they
+  // are unit-tested.
+  const overMax = manualValid && isOverMax(typedOverride, maxPoints);
+
+  const manualSummary =
+    typedOverride === null
+      ? t("summary.evaluated")
+      : typedBonus === 0
+        ? t("summary.points", { points: typedOverride, max: maxPoints })
+        : t("summary.withBonus", { points: typedOverride, max: maxPoints, bonus: typedBonus });
+
+  function moveExcessToBonus() {
+    if (typedOverride === null) return;
+    const next = splitOverflow(typedOverride, typedBonus, maxPoints);
+    setOverrideInput(String(next.override));
+    setBonusInput(String(next.bonus));
+  }
 
   if (!canAccept && !canSetPoints) return null;
 
   async function submitPoints(next: { overriddenPoints: number | null; bonusPoints: number }) {
+    setConfirmingQuick(null);
     setPending(true);
     const result = await setSolutionPoints(solutionId, next);
     setPending(false);
@@ -120,17 +158,23 @@ export function VerdictControls({
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  aria-disabled={pending}
-                  className={button}
-                  onClick={() => void submitPoints({ overriddenPoints: 0, bonusPoints: 0 })}
+                  aria-disabled={pending || isZeroed}
+                  className={buttonClasses("destructive-subtle", "sm")}
+                  onClick={() => {
+                    if (pending || isZeroed) return;
+                    setConfirmingQuick("zero");
+                  }}
                 >
                   {t("zero")}
                 </button>
                 <button
                   type="button"
-                  aria-disabled={pending}
-                  className={button}
-                  onClick={() => void submitPoints({ overriddenPoints: maxPoints, bonusPoints: 0 })}
+                  aria-disabled={pending || isFull}
+                  className={buttonClasses("success-subtle", "sm")}
+                  onClick={() => {
+                    if (pending || isFull) return;
+                    setConfirmingQuick("full");
+                  }}
                 >
                   {t("full", { points: maxPoints })}
                 </button>
@@ -152,11 +196,16 @@ export function VerdictControls({
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (pending) return;
-                  const trimmed = overrideInput.trim();
-                  void submitPoints({
-                    overriddenPoints: trimmed === "" ? null : Number(trimmed),
-                    bonusPoints: bonusInput.trim() === "" ? 0 : Number(bonusInput),
-                  });
+                  // A dialog reading back "NaN of 20" would be worse than the action's own
+                  // refusal, so anything that is not a pair of whole numbers goes straight to it.
+                  if (!manualValid) {
+                    void submitPoints({
+                      overriddenPoints: typedOverride,
+                      bonusPoints: typedBonus,
+                    });
+                    return;
+                  }
+                  setConfirmingSave(true);
                 }}
               >
                 <div className="flex flex-col gap-1 text-sm">
@@ -196,6 +245,24 @@ export function VerdictControls({
                   {pending ? t("saving") : t("save")}
                 </button>
               </form>
+              {overMax && (
+                <p className="text-xs text-warning">
+                  {t.rich("overMax", {
+                    // `overMax` already proved it is a number; the fallback is for the compiler.
+                    points: typedOverride ?? 0,
+                    max: maxPoints,
+                    action: (chunks) => (
+                      <button
+                        type="button"
+                        onClick={moveExcessToBonus}
+                        className="underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {chunks}
+                      </button>
+                    ),
+                  })}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">{t("overrideNote")}</p>
             </div>
           </>
@@ -210,6 +277,45 @@ export function VerdictControls({
         pending={pending}
         onConfirm={() => void accept(true)}
         confirmLabel={t("confirmAccept.confirm")}
+      />
+
+      {/* One dialog for both quick awards: they are the same question about a different number.
+          `destructive` follows the button that opened it -- awarding full marks is not a loss. */}
+      <ConfirmDialog
+        open={confirmingQuick !== null}
+        onOpenChange={(open) => !open && setConfirmingQuick(null)}
+        title={t(confirmingQuick === "full" ? "confirmFull.title" : "confirmZero.title")}
+        description={
+          confirmingQuick === "full"
+            ? t("confirmFull.description", { points: maxPoints })
+            : t("confirmZero.description")
+        }
+        confirmLabel={t(confirmingQuick === "full" ? "confirmFull.confirm" : "confirmZero.confirm")}
+        destructive={confirmingQuick !== "full"}
+        pending={pending}
+        onConfirm={() =>
+          void submitPoints({
+            overriddenPoints: confirmingQuick === "full" ? maxPoints : 0,
+            bonusPoints: 0,
+          })
+        }
+      />
+
+      {/* Saving is confirmed for the same reason the one-click awards are: it overwrites the
+          evaluation and writes to the student. The dialog reads back the numbers rather than
+          asking "are you sure" -- a mis-typed digit is exactly what this is meant to catch. */}
+      <ConfirmDialog
+        open={confirmingSave}
+        onOpenChange={(open) => !open && setConfirmingSave(false)}
+        title={t("confirmSave.title")}
+        description={t("confirmSave.description", { summary: manualSummary })}
+        confirmLabel={t("confirmSave.confirm")}
+        destructive={false}
+        pending={pending}
+        onConfirm={() => {
+          setConfirmingSave(false);
+          void submitPoints({ overriddenPoints: typedOverride, bonusPoints: typedBonus });
+        }}
       />
     </section>
   );

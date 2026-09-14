@@ -15,7 +15,7 @@ const loginSchema = z.object({
 });
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 /**
@@ -52,11 +52,11 @@ export async function POST(request: Request) {
   });
 
   if (!apiResponse.ok) {
+    // core-api's machine code travels and its sentence does not: the sentence is English only, so
+    // passing it through is how a Czech reader met "The username or password is incorrect."
+    // (`lib/api/use-api-error-message.ts`). Every route in this folder does the same.
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
-    return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "Invalid credentials." },
-      { status: 401 },
-    );
+    return NextResponse.json({ success: false, code: errorBody.error?.code }, { status: 401 });
   }
 
   const { payload } = (await apiResponse.json()) as {

@@ -1,7 +1,14 @@
 import type { ComponentProps } from "react";
 
 export type ButtonVariant =
-  "primary" | "outline" | "ghost" | "destructive" | "destructive-outline" | "warning-outline";
+  | "primary"
+  | "outline"
+  | "ghost"
+  | "destructive"
+  | "destructive-outline"
+  | "destructive-subtle"
+  | "success-subtle"
+  | "warning-outline";
 
 export type ButtonSize = "xs" | "sm" | "md";
 
@@ -14,6 +21,13 @@ const VARIANTS: Record<ButtonVariant, string> = {
   ghost: "text-foreground hover:bg-accent/60",
   destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
   "destructive-outline": "border border-destructive text-destructive hover:bg-destructive/10",
+  // Coloured ground rather than a bordered outline: where several verdict buttons sit in one row,
+  // an outline reads as "one of a set" and the operator could not tell at a glance which of them
+  // takes points away and which gives them. The `-surface` washes are opaque, so these stay legible
+  // over a card as well as over the page.
+  "destructive-subtle":
+    "border border-destructive/40 bg-destructive-surface text-destructive hover:bg-destructive/15",
+  "success-subtle": "border border-success/40 bg-success-surface text-success hover:bg-success/15",
   "warning-outline": "border border-warning text-warning hover:bg-warning/10",
 };
 

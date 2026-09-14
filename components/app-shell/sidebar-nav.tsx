@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 
+import { activeNavHref } from "@/lib/nav/active-href";
+
 import { BrandMark } from "@/components/brand/brand-mark";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -81,7 +83,15 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const [qrOpen, setQrOpen] = useState(false);
   const [qrUrl, setQrUrl] = useState("");
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Only the most specific link lights -- `/groups` contains every group page, so without this
+  // opening a course lit both "All groups" and the course itself. The rule and why it is a rule
+  // live in `activeNavHref`.
+  const activeHref = activeNavHref(
+    sections.flatMap((section) => section.items).map((item) => item.href),
+    pathname,
+  );
+
+  const isActive = (href: string) => href === activeHref;
   // Only the exact route is *the* current page; an ancestor whose subtree the reader is inside is
   // merely the current item of the set, which is what the generic `true` means.
   const currentPage = (href: string) =>

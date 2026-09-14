@@ -20,6 +20,12 @@ import { buttonClasses } from "@/components/button";
  * Offered on `setFlagAsStudent` *or* `setFlag`, which is core-api's own weaker test for this flag:
  * the author may ask, and so may a supervisor on their behalf.
  *
+ * **It says different things to the two of them.** Both halves of that permission reached the same
+ * sentence, so a teacher opening a student's solution was told "your teacher will see it in their
+ * list" -- about themselves. The operator asked what the button even meant, which is the answer.
+ * `setFlag` is the supervisor's permission and `setFlagAsStudent` the author's, so the one the
+ * reader holds is what decides the voice: to a student this asks, to a teacher it marks.
+ *
  * **Gone once a review exists.** Asking for something already happening is noise, and withdrawing a
  * request after the teacher has started reading would not stop them -- core-api keeps the flag and
  * the review independently, so the honest thing is to stop offering it rather than to imply it
@@ -30,13 +36,18 @@ export function ReviewRequest({
   requested,
   canRequest,
   reviewStarted,
+  asTeacher = false,
 }: {
   solutionId: string;
   requested: boolean;
   canRequest: boolean;
   reviewStarted: boolean;
+  /** The reader supervises this solution, so the control marks rather than asks. */
+  asTeacher?: boolean;
 }) {
-  const t = useTranslations("Review.request");
+  const t = useTranslations(asTeacher ? "Review.request.teacher" : "Review.request");
+  // The failure is the same whoever pressed it, and lives on the parent namespace.
+  const tError = useTranslations("Review.request");
   const router = useRouter();
   const toast = useToast();
   const [pending, setPending] = useState(false);
@@ -51,7 +62,7 @@ export function ReviewRequest({
       toast.success(value ? t("toast.asked") : t("toast.withdrawn"));
       router.refresh();
     } else {
-      toast.error(t("errors.failed"), result.formError);
+      toast.error(tError("errors.failed"), result.formError);
     }
   }
 
@@ -60,7 +71,8 @@ export function ReviewRequest({
       <button
         type="button"
         aria-disabled={pending}
-        className={buttonClasses("outline", "sm")}
+        // Withdrawing is the undo, so it is coloured as one; asking is an ordinary action.
+        className={buttonClasses(requested ? "destructive-subtle" : "outline", "sm")}
         onClick={() => void change(!requested)}
       >
         {requested ? t("withdraw") : t("ask")}

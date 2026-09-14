@@ -3,6 +3,8 @@ import "server-only";
 import { cache } from "react";
 
 import { apiGet } from "./client";
+import { isBinaryFilename } from "@/lib/code/binary-files";
+
 import { apiRead } from "./read";
 
 /**
@@ -49,9 +51,23 @@ interface SolutionFilePayload {
 export const MAX_DISPLAYED_FILES = 32;
 export const MAX_DISPLAYED_BYTES = 1024 * 1024;
 
+/**
+ * Why the files cannot be shown inline, or `null` when they can.
+ *
+ * **Only text files are weighed.** The byte budget exists because this page fetches and highlights
+ * every file it shows, and a file it will not render costs none of that -- so a 3 MB PDF beside a
+ * 2 kB README used to push the pair over the limit and refuse both. The operator hit exactly that:
+ * two files, and a notice blaming their *number*, which was two.
+ */
+/** The old boolean, for the two screens that only need "can this be shown at all". */
 export function canDisplayFiles(files: SolutionFileEntry[]): boolean {
-  if (files.length > MAX_DISPLAYED_FILES) return false;
-  return files.reduce((total, file) => total + file.size, 0) < MAX_DISPLAYED_BYTES;
+  return fileDisplayLimit(files) === null;
+}
+
+export function fileDisplayLimit(files: SolutionFileEntry[]): "count" | "size" | null {
+  if (files.length > MAX_DISPLAYED_FILES) return "count";
+  const text = files.filter((file) => !isBinaryFilename(file.entry ?? file.name));
+  return text.reduce((total, file) => total + file.size, 0) < MAX_DISPLAYED_BYTES ? null : "size";
 }
 
 /**

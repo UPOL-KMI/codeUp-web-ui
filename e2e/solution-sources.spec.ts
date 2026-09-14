@@ -63,7 +63,7 @@ async function openSourcesContaining(page: Page, marker: string): Promise<void> 
       // Waited for explicitly: `goto` resolves on load, and reading `innerText` before the page
       // has rendered returns an empty string that looks exactly like "no match".
       const main = page.getByRole("main");
-      await main.getByRole("heading", { name: "Source code" }).waitFor();
+      await main.getByRole("heading", { name: "Solution files" }).waitFor();
       // The heading is **not** enough, and believing it was cost a day of chasing a phantom
       // regression: the files stream in behind their own `<Suspense>`, whose fallback is a
       // skeleton with no text at all. On a busy instance this read the fallback and reported "no
@@ -86,7 +86,7 @@ test("a student reads the files they submitted, line by line", async ({ page }) 
   await openSourcesContaining(page, 'print("Hello, ReCodEx!")');
 
   const main = page.getByRole("main");
-  await expect(main.getByRole("heading", { name: "Source code" })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "Solution files" })).toBeVisible();
   await expect(main.getByText("solution.py", { exact: true })).toBeVisible();
   await expect(main).toContainText('print("Hello, ReCodEx!")');
 
@@ -110,9 +110,11 @@ test("the solution screen links to its own source code", async ({ page }) => {
     .first()
     .click();
 
-  await page.getByRole("link", { name: "Source code" }).click();
+  await page.getByRole("link", { name: "Solution files" }).click();
   await expect(page).toHaveURL(/\/en\/solutions\/[0-9a-f-]+\/sources$/);
-  await expect(page.getByRole("main").getByRole("heading", { name: "Source code" })).toBeVisible();
+  await expect(
+    page.getByRole("main").getByRole("heading", { name: "Solution files" }),
+  ).toBeVisible();
 });
 
 test("a solution of several files reads as each of them", async ({ page }) => {
@@ -201,6 +203,11 @@ test("a supervisor's review reaches the student only when it is closed", async (
   ).toBeHidden();
 
   await supervisorPage.getByRole("button", { name: "Close review" }).click();
+  // Confirmed since the operator's round: closing is what publishes the review and mails the author.
+  await supervisorPage
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Close the review" })
+    .click();
   await expect(supervisorPage.getByRole("button", { name: "Reopen review" })).toBeVisible();
 
   await studentPage.goto(sourcesUrl);

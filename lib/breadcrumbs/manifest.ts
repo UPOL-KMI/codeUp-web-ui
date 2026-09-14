@@ -63,6 +63,9 @@ const MANIFEST: ManifestEntry[] = [
   { namespace: "Exercises", pattern: "/exercises" },
   { namespace: "Pipelines", pattern: "/pipelines" },
   { namespace: "Users", pattern: "/users" },
+  // Before the dynamic `/users/:userId` further down, which this path would otherwise match:
+  // the first entry wins, and "import" is not somebody's id.
+  { namespace: "UserImport", pattern: "/users/import" },
   { namespace: "UserEdit", pattern: "/users/:userId/edit" },
   { namespace: "SubmissionFailures", pattern: "/submission-failures" },
   { namespace: "SystemMessages", pattern: "/system-messages" },

@@ -57,6 +57,7 @@ interface SolverPayload {
 export async function getAssignmentSolvers(
   assignmentId: string,
   groupId: string,
+  dataOnly = false,
 ): Promise<AssignmentSolver[]> {
   const [solvers, stats] = await Promise.all([
     apiRead<SolverPayload[]>("/v1/assignment-solvers", { query: { assignmentId } }),
@@ -107,6 +108,11 @@ export async function getAssignmentSolvers(
                 gained: row?.points.gained ?? null,
                 total: row?.points.total ?? 0,
                 accepted: row?.accepted,
+                dataOnly,
+                // The stats row has no overridden-points field, so "somebody marked it" is
+                // inferred: the data-only judge scores nought, so any points at all came from a
+                // person. Documented on `AssignmentProgressInput.graded`.
+                graded: (row?.points.gained ?? 0) > 0 || (row?.points.bonus ?? 0) !== 0,
               }),
       };
     })
@@ -117,8 +123,14 @@ export function summarizeSolvers(
   solvers: AssignmentSolver[],
   maxPoints: number,
 ): AssignmentSolverSummary {
+  // A submission nobody has marked has no score to average. Its `gained` is the pipeline's nought,
+  // and counting it dragged "average points" to 0/20 on an assignment where the teacher had not
+  // yet looked at anything -- the same falsehood the row's own badge was telling.
   const scored = solvers.filter(
-    (solver) => solver.bestSolutionId !== null && solver.gained !== null,
+    (solver) =>
+      solver.bestSolutionId !== null &&
+      solver.gained !== null &&
+      solver.progress !== "awaiting-review",
   );
   return {
     students: solvers.length,
@@ -137,7 +149,8 @@ export const getAssignmentSolverSummary = cache(async function getAssignmentSolv
   assignmentId: string,
   groupId: string,
   maxPoints: number,
+  dataOnly = false,
 ): Promise<{ solvers: AssignmentSolver[]; summary: AssignmentSolverSummary }> {
-  const solvers = await getAssignmentSolvers(assignmentId, groupId);
+  const solvers = await getAssignmentSolvers(assignmentId, groupId, dataOnly);
   return { solvers, summary: summarizeSolvers(solvers, maxPoints) };
 });

@@ -38,8 +38,10 @@ test("awards points the evaluation did not, and clears them again", async ({ pag
     const main = page.getByRole("main");
     await expect(main.getByRole("heading", { name: "The teacher's verdict" })).toBeVisible();
 
-    // The one-click shortcut a teacher uses after fixing a broken test.
+    // The one-click shortcut a teacher uses after fixing a broken test -- confirmed since G-003's
+    // round, because it overwrites the evaluation and writes to the student.
     await main.getByRole("button", { name: `Award full marks (${maxPoints})` }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Award full marks" }).click();
     await expect(main.getByText(`${maxPoints}/${maxPoints}`).first()).toBeVisible();
 
     // **Wait for the *field*, not for the summary, before typing into it.** Since PF-016 the
@@ -56,6 +58,10 @@ test("awards points the evaluation did not, and clears them again", async ({ pag
     await override.fill("3");
     await main.getByLabel("Bonus", { exact: true }).fill("2");
     await main.getByRole("button", { name: "Save the points" }).click();
+    // The dialog reads the numbers back, which is the point of it.
+    const saveDialog = page.getByRole("alertdialog");
+    await expect(saveDialog).toContainText(`3 of ${maxPoints} points plus a bonus of 2`);
+    await saveDialog.getByRole("button", { name: "Save the points" }).click();
     await expect(main.getByText(`3/${maxPoints}`).first()).toBeVisible();
     await expect(main.getByText("+2")).toBeVisible();
 

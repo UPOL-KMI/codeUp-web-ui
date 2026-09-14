@@ -3,8 +3,8 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { useRouter } from "@/i18n/navigation";
-import { ConsentCheckbox } from "./consent-checkbox";
 import { buttonClasses } from "@/components/button";
 
 /**
@@ -24,13 +24,14 @@ import { buttonClasses } from "@/components/button";
  * On success the account exists **and is signed in**: core-api returns an access token with the
  * new user, and the route turns it into the session the same way login does.
  *
- * **The consent tick is the one field here that exists for a legal reason rather than a functional
- * one** (G-026), and it goes nowhere: core-api has no field for it, so it gates the request the
- * way the legacy form does. Unlike the three conditions that disable the button, it answers with a
- * sentence -- a reader who has not ticked it needs to be told which box, not handed a dead button.
+ * **There is no consent tick** (DROP-C07). One used to stand here, restored for parity with the
+ * legacy form; it claimed a GDPR policy that this deployment does not publish and was recorded
+ * nowhere, since core-api has no field for it. Asking somebody to agree to a document they cannot
+ * read, and keeping no evidence that they did, is worse than not asking.
  */
 export function RegisterForm({ instances }: { instances: { id: string; name: string }[] }) {
   const t = useTranslations("Register");
+  const apiError = useApiErrorMessage();
   const router = useRouter();
   const strengthId = useId();
 
@@ -43,8 +44,6 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
   const [emailIsFree, setEmailIsFree] = useState<boolean | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [collision, setCollision] = useState<string[] | null>(null);
-  const [consent, setConsent] = useState(false);
-  const [consentMissing, setConsentMissing] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,10 +69,6 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
 
   async function submit(event: React.FormEvent, ignoreNameCollision = false) {
     event.preventDefault();
-    if (!consent) {
-      setConsentMissing(true);
-      return;
-    }
     setPending(true);
     setError(null);
 
@@ -91,12 +86,13 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
       }),
     }).catch(() => null);
 
-    const body = (await response?.json().catch(() => null)) as {
-      success?: boolean;
-      signedIn?: boolean;
-      nameCollision?: string[];
-      message?: string;
-    } | null;
+    const body = (await response?.json().catch(() => null)) as
+      | (ApiErrorBody & {
+          success?: boolean;
+          signedIn?: boolean;
+          nameCollision?: string[];
+        })
+      | null;
 
     if (body?.nameCollision) {
       setPending(false);
@@ -106,7 +102,7 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
 
     if (!response || !response.ok || !body?.success) {
       setPending(false);
-      setError(body?.message ?? t("errors.failed"));
+      setError(apiError(body?.code, t("errors.failed")));
       return;
     }
 
@@ -245,15 +241,6 @@ export function RegisterForm({ instances }: { instances: { id: string; name: str
           </select>
         </label>
       )}
-
-      <ConsentCheckbox
-        checked={consent}
-        onChange={(value) => {
-          setConsent(value);
-          if (value) setConsentMissing(false);
-        }}
-        error={consentMissing}
-      />
 
       <button
         type="submit"

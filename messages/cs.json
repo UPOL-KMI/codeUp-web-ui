@@ -60,6 +60,25 @@
     "retry": "Zkusit znovu",
     "description": "Tento obsah se nepodařilo načíst. Problém může být dočasný."
   },
+  "ApiErrors": {
+    "400-100": "Tyto přihlašovací údaje nesedí.",
+    "400-101": "E-mailová adresa a heslo k sobě nepatří.",
+    "400-102": "Hesla se neshodují.",
+    "400-103": "Stávající heslo nesedí.",
+    "400-104": "Vaše instituce vás přihlásila, ale účet tady zatím nemáte.",
+    "400-105": "Vaše instituce vás přihlásila, ale neuvedla, jakou tu máte roli.",
+    "400-110": "Na tuto adresu už účet existuje.",
+    "401-001": "Tento odkaz neobsahuje nic, co by řeklo, kdo jste. Mohl se cestou zkrátit nebo se nezkopíroval celý.",
+    "401-002": "Tento odkaz už neplatí. Buď vypršel, nebo byl už použitý.",
+    "403-001": "Pro tuto adresu žádný účet neexistuje.",
+    "403-002": "Tento účet je zablokovaný. Ozvěte se vyučujícímu nebo správci.",
+    "403-003": "Tento účet se smí používat jen z jiné sítě."
+  },
+  "Copy": {
+    "copy": "Kopírovat",
+    "copied": "Zkopírováno",
+    "failed": "Zkopírovat se nepodařilo. Označte text a zkopírujte ho ručně."
+  },
   "Placeholder": {
     "comingSoon": "Tato stránka zatím nebyla vytvořena."
   },
@@ -114,10 +133,6 @@
       "emailTaken": "Na tuto adresu už účet existuje.",
       "mismatch": "Hesla se neshodují."
     }
-  },
-  "Consent": {
-    "agree": "Souhlasím se zpracováním osobních údajů systémem UPolníček v souladu s jeho zásadami podle GDPR.",
-    "required": "Bez vašeho souhlasu nelze účet vytvořit."
   },
   "ForgotPassword": {
     "title": "Obnovení hesla",
@@ -177,12 +192,12 @@
     "welcome": "Byli jste pozváni do UPolníčku. Vaše údaje jsou z pozvánky už vyplněné a nelze je zde měnit — zbývá jen zvolit heslo k novému účtu.",
     "details": "Pozvánka",
     "invitedPerson": "Pozvaná osoba",
-    "email": "E-mail, který je zároveň přihlašovacím jménem",
+    "email": "E-mail — slouží pro přihlášení k účtu",
     "issuedAt": "Odesláno",
     "expiresAt": "Platnost do",
     "groupCount": "Přijetím se zároveň zapíšete do {count, plural, one {# skupiny} few {# skupin} other {# skupin}}.",
     "choosePassword": "Zvolte heslo",
-    "passwordHint": "Jakmile bude účet vytvořen, budete rovnou přihlášeni.",
+    "passwordHint": "Zvolte si heslo pro přístup do systému.",
     "password": "Heslo",
     "passwordConfirm": "Heslo znovu",
     "submit": "Vytvořit účet a přihlásit se",
@@ -192,7 +207,9 @@
     "errors": {
       "mismatch": "Zadaná hesla se neshodují.",
       "failed": "Účet se nepodařilo vytvořit. Pozvánka mohla vypršet, nebo už byla použita."
-    }
+    },
+    "externalId": "Identifikátor {service}",
+    "externalIdsHint": "Tyto identifikátory vás propojují s dalšími systémy univerzity a zapíšou se k účtu při jeho vytvoření. Pokud nesouhlasí, ozvěte se tomu, kdo vás pozval — zde je změnit nelze."
   },
   "GroupInvitation": {
     "title": "Pozvánka do skupiny",
@@ -471,7 +488,8 @@
         }
       },
       "thresholdExplain": "Průběžné hodnocení bodování. Nemusí nutně znamenat splnění předmětu, ale pouze udává dosavadní zaznamenanou úspěšnost.",
-      "partialList": "Kvůli nastavení práv mohou být některé záznamy skryté."
+      "partialList": "Kvůli nastavení práv mohou být některé záznamy skryté.",
+      "import": "Naimportovat lidi do této skupiny"
     },
     "points": {
       "title": "Body po jednotlivých zadáních",
@@ -803,7 +821,8 @@
         "pastDate": "Tento okamžik už uplynul."
       },
       "editNamed": "Upravit odkaz „{note}“",
-      "deleteNamed": "Smazat odkaz „{note}“"
+      "deleteNamed": "Smazat odkaz „{note}“",
+      "copyNamed": "Zkopírovat odkaz s pozvánkou pro {note}"
     },
     "pageTitle": "Skupina"
   },
@@ -814,7 +833,7 @@
   "Solution": {
     "title": "Pokus {attempt}",
     "backToAssignment": "Zpět na zadání",
-    "sourceCode": "Zdrojový kód",
+    "solutionFiles": "Soubory řešení",
     "summary": "Přehled",
     "points": "Body",
     "result": "Výsledek",
@@ -1012,7 +1031,7 @@
       "explain": "Kolik tento pokus platí, bez ohledu na výsledek testů. Zde nastavené body nahradí ty, které spočítalo vyhodnocení.",
       "accept": "Uznat tento pokus",
       "unaccept": "Přestat uznávat tento pokus",
-      "acceptNote": "Bude se počítat místo nejlépe hodnoceného.",
+      "acceptNote": "Standardně se počítá řešení s nejlepším hodnocením. Pokud si přejete vynutit započítání tohoto pokusu do celkového hodnocení, klikněte na tlačítko.",
       "acceptedNote": "Tento pokus se počítá místo nejlépe hodnoceného.",
       "zero": "Nedat žádné body",
       "full": "Dát plný počet bodů ({points})",
@@ -1023,10 +1042,31 @@
       "save": "Uložit body",
       "saving": "Ukládám…",
       "overrideNote": "Ponechte první pole prázdné, aby rozhodlo vyhodnocení. Bonus může být i záporný.",
+      "overMax": "Zadáváte více bodů ({points}) než je maximum ({max}). <action>Kliknutím zde</action> převedete přebytečné body na bonusové.",
+      "confirmSave": {
+        "title": "Uložit tyto body?",
+        "description": "Studentovi se za tento pokus zapíše {summary}. Nastavené body nahradí to, co spočítalo vyhodnocení, a studentovi se o změně posílá upozornění.",
+        "confirm": "Uložit body"
+      },
+      "summary": {
+        "evaluated": "tolik bodů, kolik spočítalo vyhodnocení",
+        "points": "{points} z {max} bodů",
+        "withBonus": "{points} z {max} bodů a bonus {bonus}"
+      },
       "confirmAccept": {
         "title": "Uznat tento pokus?",
         "description": "Pokus, který měl tento student uznaný dosud, přestane být uznaný – u jednoho zadání může být uznaný jen jeden.",
         "confirm": "Uznat"
+      },
+      "confirmZero": {
+        "title": "Nedat za tento pokus žádné body?",
+        "description": "Studentovi se zapíše 0 bodů bez ohledu na to, co spočítalo vyhodnocení. Studentovi se o změně posílá upozornění.",
+        "confirm": "Nedat žádné body"
+      },
+      "confirmFull": {
+        "title": "Dát za tento pokus plný počet bodů?",
+        "description": "Studentovi se zapíše {points} bodů bez ohledu na to, co spočítalo vyhodnocení. Studentovi se o změně posílá upozornění.",
+        "confirm": "Dát plný počet bodů"
       },
       "toast": {
         "accepted": "Pokus byl uznán.",
@@ -1051,6 +1091,16 @@
         "title": "Smazat toto řešení?",
         "description": "Odevzdaný zdrojový kód, všechna jeho vyhodnocení i celá revize včetně komentářů zmizí s ním. Tuto akci nelze vrátit zpět.",
         "confirm": "Smazat"
+      },
+      "confirmResubmit": {
+        "title": "Spustit řešení znovu?",
+        "description": "Řešení projde celou pipeline znovu a nový výsledek nahradí ten současný. Vyhodnocení zabírá výpočetní čas, takže ho nespouštějte zbytečně.",
+        "confirm": "Spustit znovu"
+      },
+      "confirmResubmitDebug": {
+        "title": "Spustit řešení znovu v ladicím režimu?",
+        "description": "Řešení projde celou pipeline znovu, navíc se uloží výstupy jednotlivých kroků. Nový výsledek nahradí ten současný a vyhodnocení zabírá výpočetní čas.",
+        "confirm": "Spustit v ladicím režimu"
       },
       "toast": {
         "resubmitted": "Řešení se spouští znovu.",
@@ -1097,23 +1147,28 @@
     }
   },
   "Sources": {
-    "title": "Zdrojový kód",
+    "title": "Soubory řešení",
     "attempt": "Pokus {attempt}",
     "download": "Stáhnout archiv",
     "backToSolution": "Zpět na řešení",
     "entryPoint": "Vstupní bod",
     "bytes": "{size} B",
     "fileListLabel": "Soubory tohoto řešení",
+    "expandAll": "Rozbalit vše",
+    "collapseAll": "Sbalit vše",
     "contentUnavailable": "Obsah tohoto souboru se nepodařilo načíst.",
-    "malformed": "Tento soubor není platné UTF-8. Některé znaky nemusí být zobrazeny tak, jak byly zapsány.",
     "truncated": "Tento soubor je příliš velký na zobrazení celý — vidíte jen jeho začátek. Celý soubor je v archivu ke stažení.",
+    "notShown": "Tento typ souboru se tady nezobrazuje.",
+    "downloadFile": "Stáhnout soubor",
+    "inArchive": "Tento soubor je uvnitř odevzdaného archivu — stáhněte celý archiv výše.",
     "empty": {
       "title": "Žádné soubory",
       "description": "K tomuto řešení nebyly odevzdány žádné soubory."
     },
     "tooMany": {
       "title": "Příliš mnoho souborů",
-      "description": "Toto řešení má {count} souborů, zde se jich zobrazuje nejvýše {max}. Chcete-li si přečíst všechny, stáhněte si archiv."
+      "byCount": "Toto řešení má {count, plural, one {# soubor} few {# soubory} other {# souborů}}, zde se jich zobrazuje nejvýše {max}. Chcete-li si je přečíst všechny, stáhněte si archiv.",
+      "bySize": "Textové soubory tohoto řešení jsou dohromady příliš velké na to, aby se zobrazily zde. Chcete-li si je přečíst, stáhněte si archiv."
     },
     "reviewOpenNote": "Revize je otevřená. Vaše komentáře autor neuvidí, dokud ji neuzavřete; uzavřením mu odejde e-mail.",
     "reviewClosedNote": "Revize je uzavřená a autor si ji může přečíst. Každá další změna mu pošle další e-mail — pro rozsáhlejší úpravy revizi nejprve znovu otevřete.",
@@ -1138,6 +1193,11 @@
     "erase": {
       "title": "Smazat celou revizi?",
       "description": "Smažou se i všechny její komentáře. Tuto akci nelze vrátit zpět."
+    },
+    "confirmClose": {
+      "title": "Uzavřít revizi?",
+      "description": "Autor řešení uvidí všechny komentáře revize a přijde mu o tom e-mail. Revizi lze později znovu otevřít, ale každá další změna po uzavření mu pošle další e-mail.",
+      "confirm": "Uzavřít revizi"
     },
     "comment": {
       "text": "Komentář",
@@ -1173,11 +1233,21 @@
     "request": {
       "ask": "Požádat o revizi",
       "withdraw": "Stáhnout žádost",
-      "askNote": "Vyučující ji uvidí ve svém seznamu řešení k prohlédnutí.",
-      "askedNote": "Vyučující ji má ve svém seznamu řešení k prohlédnutí.",
+      "askNote": "Vyučující uvidí toto řešení na své nástěnce mezi řešeními, která čekají na revizi.",
+      "askedNote": "Vyučující toto řešení vidí na své nástěnce mezi řešeními, která čekají na revizi.",
       "toast": {
         "asked": "Vyučující byl požádán, aby se na to podíval.",
         "withdrawn": "Žádost byla stažena."
+      },
+      "teacher": {
+        "ask": "Označit k revizi",
+        "withdraw": "Zrušit označení",
+        "askNote": "Řešení se zařadí na vaši nástěnku mezi ta, která čekají na revizi. Můžete tak označit i řešení, o jehož prohlédnutí vás student požádal jinde.",
+        "askedNote": "Řešení je na vaší nástěnce mezi těmi, která čekají na revizi.",
+        "toast": {
+          "asked": "Řešení je označené k revizi.",
+          "withdrawn": "Označení bylo zrušeno."
+        }
       },
       "errors": {
         "failed": "Žádost se nepodařilo změnit."
@@ -2369,7 +2439,8 @@
       "roleFailed": "Roli se nepodařilo změnit.",
       "invalidateFailed": "Přihlášení se nepodařilo ukončit.",
       "localFailed": "Přihlášení heslem se nepodařilo přidat."
-    }
+    },
+    "import": "Import uživatel"
   },
   "SubmissionFailures": {
     "title": "Chyby odevzdání",
@@ -2600,18 +2671,28 @@
   },
   "Comments": {
     "title": "Diskuse",
-    "explain": "Poznámky a otázky, které zůstávají uložené přímo tady.",
-    "empty": "Tady zatím nikdo nic neřekl.",
+    "explain": {
+      "exercise": "Diskuze, která je společná pro všechny uživatele s přístupem k této úloze.",
+      "assignment": "Diskuze, která je společná pro všechny uživatele s přístupem k úkolu.",
+      "solution": "Diskuze, která je společná pro všechny uživatele s přístupem k tomuto řešení.",
+      "referenceSolution": "Diskuze, která je společná pro všechny uživatele s přístupem k tomuto vzorovému řešení."
+    },
+    "empty": {
+      "exercise": "Máte dotaz k úloze? Zanechte zprávu pomocí formuláře níže.",
+      "assignment": "Máte dotaz k úkolu? Zanechte zprávu pomocí formuláře níže.",
+      "solution": "Máte dotaz k řešení? Zanechte zprávu pomocí formuláře níže.",
+      "referenceSolution": "Máte dotaz ke vzorovému řešení? Zanechte zprávu pomocí formuláře níže."
+    },
     "unknownAuthor": "Někdo, koho nevidíte",
-    "you": "(vy)",
+    "me": "Já",
+    "teacherBadge": "Vyučující",
     "privateBadge": "Jen vy",
     "write": "Něco napsat",
     "post": "Odeslat",
     "posting": "Odesílám…",
     "posted": "Odesláno.",
-    "keepPrivate": "Nechat si to pro sebe",
-    "privateMeans": "Nikdo jiný to neuvidí — UPolníček soukromý komentář vynechá z kopie diskuse, kterou dostanou ostatní, takže je to spíš poznámka na okraj než tichá domluva s vyučujícími.",
-    "publicMeans": "Uvidí to {audience} a přijde jim o tom e-mail.",
+    "keepPrivate": "Interní poznámka",
+    "privateMeans": "Pokud zaškrtnuto, UPolníček komentář nezobrazí ve veřejné diskuzi. Komentář je poté viditelný pouze pro vás.",
     "makePrivate": "Skrýt ostatním",
     "madePrivate": "Teď to vidíte jen vy.",
     "makePublic": "Ukázat ostatním",
@@ -2629,12 +2710,6 @@
       "postFailed": "Komentář se nepodařilo odeslat.",
       "privacyFailed": "Nepodařilo se to změnit.",
       "deleteFailed": "Komentář se nepodařilo smazat."
-    },
-    "audience": {
-      "exercise": "všichni, kdo smí vidět tuto úlohu",
-      "assignment": "studenti, kterým je to zadané, a vyučující skupiny",
-      "solution": "autor řešení a vyučující skupiny",
-      "referenceSolution": "vyučující, kteří smí vidět toto vzorové řešení"
     }
   },
   "Toast": {
@@ -3077,6 +3152,7 @@
   "AssignExercise": {
     "title": "Zadat úlohu",
     "backToGroup": "Zpět do skupiny",
+    "manageCatalog": "Spravovat katalog úloh",
     "explain": "Zadáním se úloha rovnou zkopíruje do skupiny, s výchozím termínem a body UPolníčku — ty nastavíte na další obrazovce. Než nové zadání zviditelníte, nikdo ho neuvidí.",
     "searchLabel": "Hledat v katalogu úloh",
     "searchPlaceholder": "Hledat podle názvu",
@@ -3579,6 +3655,77 @@
       "createLocalHint": "Tento účet se přihlašuje jen přes externí službu. Přidané místní přihlášení má prázdné heslo — nastavte je pak výše.",
       "localCreated": "Účet má nyní přihlášení heslem.",
       "localFailed": "Přihlášení heslem se nepodařilo přidat."
+    },
+    "externalIds": {
+      "title": "Identity v jiných systémech",
+      "explain": "Identifikátor, který má tento člověk v jiném systému — třeba studijní číslo ze STAGu. Podle něj ho pozná budoucí jednotné přihlášení a podle něj import spáruje řádek.",
+      "empty": "U tohoto člověka není vedený žádný identifikátor.",
+      "service": "Systém",
+      "identifier": "Identifikátor",
+      "add": "Zapsat",
+      "remove": "Odebrat",
+      "removeNamed": "Odebrat identifikátor {service}",
+      "saved": "Identifikátor byl zapsán.",
+      "removed": "Identifikátor byl odebrán.",
+      "hint": "Jeden identifikátor na systém. Zápis druhého pro stejný systém ten první nahradí. „stag“ je studijní informační systém UP.",
+      "confirmRemove": {
+        "title": "Odebrat identifikátor?",
+        "description": "Tento člověk už nebude podle identifikátoru {service} rozpoznán. Na účtu se jinak nic nemění."
+      },
+      "errors": {
+        "taken": "Tento identifikátor už patří jinému účtu.",
+        "incomplete": "Vyplňte systém i identifikátor.",
+        "setFailed": "Identifikátor se nepodařilo zapsat.",
+        "removeFailed": "Identifikátor se nepodařilo odebrat."
+      }
+    }
+  },
+  "UserImport": {
+    "title": "Import uživatel",
+    "subtitle": "Importovat uživatele z CSV souboru.",
+    "backToUsers": "Všichni uživatelé",
+    "explain": "Zkopírujte obsah tabulky do textového pole podle níže popsaného formátu. Uživatelé nejsou přidáváni duplikovaně — unikátnost zajišťuje jejich e-mailová adresa. Pokud již uživatel účet má, dojde ke kontrole a případnému doplnění informací. Před odesláním zkontrolujte správnost údajů v generované tabulce níže.",
+    "explainGroup": "Zkopírujte obsah tabulky do textového pole podle níže popsaného formátu. Každý pozvaný se po přijetí pozvánky zařadí do skupiny {group}. Uživatelé nejsou přidáváni duplikovaně — unikátnost zajišťuje jejich e-mailová adresa. Pokud již uživatel účet má, dojde ke kontrole a případnému doplnění informací. Před odesláním zkontrolujte správnost údajů v generované tabulce níže.",
+    "format": {
+      "title": "Jak má tabulka vypadat",
+      "columns": "První řádek pojmenuje sloupce. Tři jsou povinné — e-mail, jméno, příjmení — a další dva se rozpoznají: titul před a titul za jménem. Anglické názvy fungují taky (email, firstName, lastName, titlesBeforeName, titlesAfterName).",
+      "identifiers": "Každý další sloupec se stane identifikátorem v jiném systému, pojmenovaným podle toho sloupce. Sloupec „stag“ zapíše každému jeho číslo ze STAGu.",
+      "example": "email;jméno;příjmení;titul před;stag\nnovak@upol.cz;Jan;Novák;Bc.;F230123\nsvoboda@upol.cz;Petr;Svoboda;;F230124"
+    },
+    "paste": "Tabulka",
+    "preview": "{count, plural, one {Přečten # člověk} few {Přečteni # lidé} many {Přečteno # lidí} other {Přečteno # lidí}}",
+    "previewIdentifiers": "identifikátory: {keys}",
+    "previewTruncated": "…a dalších {count}, které tu nejsou vypsané.",
+    "columns": {
+      "email": "E-mail",
+      "name": "Jméno",
+      "outcome": "Co se stalo"
+    },
+    "problems": {
+      "columns": "První řádek musí pojmenovat sloupce a musí mezi nimi být e-mail, jméno a příjmení.",
+      "email": "Řádek {line}: tohle není e-mailová adresa. Obvykle za to může posunutý sloupec.",
+      "name": "Řádek {line}: chybí jméno nebo příjmení.",
+      "duplicate": "Řádek {line}: tahle adresa je v tabulce už výš. Pozdější řádek se přeskočí."
+    },
+    "invite": "Poslat pozvánku každému, kdo účet nemá",
+    "inviteHint": "Pozvánka nové účty nezakládá — na vyplněný e-mail dorazí pozvánka s odkazem pro nastavení hesla. Až tímto úkonem dojde k vytvoření účtu a jeho propsání do systému; identifikátory se zapíšou spolu s ním. Odškrtnutím se nic neodešle — jen se zkontroluje, kdo už účet má a jestli jsou identifikátory volné.",
+    "mailLanguage": "Jazyk pozvánkového e-mailu",
+    "locales": {
+      "cs": "česky",
+      "en": "anglicky"
+    },
+    "run": "Naimportovat {count, plural, one {# člověka} few {# lidi} many {# lidí} other {# lidí}}",
+    "running": "Importuji…",
+    "tooMany": "To je víc než {max} řádků, což je víc, než unese jeden běh. Rozdělte tabulku a naimportujte ji po částech.",
+    "result": "{invited} pozváno · {matched} už účet mělo · {skipped} bez odeslání · {failed} odmítnuto",
+    "outcomes": {
+      "invited": "Pozvánka odeslána",
+      "matched": "Účet už existoval",
+      "failed": "Odmítnuto",
+      "identifiersSet": "identifikátory: {services}",
+      "identifierFailed": "identifikátor {service} byl odmítnut",
+      "skipped": "Účet nemá — pozvánka neodeslána",
+      "identifierTaken": "identifikátor {service} už patří jinému uživateli ({owner})"
     }
   },
   "Instances": {

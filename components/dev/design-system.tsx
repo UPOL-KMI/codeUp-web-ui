@@ -127,6 +127,8 @@ export function DesignSystemShowcase({
                   "ghost",
                   "destructive",
                   "destructive-outline",
+                  "destructive-subtle",
+                  "success-subtle",
                   "warning-outline",
                 ] as const
               ).map((variant) => (

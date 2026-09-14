@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ApiError } from "@/lib/api/client";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getReferenceSolution } from "@/lib/api/reference-solutions";
+import { isBinaryFilename } from "@/lib/code/binary-files";
 import { canDisplayFiles, getFileContent, type FileContent } from "@/lib/api/solution-files";
 import { formatBytes } from "@/lib/format/bytes";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
@@ -66,9 +67,8 @@ export default async function ReferenceSolutionPage({
     searchParams,
     getLocale(),
   ]);
-  const [t, tComments, solution] = await Promise.all([
+  const [t, solution] = await Promise.all([
     getTranslations("ReferenceSolutions.detail"),
-    getTranslations("Comments"),
     getReferenceSolution(solutionId),
   ]);
 
@@ -89,6 +89,8 @@ export default async function ReferenceSolutionPage({
   const contents = readable
     ? await Promise.all(
         files.map(async (file): Promise<{ content: FileContent | null; error?: string }> => {
+          // Same skip as S-017's: a file this app will not render as text is not fetched.
+          if (isBinaryFilename(file.entry ?? file.name)) return { content: null };
           try {
             return { content: await getFileContent(file.fileId, file.entry) };
           } catch (error) {
@@ -285,7 +287,7 @@ export default async function ReferenceSolutionPage({
             answer is written this way belongs. */}
         <Discussion
           threadId={solutionId}
-          publicMeans={tComments("audience.referenceSolution")}
+          subject="referenceSolution"
           canModerate={solution.can.update === true}
         />
       </div>

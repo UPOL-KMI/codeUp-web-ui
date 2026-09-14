@@ -11,6 +11,7 @@ import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation
 import { apiRead } from "./read";
 import { linkMapFromPayload } from "./exercise-files";
 import { environmentNames } from "./runtime-environments";
+import { groupTeacherIds } from "@/lib/groups/teachers";
 
 /**
  * One assignment, as a student's view of it needs it (S-012).
@@ -63,12 +64,16 @@ export interface AssignmentDetail {
   solutionFilesLimit: number | null;
   solutionSizeLimit: number | null;
   environments: string[];
+  /** Every runtime environment is `data-linux`: nothing here is marked by machine. */
+  dataOnly: boolean;
   isBonus: boolean;
   isExam: boolean;
   isPublic: boolean;
   can: Record<string, boolean>;
   /** Whether this reader studies in the group -- what decides if the page speaks to them as one. */
   viewerIsStudent: boolean;
+  /** Who teaches this group -- marks a teacher's voice in the discussion. */
+  groupTeacherIds: string[];
   /** Parts of the assignment that have fallen behind the exercise it was copied from (S-013). */
   staleParts: string[];
   syncPossible: boolean;
@@ -230,10 +235,11 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
 
   const [group, submission, solutions, environments] = await Promise.all([
     assignment.groupId
-      ? apiRead<{ localizedTexts?: LocalizedText[]; privateData?: { students?: string[] } }>(
-          "/v1/groups/{id}",
-          { pathParams: { id: assignment.groupId } },
-        )
+      ? apiRead<{
+          localizedTexts?: LocalizedText[];
+          primaryAdminsIds?: string[];
+          privateData?: { students?: string[]; admins?: string[]; supervisors?: string[] };
+        }>("/v1/groups/{id}", { pathParams: { id: assignment.groupId } })
       : Promise.resolve(null),
     apiRead<CanSubmitPayload>("/v1/exercise-assignments/{id}/can-submit", {
       pathParams: { id: assignmentId },
@@ -276,11 +282,13 @@ export const getAssignmentDetail = cache(async function getAssignmentDetail(
     solutionFilesLimit: assignment.solutionFilesLimit,
     solutionSizeLimit: assignment.solutionSizeLimit,
     environments: (assignment.runtimeEnvironmentIds ?? []).map((id) => environments.get(id) ?? id),
+    dataOnly: isDataOnly(assignment.runtimeEnvironmentIds ?? []),
     isBonus: assignment.isBonus,
     isExam: assignment.isExam,
     isPublic: assignment.isPublic,
     can: assignment.permissionHints ?? {},
     viewerIsStudent: (group?.privateData?.students ?? []).includes(session.userId),
+    groupTeacherIds: groupTeacherIds(group),
     staleParts: stalePartsOf(assignment.exerciseSynchronizationInfo),
     syncPossible: assignment.exerciseSynchronizationInfo?.isSynchronizationPossible === true,
     submission: {

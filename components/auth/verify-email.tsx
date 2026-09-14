@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { Link } from "@/i18n/navigation";
 import { buttonClasses } from "@/components/button";
 
@@ -19,6 +20,7 @@ import { buttonClasses } from "@/components/button";
  */
 export function VerifyEmail({ token }: { token: string }) {
   const t = useTranslations("EmailVerification");
+  const apiError = useApiErrorMessage();
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +44,8 @@ export function VerifyEmail({ token }: { token: string }) {
 
     setPending(false);
     if (!response || !response.ok) {
-      const body = (await response?.json().catch(() => null)) as { message?: string } | null;
-      setError(body?.message ?? t("errors.failed"));
+      const body = (await response?.json().catch(() => null)) as ApiErrorBody | null;
+      setError(apiError(body?.code, t("errors.failed")));
       return;
     }
     setDone(true);

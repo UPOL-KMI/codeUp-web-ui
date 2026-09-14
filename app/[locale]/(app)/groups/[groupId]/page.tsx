@@ -485,8 +485,26 @@ async function StudentsTab({ groupId }: { groupId: string }) {
       ? await getGroupPointsMatrix(groupId, locale)
       : { columns: [], rows: [] };
 
+  // AD-009, and above the empty state on purpose: a group with nobody in it is exactly when a
+  // cohort gets imported, and a link only reachable once there are students already would be
+  // missing at the one moment it is wanted. The import screen is the superadmin's, so the link is
+  // too -- there is no hint to ask (DEC-110).
+  const importLink =
+    viewer.role === "superadmin" ? (
+      <div>
+        <Link href={`/users/import?group=${groupId}`} className={buttonClasses("outline", "sm")}>
+          {t("import")}
+        </Link>
+      </div>
+    ) : null;
+
   if (students.length === 0) {
-    return <EmptyState title={t("empty.title")} description={t("empty.description")} />;
+    return (
+      <div className="flex flex-col gap-4">
+        <EmptyState title={t("empty.title")} description={t("empty.description")} />
+        {importLink}
+      </div>
+    );
   }
 
   // Whoever administers, supervises or observes this group. `members` is exactly those three
@@ -496,6 +514,8 @@ async function StudentsTab({ groupId }: { groupId: string }) {
 
   return (
     <div className="flex flex-col gap-8">
+      {importLink}
+
       {/* G-011. On the group's own `sendEmail` hint -- which, unlike almost every other group
           write, carries no "not archived" condition, so a finished course can still be written
           to. The addresses ride along with the roster's own read; see `MailStudents`. */}

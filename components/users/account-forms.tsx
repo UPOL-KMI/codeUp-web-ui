@@ -33,6 +33,7 @@ import {
   type RestrictedTokenChoice,
   type TokenScope,
 } from "@/lib/auth/restricted-token";
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { useServerActionForm } from "@/lib/forms/use-server-action-form";
 import type { ActionResult } from "@/lib/forms/action-result";
 
@@ -509,6 +510,7 @@ export function SignOutEverywhere({ userId }: { userId: string }) {
  */
 export function ApplicationToken({ scopes }: { scopes: readonly TokenScope[] }) {
   const t = useTranslations("Account.token");
+  const apiError = useApiErrorMessage();
   const toast = useToast();
   const [choice, setChoice] = useState<RestrictedTokenChoice>({
     scope: "read-all",
@@ -528,15 +530,11 @@ export function ApplicationToken({ scopes }: { scopes: readonly TokenScope[] }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(restrictedTokenRequest(choice)),
       });
-      const body = (await response.json().catch(() => ({}))) as {
+      const body = (await response.json().catch(() => ({}))) as ApiErrorBody & {
         accessToken?: string;
-        message?: string;
       };
       if (!response.ok || !body.accessToken) {
-        // core-api's own refusal, forwarded verbatim by the route: a forbidden scope, an unknown
-        // role, or a `master` lifetime longer than the deployment allows. Its wording names the
-        // limit, which no message written here could.
-        toast.error(t("failed"), body.message);
+        toast.error(t("failed"), apiError(body.code, undefined));
         return;
       }
       setIssued(body.accessToken);
@@ -680,6 +678,7 @@ export function EffectiveRole({
   roles: readonly string[];
 }) {
   const t = useTranslations("Account.viewAs");
+  const apiError = useApiErrorMessage();
   const toast = useToast();
   const [pending, setPending] = useState<string | null>(null);
 
@@ -691,9 +690,9 @@ export function EffectiveRole({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
       });
-      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
       if (!response.ok) {
-        toast.error(t("failed"), body.message);
+        toast.error(t("failed"), apiError(body.code, undefined));
         setPending(null);
         return;
       }

@@ -40,6 +40,11 @@ export function ReviewControls({
   const toast = useToast();
   const [pending, setPending] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  // Closing is confirmed because it *publishes*: core-api mails the author the moment the
+  // review closes, and the comments stop being the reviewer's own notes. Both buttons that
+  // close -- "close" and the one-step "mark reviewed" -- go through it. Reopening does not:
+  // it sends nothing and takes nothing away.
+  const [confirmingClose, setConfirmingClose] = useState(false);
 
   if (!canReview) return null;
 
@@ -89,7 +94,7 @@ export function ReviewControls({
             type="button"
             disabled={pending}
             className={secondary}
-            onClick={() => changeState(true, "toast.closed")}
+            onClick={() => setConfirmingClose(true)}
           >
             {t("actions.markReviewed")}
           </button>
@@ -100,7 +105,7 @@ export function ReviewControls({
           type="button"
           disabled={pending}
           className={primary}
-          onClick={() => changeState(true, "toast.closed")}
+          onClick={() => setConfirmingClose(true)}
         >
           {t("actions.close")}
         </button>
@@ -115,6 +120,20 @@ export function ReviewControls({
           {t("actions.reopen")}
         </button>
       )}
+      <ConfirmDialog
+        open={confirmingClose}
+        onOpenChange={setConfirmingClose}
+        title={t("confirmClose.title")}
+        description={t("confirmClose.description")}
+        confirmLabel={t("confirmClose.confirm")}
+        destructive={false}
+        pending={pending}
+        onConfirm={() => {
+          setConfirmingClose(false);
+          void changeState(true, "toast.closed");
+        }}
+      />
+
       {canDeleteReview && startedAt !== null && (
         <>
           <button

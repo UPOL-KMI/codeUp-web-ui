@@ -13,7 +13,7 @@ import {
 const paramsSchema = z.object({ userId: z.uuid() });
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 /**
@@ -63,7 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
   if (!apiResponse.ok) {
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
     return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "Unable to take over this account." },
+      { success: false, code: errorBody.error?.code },
       { status: apiResponse.status },
     );
   }

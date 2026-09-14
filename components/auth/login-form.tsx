@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { safeRedirectTarget } from "@/lib/auth/redirect-target";
 
 import { useRouter } from "@/i18n/navigation";
@@ -34,6 +35,7 @@ export function LoginForm({
   shortSessionMinutes: number | null;
 }) {
   const t = useTranslations("Login");
+  const apiError = useApiErrorMessage();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,10 +56,8 @@ export function LoginForm({
 
     if (!response || !response.ok) {
       setPending(false);
-      // core-api's own message where there is one ("Invalid credentials", an account that has been
-      // disabled, ...), because it says more than a generic sentence can.
-      const body = (await response?.json().catch(() => null)) as { message?: string } | null;
-      setError(body?.message ?? t("errors.failed"));
+      const body = (await response?.json().catch(() => null)) as ApiErrorBody | null;
+      setError(apiError(body?.code, t("errors.failed")));
       return;
     }
 

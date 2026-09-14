@@ -7,6 +7,7 @@ import { isDataOnly } from "@/lib/status/exercise-validation";
 import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
+import { groupTeacherIds } from "@/lib/groups/teachers";
 
 /**
  * One submitted solution and how it was evaluated (S-015).
@@ -69,6 +70,8 @@ export interface SolutionDetail {
   /** The group's primary admins -- who may edit anyone's review comment, not just their own
    *  (S-018, reproducing the legacy `restrictCommentAuthor` rule). */
   groupPrimaryAdminIds: string[];
+  /** Who teaches this group -- marks a teacher's voice in the discussion. */
+  groupTeacherIds: string[];
   authorId: string;
   environment: string;
   gained: number | null;
@@ -143,10 +146,11 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     permissionHints?: Record<string, boolean>;
   }>("/v1/exercise-assignments/{id}", { pathParams: { id: solution.assignmentId } });
   const group = assignment.groupId
-    ? await apiRead<{ localizedTexts?: LocalizedText[]; primaryAdminsIds?: string[] }>(
-        "/v1/groups/{id}",
-        { pathParams: { id: assignment.groupId } },
-      )
+    ? await apiRead<{
+        localizedTexts?: LocalizedText[];
+        primaryAdminsIds?: string[];
+        privateData?: { admins?: string[]; supervisors?: string[] };
+      }>("/v1/groups/{id}", { pathParams: { id: assignment.groupId } })
     : null;
 
   return {
@@ -159,6 +163,7 @@ export const getSolutionDetail = cache(async function getSolutionDetail(
     groupId: assignment.groupId,
     groupName: group ? localizedName(group.localizedTexts, locale) : "",
     groupPrimaryAdminIds: group?.primaryAdminsIds ?? [],
+    groupTeacherIds: groupTeacherIds(group),
     authorId: solution.authorId,
     environment: solution.runtimeEnvironmentId,
     gained: solution.actualPoints,

@@ -106,7 +106,7 @@ test("a private comment is a note to oneself and nobody else has it", async ({ b
   const teacherMain = teacher.getByRole("main");
 
   await teacherMain.getByLabel("Say something").fill("[e2e] Rewrite this before next term.");
-  await teacherMain.getByLabel("Keep this to myself").check();
+  await teacherMain.getByLabel("Internal note").check();
   // The checkbox says what private means here, which is stronger than most people expect.
   await expect(
     teacherMain.getByText("UPolníček leaves a private comment out", { exact: false }),

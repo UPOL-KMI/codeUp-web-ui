@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useApiErrorMessage, type ApiErrorBody } from "@/lib/api/use-api-error-message";
 import { buttonClasses } from "@/components/button";
 
 /**
@@ -15,6 +16,7 @@ import { buttonClasses } from "@/components/button";
  */
 export function ResendVerification() {
   const t = useTranslations("EmailVerification.callout");
+  const apiError = useApiErrorMessage();
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,8 +29,8 @@ export function ResendVerification() {
     );
     setPending(false);
     if (!response || !response.ok) {
-      const body = (await response?.json().catch(() => null)) as { message?: string } | null;
-      setError(body?.message ?? t("failed"));
+      const body = (await response?.json().catch(() => null)) as ApiErrorBody | null;
+      setError(apiError(body?.code, t("failed")));
       return;
     }
     setSent(true);

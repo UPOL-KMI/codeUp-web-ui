@@ -4,7 +4,7 @@ import { z } from "zod";
 const verifySchema = z.object({ token: z.string().min(1) });
 
 interface CoreApiErrorResponse {
-  error?: { message?: string };
+  error?: { code?: string };
 }
 
 /**
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   if (!apiResponse.ok) {
     const errorBody: CoreApiErrorResponse = await apiResponse.json().catch(() => ({}));
     return NextResponse.json(
-      { success: false, message: errorBody.error?.message ?? "The address was not verified." },
+      { success: false, code: errorBody.error?.code },
       { status: apiResponse.status === 500 ? 502 : apiResponse.status },
     );
   }

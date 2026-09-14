@@ -9,7 +9,12 @@ import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { Link, redirect } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 import { ProfileForm } from "@/components/users/account-forms";
-import { AccountAccess, AdminPasswordForm, RoleForm } from "@/components/users/user-admin-forms";
+import {
+  AccountAccess,
+  AdminPasswordForm,
+  ExternalIds,
+  RoleForm,
+} from "@/components/users/user-admin-forms";
 import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
@@ -93,6 +98,13 @@ export default async function EditUserPage({ params }: { params: Promise<{ userI
             <AdminPasswordForm account={account} />
           </section>
         )}
+
+        <section aria-labelledby="user-external-ids">
+          <h2 id="user-external-ids" className="mb-3 text-base font-semibold tracking-tight">
+            {t("externalIds.title")}
+          </h2>
+          <ExternalIds account={account} />
+        </section>
 
         <section aria-labelledby="user-access">
           <h2 id="user-access" className="mb-3 text-base font-semibold tracking-tight">

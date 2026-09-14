@@ -48,9 +48,8 @@ export default async function AssignmentPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const [{ assignmentId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, tComments, status, assignment, thread] = await Promise.all([
+  const [t, status, assignment, thread] = await Promise.all([
     getTranslations("Assignment"),
-    getTranslations("Comments"),
     getTranslations("Status"),
     getAssignmentDetail(assignmentId, locale),
     // **Only for the number on the tab.** The discussion itself still streams behind its own
@@ -140,6 +139,7 @@ export default async function AssignmentPage({
                   assignmentId={assignmentId}
                   groupId={assignment.groupId}
                   maxPoints={assignment.maxPointsFirst}
+                  dataOnly={assignment.dataOnly}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -150,8 +150,9 @@ export default async function AssignmentPage({
             <Suspense fallback={<TableSkeleton label={status("loading")} />}>
               <Discussion
                 threadId={assignmentId}
-                publicMeans={tComments("audience.assignment")}
+                subject="assignment"
                 canModerate={assignment.can.update === true}
+                teacherIds={assignment.groupTeacherIds}
               />
             </Suspense>
           </ErrorBoundary>
@@ -169,12 +170,19 @@ async function ClassProgressSection({
   assignmentId,
   groupId,
   maxPoints,
+  dataOnly,
 }: {
   assignmentId: string;
   groupId: string;
   maxPoints: number;
+  dataOnly: boolean;
 }) {
-  const { solvers, summary } = await getAssignmentSolverSummary(assignmentId, groupId, maxPoints);
+  const { solvers, summary } = await getAssignmentSolverSummary(
+    assignmentId,
+    groupId,
+    maxPoints,
+    dataOnly,
+  );
 
   return <ClassProgress assignmentId={assignmentId} solvers={solvers} summary={summary} />;
 }

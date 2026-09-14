@@ -4,8 +4,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ApiError } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/api/current-user";
+import { isBinaryFilename } from "@/lib/code/binary-files";
 import {
-  canDisplayFiles,
+  fileDisplayLimit,
   getFileContent,
   getSolutionFiles,
   MAX_DISPLAYED_FILES,
@@ -32,6 +33,7 @@ import { TableSkeleton } from "@/components/state/skeleton";
 import { ComparePicker } from "@/components/solutions/compare-picker";
 import { ReviewControls } from "@/components/solutions/review-controls";
 import { ReviewSummary } from "@/components/solutions/review-summary";
+import { ToggleAllFiles } from "@/components/solutions/toggle-all-files";
 import { fileAnchorId, SourceFile } from "@/components/solutions/source-file";
 import { buttonClasses } from "@/components/button";
 
@@ -68,9 +70,8 @@ export default async function SolutionSourcesPage({
   params: Promise<{ solutionId: string }>;
 }) {
   const [{ solutionId }, locale] = await Promise.all([params, getLocale()]);
-  const [t, tComments, status, solution, files, currentUser] = await Promise.all([
+  const [t, status, solution, files, currentUser] = await Promise.all([
     getTranslations("Sources"),
-    getTranslations("Comments"),
     getTranslations("Status"),
     getSolutionDetail(solutionId, locale),
     getSolutionFiles(solutionId),
@@ -102,7 +103,7 @@ export default async function SolutionSourcesPage({
     comments.map((comment) => [comment.id, <Markdown key={comment.id} source={comment.text} />]),
   );
 
-  const displayable = canDisplayFiles(files);
+  const displayLimit = fileDisplayLimit(files);
 
   return (
     <PageShell
@@ -167,29 +168,38 @@ export default async function SolutionSourcesPage({
 
         {files.length === 0 ? (
           <EmptyState title={t("empty.title")} description={t("empty.description")} />
-        ) : !displayable ? (
+        ) : displayLimit !== null ? (
           <EmptyState
             title={t("tooMany.title")}
-            description={t("tooMany.description", {
-              count: files.length,
-              max: MAX_DISPLAYED_FILES,
-            })}
+            description={
+              displayLimit === "count"
+                ? t("tooMany.byCount", { count: files.length, max: MAX_DISPLAYED_FILES })
+                : t("tooMany.bySize")
+            }
           />
         ) : (
           <>
-            {files.length > 1 && (
-              <nav aria-label={t("fileListLabel")} className="flex flex-wrap gap-2">
-                {files.map((file) => (
-                  <a
-                    key={file.name}
-                    href={`#${fileAnchorId(file.name)}`}
-                    className="rounded-md border border-input px-2 py-1 font-mono text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
-                    {file.name}
-                  </a>
-                ))}
-              </nav>
-            )}
+            {/* The index and the fold controls share a row: both are about getting around the
+                files below, and the controls belong at the top right of what they act on. The
+                index keeps the left even with one file, where it is absent. */}
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              {files.length > 1 ? (
+                <nav aria-label={t("fileListLabel")} className="flex flex-wrap gap-2">
+                  {files.map((file) => (
+                    <a
+                      key={file.name}
+                      href={`#${fileAnchorId(file.name)}`}
+                      className="rounded-md border border-input px-2 py-1 font-mono text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      {file.name}
+                    </a>
+                  ))}
+                </nav>
+              ) : (
+                <span />
+              )}
+              <ToggleAllFiles />
+            </div>
             <ErrorBoundary>
               <Suspense fallback={<TableSkeleton label={status("loading")} />}>
                 <SourceFileList
@@ -226,8 +236,9 @@ export default async function SolutionSourcesPage({
           <Suspense fallback={<TableSkeleton label={status("loading")} />}>
             <Discussion
               threadId={solutionId}
-              publicMeans={tComments("audience.solution")}
+              subject="solution"
               canModerate={solution.can.review === true}
+              teacherIds={solution.groupTeacherIds}
             />
           </Suspense>
         </ErrorBoundary>
@@ -266,6 +277,9 @@ async function SourceFileList({
 }) {
   const contents = await Promise.all(
     files.map(async (file): Promise<{ content: FileContent | null; error?: string }> => {
+      // A PDF is not fetched at all: `SourceFile` will offer it rather than render it, and pulling
+      // forty megabytes across to discover that is the cost this classification exists to avoid.
+      if (isBinaryFilename(file.entry ?? file.name)) return { content: null };
       try {
         return { content: await getFileContent(file.fileId, file.entry) };
       } catch (error) {
@@ -284,6 +298,13 @@ async function SourceFileList({
           file={file}
           content={contents[index]?.content ?? null}
           contentError={contents[index]?.error}
+          // Only a whole submitted file can be downloaded on its own; an entry inside an archive
+          // has no bytes of its own to serve, and says so instead.
+          downloadHref={
+            file.entry === null
+              ? `/api/solutions/${solutionId}/files/${encodeURIComponent(file.fileId)}`
+              : null
+          }
           review={{
             comments: comments.get(file.name) ?? [],
             bodies,
