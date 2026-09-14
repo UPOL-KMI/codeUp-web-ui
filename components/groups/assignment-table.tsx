@@ -12,6 +12,7 @@ import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
 import { VisibilityBadge } from "@/components/status/visibility-badge";
+import { BonusPoints } from "@/components/format/bonus-points";
 
 /**
  * The group's assignment list (S-006). A `"use client"` wrapper, as `DataTable` requires -- its
@@ -119,12 +120,21 @@ export function AssignmentTable({
             className: "tabular-nums",
             sortable: true,
             sortValue: (assignment: GroupAssignment) => assignment.stats?.gained ?? -1,
-            cell: (assignment: GroupAssignment) =>
-              assignment.stats
-                ? assignmentProgress(assignment.stats) === "awaiting-review"
-                  ? formatPointsUnknown(assignment.stats.total)
-                  : formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)
-                : "—",
+            cell: (assignment: GroupAssignment) => {
+              if (!assignment.stats) return "—";
+              if (assignmentProgress(assignment.stats) === "awaiting-review") {
+                return formatPointsUnknown(assignment.stats.total);
+              }
+              // The bonus belongs here as much as on the solution's own screen: the row said
+              // "20/20" where the attempts list said "20/20 +5", and the student reading the two
+              // had to work out which was lying.
+              return (
+                <>
+                  {formatPoints(assignment.stats.gained ?? 0, assignment.stats.total)}
+                  <BonusPoints bonus={assignment.stats.bonus} />
+                </>
+              );
+            },
           },
           {
             id: "myStatus",

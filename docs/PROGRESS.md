@@ -6472,7 +6472,7 @@ Nette deprecation notice about this application's own router construction: about
 HTTP request, measured, over six weeks of light development. Setting `error_reporting` in `php.ini`
 changes nothing — Tracy's `Debugger::enable()` calls `error_reporting(E_ALL)` itself
 (`Debugger.php:211`) before a request is served. The fix is one line in core-api's `Bootstrap`,
-*after* `enableTracy()`; verified from a clean image at **0 bytes over five requests**, with
+_after_ `enableTracy()`; verified from a clean image at **0 bytes over five requests**, with
 `E_WARNING`, `E_NOTICE`, `E_USER_ERROR` and exceptions all still logged.
 
 **Comment notifications are queued.** Ten people asking something in the same minute sent ten
@@ -6486,7 +6486,7 @@ to the second, so a burst ties and "the last one" was arbitrary; the query now b
 
 **Two summary screens called an unmarked submission wrong.** The class-progress table read the
 group stats row, which carries no runtime environment, so a data-only solution nobody had graded
-read as *Špatně, 0/20* on the teacher's screen while the student's own screen said *waiting*.
+read as _Špatně, 0/20_ on the teacher's screen while the student's own screen said _waiting_.
 The dashboard had the same fault in a subtler form: the points cell already printed `?/20` while
 the badge beside it was built from four hand-picked fields with `dataOnly` dropped — one row
 disagreeing with itself. Unmarked solutions are also out of the "average points" tile now; their
@@ -6494,7 +6494,7 @@ zero was never a score.
 
 **The rest of the round, from the operator reading his own screens.** Only the most specific
 sidebar link lights (DEC-147). The assign screen offers the catalog it picks from. Discussion:
-own comments are named *Já* and coloured, teachers carry a blue mortarboard, the private-comment
+own comments are named _Já_ and coloured, teachers carry a blue mortarboard, the private-comment
 hint no longer rewrites itself on the tick, and the two sentences that name what is being
 discussed vary by subject rather than saying "assignment" over a solution. The review-request
 control speaks to a teacher as a teacher. Verdict buttons are coloured by direction and refuse a
@@ -6504,7 +6504,7 @@ sure". Points above the maximum offer a one-click split into bonus, preserving t
 (`lib/status/points-overflow.ts`).
 
 **Submitted files.** A PDF is offered, not rendered (DEC-146), and the "too many files" notice that
-blamed the *count* of two files was really the byte budget — which no longer counts files that are
+blamed the _count_ of two files was really the byte budget — which no longer counts files that are
 never fetched. Each file folds (DEC-148), with expand/collapse over all of them.
 
 **Not verified by eye.** Nothing in this round was seen rendered: the seeded accounts are gone from
@@ -6513,3 +6513,35 @@ verified is the five checks, the unit tests written alongside (three new pure mo
 present in the deployed image, and the core-api behaviour measured in the running container. The
 e2e suite still cannot run — it reads `[seed]` fixtures a clean install removed — and **nineteen
 specs have now been edited without being executed**.
+
+### 2026-09-14 — the second half of the testing round
+
+**A bonus was missing from two screens and folded into a third.** The group's assignment table
+said "20/20" where the attempts list said "20/20 +5", and the group's own standing said "25/40" —
+core-api sums a group total as `getPoints() + bonusPoints` per solution
+(`GroupViewFactory::getPointsGainedByStudentForSolutions`) and offers no way to ask for the two
+apart. `splitGroupPoints` subtracts them back out of the per-assignment rows, which do carry the
+bonus on its own; it under-reports only where an assignment is hidden from the reader, which is
+where all of it is folded in today anyway. The `+5` itself had three identical copies in three
+files and was about to get two more, so it is one component now.
+
+**Review comments in a file were invisible.** White card, grey rule, inside a white code listing —
+the operator added one to a text file and could not find it again. They carry the colour the badge
+beside them already implies: an issue to resolve is a warning, an ordinary remark is information.
+Opaque `-surface` tokens, because a tint over a highlighted line takes its colour from whatever
+token is underneath. The "review is open" notice above them is a warning box for the same reason.
+
+**Sources: the size sits at the right in both shapes** — adding the fold chevron had put it inside
+the left group — and is formatted by the same `formatBytes` the rest of the app uses rather than
+by a message that printed raw bytes.
+
+**Closing a review and re-running a solution now confirm.** Both write to the student or occupy a
+worker; the review dialog says what closing actually does, including that leaving the review open
+and returning later is allowed.
+
+**Answered, not changed:** a student cannot reply to a review comment or mark an issue resolved —
+`addReviewComment` starts at `supervisor-student` in `permissions.neon` and the author has no
+write on a review at all. Their only channels are the solution's discussion, the note, and a new
+attempt. The app also stops offering "ask for a review" once a review has *ever* started, so after
+a closed review there is no way to say "fixed, look again". Left as it is pending the operator's
+decision; the fix is one condition.

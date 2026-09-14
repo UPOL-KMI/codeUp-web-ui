@@ -1152,7 +1152,6 @@
     "download": "Download archive",
     "backToSolution": "Back to the solution",
     "entryPoint": "Entry point",
-    "bytes": "{size} B",
     "fileListLabel": "Files in this solution",
     "expandAll": "Expand all",
     "collapseAll": "Collapse all",
@@ -1196,7 +1195,7 @@
     },
     "confirmClose": {
       "title": "Close this review?",
-      "description": "The author sees every comment in the review and is e-mailed about it. It can be reopened later, but each further change after closing sends them another e-mail.",
+      "description": "The author sees every comment in the review and is told the review is finished. It can be reopened later, but each further closing sends a new notification. You can also simply leave the review open and come back to it later.",
       "confirm": "Close the review"
     },
     "comment": {

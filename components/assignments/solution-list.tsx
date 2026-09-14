@@ -10,6 +10,7 @@ import { Badge } from "@/components/status/badge";
 import { evaluationStatus } from "@/lib/status/evaluation";
 
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
+import { BonusPoints } from "@/components/format/bonus-points";
 
 /**
  * One person's attempts at one assignment, newest first.
@@ -69,11 +70,7 @@ export async function SolutionList({ solutions }: { solutions: AssignmentSolutio
                 ) : (
                   formatPoints(solution.gained ?? 0, solution.maxPoints)
                 )}
-                {solution.bonus !== 0 && (
-                  <span className={solution.bonus > 0 ? "text-success" : "text-destructive"}>
-                    {solution.bonus > 0 ? ` +${solution.bonus}` : ` ${solution.bonus}`}
-                  </span>
-                )}
+                <BonusPoints bonus={solution.bonus} />
               </td>
               <td className="px-3 py-2">
                 <EvaluationBadge solution={solution.evaluation} />

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { FileContent, SolutionFileEntry } from "@/lib/api/solution-files";
 import type { ReviewComment } from "@/lib/api/solution-review";
 import { highlightToLines } from "@/lib/code/highlight";
+import { formatBytes } from "@/lib/format/bytes";
 import { isBinaryFilename } from "@/lib/code/binary-files";
 import { languageForFilename } from "@/lib/code/languages";
 
@@ -71,13 +72,20 @@ export async function SourceFile({
   const anchor = fileAnchorId(file.name);
   const language = languageForFilename(file.entry ?? file.name);
 
+  // The name on the left, the size hard against the right edge -- the same shape whether the file
+  // folds or not. When the chevron was added it went inside this group, which made `justify-between`
+  // separate the chevron from everything else and left the size sitting against the name.
+  const nameSide = (
+    <span className="flex flex-wrap items-center gap-2">
+      <span className="font-mono text-sm text-foreground">{file.name}</span>
+      {file.isEntryPoint && <Badge tone="info">{t("entryPoint")}</Badge>}
+    </span>
+  );
+  const sizeSide = <span className="text-sm text-muted-foreground">{formatBytes(file.size)}</span>;
   const captionInner = (
     <>
-      <span className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-sm text-foreground">{file.name}</span>
-        {file.isEntryPoint && <Badge tone="info">{t("entryPoint")}</Badge>}
-      </span>
-      <span className="text-sm text-muted-foreground">{t("bytes", { size: file.size })}</span>
+      {nameSide}
+      {sizeSide}
     </>
   );
 
@@ -161,8 +169,9 @@ export async function SourceFile({
           >
             <path d="m9 6 6 6-6 6" />
           </svg>
-          {captionInner}
+          {nameSide}
         </span>
+        {sizeSide}
       </summary>
       {content.tooLarge && (
         <p className="border-b border-border bg-warning/10 px-4 py-2 text-sm">{t("truncated")}</p>

@@ -26,6 +26,7 @@ import { Discussion } from "@/components/comments/discussion";
 import { Badge } from "@/components/status/badge";
 import { EvaluationBadge } from "@/components/status/evaluation-badge";
 import { buttonClasses } from "@/components/button";
+import { BonusPoints } from "@/components/format/bonus-points";
 
 export async function generateMetadata({
   params,
@@ -170,11 +171,7 @@ export default async function SolutionPage({
                 ) : (
                   formatPoints(solution.gained ?? 0, solution.maxPoints)
                 )}
-                {solution.bonus !== 0 && (
-                  <span className={solution.bonus > 0 ? "text-success" : "text-destructive"}>
-                    {solution.bonus > 0 ? ` +${solution.bonus}` : ` ${solution.bonus}`}
-                  </span>
-                )}
+                <BonusPoints bonus={solution.bonus} />
               </dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-border py-2">

@@ -9,6 +9,7 @@ import { ASSIGNMENT_PROGRESS_TONE } from "@/lib/status/assignment-progress";
 import { Link } from "@/i18n/navigation";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { Badge } from "@/components/status/badge";
+import { BonusPoints } from "@/components/format/bonus-points";
 
 /**
  * Everyone the assignment was set for, and where each of them stands (S-013).
@@ -76,11 +77,7 @@ export function SolverTable({
         ) : (
           <>
             {formatPoints(solver.gained, solver.maxPoints)}
-            {solver.bonus !== null && solver.bonus !== 0 && (
-              <span className={solver.bonus > 0 ? "text-success" : "text-destructive"}>
-                {solver.bonus > 0 ? ` +${solver.bonus}` : ` ${solver.bonus}`}
-              </span>
-            )}
+            <BonusPoints bonus={solver.bonus} />
           </>
         ),
     },

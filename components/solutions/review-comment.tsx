@@ -170,7 +170,7 @@ export function ReviewCommentItem({
 
   if (editing) {
     return (
-      <div className="border-l-2 border-primary bg-card">
+      <div className="rounded-r-md border-l-2 border-primary bg-info-surface">
         <ReviewCommentForm
           submitLabel={t("comment.save")}
           reviewClosed={reviewClosed}
@@ -184,7 +184,17 @@ export function ReviewCommentItem({
   }
 
   return (
-    <article className="border-l-2 border-border bg-card p-3 text-sm">
+    // **A coloured ground, not a card.** These sit *inside* the code listing, between two lines of
+    // source, and a white card with a grey rule against a white page was invisible -- the operator
+    // added a comment to a text file and could not find it again. The two tones carry the meaning
+    // that is already in the badge: an issue the author has to resolve is a warning, an ordinary
+    // remark is information. Opaque `-surface` tokens, because a `/10` tint over a highlighted
+    // line would take its colour from whatever token happened to be underneath.
+    <article
+      className={`rounded-r-md border-l-2 p-3 text-sm ${
+        comment.issue ? "border-warning bg-warning-surface" : "border-info bg-info-surface"
+      }`}
+    >
       <header className="mb-1 flex flex-wrap items-center gap-2">
         <span className="font-medium">{comment.authorName || t("comment.unknownAuthor")}</span>
         <time

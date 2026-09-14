@@ -132,13 +132,18 @@ export default async function SolutionSourcesPage({
       }
     >
       <div className="flex flex-col gap-8">
+        {/* An open review is a warning, not a note. It says the author cannot see any of this yet
+            and that closing it sends mail -- the two facts a reviewer most needs in mind -- and in
+            grey on grey the operator could not see it at all. The surfaces are the opaque `-surface`
+            tokens rather than a `/10` tint, here and on its two neighbours, so a box reads the same
+            over the page and over a card. */}
         {canReview && review.startedAt !== null && review.closedAt === null && (
-          <p className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+          <p className="rounded-lg border border-warning bg-warning-surface p-4 text-sm">
             {t("reviewOpenNote")}
           </p>
         )}
         {canReview && review.closedAt !== null && (
-          <p className="rounded-lg border border-success bg-success/10 p-4 text-sm">
+          <p className="rounded-lg border border-success bg-success-surface p-4 text-sm">
             {t("reviewClosedNote")}
           </p>
         )}
@@ -146,8 +151,8 @@ export default async function SolutionSourcesPage({
           <p
             className={`rounded-lg border p-4 text-sm ${
               solution.reviewIssues > 0
-                ? "border-warning bg-warning/10"
-                : "border-success bg-success/10"
+                ? "border-warning bg-warning-surface"
+                : "border-success bg-success-surface"
             }`}
           >
             {solution.reviewIssues > 0

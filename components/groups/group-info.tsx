@@ -9,6 +9,8 @@ import { CreateGroup } from "@/components/groups/create-group";
 import { Markdown } from "@/components/markdown/markdown";
 import { Badge } from "@/components/status/badge";
 import { Hint } from "@/components/status/hint";
+import { splitGroupPoints } from "@/lib/status/group-points";
+import { BonusPoints } from "@/components/format/bonus-points";
 
 /**
  * The group's Info tab (S-005): what this group is, who runs it, what it contains, and -- for
@@ -40,6 +42,7 @@ export async function GroupInfo({
   /** The reader administers, supervises or observes this group. */
   staffView: boolean;
 }) {
+  const myPoints = group.myStats ? splitGroupPoints(group.myStats) : null;
   const [t, format, attributes] = await Promise.all([
     getTranslations("Group.info"),
     getFormatter(),
@@ -64,13 +67,16 @@ export async function GroupInfo({
         )}
       </section>
 
-      {group.myStats && (
+      {group.myStats && myPoints && (
         <section aria-labelledby="group-my-standing">
           <h2 id="group-my-standing" className="mb-3 text-base font-semibold tracking-tight">
             {t("myStanding")}
           </h2>
           <p className="text-2xl font-semibold tabular-nums">
-            {formatPoints(group.myStats.points.gained, group.myStats.points.total)}
+            {/* core-api folds the bonus into this total; `splitGroupPoints` takes it back apart,
+                so this tile says what every other screen says. */}
+            {formatPoints(myPoints.gained, myPoints.total)}
+            <BonusPoints bonus={myPoints.bonus} />
             <span className="ml-2 text-sm font-normal text-muted-foreground">{t("points")}</span>
             {group.myStats.hasLimit && (
               <span className="ml-3 align-middle">

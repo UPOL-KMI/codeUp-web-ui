@@ -1152,7 +1152,6 @@
     "download": "Stáhnout archiv",
     "backToSolution": "Zpět na řešení",
     "entryPoint": "Vstupní bod",
-    "bytes": "{size} B",
     "fileListLabel": "Soubory tohoto řešení",
     "expandAll": "Rozbalit vše",
     "collapseAll": "Sbalit vše",
@@ -1196,7 +1195,7 @@
     },
     "confirmClose": {
       "title": "Uzavřít revizi?",
-      "description": "Autor řešení uvidí všechny komentáře revize a přijde mu o tom e-mail. Revizi lze později znovu otevřít, ale každá další změna po uzavření mu pošle další e-mail.",
+      "description": "Autor řešení uvidí všechny komentáře revize a bude informován o dokončení revize. Revizi lze později znovu otevřít, ale každé další uzavření pošle nové oznámení. Z revize lze rovnou odejít bez uzavření a vrátit se k ní později.",
       "confirm": "Uzavřít revizi"
     },
     "comment": {
