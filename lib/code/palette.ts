@@ -25,14 +25,59 @@
  */
 const HEX = /^#[0-9A-Fa-f]{3,8}$/;
 
-export function tokenClassName(style: Record<string, string>): string {
+/** The two themes' own block backgrounds (`github-light`, `github-dark`), which is what every
+ *  token sits on; a token's colour is pushed towards the opposite pole until it reads at WCAG AA
+ *  against them (X-009). github-dark's comment grey, for one, does not on its own. */
+const LIGHT_BACKGROUND = "#ffffff";
+const DARK_BACKGROUND = "#24292e";
+const MINIMUM_CONTRAST = 4.5;
+
+function channels(hex: string): [number, number, number] {
+  const body = hex.slice(1);
+  const wide = body.length <= 4 ? [...body].map((c) => c + c).join("") : body;
+  return [0, 2, 4].map((i) => parseInt(wide.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+  const [lr, lg, lb] = [r, g, b].map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+}
+
+function contrast(a: [number, number, number], b: [number, number, number]): number {
+  const [la, lb] = [luminance(a), luminance(b)];
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/** Mixes `hex` towards `pole` in twentieths until it reads against `background`. */
+function readable(hex: string, background: string, pole: number): string {
+  const bg = channels(background);
+  let rgb = channels(hex);
+  let steps = 0;
+  for (; steps < 20 && contrast(rgb, bg) < MINIMUM_CONTRAST; steps += 1) {
+    rgb = rgb.map((v) => Math.round(v + (pole - v) * 0.1)) as [number, number, number];
+  }
+  // Untouched when it already reads: the rule embeds the theme's value as written.
+  if (steps === 0) return hex;
+  return "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("");
+}
+
+function readablePair(style: Record<string, string>): [string, string] | null {
   const light = style["--shiki-light"] ?? "";
   const dark = style["--shiki-dark"] ?? "";
   // A value that is not a plain hex colour gets no class and keeps its inline style: this exists
   // so a future theme, or a Shiki that starts emitting `var(...)` or a gradient, degrades to the
   // old behaviour instead of writing something unintended into a stylesheet.
-  if (!HEX.test(light) || !HEX.test(dark)) return "";
-  return `tk${light.slice(1)}${dark.slice(1)}`.toLowerCase();
+  if (!HEX.test(light) || !HEX.test(dark)) return null;
+  return [readable(light, LIGHT_BACKGROUND, 0), readable(dark, DARK_BACKGROUND, 255)];
+}
+
+export function tokenClassName(style: Record<string, string>): string {
+  const pair = readablePair(style);
+  if (!pair) return "";
+  return `tk${pair[0].slice(1)}${pair[1].slice(1)}`.toLowerCase();
 }
 
 /**
@@ -47,12 +92,10 @@ export function tokenClassName(style: Record<string, string>): string {
 export function paletteCss(palette: Record<string, string>[]): string {
   const rules = new Map<string, string>();
   for (const style of palette) {
+    const pair = readablePair(style);
     const name = tokenClassName(style);
-    if (name === "" || rules.has(name)) continue;
-    rules.set(
-      name,
-      `.${name}{--shiki-light:${style["--shiki-light"]};--shiki-dark:${style["--shiki-dark"]}}`,
-    );
+    if (!pair || name === "" || rules.has(name)) continue;
+    rules.set(name, `.${name}{--shiki-light:${pair[0]};--shiki-dark:${pair[1]}}`);
   }
   return [...rules.values()].join("");
 }

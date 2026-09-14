@@ -1,6 +1,7 @@
 import rehypeShikiFromHighlighter from "@shikijs/rehype/core";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
+import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 
@@ -43,6 +44,7 @@ export async function Markdown({ source }: { source: string }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath, remarkLegacyMathDelimiters, remarkEscapeRawHtml]}
         rehypePlugins={[
+          rehypeSlug,
           rehypeKatex,
           [
             rehypeShikiFromHighlighter,

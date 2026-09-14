@@ -96,103 +96,111 @@ export function VerdictControls({
       </h2>
       <p className="text-sm text-muted-foreground">{t("explain")}</p>
 
-      {canAccept && (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            aria-disabled={pending}
-            className={button}
-            onClick={() => (accepted ? void accept(false) : setConfirmingAccept(true))}
-          >
-            {accepted ? t("unaccept") : t("accept")}
-          </button>
-          <span className="text-xs text-muted-foreground">
-            {accepted ? t("acceptedNote") : t("acceptNote")}
-          </span>
-        </div>
-      )}
-
-      {canSetPoints && (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-card">
+        {canAccept && (
+          <div className="flex flex-wrap items-center gap-3 p-4">
             <button
               type="button"
               aria-disabled={pending}
               className={button}
-              onClick={() => void submitPoints({ overriddenPoints: 0, bonusPoints: 0 })}
+              onClick={() => (accepted ? void accept(false) : setConfirmingAccept(true))}
             >
-              {t("zero")}
+              {accepted ? t("unaccept") : t("accept")}
             </button>
-            <button
-              type="button"
-              aria-disabled={pending}
-              className={button}
-              onClick={() => void submitPoints({ overriddenPoints: maxPoints, bonusPoints: 0 })}
-            >
-              {t("full", { points: maxPoints })}
-            </button>
-            <button
-              type="button"
-              aria-disabled={pending || (overridden === null && bonus === 0)}
-              className={button}
-              onClick={() => void submitPoints({ overriddenPoints: null, bonusPoints: 0 })}
-            >
-              {t("clear")}
-            </button>
+            <span className="text-xs text-muted-foreground">
+              {accepted ? t("acceptedNote") : t("acceptNote")}
+            </span>
           </div>
+        )}
 
-          <form
-            className="flex flex-wrap items-end gap-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (pending) return;
-              const trimmed = overrideInput.trim();
-              void submitPoints({
-                overriddenPoints: trimmed === "" ? null : Number(trimmed),
-                bonusPoints: bonusInput.trim() === "" ? 0 : Number(bonusInput),
-              });
-            }}
-          >
-            <div className="flex flex-col gap-1 text-sm">
-              <label htmlFor={overrideId} className="font-medium">
-                {t("override")}
-              </label>
-              <input
-                id={overrideId}
-                type="number"
-                step={1}
-                inputMode="numeric"
-                value={overrideInput}
-                onChange={(event) => setOverrideInput(event.target.value)}
-                placeholder={t("overridePlaceholder")}
-                className={input}
-              />
+        {canSetPoints && (
+          <>
+            <div className="flex flex-col gap-2 p-4">
+              <h3 className="text-sm font-medium">{t("quickTitle")}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  aria-disabled={pending}
+                  className={button}
+                  onClick={() => void submitPoints({ overriddenPoints: 0, bonusPoints: 0 })}
+                >
+                  {t("zero")}
+                </button>
+                <button
+                  type="button"
+                  aria-disabled={pending}
+                  className={button}
+                  onClick={() => void submitPoints({ overriddenPoints: maxPoints, bonusPoints: 0 })}
+                >
+                  {t("full", { points: maxPoints })}
+                </button>
+                <button
+                  type="button"
+                  aria-disabled={pending || (overridden === null && bonus === 0)}
+                  className={buttonClasses("ghost", "sm")}
+                  onClick={() => void submitPoints({ overriddenPoints: null, bonusPoints: 0 })}
+                >
+                  {t("clear")}
+                </button>
+              </div>
             </div>
-            <div className="flex flex-col gap-1 text-sm">
-              <label htmlFor={bonusId} className="font-medium">
-                {t("bonus")}
-              </label>
-              <input
-                id={bonusId}
-                type="number"
-                step={1}
-                inputMode="numeric"
-                value={bonusInput}
-                onChange={(event) => setBonusInput(event.target.value)}
-                className={input}
-              />
+
+            <div className="flex flex-col gap-2 p-4">
+              <h3 className="text-sm font-medium">{t("manualTitle")}</h3>
+              <form
+                className="flex flex-wrap items-end gap-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (pending) return;
+                  const trimmed = overrideInput.trim();
+                  void submitPoints({
+                    overriddenPoints: trimmed === "" ? null : Number(trimmed),
+                    bonusPoints: bonusInput.trim() === "" ? 0 : Number(bonusInput),
+                  });
+                }}
+              >
+                <div className="flex flex-col gap-1 text-sm">
+                  <label htmlFor={overrideId} className="font-medium">
+                    {t("override")}
+                  </label>
+                  <input
+                    id={overrideId}
+                    type="number"
+                    step={1}
+                    inputMode="numeric"
+                    value={overrideInput}
+                    onChange={(event) => setOverrideInput(event.target.value)}
+                    placeholder={t("overridePlaceholder")}
+                    className={input}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 text-sm">
+                  <label htmlFor={bonusId} className="font-medium">
+                    {t("bonus")}
+                  </label>
+                  <input
+                    id={bonusId}
+                    type="number"
+                    step={1}
+                    inputMode="numeric"
+                    value={bonusInput}
+                    onChange={(event) => setBonusInput(event.target.value)}
+                    className={input}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  aria-disabled={pending}
+                  className={buttonClasses("primary", "sm")}
+                >
+                  {pending ? t("saving") : t("save")}
+                </button>
+              </form>
+              <p className="text-xs text-muted-foreground">{t("overrideNote")}</p>
             </div>
-            <button
-              type="submit"
-              aria-disabled={pending}
-              className={buttonClasses("primary", "sm")}
-            >
-              {pending ? t("saving") : t("save")}
-            </button>
-          </form>
-          <p className="text-xs text-muted-foreground">{t("overrideNote")}</p>
-        </>
-      )}
+          </>
+        )}
+      </div>
 
       <ConfirmDialog
         open={confirmingAccept}

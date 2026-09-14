@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { getGuide, isGuideSlug } from "@/lib/docs/guides";
+import { GUIDE_SLUGS, getGuide, isGuideSlug } from "@/lib/docs/guides";
+import { guideOutline } from "@/lib/docs/outline";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 
+import { buttonClasses } from "@/components/button";
+import { GuideOutline } from "@/components/docs/guide-outline";
 import { Markdown } from "@/components/markdown/markdown";
+import { Link } from "@/i18n/navigation";
 import { PageShell } from "@/components/page-shell";
 
 export async function generateMetadata({
@@ -43,6 +47,10 @@ export default async function GuidePage({
     getGuide(slug, locale),
   ]);
 
+  const index = GUIDE_SLUGS.indexOf(slug);
+  const previous = GUIDE_SLUGS[index - 1];
+  const next = GUIDE_SLUGS[index + 1];
+
   return (
     <PageShell title={t(`guides.${slug}.title`)} breadcrumbs={breadcrumbs}>
       {source === null ? (
@@ -50,8 +58,38 @@ export default async function GuidePage({
           {t("loadError")}
         </div>
       ) : (
-        <div className="max-w-3xl text-base leading-relaxed">
-          <Markdown source={source} />
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:items-start lg:gap-12">
+          {/* First in the document, so a reader arriving by keyboard or screen reader meets the
+              outline before the text it outlines; the grid puts it beside the text on a wide screen. */}
+          <GuideOutline
+            entries={guideOutline(source)}
+            label={t("onThisPage")}
+            className="lg:sticky lg:top-6 lg:order-last"
+          />
+          <div className="flex min-w-0 flex-col gap-10">
+            <div className="max-w-3xl text-base leading-relaxed">
+              <Markdown source={source} />
+            </div>
+            <nav
+              aria-label={t("neighbours")}
+              className="flex max-w-3xl flex-wrap items-center justify-between gap-3 border-t border-border pt-6"
+            >
+              {previous ? (
+                <Link href={`/docs/${previous}`} className={buttonClasses("outline", "sm")}>
+                  <span aria-hidden="true">←</span>
+                  {t(`guides.${previous}.title`)}
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next && (
+                <Link href={`/docs/${next}`} className={buttonClasses("outline", "sm")}>
+                  {t(`guides.${next}.title`)}
+                  <span aria-hidden="true">→</span>
+                </Link>
+              )}
+            </nav>
+          </div>
         </div>
       )}
     </PageShell>

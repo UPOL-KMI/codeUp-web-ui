@@ -1037,7 +1037,9 @@
         "acceptFailed": "The attempt could not be accepted.",
         "pointsFailed": "The points could not be saved.",
         "invalid": "Points must be whole numbers."
-      }
+      },
+      "quickTitle": "Points in one click",
+      "manualTitle": "Points by hand"
     },
     "rerun": {
       "title": "Running it again",
@@ -3815,7 +3817,9 @@
         "title": "For administrators",
         "summary": "How to install the application, run it, update it and back it up."
       }
-    }
+    },
+    "onThisPage": "On this page",
+    "neighbours": "Other guides"
   },
   "Help": {
     "open": "Help"

@@ -18,7 +18,11 @@ test("renders the primary navigation with the sections the IA specifies", async 
   const nav = page.getByRole("navigation", { name: "Primary navigation" });
   await expect(nav).toBeVisible();
 
-  for (const section of ["Dashboard", "My groups", "Exercises", "People"]) {
+  // The dashboard section is one link with no heading over it (X-011): a heading over a single
+  // item that leads to a page of the same name said everything twice.
+  await expect(nav.getByRole("heading", { name: "Dashboard" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Home" })).toBeVisible();
+  for (const section of ["My groups", "Exercises", "People"]) {
     await expect(nav.getByRole("heading", { name: section })).toBeVisible();
   }
 });

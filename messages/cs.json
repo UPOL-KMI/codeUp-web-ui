@@ -1037,7 +1037,9 @@
         "acceptFailed": "Pokus se nepodařilo uznat.",
         "pointsFailed": "Body se nepodařilo uložit.",
         "invalid": "Body musí být celá čísla."
-      }
+      },
+      "quickTitle": "Body jedním klikem",
+      "manualTitle": "Body ručně"
     },
     "rerun": {
       "title": "Nové spuštění",
@@ -3815,7 +3817,9 @@
         "title": "Pro administrátory",
         "summary": "Jak aplikaci nainstalovat, provozovat, aktualizovat a zálohovat."
       }
-    }
+    },
+    "onThisPage": "Na této stránce",
+    "neighbours": "Další průvodci"
   },
   "Help": {
     "open": "Nápověda"

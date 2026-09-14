@@ -67,7 +67,8 @@ export interface NavItem {
 
 export interface NavSection {
   id: string;
-  title: string;
+  /** Absent on a section that is one link -- a heading over a single item says nothing twice. */
+  title?: string;
   items: NavItem[];
 }
 
@@ -111,9 +112,11 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
     <nav aria-label={t("primary")} className="flex flex-col gap-5 p-4">
       {sections.map((section) => (
         <div key={section.id} className="flex flex-col gap-1">
-          <h2 className="px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            {section.title}
-          </h2>
+          {section.title && (
+            <h2 className="px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              {section.title}
+            </h2>
+          )}
           {section.items.length === 0 ? (
             <p className="px-2 py-1 text-sm text-muted-foreground">{t("emptySection")}</p>
           ) : (

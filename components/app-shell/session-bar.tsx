@@ -20,6 +20,14 @@ import { buttonClasses } from "@/components/button";
  * session produced; without it the shell keeps rendering the previous reader's sidebar until
  * something else invalidates it.
  */
+/** The first letter of the first and the last word -- enough to read as a person, not a label. */
+function initials(fullName: string): string {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  const first = words[0]?.[0] ?? "";
+  const last = words.length > 1 ? (words[words.length - 1]?.[0] ?? "") : "";
+  return (first + last).toUpperCase();
+}
+
 export function SessionBar({
   fullName,
   takenOver,
@@ -55,9 +63,15 @@ export function SessionBar({
     <div className="flex items-center justify-end gap-3 px-4 pt-4 text-sm sm:px-6 lg:px-8">
       <Link
         href="/profile"
-        className="truncate text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex max-w-64 items-center gap-2 rounded-full border border-border bg-card py-0.5 pr-3 pl-0.5 text-muted-foreground outline-none transition-colors hover:border-primary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {fullName}
+        <span
+          aria-hidden="true"
+          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[0.7rem] font-semibold text-primary-foreground"
+        >
+          {initials(fullName)}
+        </span>
+        <span className="truncate">{fullName}</span>
       </Link>
       {takenOver && (
         <button

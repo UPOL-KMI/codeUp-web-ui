@@ -6440,3 +6440,27 @@ the two switches for the header's one row; it hides under `sm`, where the mark a
 **Reading surfaces read at 16px** -- an assignment's text, an exercise's text, a guide -- as the
 department's own pages do; tables stay at 14. The dashboard's section chips wear the outline style
 the buttons wear, and table rows hover in the accent rather than in grey.
+
+### 2026-09-14 — the polish round, an outline for the guides, and accessibility measured
+
+**What X-006 left on the table, the operator asked for.** Fields wore a frame darker than anything
+else on the brand; it is light now, and the focus ring does the work. The reader's name is a chip
+with their initials rather than text floating in the corner. The heading over a single _Home_ link
+is gone until the Calendar arrives. And the teacher's verdict -- seven controls in a row -- is one
+card in three named rows, the undo demoted to a ghost, nothing removed or renamed.
+
+**The guides got an outline.** The install guide is four thousand pixels of nine chapters, and the
+only way through it was the scrollbar. Every heading carries an id now (`rehype-slug`, so exercise
+texts can be deep-linked too), and a guide lists its chapters beside the text on a wide screen and
+above it on a phone, with the previous and next guide at the foot. The outline is built from the
+markdown with the same slugger `rehype-slug` uses, so the two cannot disagree on an id. The
+"broken container" the operator saw in the docs was a code block that screenshotted empty; its
+text and colours were in the DOM and it rendered once painted -- a capture artefact of the preview
+pane, written down so it is not chased twice.
+
+**And accessibility is measured.** axe over five screens in both colour schemes, enforced at
+serious and critical (DEC-145). It found two real things on the first run: github-dark's comment
+grey reading at 3.3:1 on its own block -- every `#` comment in the install guide's fences, in dark
+mode -- and a calendar chip whose `opacity-70` had only ever passed because the text beneath it
+was near-black. The palette pushes a token towards the opposite pole until it reads, and leaves
+one that already does exactly as the theme wrote it; the opacity is gone. Ten audits, no finding.

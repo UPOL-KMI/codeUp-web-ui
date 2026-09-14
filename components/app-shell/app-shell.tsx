@@ -119,9 +119,10 @@ async function Sidebar() {
   const teaching = groups.teaching.filter((group) => !group.organizational);
 
   const sections: NavSection[] = [
+    // No heading: `IA.md` §3.1 gives this section a Calendar as well, and until it exists the
+    // heading sat over one link to a page of the same name.
     {
       id: "dashboard",
-      title: t("dashboard"),
       items: [{ href: "/dashboard", label: t("home") }],
     },
     {

@@ -83,7 +83,7 @@ export async function DeadlineCalendar({
           }`}
         >
           <span className="line-clamp-2">{deadline.assignmentName}</span>
-          <span className="block text-[11px] tabular-nums opacity-70">{time}</span>
+          <span className="block text-[11px] tabular-nums">{time}</span>
         </Link>
       </li>
     );
