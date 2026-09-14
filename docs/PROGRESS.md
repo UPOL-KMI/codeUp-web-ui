@@ -6542,6 +6542,6 @@ and returning later is allowed.
 **Answered, not changed:** a student cannot reply to a review comment or mark an issue resolved —
 `addReviewComment` starts at `supervisor-student` in `permissions.neon` and the author has no
 write on a review at all. Their only channels are the solution's discussion, the note, and a new
-attempt. The app also stops offering "ask for a review" once a review has *ever* started, so after
+attempt. The app also stops offering "ask for a review" once a review has _ever_ started, so after
 a closed review there is no way to say "fixed, look again". Left as it is pending the operator's
 decision; the fix is one condition.
