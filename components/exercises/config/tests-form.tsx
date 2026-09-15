@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { updateExerciseTests } from "@/lib/actions/exercise-config";
 import { switchFromScoreExpression, switchToScoreExpression } from "@/lib/actions/exercise-score";
 import {
-  testsSchemaChecked,
+  testsSchema,
   TEST_NAME_PATTERN,
   type TestsValues,
 } from "@/lib/actions/exercise-config.schema";
@@ -85,7 +85,7 @@ export function TestsForm({
   }
 
   const { form, onSubmit, isPending } = useServerActionForm<TestsValues, { count: number }>({
-    schema: testsSchemaChecked,
+    schema: testsSchema,
     defaultValues: {
       calculator:
         calculator === "universal" ? "keep" : calculator === "weighted" ? "weighted" : "uniform",
@@ -344,13 +344,21 @@ export function TestsForm({
         )}
 
         {leavingDialog}
-        {/* Two different refinements land on the array's root now, so the message has to be the
-            one that actually failed rather than the only one there used to be. */}
+        {/* **Said, not refused.** Weights of nought are a real configuration: the tests run and
+            report, and the teacher awards the points by hand. It is also the state in which a
+            passing test sits beside a 0 % verdict with nothing on either screen to connect them,
+            which is how the operator met it -- so the form says what it means while still saving
+            it. The share column reads "—" in this state; that was the only signal and it was not
+            one. */}
+        {chosen === "weighted" && rows.length > 0 && total === 0 && (
+          <p className="rounded-lg border border-info bg-info-surface p-3 text-sm">
+            {t("allWeightsZero")}
+          </p>
+        )}
+
         {errors.tests?.root && (
           <p role="alert" className="text-sm text-destructive">
-            {errors.tests.root.message === "allWeightsZero"
-              ? t("allWeightsZero")
-              : t("duplicateNames")}
+            {t("duplicateNames")}
           </p>
         )}
       </form>

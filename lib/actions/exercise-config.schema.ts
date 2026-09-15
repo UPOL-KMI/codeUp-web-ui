@@ -49,30 +49,6 @@ export const testsSchema = z.object({
     ),
 });
 
-/**
- * A weighted configuration whose weights are all zero scores every solution at nought.
- *
- * Found on this deployment: a test that passed (`status OK`, `score 1`) on a solution that scored
- * 0 % and 0 points, because its only weight was `0`. core-api accepts the configuration -- the
- * weighted calculator divides by the sum of the weights and has to answer something for a sum of
- * zero -- so nothing downstream objects, and the teacher sees a green test beside a red verdict
- * with no explanation anywhere.
- *
- * Refused here rather than warned about: there is no exercise for which "no test counts for
- * anything" is the intent, and a configuration that cannot award a point to a perfect solution is
- * not a preference. The form already shows a share of "—" for every row in that state, which was
- * the only signal and evidently not one.
- */
-export const testsSchemaChecked = testsSchema.check(
-  z.refine(
-    (values: TestsValues) =>
-      values.calculator !== "weighted" ||
-      values.tests.length === 0 ||
-      values.tests.reduce((sum, test) => sum + test.weight, 0) > 0,
-    { message: "allWeightsZero", path: ["tests"] },
-  ),
-);
-
 export type TestsValues = z.infer<typeof testsSchema>;
 
 export const environmentsSchema = z.object({
