@@ -1697,6 +1697,7 @@
       "share": "Share of the score",
       "nameInvalid": "A test name may be up to 64 characters of letters, digits, spaces and -_()[].!",
       "duplicateNames": "Two tests cannot have the same name.",
+      "allWeightsZero": "Every weight is zero, so no solution could ever be awarded a point. At least one test needs a weight above zero.",
       "noTests": "This exercise has no tests yet. Add one to begin.",
       "add": "Add a test",
       "remove": "Remove",

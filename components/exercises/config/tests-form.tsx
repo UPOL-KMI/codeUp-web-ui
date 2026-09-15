@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { updateExerciseTests } from "@/lib/actions/exercise-config";
 import { switchFromScoreExpression, switchToScoreExpression } from "@/lib/actions/exercise-score";
 import {
-  testsSchema,
+  testsSchemaChecked,
   TEST_NAME_PATTERN,
   type TestsValues,
 } from "@/lib/actions/exercise-config.schema";
@@ -85,7 +85,7 @@ export function TestsForm({
   }
 
   const { form, onSubmit, isPending } = useServerActionForm<TestsValues, { count: number }>({
-    schema: testsSchema,
+    schema: testsSchemaChecked,
     defaultValues: {
       calculator:
         calculator === "universal" ? "keep" : calculator === "weighted" ? "weighted" : "uniform",
@@ -344,9 +344,13 @@ export function TestsForm({
         )}
 
         {leavingDialog}
+        {/* Two different refinements land on the array's root now, so the message has to be the
+            one that actually failed rather than the only one there used to be. */}
         {errors.tests?.root && (
           <p role="alert" className="text-sm text-destructive">
-            {t("duplicateNames")}
+            {errors.tests.root.message === "allWeightsZero"
+              ? t("allWeightsZero")
+              : t("duplicateNames")}
           </p>
         )}
       </form>

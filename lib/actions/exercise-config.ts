@@ -29,7 +29,7 @@ import type {
 import {
   configSchema,
   environmentsSchema,
-  testsSchema,
+  testsSchemaChecked,
   type ConfigValues,
   type EnvironmentsValues,
   type TestsValues,
@@ -71,7 +71,7 @@ export async function updateExerciseTests(
   values: TestsValues,
 ): Promise<ActionResult<{ count: number }>> {
   const t = await getTranslations("ExerciseConfig.errors");
-  const parsed = testsSchema.safeParse(values);
+  const parsed = testsSchemaChecked.safeParse(values);
   if (!parsed.success) return { success: false, formError: t("invalid") };
 
   const tests = parsed.data.tests.map((test) =>

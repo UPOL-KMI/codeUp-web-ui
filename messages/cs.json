@@ -1697,6 +1697,7 @@
       "share": "Podíl na úspěšnosti",
       "nameInvalid": "Jméno testu smí mít až 64 znaků z písmen, číslic, mezer a -_()[].!",
       "duplicateNames": "Dva testy nemohou mít stejné jméno.",
+      "allWeightsZero": "Všechny váhy jsou nulové, takže by žádné řešení nemohlo dostat ani bod. Alespoň jeden test musí mít váhu větší než nula.",
       "noTests": "Tato úloha zatím nemá žádné testy. Začněte přidáním prvního.",
       "add": "Přidat test",
       "remove": "Odebrat",
