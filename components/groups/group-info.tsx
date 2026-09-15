@@ -72,14 +72,20 @@ export async function GroupInfo({
           <h2 id="group-my-standing" className="mb-3 text-base font-semibold tracking-tight">
             {t("myStanding")}
           </h2>
-          <p className="text-2xl font-semibold tabular-nums">
-            {/* core-api folds the bonus into this total; `splitGroupPoints` takes it back apart,
-                so this tile says what every other screen says. */}
-            {formatPoints(myPoints.gained, myPoints.total)}
-            <BonusPoints bonus={myPoints.bonus} />
-            <span className="ml-2 text-sm font-normal text-muted-foreground">{t("points")}</span>
+          {/* **A flex row, and the badge centred rather than aligned.** These four things are three
+              different type sizes on one line; as inline flow the pill's `align-middle` resolved
+              against the 2xl parent and sat below everything else. The words share a baseline with
+              the number, and the pill -- which has no baseline worth sharing -- centres on it. */}
+          <p className="flex flex-wrap items-baseline gap-x-2 text-2xl font-semibold tabular-nums">
+            <span>
+              {/* core-api folds the bonus into this total; `splitGroupPoints` takes it back apart,
+                  so this tile says what every other screen says. */}
+              {formatPoints(myPoints.gained, myPoints.total)}
+              <BonusPoints bonus={myPoints.bonus} />
+            </span>
+            <span className="text-sm font-normal text-muted-foreground">{t("points")}</span>
             {group.myStats.hasLimit && (
-              <span className="ml-3 align-middle">
+              <span className="ml-1 self-center">
                 <Hint text={t("thresholdExplain")}>
                   <Badge tone={group.myStats.passesLimit ? "success" : "warning"}>
                     {group.myStats.passesLimit ? t("limitMet") : t("limitNotMet")}
