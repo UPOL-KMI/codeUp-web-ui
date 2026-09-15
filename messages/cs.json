@@ -1985,7 +1985,11 @@
     "assign": {
       "title": "Hromadné zadání úlohy",
       "explain": "Vyberte skupiny, do kterých se má úloha zadat. V každé vznikne samostatné zadání.",
-      "broken": "Tuto úlohu nelze zadat — co jí chybí, je vidět na obrazovce úlohy.",
+      "blocked": "Tuto úlohu zatím nelze zadat — {reason}",
+      "reasonLocked": "je zamčená autorem.",
+      "reasonBroken": "nemá dokončenou konfiguraci. Co jí chybí, je vidět na obrazovce úlohy.",
+      "reasonNoReference": "nemá vzorové řešení. UPolníček ho žádá jako doklad, že testy a limity fungují — nahrajte ho níže a nechte vyhodnotit.",
+      "toReference": "Vzorová řešení",
       "noGroups": "Neučíte žádnou skupinu, kam by šlo zadat.",
       "already": "tady už zadaná je",
       "assign": "{count, plural, =0 {Zadat} one {Zadat do # skupiny} few {Zadat do # skupin} other {Zadat do # skupin}}",

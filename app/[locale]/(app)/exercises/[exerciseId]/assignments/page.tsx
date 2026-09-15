@@ -6,6 +6,7 @@ import { getExerciseAssignments } from "@/lib/api/exercise-assignments";
 import { getExerciseDetail } from "@/lib/api/exercise-detail";
 import { getGroupList, getMyGroups } from "@/lib/api/groups";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
+import { isDataOnly } from "@/lib/status/exercise-validation";
 
 import { Link } from "@/i18n/navigation";
 import { AssignToGroups } from "@/components/exercises/exercise-assignments";
@@ -77,6 +78,19 @@ export default async function ExerciseAssignmentsPage({
   const assignable = allGroups
     .filter((group) => teaching.has(group.id) && !group.organizational)
     .map((group) => ({ id: group.id, name: group.name, path: group.path }));
+
+  // A data-only exercise is exempt from the reference solution (DEC-141) -- it runs none of the
+  // student's code, so there is no automatic verdict a reference solution could vouch for. The
+  // order matters: report what a teacher can act on first.
+  const blockedReason: "reasonLocked" | "reasonBroken" | "reasonNoReference" | null =
+    exercise.isLocked
+      ? "reasonLocked"
+      : exercise.isBroken
+        ? "reasonBroken"
+        : !isDataOnly(exercise.environments.map((environment) => environment.id)) &&
+            !exercise.hasReferenceSolutions
+          ? "reasonNoReference"
+          : null;
 
   return (
     <PageShell
@@ -166,10 +180,24 @@ export default async function ExerciseAssignmentsPage({
               {t("assign.title")}
             </h2>
           </div>
-          {exercise.isBroken ? (
-            <p className="rounded-lg border border-warning bg-warning/10 p-4 text-sm">
-              {t("assign.broken")}
-            </p>
+          {/* **The same four conditions core-api checks**, not just `isBroken`. This screen used to
+              ask only whether the configuration was finished, so an exercise with no reference
+              solution was offered the whole picker and refused by core-api afterwards in English.
+              The exercise catalog's own picker (T-001) has had the full test all along; this is the
+              second door into the same action and it was not locked. Reported by the operator, who
+              had set up a Python exercise's tests and limits and was offered the form for it. */}
+          {blockedReason !== null ? (
+            <div className="flex flex-col items-start gap-3 rounded-lg border border-warning bg-warning-surface p-4 text-sm">
+              <p>{t("assign.blocked", { reason: t(`assign.${blockedReason}`) })}</p>
+              {blockedReason === "reasonNoReference" && (
+                <Link
+                  href={`/exercises/${exerciseId}/reference-solutions`}
+                  className={buttonClasses("outline", "sm")}
+                >
+                  {t("assign.toReference")}
+                </Link>
+              )}
+            </div>
           ) : (
             <AssignToGroups
               exerciseId={exerciseId}

@@ -1985,7 +1985,11 @@
     "assign": {
       "title": "Assign in bulk",
       "explain": "Choose the groups to assign this exercise to. Each one gets an assignment of its own.",
-      "broken": "This exercise cannot be assigned — see what it is missing on the exercise screen.",
+      "blocked": "This exercise cannot be assigned yet — {reason}",
+      "reasonLocked": "its author has locked it.",
+      "reasonBroken": "its configuration is unfinished. What it is missing is shown on the exercise's own screen.",
+      "reasonNoReference": "it has no reference solution. UPolníček asks for one as evidence that the tests and limits work — add it below and let it be evaluated.",
+      "toReference": "Reference solutions",
       "noGroups": "You do not teach any group to assign this in.",
       "already": "already assigned here",
       "assign": "{count, plural, =0 {Assign} one {Assign to # group} other {Assign to # groups}}",
