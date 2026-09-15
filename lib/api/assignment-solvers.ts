@@ -3,6 +3,9 @@ import "server-only";
 import { cache } from "react";
 
 import { assignmentProgress, type AssignmentProgress } from "@/lib/status/assignment-progress";
+import type { TestTally } from "@/lib/status/evaluation";
+
+import { getAssignmentSolutions } from "./assignment-solutions";
 
 import { apiPost } from "./client";
 import { apiRead } from "./read";
@@ -34,6 +37,17 @@ export interface AssignmentSolver {
   accepted: boolean;
   reviewRequested: boolean;
   progress: AssignmentProgress;
+  /**
+   * How many tests their best solution passed, or null where there is no such solution.
+   *
+   * **Not in the stats row this table is built from.** `/v1/groups/{id}/students/stats` carries a
+   * coarse status and the points and nothing per test, so the tally is looked up in the
+   * assignment's own solutions by `bestSolutionId`. One extra request for the whole table, on a
+   * section already gated on `viewAssignmentSolutions` -- the very permission that endpoint wants
+   * -- and already behind its own boundary. Worth it: the operator watched a passing test read as
+   * "Špatně" here, and the verdict alone cannot tell them apart.
+   */
+  tests: TestTally | null;
 }
 
 export interface AssignmentSolverSummary {
@@ -59,10 +73,12 @@ export async function getAssignmentSolvers(
   groupId: string,
   dataOnly = false,
 ): Promise<AssignmentSolver[]> {
-  const [solvers, stats] = await Promise.all([
+  const [solvers, stats, solutions] = await Promise.all([
     apiRead<SolverPayload[]>("/v1/assignment-solvers", { query: { assignmentId } }),
     apiRead<GroupStudentStats[]>("/v1/groups/{id}/students/stats", { pathParams: { id: groupId } }),
+    getAssignmentSolutions(assignmentId),
   ]);
+  const talliesBySolution = new Map(solutions.map((solution) => [solution.id, solution.tests]));
 
   const attempts = new Map(solvers.map((solver) => [solver.solverId, solver.lastAttemptIndex]));
   // A solver whose author is gone is not a row. Deleting an account leaves its solutions behind
@@ -94,6 +110,7 @@ export async function getAssignmentSolvers(
         bonus: row?.points.bonus ?? null,
         maxPoints: row?.points.total ?? 0,
         bestSolutionId: row?.bestSolutionId ?? null,
+        tests: row?.bestSolutionId ? (talliesBySolution.get(row.bestSolutionId) ?? null) : null,
         accepted: row?.accepted === true,
         reviewRequested: row?.reviewRequest === true,
         // A null status means "no valid best solution", which covers both a student who never

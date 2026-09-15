@@ -86,9 +86,24 @@ export function SolverTable({
       header: t("columns.status"),
       filterValue: (solver) => status(`evaluation.${solver.progress}.label`),
       cell: (solver) => (
-        <Badge tone={ASSIGNMENT_PROGRESS_TONE[solver.progress]}>
-          {status(`evaluation.${solver.progress}.label`)}
-        </Badge>
+        <span className="flex flex-wrap items-center gap-2">
+          {/* The badge carried no description here while every other surface's did. */}
+          <Badge
+            tone={ASSIGNMENT_PROGRESS_TONE[solver.progress]}
+            title={status(`evaluation.${solver.progress}.description`)}
+          >
+            {status(`evaluation.${solver.progress}.label`)}
+          </Badge>
+          {/* What the tests did, beside what the scoring made of it. */}
+          {solver.tests && (
+            <span className="text-xs whitespace-nowrap text-muted-foreground">
+              {status("evaluation.testsPassed", {
+                passed: solver.tests.passed,
+                total: solver.tests.total,
+              })}
+            </span>
+          )}
+        </span>
       ),
     },
     ...(showFlags
