@@ -2809,15 +2809,15 @@
       },
       "correct": {
         "label": "Correct",
-        "description": "All tests passed."
+        "description": "The automatic scoring awarded full marks."
       },
       "partial": {
         "label": "Partly correct",
-        "description": "Some tests passed."
+        "description": "The automatic scoring awarded part of the marks."
       },
       "incorrect": {
         "label": "Incorrect",
-        "description": "No test passed."
+        "description": "The automatic scoring awarded nothing."
       },
       "not-scored": {
         "label": "Evaluated",
@@ -2834,7 +2834,8 @@
       "not-submitted": {
         "label": "Not submitted",
         "description": "You have no evaluated solution for this assignment yet."
-      }
+      },
+      "testsPassed": "{passed}/{total} tests"
     },
     "deadline": {
       "open": "Open",

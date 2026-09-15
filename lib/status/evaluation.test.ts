@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluationStatus } from "./evaluation";
+import { evaluationStatus, testTallyOf } from "./evaluation";
 
 /**
  * Mirrors the legacy `SolutionStatusIcon` decision tree branch by branch. Worth pinning: three of
@@ -94,5 +94,25 @@ describe("a data-only submission", () => {
       }),
     ).toBe("correct");
     expect(evaluationStatus({ ...collected, dataOnly: false })).toBe("incorrect");
+  });
+});
+
+describe("testTallyOf", () => {
+  it("counts a test as passed on a full score", () => {
+    expect(
+      testTallyOf({ evaluation: { testResults: [{ score: 1 }, { score: 0 }, { score: 0.5 }] } }),
+    ).toEqual({ passed: 1, total: 3 });
+  });
+
+  it("has nothing to say where no test ran", () => {
+    expect(testTallyOf({ evaluation: { testResults: [] } })).toBeNull();
+    expect(testTallyOf({ evaluation: null })).toBeNull();
+    expect(testTallyOf(null)).toBeNull();
+  });
+
+  it("is independent of the verdict -- every test can pass and the score still be zero", () => {
+    const submission = { evaluation: { score: 0, testResults: [{ score: 1 }] } };
+    expect(testTallyOf(submission)).toEqual({ passed: 1, total: 1 });
+    expect(evaluationStatus({ lastSubmission: submission, maxPoints: 10 })).toBe("incorrect");
   });
 });

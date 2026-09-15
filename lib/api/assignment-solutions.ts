@@ -3,7 +3,12 @@ import "server-only";
 import { cache } from "react";
 
 import { isDataOnly } from "@/lib/status/exercise-validation";
-import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
+import {
+  evaluationInputOf,
+  testTallyOf,
+  type EvaluationInput,
+  type TestTally,
+} from "@/lib/status/evaluation";
 
 import { apiPost } from "./client";
 import { apiRead } from "./read";
@@ -45,6 +50,8 @@ export interface AssignmentSolutionRow {
    *  `viewDetectedPlagiarisms` -- core-api omits the field rather than nulling it. */
   plagiarismBatchId: string | null;
   status: EvaluationInput;
+  /** How many of its tests passed, where any ran -- see `testTallyOf`. */
+  tests: TestTally | null;
 }
 
 export interface SolutionListPayload {
@@ -65,7 +72,11 @@ export interface SolutionListPayload {
   review: { startedAt: number; closedAt: number | null; issues: number } | null;
   lastSubmission: {
     failure?: unknown;
-    evaluation?: { initFailed?: boolean; score: number } | null;
+    evaluation?: {
+      initFailed?: boolean;
+      score: number;
+      testResults?: { score: number }[];
+    } | null;
   } | null;
   plagiarism?: string | null;
 }
@@ -111,6 +122,7 @@ export function solutionRow(
         (solution.overriddenPoints !== null && solution.overriddenPoints !== undefined) ||
         solution.bonusPoints !== 0,
     },
+    tests: testTallyOf(solution.lastSubmission),
   };
 }
 

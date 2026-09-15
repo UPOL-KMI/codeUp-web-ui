@@ -167,6 +167,18 @@ export function SolutionsTable({
             <Badge tone={EVALUATION_TONE[status]} title={tStatus(`${status}.description`)}>
               {tStatus(`${status}.label`)}
             </Badge>
+            {/* **What the tests did, beside what it was worth.** The badge is read off the
+                evaluation's score, and the two part company as soon as a test carries no weight --
+                the operator watched a passing test sit beside "Špatně". The tally is the fact; the
+                badge is the verdict on it. */}
+            {solution.tests && (
+              <span className="text-xs text-muted-foreground">
+                {tStatus("testsPassed", {
+                  passed: solution.tests.passed,
+                  total: solution.tests.total,
+                })}
+              </span>
+            )}
             {solution.isBest && <Badge tone="success">{t("flags.best")}</Badge>}
             {solution.accepted && <Badge tone="success">{t("flags.accepted")}</Badge>}
             {solution.pastDeadline && <Badge tone="warning">{t("flags.late")}</Badge>}

@@ -40,6 +40,21 @@ export type EvaluationStatus =
   /** A data-only submission a teacher has marked: the points are theirs, and worth showing. */
   | "reviewed";
 
+/**
+ * How many of a submission's tests passed, where the app was told.
+ *
+ * **Not what decides the verdict, and that is worth saying.** The state below is read off the
+ * evaluation's `score` -- the number the exercise's own scoring produced -- and the two agree only
+ * as long as every test carries weight. A teacher who weights a test at nought, or scores by a
+ * custom expression, can have every test pass and the score still be zero; the operator hit exactly
+ * that and read "Špatně / no test passed" beside a green test. This is the tally itself, so a
+ * screen can show what happened alongside what it was worth.
+ */
+export interface TestTally {
+  passed: number;
+  total: number;
+}
+
 export interface EvaluationInput {
   lastSubmission: {
     failure?: unknown;
@@ -76,7 +91,11 @@ export interface EvaluationInput {
 export function evaluationInputOf(
   submission: {
     failure?: unknown;
-    evaluation?: { initFailed?: boolean; score: number } | null;
+    evaluation?: {
+      initFailed?: boolean;
+      score: number;
+      testResults?: { score: number }[];
+    } | null;
   } | null,
 ): EvaluationInput["lastSubmission"] {
   if (!submission) return null;
@@ -131,3 +150,21 @@ export const EVALUATION_TONE: Record<
   "awaiting-review": "warning",
   reviewed: "success",
 };
+
+/**
+ * The tally of a submission's tests, or null where there is nothing to count.
+ *
+ * A test counts as passed on a score of 1, which is what `recodex-judge-*` returns for a match and
+ * what core-api stores per test. Kept separate from `evaluationInputOf` rather than folded into
+ * it: that function exists to keep the submission out of the client payload, and two numbers are
+ * two numbers whether or not a screen happens to want them.
+ */
+export function testTallyOf(
+  submission: {
+    evaluation?: { testResults?: { score: number }[] } | null;
+  } | null,
+): TestTally | null {
+  const results = submission?.evaluation?.testResults;
+  if (!results || results.length === 0) return null;
+  return { passed: results.filter((result) => result.score >= 1).length, total: results.length };
+}

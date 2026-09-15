@@ -2809,15 +2809,15 @@
       },
       "correct": {
         "label": "Správně",
-        "description": "Všechny testy prošly."
+        "description": "Automatické hodnocení dalo plný počet."
       },
       "partial": {
         "label": "Částečně správně",
-        "description": "Některé testy prošly."
+        "description": "Automatické hodnocení dalo část bodů."
       },
       "incorrect": {
         "label": "Špatně",
-        "description": "Neprošel žádný test."
+        "description": "Automatické hodnocení nedalo žádné body."
       },
       "not-scored": {
         "label": "Vyhodnoceno",
@@ -2834,7 +2834,8 @@
       "not-submitted": {
         "label": "Neodevzdáno",
         "description": "K tomuto zadání zatím nemáte žádné vyhodnocené řešení."
-      }
+      },
+      "testsPassed": "{passed}/{total} testů"
     },
     "deadline": {
       "open": "Otevřeno",
