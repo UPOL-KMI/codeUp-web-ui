@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { DataTable, type DataTableColumn } from "@/components/data-table";
 import { Badge } from "@/components/status/badge";
 import { BonusPoints } from "@/components/format/bonus-points";
+import { Hint } from "@/components/status/hint";
 
 /**
  * Everyone the assignment was set for, and where each of them stands (S-013).
@@ -88,12 +89,11 @@ export function SolverTable({
       cell: (solver) => (
         <span className="flex flex-wrap items-center gap-2">
           {/* The badge carried no description here while every other surface's did. */}
-          <Badge
-            tone={ASSIGNMENT_PROGRESS_TONE[solver.progress]}
-            title={status(`evaluation.${solver.progress}.description`)}
-          >
-            {status(`evaluation.${solver.progress}.label`)}
-          </Badge>
+          <Hint text={status(`evaluation.${solver.progress}.description`)} plain>
+            <Badge tone={ASSIGNMENT_PROGRESS_TONE[solver.progress]}>
+              {status(`evaluation.${solver.progress}.label`)}
+            </Badge>
+          </Hint>
           {/* What the tests did, beside what the scoring made of it. */}
           {solver.tests && (
             <span className="text-xs whitespace-nowrap text-muted-foreground">

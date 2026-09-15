@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { EVALUATION_TONE, evaluationStatus, type EvaluationInput } from "@/lib/status/evaluation";
 
 import { Badge } from "./badge";
+import { Hint } from "@/components/status/hint";
 
 /**
  * Renders a solution's evaluation state (D-011). All of the branching lives in
@@ -18,8 +19,8 @@ export async function EvaluationBadge({ solution }: { solution: EvaluationInput 
   const status = evaluationStatus(solution);
 
   return (
-    <Badge tone={EVALUATION_TONE[status]} title={t(`evaluation.${status}.description`)}>
-      {t(`evaluation.${status}.label`)}
-    </Badge>
+    <Hint text={t(`evaluation.${status}.description`)} plain>
+      <Badge tone={EVALUATION_TONE[status]}>{t(`evaluation.${status}.label`)}</Badge>
+    </Hint>
   );
 }

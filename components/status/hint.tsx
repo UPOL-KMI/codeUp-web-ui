@@ -12,12 +12,30 @@ import { Tooltip } from "radix-ui";
  * The trigger keeps whatever it wraps: `asChild` means no extra element in the layout, and the
  * child stays whatever it was -- a badge, a label, a word.
  */
-export function Hint({ text, children }: { text: string; children: React.ReactNode }) {
+export function Hint({
+  text,
+  plain = false,
+  children,
+}: {
+  text: string;
+  /**
+   * Drop the dotted underline. For a child that is already its own affordance -- a badge -- where
+   * a rule drawn under a pill reads as damage rather than as an invitation. The cursor still says
+   * there is something to read.
+   */
+  plain?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
-          <span className="cursor-help underline decoration-dotted underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <span
+            className={`cursor-help outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              plain ? "inline-flex" : "underline decoration-dotted underline-offset-4"
+            }`}
+            tabIndex={0}
+          >
             {children}
           </span>
         </Tooltip.Trigger>

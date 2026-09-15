@@ -13,6 +13,7 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
 import { VisibilityBadge } from "@/components/status/visibility-badge";
 import { BonusPoints } from "@/components/format/bonus-points";
+import { Hint } from "@/components/status/hint";
 
 /**
  * The group's assignment list (S-006). A `"use client"` wrapper, as `DataTable` requires -- its
@@ -149,12 +150,11 @@ export function AssignmentTable({
               return (
                 // The description is where "(auto)" is explained; a badge without it is the
                 // half of the message a student most needs.
-                <Badge
-                  tone={ASSIGNMENT_PROGRESS_TONE[state]}
-                  title={status(`evaluation.${state}.description`)}
-                >
-                  {status(`evaluation.${state}.label`)}
-                </Badge>
+                <Hint text={status(`evaluation.${state}.description`)} plain>
+                  <Badge tone={ASSIGNMENT_PROGRESS_TONE[state]}>
+                    {status(`evaluation.${state}.label`)}
+                  </Badge>
+                </Hint>
               );
             },
           },

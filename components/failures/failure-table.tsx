@@ -13,6 +13,7 @@ import { RelativeTime } from "@/components/format/relative-time";
 import { Badge } from "@/components/status/badge";
 import { useToast } from "@/components/toast/toast-provider";
 import { buttonClasses } from "@/components/button";
+import { Hint } from "@/components/status/hint";
 
 /**
  * The failures themselves, and the one thing that can be done about them (T-019).
@@ -64,12 +65,11 @@ export function FailureTable({ failures }: { failures: SubmissionFailure[] }) {
       sortValue: (failure) => failure.type,
       filterValue: (failure) => t(`types.${failure.type}.label`),
       cell: (failure) => (
-        <Badge
-          tone={failure.resolvedAt === null ? "danger" : "neutral"}
-          title={t(`types.${failure.type}.description`)}
-        >
-          {t(`types.${failure.type}.label`)}
-        </Badge>
+        <Hint text={t(`types.${failure.type}.description`)} plain>
+          <Badge tone={failure.resolvedAt === null ? "danger" : "neutral"}>
+            {t(`types.${failure.type}.label`)}
+          </Badge>
+        </Hint>
       ),
     },
     {

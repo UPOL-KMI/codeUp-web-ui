@@ -7,6 +7,7 @@ import {
 } from "@/lib/status/assignment-progress";
 
 import { Badge } from "./badge";
+import { Hint } from "@/components/status/hint";
 
 /**
  * `EvaluationBadge`'s counterpart for a stats row rather than a solution (S-001) -- same states,
@@ -19,8 +20,8 @@ export async function AssignmentProgressBadge({ stats }: { stats: AssignmentProg
   const state = assignmentProgress(stats);
 
   return (
-    <Badge tone={ASSIGNMENT_PROGRESS_TONE[state]} title={t(`evaluation.${state}.description`)}>
-      {t(`evaluation.${state}.label`)}
-    </Badge>
+    <Hint text={t(`evaluation.${state}.description`)} plain>
+      <Badge tone={ASSIGNMENT_PROGRESS_TONE[state]}>{t(`evaluation.${state}.label`)}</Badge>
+    </Hint>
   );
 }
