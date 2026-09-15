@@ -147,7 +147,12 @@ export function AssignmentTable({
               if (!assignment.stats) return <span className="text-muted-foreground">—</span>;
               const state = assignmentProgress(assignment.stats);
               return (
-                <Badge tone={ASSIGNMENT_PROGRESS_TONE[state]}>
+                // The description is where "(auto)" is explained; a badge without it is the
+                // half of the message a student most needs.
+                <Badge
+                  tone={ASSIGNMENT_PROGRESS_TONE[state]}
+                  title={status(`evaluation.${state}.description`)}
+                >
                   {status(`evaluation.${state}.label`)}
                 </Badge>
               );

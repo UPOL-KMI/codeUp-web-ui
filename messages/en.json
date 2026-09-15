@@ -2050,9 +2050,9 @@
         "failed": "Could not be evaluated",
         "pending": "Being evaluated",
         "compilation-failed": "Did not compile",
-        "correct": "All tests passed",
-        "partial": "Some tests passed",
-        "incorrect": "No test passed",
+        "correct": "Full marks",
+        "partial": "Part of the marks",
+        "incorrect": "No marks",
         "not-scored": "Evaluated"
       },
       "confirmDelete": {
@@ -2808,16 +2808,16 @@
         "description": "The solution did not compile, so no test was executed."
       },
       "correct": {
-        "label": "Correct",
-        "description": "The automatic scoring awarded full marks."
+        "label": "Correct (auto)",
+        "description": "Evaluated automatically from the tests as they are configured. The final result may change once a teacher has looked at it."
       },
       "partial": {
-        "label": "Partly correct",
-        "description": "The automatic scoring awarded part of the marks."
+        "label": "Partly correct (auto)",
+        "description": "Evaluated automatically from the tests as they are configured. The final result may change once a teacher has looked at it."
       },
       "incorrect": {
-        "label": "Incorrect",
-        "description": "The automatic scoring awarded nothing."
+        "label": "Incorrect (auto)",
+        "description": "Evaluated automatically from the tests as they are configured. The final result may change once a teacher has looked at it."
       },
       "not-scored": {
         "label": "Not scored",

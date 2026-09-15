@@ -2050,9 +2050,9 @@
         "failed": "Nešlo vyhodnotit",
         "pending": "Vyhodnocuje se",
         "compilation-failed": "Nepřeložilo se",
-        "correct": "Všechny testy prošly",
-        "partial": "Některé testy prošly",
-        "incorrect": "Neprošel žádný test",
+        "correct": "Plný počet bodů",
+        "partial": "Část bodů",
+        "incorrect": "Bez bodů",
         "not-scored": "Vyhodnoceno"
       },
       "confirmDelete": {
@@ -2808,16 +2808,16 @@
         "description": "Řešení se nepodařilo přeložit, žádný test nebyl spuštěn."
       },
       "correct": {
-        "label": "Správně",
-        "description": "Automatické hodnocení dalo plný počet."
+        "label": "Správně (auto)",
+        "description": "Vyhodnoceno na základě nastavených testů. Výsledné hodnocení může být změněno po kontrole vyučujícím."
       },
       "partial": {
-        "label": "Částečně správně",
-        "description": "Automatické hodnocení dalo část bodů."
+        "label": "Částečně správně (auto)",
+        "description": "Vyhodnoceno na základě nastavených testů. Výsledné hodnocení může být změněno po kontrole vyučujícím."
       },
       "incorrect": {
-        "label": "Špatně",
-        "description": "Automatické hodnocení nedalo žádné body."
+        "label": "Špatně (auto)",
+        "description": "Vyhodnoceno na základě nastavených testů. Výsledné hodnocení může být změněno po kontrole vyučujícím."
       },
       "not-scored": {
         "label": "Bez bodování",
