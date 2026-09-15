@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { kilobytesAsSize } from "@/lib/format/bytes";
 import { useTranslations } from "next-intl";
 
 import { updateExerciseLimits } from "@/lib/actions/exercise-limits";
@@ -206,6 +207,13 @@ export function LimitsForm({
                               setCell(test.id, environment.id, { memory: event.target.value })
                             }
                           />
+                          {/* The field has no unit on it and core-api's is kilobytes, so "1024"
+                              read as a byte count, a megabyte count or anything else the reader
+                              guessed. This says which, in the units the rest of the app uses, and
+                              follows what is typed rather than what was saved. */}
+                          <span className="w-16 shrink-0 text-muted-foreground tabular-nums">
+                            {kilobytesAsSize(cell?.memory)}
+                          </span>
                         </label>
                         <label className="flex items-center gap-1 text-xs">
                           <span className="w-14 text-muted-foreground">{t("time")}</span>
@@ -225,6 +233,9 @@ export function LimitsForm({
                               setCell(test.id, environment.id, { time: event.target.value })
                             }
                           />
+                          <span className="w-16 shrink-0 text-muted-foreground">
+                            {t("seconds")}
+                          </span>
                         </label>
                         {!readOnly && environments.length + tests.length > 2 && (
                           <span className="flex gap-1">

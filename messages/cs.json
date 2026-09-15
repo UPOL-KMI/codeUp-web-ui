@@ -1936,6 +1936,7 @@
       "test": "Test",
       "memory": "Paměť",
       "time": "Čas",
+      "seconds": "s",
       "memoryOf": "Paměť pro {test}, jazyk {environment}, v KiB",
       "timeOf": "Čas pro {test}, jazyk {environment}, v sekundách",
       "copyRow": "Zkopírovat tuto buňku do všech jazyků tohoto testu",

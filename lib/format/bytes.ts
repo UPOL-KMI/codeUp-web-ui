@@ -23,3 +23,20 @@ export function formatBytes(bytes: number): string {
   const rounded = unit === 0 ? String(value) : value.toFixed(1).replace(/\.0$/, "");
   return `${rounded} ${units[unit]}`;
 }
+
+/**
+ * A memory limit, as typed into the exercise's limits table, rendered as a size.
+ *
+ * **core-api's unit here is kilobytes** -- `Limits::getMemoryLimit()` says so in as many words,
+ * and isolate's own `--mem` is the same -- but the field carries no unit, so "1024" read as bytes,
+ * as megabytes, or as whatever the reader assumed. This is the hint beside it.
+ *
+ * Takes the raw field value rather than a number: it follows what is being typed, and half-typed
+ * or empty is not an error to report but a moment with nothing to say.
+ */
+export function kilobytesAsSize(kilobytes: string | number | null | undefined): string {
+  if (kilobytes === null || kilobytes === undefined || kilobytes === "") return "";
+  const value = Number(kilobytes);
+  if (!Number.isFinite(value) || value < 0) return "";
+  return formatBytes(value * 1024);
+}

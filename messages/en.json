@@ -1936,6 +1936,7 @@
       "test": "Test",
       "memory": "Memory",
       "time": "Time",
+      "seconds": "s",
       "memoryOf": "Memory for {test} in {environment}, in KiB",
       "timeOf": "Time for {test} in {environment}, in seconds",
       "copyRow": "Copy this cell to every language of this test",
