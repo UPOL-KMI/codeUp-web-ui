@@ -67,6 +67,17 @@ export function LimitsForm({
   const constraints = limitsConstraints(exerciseGroups, values.preciseTime);
   const problems = validateLimits(values, constraints, testIds, environmentIds);
 
+  // The bounds as the reader should see them: a memory figure in the units beside the field, a
+  // time in seconds. Both ends, because the message used to name neither and the field that
+  // actually trips people is the *minimum* -- 10 looks reasonable until you know it is kilobytes
+  // and that 128 is the floor. (128 KiB is the legacy form's floor too, not a number invented here.)
+  const bounds = {
+    memoryMin: kilobytesAsSize(constraints.memory.min),
+    memoryMax: kilobytesAsSize(constraints.memory.max),
+    timeMin: constraints.time.min,
+    timeMax: constraints.time.max,
+  };
+
   const problemAt = (testId: string, environmentId: string, kind: "memory" | "time") =>
     problems.some(
       (problem) =>
@@ -157,11 +168,7 @@ export function LimitsForm({
       </label>
 
       <p className="text-xs text-muted-foreground">
-        {t("ceilings", {
-          memory: constraints.memory.max,
-          time: constraints.time.max,
-          total: constraints.totalTime.max,
-        })}
+        {t("ceilings", { ...bounds, total: constraints.totalTime.max })}
       </p>
 
       <div className="overflow-x-auto">
@@ -201,6 +208,14 @@ export function LimitsForm({
                               environment: environment.name,
                             })}
                             aria-invalid={problemAt(test.id, environment.id, "memory")}
+                            title={
+                              problemAt(test.id, environment.id, "memory")
+                                ? t("rangeMemory", {
+                                    min: bounds.memoryMin,
+                                    max: bounds.memoryMax,
+                                  })
+                                : undefined
+                            }
                             disabled={readOnly}
                             value={cell?.memory ?? ""}
                             onChange={(event) =>
@@ -227,6 +242,11 @@ export function LimitsForm({
                               environment: environment.name,
                             })}
                             aria-invalid={problemAt(test.id, environment.id, "time")}
+                            title={
+                              problemAt(test.id, environment.id, "time")
+                                ? t("rangeTime", { min: bounds.timeMin, max: bounds.timeMax })
+                                : undefined
+                            }
                             disabled={readOnly}
                             value={cell?.time ?? ""}
                             onChange={(event) =>
@@ -318,7 +338,7 @@ export function LimitsForm({
 
       {problems.length > 0 && (
         <p role="alert" className="text-sm text-destructive">
-          {t("outOfRange")}
+          {t("outOfRange", bounds)}
         </p>
       )}
       {formError && (
