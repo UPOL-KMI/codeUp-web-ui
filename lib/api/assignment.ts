@@ -213,6 +213,9 @@ function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
       accepted: solution.accepted,
       // A data-only submission was collected, not marked: see `EvaluationStatus.submitted`.
       dataOnly: isDataOnly([solution.runtimeEnvironmentId ?? ""]),
+      // Set by a teacher in place of the scoring's -- the verdict then says so.
+      pointsOverridden:
+        solution.overriddenPoints !== null && solution.overriddenPoints !== undefined,
       // A person decided about it: overrode the points, gave bonus points, or accepted it.
       graded:
         (solution.overriddenPoints !== null && solution.overriddenPoints !== undefined) ||

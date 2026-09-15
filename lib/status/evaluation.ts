@@ -28,6 +28,20 @@ export type EvaluationStatus =
   /** Evaluated, but the assignment awards no points and the solution was not accepted. */
   | "not-scored"
   /**
+   * A teacher set the points in place of what the scoring worked out.
+   *
+   * **Replaces the three score-derived states and only those.** `correct`, `partial` and
+   * `incorrect` all answer "what did the scoring make of it", and an override is precisely the
+   * answer to that question being somebody else's -- a solution can read "10/10" beside "Špatně"
+   * otherwise, which is the row disagreeing with itself. The states above it are untouched: a
+   * compilation failure or a lost job is what *happened to the run*, which no award changes, and
+   * the points column shows the award either way.
+   *
+   * Bonus points are deliberately not this. They add to the automatic result rather than replacing
+   * it, and are already rendered as the `+5` beside the figure.
+   */
+  | "overridden"
+  /**
    * A data-only submission that ran cleanly and that nobody has marked yet.
    *
    * **Not a grade, which is the point.** A data-only exercise runs no student code: the pipeline
@@ -65,6 +79,11 @@ export interface EvaluationInput {
   accepted?: boolean;
   /** The solution was submitted to a data-only exercise -- see `awaiting-review`. */
   dataOnly?: boolean;
+  /**
+   * The points were set by a person in place of the scoring's -- core-api's `overriddenPoints`.
+   * Absent on the summary screens, whose stats row does not carry the field at all.
+   */
+  pointsOverridden?: boolean;
   /**
    * A person has decided what this solution is worth: they set its points in place of the
    * evaluation's, or gave it bonus points. On a data-only exercise that is the only thing that
@@ -114,6 +133,7 @@ export function evaluationStatus({
   accepted = false,
   dataOnly = false,
   graded = false,
+  pointsOverridden = false,
 }: EvaluationInput): EvaluationStatus {
   if (!lastSubmission || lastSubmission.failure) return "failed";
   if (!lastSubmission.evaluation) return "pending";
@@ -128,6 +148,10 @@ export function evaluationStatus({
   // Legacy greys out a scored solution when the assignment is worth nothing and the solution
   // wasn't explicitly accepted -- otherwise a zero-point assignment reads as a failure.
   if (maxPoints === 0 && !accepted) return "not-scored";
+
+  // Below the three states about the run itself, above the three about the score: an override is
+  // an answer to "what is this worth", and that is the only question it settles.
+  if (pointsOverridden) return "overridden";
 
   const { score } = lastSubmission.evaluation;
   if (score >= 1) return "correct";
@@ -147,6 +171,7 @@ export const EVALUATION_TONE: Record<
   partial: "warning",
   incorrect: "danger",
   "not-scored": "neutral",
+  overridden: "info",
   "awaiting-review": "warning",
   reviewed: "success",
 };

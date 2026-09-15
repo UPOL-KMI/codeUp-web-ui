@@ -22,6 +22,15 @@ export interface AssignmentProgressInput {
   /** The assignment collects files rather than running code -- see `EvaluationStatus`. */
   dataOnly?: boolean;
   /**
+   * A teacher set the points in place of the scoring's.
+   *
+   * **Not in the stats row**, which carries the points and not where they came from -- the class
+   * table looks it up in the assignment's own solutions, and the two summary screens built purely
+   * on stats (the group's assignment list, the dashboard) leave it unset and keep the automatic
+   * verdict. Better a screen that says less than one that says something untrue.
+   */
+  pointsOverridden?: boolean;
+  /**
    * Somebody awarded points for it. **An approximation, like the two below**, and for the same
    * reason: a stats row carries no overridden-points field, so "a person decided" is inferred from
    * there being points at all (the default data-only judge scores nought, so the pipeline awards
@@ -52,6 +61,7 @@ export function assignmentProgress({
   accepted = false,
   dataOnly = false,
   graded = false,
+  pointsOverridden = false,
 }: AssignmentProgressInput): AssignmentProgress {
   if (!status) return "not-submitted";
   if (status === "work-in-progress") return "pending";
@@ -63,6 +73,9 @@ export function assignmentProgress({
 
   // Same rule as `evaluationStatus()`: a zero-point assignment is not a failed one.
   if (total === 0 && !accepted) return "not-scored";
+
+  // And the same rule again: where a person set the points, the verdict is theirs.
+  if (pointsOverridden) return "overridden";
 
   if (status === "failed") return "incorrect";
   return (gained ?? 0) >= total ? "correct" : "partial";

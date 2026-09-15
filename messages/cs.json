@@ -2820,15 +2820,19 @@
         "description": "Automatické hodnocení nedalo žádné body."
       },
       "not-scored": {
-        "label": "Vyhodnoceno",
+        "label": "Bez bodování",
         "description": "Za toto zadání se neudělují body."
+      },
+      "overridden": {
+        "label": "Body od vyučujícího",
+        "description": "Body nastavil vyučující místo toho, co spočítalo automatické hodnocení."
       },
       "awaiting-review": {
         "label": "Čeká na hodnocení",
         "description": "Odevzdáno. Tato úloha se nevyhodnocuje automaticky — body udělí vyučující."
       },
       "reviewed": {
-        "label": "Vyhodnoceno",
+        "label": "Ohodnoceno vyučujícím",
         "description": "Vyučující řešení ohodnotil."
       },
       "not-submitted": {

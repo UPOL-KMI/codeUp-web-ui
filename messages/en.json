@@ -2820,16 +2820,20 @@
         "description": "The automatic scoring awarded nothing."
       },
       "not-scored": {
-        "label": "Evaluated",
+        "label": "Not scored",
         "description": "This assignment awards no points."
+      },
+      "overridden": {
+        "label": "Points set by the teacher",
+        "description": "The teacher set the points in place of what the automatic scoring worked out."
       },
       "awaiting-review": {
         "label": "Awaiting marking",
         "description": "Submitted. This exercise is not graded automatically — a teacher awards the points."
       },
       "reviewed": {
-        "label": "Marked",
-        "description": "A teacher has marked this solution."
+        "label": "Marked by the teacher",
+        "description": "The teacher has marked this solution."
       },
       "not-submitted": {
         "label": "Not submitted",

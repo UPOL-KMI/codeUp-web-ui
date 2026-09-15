@@ -116,3 +116,47 @@ describe("testTallyOf", () => {
     expect(evaluationStatus({ lastSubmission: submission, maxPoints: 10 })).toBe("incorrect");
   });
 });
+
+describe("evaluationStatus and a teacher's own points", () => {
+  const scored = (score: number) => ({ evaluation: { score, initFailed: false } });
+
+  it("says the points are the teacher's, whatever the scoring made of it", () => {
+    expect(
+      evaluationStatus({ lastSubmission: scored(0), maxPoints: 10, pointsOverridden: true }),
+    ).toBe("overridden");
+    expect(
+      evaluationStatus({ lastSubmission: scored(1), maxPoints: 10, pointsOverridden: true }),
+    ).toBe("overridden");
+  });
+
+  it("leaves what happened to the run alone -- an award does not undo a compilation failure", () => {
+    expect(
+      evaluationStatus({
+        lastSubmission: { evaluation: { score: 0, initFailed: true } },
+        maxPoints: 10,
+        pointsOverridden: true,
+      }),
+    ).toBe("compilation-failed");
+    expect(evaluationStatus({ lastSubmission: null, maxPoints: 10, pointsOverridden: true })).toBe(
+      "failed",
+    );
+  });
+
+  it("is not triggered by a bonus, which adds to the scoring rather than replacing it", () => {
+    expect(evaluationStatus({ lastSubmission: scored(1), maxPoints: 10, graded: true })).toBe(
+      "correct",
+    );
+  });
+
+  it("leaves a data-only submission to its own two states", () => {
+    expect(
+      evaluationStatus({
+        lastSubmission: scored(0),
+        maxPoints: 10,
+        dataOnly: true,
+        pointsOverridden: true,
+        graded: true,
+      }),
+    ).toBe("reviewed");
+  });
+});

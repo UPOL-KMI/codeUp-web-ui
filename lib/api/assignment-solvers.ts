@@ -48,6 +48,11 @@ export interface AssignmentSolver {
    * "Špatně" here, and the verdict alone cannot tell them apart.
    */
   tests: TestTally | null;
+  /**
+   * Their best solution's points were set by a teacher. Looked up beside the tally for the same
+   * reason: `/v1/groups/{id}/students/stats` carries the points but not where they came from.
+   */
+  pointsOverridden: boolean;
 }
 
 export interface AssignmentSolverSummary {
@@ -79,6 +84,9 @@ export async function getAssignmentSolvers(
     getAssignmentSolutions(assignmentId),
   ]);
   const talliesBySolution = new Map(solutions.map((solution) => [solution.id, solution.tests]));
+  const overriddenSolutions = new Set(
+    solutions.filter((solution) => solution.overridden !== null).map((solution) => solution.id),
+  );
 
   const attempts = new Map(solvers.map((solver) => [solver.solverId, solver.lastAttemptIndex]));
   // A solver whose author is gone is not a row. Deleting an account leaves its solutions behind
@@ -111,6 +119,7 @@ export async function getAssignmentSolvers(
         maxPoints: row?.points.total ?? 0,
         bestSolutionId: row?.bestSolutionId ?? null,
         tests: row?.bestSolutionId ? (talliesBySolution.get(row.bestSolutionId) ?? null) : null,
+        pointsOverridden: row?.bestSolutionId ? overriddenSolutions.has(row.bestSolutionId) : false,
         accepted: row?.accepted === true,
         reviewRequested: row?.reviewRequest === true,
         // A null status means "no valid best solution", which covers both a student who never
@@ -126,6 +135,9 @@ export async function getAssignmentSolvers(
                 total: row?.points.total ?? 0,
                 accepted: row?.accepted,
                 dataOnly,
+                pointsOverridden: row?.bestSolutionId
+                  ? overriddenSolutions.has(row.bestSolutionId)
+                  : false,
                 // The stats row has no overridden-points field, so "somebody marked it" is
                 // inferred: the data-only judge scores nought, so any points at all came from a
                 // person. Documented on `AssignmentProgressInput.graded`.
