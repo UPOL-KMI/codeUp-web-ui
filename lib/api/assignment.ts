@@ -6,7 +6,12 @@ import { localizedName, type LocalizedText } from "@/lib/i18n-text/localized";
 import { replaceLinkKeys } from "@/lib/i18n-text/file-links";
 import { requireSession } from "@/lib/auth/require-session";
 import { isDataOnly } from "@/lib/status/exercise-validation";
-import { evaluationInputOf, type EvaluationInput } from "@/lib/status/evaluation";
+import {
+  evaluationInputOf,
+  testTallyOf,
+  type EvaluationInput,
+  type TestTally,
+} from "@/lib/status/evaluation";
 
 import { apiRead } from "./read";
 import { linkMapFromPayload } from "./exercise-files";
@@ -40,6 +45,8 @@ export interface AssignmentSolutionRow {
   plagiarismBatchId: string | null;
   /** Shaped for `evaluationStatus()` -- real evaluation data, not the stats row's coarse string. */
   evaluation: EvaluationInput;
+  /** How many of its tests passed -- a different fact from the verdict, see `testTallyOf`. */
+  tests: TestTally | null;
 }
 
 export interface AssignmentDetail {
@@ -140,7 +147,18 @@ interface SolutionPayload {
   runtimeEnvironmentId?: string;
   /** Set by a teacher in place of what the pipeline worked out; null when nobody has. */
   overriddenPoints?: number | null;
-  lastSubmission: EvaluationInput["lastSubmission"];
+  /**
+   * core-api's own submission object, not the narrowed one: it carries the test results this row
+   * counts, and `evaluationInputOf` is what keeps the rest of it out of the client payload.
+   */
+  lastSubmission: {
+    failure?: unknown;
+    evaluation?: {
+      initFailed?: boolean;
+      score: number;
+      testResults?: { score: number }[];
+    } | null;
+  } | null;
 }
 
 interface CanSubmitPayload {
@@ -200,6 +218,7 @@ function solutionRow(solution: SolutionPayload): AssignmentSolutionRow {
         (solution.overriddenPoints !== null && solution.overriddenPoints !== undefined) ||
         solution.bonusPoints !== 0,
     },
+    tests: testTallyOf(solution.lastSubmission),
   };
 }
 

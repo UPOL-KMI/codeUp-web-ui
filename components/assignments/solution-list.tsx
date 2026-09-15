@@ -24,7 +24,10 @@ import { BonusPoints } from "@/components/format/bonus-points";
  * holding `viewDetectedPlagiarisms`, so the badge simply is not there for the solution's author.
  */
 export async function SolutionList({ solutions }: { solutions: AssignmentSolutionRow[] }) {
-  const t = await getTranslations("Assignment");
+  const [t, tStatus] = await Promise.all([
+    getTranslations("Assignment"),
+    getTranslations("Status.evaluation"),
+  ]);
 
   return (
     <div className="overflow-x-auto rounded-md border border-border">
@@ -73,7 +76,19 @@ export async function SolutionList({ solutions }: { solutions: AssignmentSolutio
                 <BonusPoints bonus={solution.bonus} />
               </td>
               <td className="px-3 py-2">
-                <EvaluationBadge solution={solution.evaluation} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <EvaluationBadge solution={solution.evaluation} />
+                  {/* The verdict comes from the exercise's scoring; this is what the tests did.
+                      They part company as soon as a test carries no weight -- see `testTallyOf`. */}
+                  {solution.tests && (
+                    <span className="text-xs whitespace-nowrap text-muted-foreground">
+                      {tStatus("testsPassed", {
+                        passed: solution.tests.passed,
+                        total: solution.tests.total,
+                      })}
+                    </span>
+                  )}
+                </div>
               </td>
               <td className="px-3 py-2">
                 <div className="flex flex-wrap gap-1">

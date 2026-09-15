@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/solution";
 import { resolveBreadcrumbs } from "@/lib/breadcrumbs/manifest";
 import { formatPoints, formatPointsUnknown } from "@/lib/format/points";
-import { evaluationStatus } from "@/lib/status/evaluation";
+import { evaluationStatus, testTallyOf } from "@/lib/status/evaluation";
 
 import { Link } from "@/i18n/navigation";
 import { EvaluationProgress } from "@/components/solutions/evaluation-progress";
@@ -64,8 +64,9 @@ export default async function SolutionPage({
   searchParams: Promise<{ monitor?: string; tasks?: string; submission?: string }>;
 }) {
   const [{ solutionId }, query, locale] = await Promise.all([params, searchParams, getLocale()]);
-  const [t, solution] = await Promise.all([
+  const [t, tStatus, solution] = await Promise.all([
     getTranslations("Solution"),
+    getTranslations("Status.evaluation"),
     getSolutionDetail(solutionId, locale),
   ]);
   const breadcrumbs = await resolveBreadcrumbs(`/solutions/${solutionId}`, locale);
@@ -83,6 +84,11 @@ export default async function SolutionPage({
   if (query.submission !== undefined && selected === null) notFound();
 
   const shown = selected ?? solution;
+
+  // One rule for the tally, shared with every list that shows it. Read here rather than counted
+  // twice: this screen had its own copy for the screen-reader announcement, and the number beside
+  // the verdict has to be the same number.
+  const tally = testTallyOf({ evaluation: solution.evaluation });
   const solutionPath = `/solutions/${solutionId}`;
   // core-api refuses to delete the last run (`checkDeleteSubmission`), so this needs a second one.
   const canDeleteRuns = solution.can.deleteEvaluation === true && runs.length > 1;
@@ -110,8 +116,8 @@ export default async function SolutionPage({
           dataOnly
           ? t(`evaluation.announce.${state === "reviewed" ? "reviewed" : "awaitingReview"}`)
           : t("evaluation.announce.done", {
-              passed: solution.evaluation.testResults.filter((result) => result.score >= 1).length,
-              total: solution.evaluation.testResults.length,
+              passed: tally?.passed ?? 0,
+              total: tally?.total ?? 0,
             });
 
   return (
@@ -180,8 +186,16 @@ export default async function SolutionPage({
               <dt className="text-sm text-muted-foreground">
                 {dataOnly ? t("state") : t("result")}
               </dt>
-              <dd>
+              <dd className="flex flex-wrap items-center justify-end gap-2">
                 <EvaluationBadge solution={solution.status} />
+                {/* What the tests did, beside what the scoring made of it -- the two are different
+                    facts and a weight of nought separates them. Not for a data-only submission,
+                    where no test ran on the student's work at all. */}
+                {!dataOnly && tally && (
+                  <span className="text-xs whitespace-nowrap text-muted-foreground">
+                    {tStatus("testsPassed", { passed: tally.passed, total: tally.total })}
+                  </span>
+                )}
               </dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-border py-2">
