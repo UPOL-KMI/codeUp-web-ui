@@ -15,7 +15,11 @@ import { ExerciseForm } from "@/components/exercises/exercise-form";
 import { ExercisePeople } from "@/components/exercises/exercise-people";
 import { PageShell } from "@/components/page-shell";
 import { PageTabs, type PageTab } from "@/components/page-tabs";
-import { describeValidationError, validationErrorHref } from "@/lib/status/exercise-validation";
+import {
+  describeValidationError,
+  isDataOnly,
+  validationErrorHref,
+} from "@/lib/status/exercise-validation";
 import { buttonClasses } from "@/components/button";
 
 export async function generateMetadata({
@@ -89,6 +93,12 @@ export default async function EditExercisePage({
   ];
   const current = tabs.some((tab) => tab.id === query.tab) ? query.tab! : "settings";
   const readOnly = exercise.can.update !== true || exercise.archivedAt !== null;
+
+  // Data-only exercises are exempt (DEC-141): they run none of the student's code, so there is no
+  // automatic verdict for a reference solution to vouch for.
+  const needsReference =
+    !isDataOnly(exercise.environments.map((environment) => environment.id)) &&
+    !exercise.hasReferenceSolutions;
 
   return (
     <PageShell
@@ -164,8 +174,22 @@ export default async function EditExercisePage({
               ))}
             </ul>
           </section>
+        ) : needsReference ? (
+          // **"Configured" is not the same as "assignable".** core-api asks for a reference
+          // solution as well, and nothing in `validationErrors` mentions it -- so this screen told
+          // the operator the exercise was ready while the exercise's own screen refused to assign
+          // it. The claim is now the narrower true one, with the way to finish it.
+          <div className="flex flex-col items-start gap-3 rounded-lg border border-warning bg-warning-surface p-4 text-sm">
+            <p>{t("status.needsReference")}</p>
+            <Link
+              href={`/exercises/${exerciseId}/reference-solutions`}
+              className={buttonClasses("outline", "sm")}
+            >
+              {t("status.toReference")}
+            </Link>
+          </div>
         ) : (
-          <p className="rounded-lg border border-success bg-success/10 p-4 text-sm">
+          <p className="rounded-lg border border-success bg-success-surface p-4 text-sm">
             {t("status.assignable")}
           </p>
         )}

@@ -1585,7 +1585,9 @@
       "people": "Access rights"
     },
     "status": {
-      "assignable": "The exercise is configured and can be assigned to a group."
+      "assignable": "The exercise is configured and can be assigned to a group.",
+      "needsReference": "The configuration is finished, but the exercise cannot be assigned yet — it has no reference solution. UPolníček asks for one as evidence that the tests and limits work: add it and let it be evaluated.",
+      "toReference": "Reference solutions"
     }
   },
   "ExerciseImport": {

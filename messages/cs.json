@@ -1585,7 +1585,9 @@
       "people": "Přístupová práva"
     },
     "status": {
-      "assignable": "Úloha je nakonfigurovaná a lze ji zadat do skupiny."
+      "assignable": "Úloha je nakonfigurovaná a lze ji zadat do skupiny.",
+      "needsReference": "Konfigurace je hotová, ale zadat úlohu zatím nelze — nemá vzorové řešení. UPolníček ho žádá jako doklad, že testy a limity fungují: nahrajte ho a nechte vyhodnotit.",
+      "toReference": "Vzorová řešení"
     }
   },
   "ExerciseImport": {
