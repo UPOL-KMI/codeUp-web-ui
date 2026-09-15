@@ -6545,3 +6545,48 @@ write on a review at all. Their only channels are the solution's discussion, the
 attempt. The app also stops offering "ask for a review" once a review has _ever_ started, so after
 a closed review there is no way to say "fixed, look again". Left as it is pending the operator's
 decision; the fix is one condition.
+
+### 2026-09-15 — units, the verdict, and what it is a verdict on
+
+**A memory limit with no unit on it.** The field asked for kilobytes and said so only in its
+`aria-label` — present for a screen reader and for nobody else. It carries the size beside it now,
+formatted like every other size in the app, following what is typed. Time carries an "s". And the
+refusal that follows a bad value names both ends of the range: the operator typed 10, which is
+below the floor of 128 KiB, and was told only that something was "outside what the machine
+allows".
+
+**Two doors into assigning an exercise, one of them unlocked.** The catalog's picker has always
+checked all four of core-api's conditions; the exercise's own bulk-assign screen checked
+`isBroken` alone, so an exercise with no reference solution was offered the whole form and refused
+afterwards in English. Exercise settings meanwhile called it "configured and ready to assign" —
+true of the configuration, which is the only thing `validationErrors` covers. All three screens now
+say the same thing and link to the screen that fixes it.
+
+**The judge's diff, explained where it is the judge's diff.** `-1/+1: [16]started.. != [16]started..?`
+is a diff in which `[16]` is a column, not a token index; every shape in the legend was read out of
+`judges/recodex_token_judge/` rather than inferred. Shown only over a log whose notation it
+describes, recognised from the text — an exercise may carry a custom judge whose output means
+something else, and a key to the wrong notation is worse than none.
+
+**A passing test beside "Špatně", which took four commits to answer properly.** The exercise weights
+its only test at nought, so the weighted calculator divides by zero and scores nothing. First
+reaction was to refuse the configuration; the operator named the use — let the tests run and report,
+award the points by hand — and it was reverted. What was actually missing was everything the screens
+were not saying:
+
+- the badge's own tooltip claimed "no test passed" over a passing test, because the three
+  score-derived states described themselves in terms of tests while being read off the score;
+- the tally itself was nowhere, though core-api sends each test's status and score regardless of
+  what a reader may see of the details;
+- `not-scored` and `reviewed` shared the word "Vyhodnoceno" in different colours;
+- and a teacher's own points were indistinguishable from the pipeline's, so awarding 10/10 on a
+  solution the scoring gave nothing read as "10/10 · Špatně" — the row disagreeing with itself.
+
+So: `overridden` is a state (DEC-149), the tally sits beside the verdict on four surfaces, and the
+three automatic verdicts say "(auto)" and explain that a teacher may still change them. The class
+table gets both by looking the best solution up in the assignment's own solutions; the two screens
+built purely on group stats cannot, and keep the automatic verdict rather than guess.
+
+**And the explanations are visible.** They were `title` attributes — held back a second or two,
+drawn in the system's style, never shown to a keyboard. `Hint` existed for exactly that complaint
+and every status badge uses it now.
