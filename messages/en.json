@@ -863,6 +863,15 @@
       "summary": "{passed} of {total} tests passed",
       "evaluatedAt": "Evaluated {when}",
       "judgeLog": "Judge output",
+      "judgeLegend": {
+        "title": "How to read this",
+        "pairedLines": "−N/+M — line N of the expected output against line M of the submitted one; the differences on it follow the colon.",
+        "missingLine": "−N: line — this line should be in the output and is not.",
+        "extraLine": "+N: line — this line is in the output and should not be.",
+        "column": "[N] — the column the word starts at, not its position in the line.",
+        "mismatch": "a != b — b is in the output where a was expected.",
+        "missingToken": "−[N]a — the word a is missing, +[N]b — the word b is extra."
+      },
       "seconds": "{value} s",
       "kibibytes": "{value} KiB",
       "ofLimit": "{percent} of the limit",

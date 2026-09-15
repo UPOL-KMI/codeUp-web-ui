@@ -1,4 +1,5 @@
 import { getFormatter, getTranslations } from "next-intl/server";
+import { isTokenJudgeLog } from "@/lib/status/judge-log";
 
 import type { SolutionEvaluation, SolutionTestResult } from "@/lib/api/solution";
 import { formatPercent } from "@/lib/format/points";
@@ -192,18 +193,44 @@ export async function EvaluationResults({
                     {result.message && (
                       <div className="text-xs text-muted-foreground">{result.message}</div>
                     )}
-                    {(result.judgeLogStdout || result.judgeLogStderr) && (
-                      <details className="mt-1">
-                        <summary className="cursor-pointer text-xs text-muted-foreground">
-                          {t("judgeLog")}
-                        </summary>
-                        <pre className="mt-1 overflow-x-auto rounded bg-muted/40 p-2 text-xs whitespace-pre-wrap">
-                          {[result.judgeLogStdout, result.judgeLogStderr]
-                            .filter(Boolean)
-                            .join("\n")}
-                        </pre>
-                      </details>
-                    )}
+                    {(() => {
+                      const log = [result.judgeLogStdout, result.judgeLogStderr]
+                        .filter(Boolean)
+                        .join("\n");
+                      if (log === "") return null;
+                      return (
+                        <details className="mt-1">
+                          <summary className="cursor-pointer text-xs text-muted-foreground">
+                            {t("judgeLog")}
+                          </summary>
+                          <pre className="mt-1 overflow-x-auto rounded bg-muted/40 p-2 text-xs whitespace-pre-wrap">
+                            {log}
+                          </pre>
+                          {/* Only over a log whose notation this legend actually describes -- a
+                              custom judge writes whatever it likes, and a key to the wrong
+                              notation is worse than none. See `isTokenJudgeLog`. */}
+                          {isTokenJudgeLog(log) && (
+                            <div className="mt-1 rounded border border-border bg-info-surface p-2 text-xs">
+                              <p className="font-medium">{t("judgeLegend.title")}</p>
+                              <ul className="mt-1 flex flex-col gap-0.5">
+                                {(
+                                  [
+                                    "pairedLines",
+                                    "missingLine",
+                                    "extraLine",
+                                    "column",
+                                    "mismatch",
+                                    "missingToken",
+                                  ] as const
+                                ).map((key) => (
+                                  <li key={key}>{t(`judgeLegend.${key}`)}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </details>
+                      );
+                    })()}
                   </td>
                   <td className="px-3 py-2">
                     <TestStatus result={result} label={t(`status.${result.status}`)} />

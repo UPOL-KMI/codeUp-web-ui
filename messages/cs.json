@@ -863,6 +863,15 @@
       "summary": "Prošlo {passed} z {total} testů",
       "evaluatedAt": "Vyhodnoceno {when}",
       "judgeLog": "Výstup soudce",
+      "judgeLegend": {
+        "title": "Jak číst tento výpis",
+        "pairedLines": "−N/+M — řádek N očekávaného výstupu proti řádku M odevzdaného; za dvojtečkou jsou rozdíly na něm.",
+        "missingLine": "−N: řádek — tenhle řádek měl být ve výstupu a není.",
+        "extraLine": "+N: řádek — tenhle řádek je ve výstupu navíc.",
+        "column": "[N] — pozice prvního znaku slova na řádku, ne pořadí slova.",
+        "mismatch": "a != b — místo očekávaného a je ve výstupu b.",
+        "missingToken": "−[N]a — slovo a chybí, +[N]b — slovo b je navíc."
+      },
       "seconds": "{value} s",
       "kibibytes": "{value} KiB",
       "ofLimit": "{percent} limitu",
